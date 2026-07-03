@@ -5231,6 +5231,25 @@ function AdminDashboard() {
     loadData();
   };
 
+  const handleCancelRequest = async (type: 'name' | 'username') => {
+    if (!window.confirm('Bạn có chắc muốn hủy yêu cầu này?')) return;
+    try {
+      const res = await fetch('/api/profile/cancel-request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getAdminToken() || ''}`
+        },
+        body: JSON.stringify({ type })
+      });
+      if (res.ok) {
+        setToast('Đã hủy yêu cầu!');
+        setTimeout(() => setToast(''), 3000);
+        loadData();
+      }
+    } catch (e) {}
+  };
+
   const handleProfileSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -5245,6 +5264,7 @@ function AdminDashboard() {
       body: JSON.stringify({
         pageTitle: payload.pageTitle,
         artistName: payload.artistName,
+        username: payload.username,
         artistBio: payload.artistBio,
         homeCoverUrl: payload.homeCoverUrl,
         faviconUrl: payload.faviconUrl,
@@ -5370,7 +5390,7 @@ function AdminDashboard() {
           <div className="flex items-center gap-3">
             <Link 
               to="/" 
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200 shadow-sm transition-all duration-300 hover:scale-105 animate-[fade-in_0.3s_ease-out]"
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 shadow-sm transition-all duration-300 hover:scale-105 animate-[fade-in_0.3s_ease-out]"
               title="Trang chủ"
               id="admin-top-home-btn"
             >
@@ -5670,12 +5690,13 @@ function AdminDashboard() {
                            loadData();
                         }
                       }}
-                      className="flex items-center gap-2 bg-stone-900 text-white px-4 py-2 rounded-xl font-bold hover:bg-stone-800 transition-colors shadow-sm"
+                      className="w-10 h-10 flex items-center justify-center bg-stone-900 text-white rounded-xl hover:bg-stone-800 transition-colors shadow-sm"
+                      title="Tạo Playlist"
                     >
-                      <Plus className="w-4 h-4" /> Tạo Playlist
+                      <Plus className="w-5 h-5" />
                     </button>
                   ) : demosSubTab !== 'trash' ? (
-                    <Link to={getAdminLink('/new')} className="bg-stone-900 text-white px-4 py-2 rounded-xl flex items-center justify-center hover:bg-stone-800 transition-colors shadow-sm font-bold" title="Tạo mới bài viết">
+                    <Link to={getAdminLink('/new')} className="w-10 h-10 flex items-center justify-center bg-stone-900 text-white rounded-xl hover:bg-stone-800 transition-colors shadow-sm" title="Tạo mới bài viết">
                       <Plus className="w-5 h-5" />
                     </Link>
                   ) : null}
@@ -6157,9 +6178,33 @@ function AdminDashboard() {
                   <label className="block text-sm font-bold text-stone-700 mb-2">Tiêu đề Website</label>
                   <input name="pageTitle" defaultValue={data.pageTitle} placeholder="Để trống sẽ dùng mặc định: Thiên Đường Demo của [Tên nghệ sĩ]" className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
                 </div>
-                <div>
+                                                <div>
                   <label className="block text-sm font-bold text-stone-700 mb-2">Tên nghệ sĩ</label>
-                  <input name="artistName" defaultValue={data.artistName} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
+                  {data.pendingNameChange ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-full border border-stone-200 bg-stone-100 text-stone-500 rounded-xl px-4 py-3 flex items-center justify-between opacity-80 select-none">
+                        <span>Đang yêu cầu đổi thành: <strong>{data.pendingNameChange}</strong></span>
+                        <Lock className="w-4 h-4 text-stone-400" />
+                      </div>
+                      <button type="button" onClick={() => handleCancelRequest('name')} className="shrink-0 bg-stone-100 hover:bg-stone-200 text-stone-600 px-4 py-3 rounded-xl font-bold transition-colors cursor-pointer">Cancel</button>
+                    </div>
+                  ) : (
+                    <input name="artistName" defaultValue={data.artistName} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-stone-700 mb-2">Username (Phần mở rộng)</label>
+                  {data.pendingUsernameChange ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-full border border-stone-200 bg-stone-100 text-stone-500 rounded-xl px-4 py-3 flex items-center justify-between opacity-80 select-none">
+                        <span>Đang yêu cầu đổi thành: <strong>{data.pendingUsernameChange}</strong></span>
+                        <Lock className="w-4 h-4 text-stone-400" />
+                      </div>
+                      <button type="button" onClick={() => handleCancelRequest('username')} className="shrink-0 bg-stone-100 hover:bg-stone-200 text-stone-600 px-4 py-3 rounded-xl font-bold transition-colors cursor-pointer">Cancel</button>
+                    </div>
+                  ) : (
+                    <input name="username" defaultValue={data.username} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono" />
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-stone-700 mb-2">Giới thiệu ngắn</label>
@@ -6850,6 +6895,45 @@ function AchievementEditor({ achievements, onChange }: { achievements: Achieveme
 function AdminCreateDemo() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [appData, setAppData] = useState<AppData | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch('/api/admin/data', {
+          headers: { 'Authorization': `Bearer ${getAdminToken() || ''}` }
+        });
+        const data = await res.json();
+        setAppData(data);
+        if (data.slideshowImages && data.slideshowImages.length > 0) {
+          const randomIndex = Math.floor(Math.random() * data.slideshowImages.length);
+          setRandomSlideUrl(data.slideshowImages[randomIndex]);
+        }
+        if (data.templateConfigs && data.templateConfigs.length > 0) {
+          const sorted = data.templateConfigs.map((c: any) => c.id === '9' ? { ...c, name: 'Cầu Vồng' } : c).sort((a: any, b: any) => a.order - b.order);
+          setTemplateConfigs(sorted);
+        } else {
+          setTemplateConfigs([
+            { id: '1', name: 'Vui vẻ (Ấm áp)' },
+            { id: '2', name: 'Căng Cực (Sôi động)' },
+            { id: '3', name: 'Buồn (Sâu lắng)' },
+            { id: '4', name: 'Thư giãn (Nhẹ nhàng)' },
+            { id: '5', name: 'Đáng yêu (Đỏ, Nhảy múa)' },
+            { id: '6', name: 'Hạnh Phúc (Hồng, Hoa rơi)' },
+            { id: '7', name: 'Học Đường (Trắng, Lá vàng rơi)' },
+            { id: '8', name: 'Tổ Quốc (Đỏ, Cờ phấp phới)' },
+            { id: '9', name: 'Cầu Vồng' },
+            { id: '10', name: 'Hip Hop (Đường phố)' },
+            { id: '11', name: 'Kỳ bí (Đen vàng, Trăng khói mưa)' },
+            { id: '12', name: 'Cổ điển (Nâu, retro)' },
+            { id: '13', name: 'Hoàng hôn (Cam đỏ trời chiều)' },
+            { id: '14', name: 'Đêm đen (Sao băng)' }
+          ]);
+        }
+      } catch (err) {}
+    };
+    fetchData();
+  }, []);
   const [title, setTitle] = useState('');
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [slug, setSlug] = useState('');
@@ -7122,11 +7206,11 @@ function AdminCreateDemo() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-2">Sáng tác</label>
-                <input name="composer" value={composer} onChange={e => setComposer(e.target.value)} placeholder={`Sáng tác (${appData?.artistName || 'Nghệ sĩ'})`} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+                <input name="composer" value={composer} onChange={e => setComposer(e.target.value)} placeholder={appData?.artistName || 'Nghệ sĩ'} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-2">Ca sĩ thể hiện</label>
-                <input name="singer" value={singer} onChange={e => setSinger(e.target.value)} placeholder={`Ca sĩ (${appData?.artistName || 'Nghệ sĩ'})`} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+                <input name="singer" value={singer} onChange={e => setSinger(e.target.value)} placeholder={appData?.artistName || 'Nghệ sĩ'} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-2">Năm phát hành</label>
@@ -7707,11 +7791,11 @@ function AdminEditDemo() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-2">Sáng tác</label>
-                <input name="composer" value={composer} onChange={e => setComposer(e.target.value)} placeholder={`Sáng tác (${appData?.artistName || 'Nghệ sĩ'})`} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+                <input name="composer" value={composer} onChange={e => setComposer(e.target.value)} placeholder={appData?.artistName || 'Nghệ sĩ'} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-2">Ca sĩ thể hiện</label>
-                <input name="singer" value={singer} onChange={e => setSinger(e.target.value)} placeholder={`Ca sĩ (${appData?.artistName || 'Nghệ sĩ'})`} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+                <input name="singer" value={singer} onChange={e => setSinger(e.target.value)} placeholder={appData?.artistName || 'Nghệ sĩ'} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-2">Năm phát hành</label>

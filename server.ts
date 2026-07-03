@@ -1286,7 +1286,7 @@ async function startServer() {
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const { originalUsername, artistName, extension, password, verified, dbConfig, isPublic, approveNameChange } = req.body;
+    const { originalUsername, artistName, extension, password, verified, dbConfig, isPublic, approveNameChange, rejectNameChange, approveUsernameChange, rejectUsernameChange } = req.body;
     const artistIdx = artists.findIndex(a => a.username === originalUsername);
     if (artistIdx === -1) {
       return res.status(404).json({ error: 'Không tìm thấy nghệ sĩ!' });
@@ -1294,17 +1294,44 @@ async function startServer() {
     
     const artist = artists[artistIdx];
     
-    if (approveNameChange) {
-      if (artist.pendingNameChange) {
-        artist.artistName = artist.pendingNameChange;
-        artist.pendingNameChange = undefined;
-        
-        const data = await loadData(artist.username);
-        data.artistName = artist.artistName;
-        data.pendingNameChange = undefined;
-        await saveData(artist.username, data);
-      }
-    } else {
+    if (approveNameChange && artist.pendingNameChange) {
+      artist.artistName = artist.pendingNameChange;
+      artist.pendingNameChange = undefined;
+      const data = await loadData(artist.username);
+      data.artistName = artist.artistName;
+      data.pendingNameChange = undefined;
+      await saveData(artist.username, data);
+    } else if (rejectNameChange) {
+      artist.pendingNameChange = undefined;
+      const data = await loadData(artist.username);
+      data.pendingNameChange = undefined;
+      await saveData(artist.username, data);
+    } else if (approveUsernameChange && artist.pendingUsernameChange) {
+      // Need to rename the data file and username
+      const oldUsername = artist.username;
+      const newUsername = artist.pendingUsernameChange;
+      
+      // Update artist object
+      artist.username = newUsername;
+      artist.pendingUsernameChange = undefined;
+      
+      // Load old data, change, save as new, delete old
+      const data = await loadData(oldUsername);
+      data.username = newUsername;
+      data.pendingUsernameChange = undefined;
+      await saveData(newUsername, data);
+      
+      const fs = require('fs');
+      const path = require('path');
+      try {
+        fs.unlinkSync(path.join(process.cwd(), `data_${oldUsername}.json`));
+      } catch(e) {}
+    } else if (rejectUsernameChange) {
+      artist.pendingUsernameChange = undefined;
+      const data = await loadData(artist.username);
+      data.pendingUsernameChange = undefined;
+      await saveData(artist.username, data);
+    } else if (!approveNameChange && !rejectNameChange && !approveUsernameChange && !rejectUsernameChange) {
       artist.artistName = artistName || artist.artistName;
       artist.extension = extension ? extension.toLowerCase().trim() : artist.extension;
       artist.password = password || artist.password;
@@ -1480,7 +1507,14 @@ async function startServer() {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     const data = await loadData();
-    res.json({ ...data, memberPassword: req.artist?.memberPassword || '', isMasterAdmin: req.artist?.username === 'acxuantai' });
+    res.json({ 
+      ...data, 
+      memberPassword: req.artist?.memberPassword || '', 
+      isMasterAdmin: req.artist?.username === 'acxuantai',
+      username: req.artist?.username,
+      pendingNameChange: req.artist?.pendingNameChange,
+      pendingUsernameChange: req.artist?.pendingUsernameChange
+    });
   });
 
   app.get('/api/admin/firebase-configs', (req, res) => {
@@ -1554,6 +1588,26 @@ async function startServer() {
     }
   });
 
+  app.post('/api/profile/cancel-request', async (req: any, res) => {
+    if (!isRequestAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const data = await loadData();
+    const artist = req.artist;
+    if (artist) {
+      if (req.body.type === 'name') {
+        artist.pendingNameChange = undefined;
+        data.pendingNameChange = undefined;
+      } else if (req.body.type === 'username') {
+        artist.pendingUsernameChange = undefined;
+        data.pendingUsernameChange = undefined;
+      }
+      await saveArtists(artists);
+      await saveData(artist.username, data);
+    }
+    res.json({ success: true });
+  });
+
   app.post('/api/profile', async (req: any, res) => {
     if (!isRequestAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -1567,6 +1621,15 @@ async function startServer() {
       if (artist) {
         artist.pendingNameChange = req.body.artistName;
         data.pendingNameChange = req.body.artistName;
+        await saveArtists(artists);
+        nameChangeNotice = true;
+      }
+    }
+    if (req.body.username !== undefined && req.body.username !== req.artist.username) {
+      const artist = req.artist;
+      if (artist) {
+        artist.pendingUsernameChange = req.body.username;
+        data.pendingUsernameChange = req.body.username;
         await saveArtists(artists);
         nameChangeNotice = true;
       }

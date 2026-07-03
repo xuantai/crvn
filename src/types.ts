@@ -64,6 +64,9 @@ export interface TemplateConfig {
 
 export interface AppData {
   pageTitle?: string;
+  username?: string;
+  pendingNameChange?: string;
+  pendingUsernameChange?: string;
   artistName: string;
   artistBio: string;
   homeCoverUrl?: string;

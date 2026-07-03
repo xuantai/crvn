@@ -255,17 +255,79 @@ export default function ACPControlPanel() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          originalUsername: username,
-          approveNameChange: true
-        })
+        body: JSON.stringify({ originalUsername: username, approveNameChange: true })
       });
-
       if (res.ok) {
         fetchArtists();
       } else {
         const data = await res.json();
         alert(data.error || 'Không thể duyệt yêu cầu');
+      }
+    } catch (err) {
+      alert('Lỗi kết nối máy chủ!');
+    }
+  };
+
+  const handleRejectNameChange = async (username: string) => {
+    if (!window.confirm('Bạn có chắc chắn muốn TỪ CHỐI yêu cầu thay đổi tên này?')) return;
+    try {
+      const res = await fetch('/api/acp/artists/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ originalUsername: username, rejectNameChange: true })
+      });
+      if (res.ok) {
+        fetchArtists();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Không thể từ chối yêu cầu');
+      }
+    } catch (err) {
+      alert('Lỗi kết nối máy chủ!');
+    }
+  };
+
+  const handleApproveUsernameChange = async (username: string) => {
+    if (!window.confirm('Bạn có chắc chắn muốn duyệt yêu cầu thay đổi username này? Sẽ thay đổi đường dẫn của nghệ sĩ!')) return;
+    try {
+      const res = await fetch('/api/acp/artists/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ originalUsername: username, approveUsernameChange: true })
+      });
+      if (res.ok) {
+        fetchArtists();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Không thể duyệt yêu cầu');
+      }
+    } catch (err) {
+      alert('Lỗi kết nối máy chủ!');
+    }
+  };
+
+  const handleRejectUsernameChange = async (username: string) => {
+    if (!window.confirm('Bạn có chắc chắn muốn TỪ CHỐI yêu cầu thay đổi username này?')) return;
+    try {
+      const res = await fetch('/api/acp/artists/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ originalUsername: username, rejectUsernameChange: true })
+      });
+      if (res.ok) {
+        fetchArtists();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Không thể từ chối yêu cầu');
       }
     } catch (err) {
       alert('Lỗi kết nối máy chủ!');
@@ -577,6 +639,32 @@ export default function ACPControlPanel() {
                                       title="Duyệt"
                                     >
                                       <Check className="w-2.5 h-2.5 stroke-[3]" />
+                                    </button>
+                                    <button 
+                                      onClick={() => handleRejectNameChange(artist.username)}
+                                      className="bg-red-500 text-white p-0.5 rounded-md hover:bg-red-600 transition-colors cursor-pointer"
+                                      title="Từ chối"
+                                    >
+                                      <X className="w-2.5 h-2.5 stroke-[3]" />
+                                    </button>
+                                  </div>
+                                )}
+                                {artist.pendingUsernameChange && (
+                                  <div className="mt-1.5 flex items-center gap-2 bg-pink-500/10 border border-pink-500/20 text-pink-400 py-1 px-2.5 rounded-lg text-[10px] font-bold">
+                                    <span>Đang muốn đổi Username thành: "{artist.pendingUsernameChange}"</span>
+                                    <button 
+                                      onClick={() => handleApproveUsernameChange(artist.username)}
+                                      className="bg-emerald-500 text-white p-0.5 rounded-md hover:bg-emerald-600 transition-colors cursor-pointer"
+                                      title="Duyệt"
+                                    >
+                                      <Check className="w-2.5 h-2.5 stroke-[3]" />
+                                    </button>
+                                    <button 
+                                      onClick={() => handleRejectUsernameChange(artist.username)}
+                                      className="bg-red-500 text-white p-0.5 rounded-md hover:bg-red-600 transition-colors cursor-pointer"
+                                      title="Từ chối"
+                                    >
+                                      <X className="w-2.5 h-2.5 stroke-[3]" />
                                     </button>
                                   </div>
                                 )}
@@ -981,7 +1069,7 @@ export default function ACPControlPanel() {
                   value={artistName}
                   onChange={(e) => setArtistName(e.target.value)}
                   className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
-                  placeholder="A.C Xuân Tài"
+                  placeholder="vd: Mai Xuân Thứ"
                 />
               </div>
 
@@ -994,7 +1082,7 @@ export default function ACPControlPanel() {
                     value={artistUsername}
                     onChange={(e) => setArtistUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase())}
                     className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none font-mono"
-                    placeholder="acxuantai"
+                    placeholder="vd: maixuanthu"
                   />
                 </div>
 
@@ -1006,7 +1094,7 @@ export default function ACPControlPanel() {
                     value={artistExtension}
                     onChange={(e) => setArtistExtension(e.target.value.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase())}
                     className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none font-mono"
-                    placeholder="acxuantai"
+                    placeholder="vd: maixuanthu"
                   />
                   <p className="text-[10px] text-neutral-500 mt-1">
                     Truy cập qua: <strong>chorus.vn/{"{phần_mở_rộng}"}</strong> HOẶC cấu hình DNS trỏ subdomain <strong>{"{phần_mở_rộng}"}.chorus.vn</strong> về IP máy chủ để dùng như trang độc lập.
@@ -1122,7 +1210,7 @@ export default function ACPControlPanel() {
                   value={artistName}
                   onChange={(e) => setArtistName(e.target.value)}
                   className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
-                  placeholder="A.C Xuân Tài"
+                  placeholder="vd: Mai Xuân Thứ"
                 />
               </div>
 
@@ -1134,7 +1222,7 @@ export default function ACPControlPanel() {
                   value={artistExtension}
                   onChange={(e) => setArtistExtension(e.target.value.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase())}
                   className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none font-mono"
-                  placeholder="acxuantai"
+                  placeholder="vd: maixuanthu"
                 />
                 <p className="text-[10px] text-neutral-500 mt-1">
                     Truy cập qua: <strong>chorus.vn/{"{phần_mở_rộng}"}</strong> HOẶC subdomain <strong>{"{phần_mở_rộng}"}.chorus.vn</strong>
