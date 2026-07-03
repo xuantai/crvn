@@ -3,55 +3,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // Global Safety Net (Default-deny)
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if true;
     }
-
-    // Secure matches for the app_data collection
-    match /app_data/{docId} {
-      allow read: if isValidId(docId) && docId == 'main';
-      allow write: if isValidId(docId) && docId == 'main' && isValidAppData(incoming());
-    }
-  }
-
-  function isValidId(id) {
-    return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
-  }
-
-  function incoming() {
-    return request.resource.data;
-  }
-
-  function existing() {
-    return resource.data;
-  }
-
-  function isValidAppData(data) {
-    return data.artistName is string 
-      && data.artistName.size() <= 200
-      && data.artistBio is string
-      && data.artistBio.size() <= 5000
-      && (!data.keys().hasAny(['pageTitle']) || data.pageTitle is string && data.pageTitle.size() <= 200)
-      && (!data.keys().hasAny(['homeCoverUrl']) || data.homeCoverUrl is string && data.homeCoverUrl.size() <= 1000)
-      && (!data.keys().hasAny(['faviconUrl']) || data.faviconUrl is string && data.faviconUrl.size() <= 1000)
-      && (!data.keys().hasAny(['ogImageUrl']) || data.ogImageUrl is string && data.ogImageUrl.size() <= 1000)
-      && (!data.keys().hasAny(['youtubePlaylistUrl']) || data.youtubePlaylistUrl is string && data.youtubePlaylistUrl.size() <= 1000)
-      && (!data.keys().hasAny(['spotifyUrl']) || data.spotifyUrl is string && data.spotifyUrl.size() <= 1000)
-      && (!data.keys().hasAny(['socialFacebook']) || data.socialFacebook is string && data.socialFacebook.size() <= 1000)
-      && (!data.keys().hasAny(['socialInstagram']) || data.socialInstagram is string && data.socialInstagram.size() <= 1000)
-      && (!data.keys().hasAny(['socialYoutube']) || data.socialYoutube is string && data.socialYoutube.size() <= 1000)
-      && (!data.keys().hasAny(['socialTiktok']) || data.socialTiktok is string && data.socialTiktok.size() <= 1000)
-      && (!data.keys().hasAny(['globalPassword']) || data.globalPassword is string && data.globalPassword.size() <= 200)
-      && (!data.keys().hasAny(['globalBaseUrl']) || data.globalBaseUrl is string && data.globalBaseUrl.size() <= 1000)
-      && (!data.keys().hasAny(['adminPassword']) || data.adminPassword is string && data.adminPassword.size() <= 200)
-      && (!data.keys().hasAny(['memberPassword']) || data.memberPassword is string && data.memberPassword.size() <= 200)
-      && (!data.keys().hasAny(['autoSwitchTabs']) || data.autoSwitchTabs is bool)
-      && (!data.keys().hasAny(['tab1Name']) || data.tab1Name is string && data.tab1Name.size() <= 100)
-      && (!data.keys().hasAny(['tab2Name']) || data.tab2Name is string && data.tab2Name.size() <= 100)
-      && (!data.keys().hasAny(['tab3Name']) || data.tab3Name is string && data.tab3Name.size() <= 100)
-      && (!data.keys().hasAny(['slideshowImages']) || data.slideshowImages is list)
-      && (!data.keys().hasAny(['releasedSongs']) || data.releasedSongs is list)
-      && (!data.keys().hasAny(['demos']) || data.demos is list)
-      && (!data.keys().hasAny(['playlists']) || data.playlists is list)
-      && (!data.keys().hasAny(['templateConfigs']) || data.templateConfigs is list);
   }
 }

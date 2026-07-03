@@ -64,7 +64,7 @@ let firebaseApp = initializeApp(firebaseConfig);
 let db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId || '(default)');
 let firebaseStorage = getStorage(firebaseApp);
 let DOC_REF = doc(db, 'app_data', 'main');
-let isFirestoreDisabled = false;
+let isFirestoreDisabled = firebaseConfig.projectId === 'remixed-project-id';
 
 function handleFirebaseError(error: any) {
   if (!error) return;
@@ -96,9 +96,21 @@ async function loadArtists() {
     if (fsSync.existsSync(ARTISTS_FILE)) {
       const content = await fs.readFile(ARTISTS_FILE, 'utf-8');
       artists = JSON.parse(content);
+      
+      let changed = false;
+      artists.forEach(artist => {
+        if (!artist.id) {
+          artist.id = Math.random().toString(36).substring(2, 15);
+          changed = true;
+        }
+      });
+      if (changed) {
+        await fs.writeFile(ARTISTS_FILE, JSON.stringify(artists, null, 2), 'utf-8');
+      }
     } else {
       artists = [
         {
+          id: Math.random().toString(36).substring(2, 15),
           artistName: "A.C Xuân Tài",
           username: "acxuantai",
           extension: "acxuantai",
@@ -113,6 +125,7 @@ async function loadArtists() {
     console.error("Error loading artists:", e);
     artists = [
       {
+        id: Math.random().toString(36).substring(2, 15),
         artistName: "A.C Xuân Tài",
         username: "acxuantai",
         extension: "acxuantai",
@@ -123,7 +136,7 @@ async function loadArtists() {
     ];
   }
   
-  if (!isFirestoreDisabled) {
+  if (!isFirestoreDisabled && landingConfig.cloudSyncEnabled !== false) {
     try {
       const masterDoc = doc(db, 'app_data', 'master');
       await setDoc(masterDoc, { artists });
@@ -138,7 +151,7 @@ async function saveArtists(list: any[]) {
   artists = list;
   try {
     await fs.writeFile(ARTISTS_FILE, JSON.stringify(artists, null, 2), 'utf-8');
-    if (!isFirestoreDisabled) {
+    if (!isFirestoreDisabled && landingConfig.cloudSyncEnabled !== false) {
       const masterDoc = doc(db, 'app_data', 'master');
       await setDoc(masterDoc, { artists });
     }
@@ -161,7 +174,8 @@ let landingConfig = {
   feature3Title: "Đồng bộ Cloud & Cache cục bộ",
   feature3Desc: "Lưu trữ dữ liệu kép trên Cloud Firestore chất lượng cao kết hợp cơ chế dự phòng cục bộ. Cam kết phát nhạc ổn định, tốc độ load nhanh ngay cả khi internet quốc tế gặp sự cố.",
   feature4Title: "Bố cục mang đậm dấu ấn cá nhân",
-  feature4Desc: "Tùy chỉnh ảnh bìa đại diện, màu sắc chủ đạo, ảnh đại diện, viết bio, cập nhật danh sách mạng xã hội. Trang cá nhân hoạt động độc lập như một website thu nhỏ của riêng bạn."
+  feature4Desc: "Tùy chỉnh ảnh bìa đại diện, màu sắc chủ đạo, ảnh đại diện, viết bio, cập nhật danh sách mạng xã hội. Trang cá nhân hoạt động độc lập như một website thu nhỏ của riêng bạn.",
+  cloudSyncEnabled: true
 };
 
 const SUBSCRIBERS_FILE = path.join(process.cwd(), 'subscribers.json');
@@ -182,7 +196,7 @@ async function addSubscriber(email: string) {
     } catch (e) {}
   }
 
-  if (!isFirestoreDisabled) {
+  if (!isFirestoreDisabled && landingConfig.cloudSyncEnabled !== false) {
     try {
       const key = Buffer.from(email).toString('base64url');
       const subDoc = doc(db, 'subscribers', key);
@@ -205,7 +219,7 @@ async function loadLandingConfig() {
     console.error("Error loading landing config local:", e);
   }
   
-  if (!isFirestoreDisabled) {
+  if (!isFirestoreDisabled && landingConfig.cloudSyncEnabled !== false) {
     try {
       const landingDoc = doc(db, 'app_data', 'landing');
       const snap = await getDoc(landingDoc);
@@ -229,7 +243,7 @@ async function saveLandingConfig(cfg: any) {
     console.error("Error saving landing config local:", e);
   }
   
-  if (!isFirestoreDisabled) {
+  if (!isFirestoreDisabled && landingConfig.cloudSyncEnabled !== false) {
     try {
       const landingDoc = doc(db, 'app_data', 'landing');
       await setDoc(landingDoc, landingConfig);
@@ -242,7 +256,7 @@ async function saveLandingConfig(cfg: any) {
 const firebaseAppCache = new Map<string, any>();
 
 function getFirestoreRefForArtist(artist: any) {
-  if (isFirestoreDisabled) {
+  if (isFirestoreDisabled || landingConfig.cloudSyncEnabled === false) {
     return null;
   }
 
@@ -276,10 +290,10 @@ async function ensureUploadsDir() {
   await fs.mkdir(UPLOADS_DIR, { recursive: true });
 }
 
-async function uploadLocalToCloud(localPath: string, filename: string, mimetype: string): Promise<string> {
+async function uploadLocalToCloud(localPath: string, filename: string, mimetype: string, artistId: string = 'common'): Promise<string> {
   // If it's a music file, do NOT upload to Firebase Storage, return the local server URL
   if (mimetype.startsWith('audio/') || filename.endsWith('.mp3') || filename.endsWith('.wav')) {
-    return `/uploads/${filename}`;
+    return `/uploads/${artistId}/${filename}`;
   }
 
   // If it's an image file, compress to JPG and upload to Firebase Storage
@@ -287,7 +301,9 @@ async function uploadLocalToCloud(localPath: string, filename: string, mimetype:
     try {
       const baseName = filename.includes('.') ? filename.substring(0, filename.lastIndexOf('.')) : filename;
       const optimizedFilename = `${baseName}-${Date.now()}.jpg`;
-      const optimizedPath = path.join(UPLOADS_DIR, optimizedFilename);
+      const optimizedDir = path.join(UPLOADS_DIR, artistId);
+      await fs.mkdir(optimizedDir, { recursive: true }).catch(() => {});
+      const optimizedPath = path.join(optimizedDir, optimizedFilename);
 
       await sharp(localPath)
         .jpeg({ quality: 80, progressive: true })
@@ -297,7 +313,7 @@ async function uploadLocalToCloud(localPath: string, filename: string, mimetype:
       // Now we have the optimized image locally. Try to upload it to Firebase.
       try {
         const fileBuffer = await fs.readFile(optimizedPath);
-        const storageRef = ref(firebaseStorage, `uploads/${optimizedFilename}`);
+        const storageRef = ref(firebaseStorage, `uploads/${artistId}/${optimizedFilename}`);
         await uploadBytes(storageRef, fileBuffer, { contentType: 'image/jpeg' });
         const cloudUrl = await getDownloadURL(storageRef);
 
@@ -309,25 +325,25 @@ async function uploadLocalToCloud(localPath: string, filename: string, mimetype:
         console.warn("⚠️ Firebase Storage upload failed. Keeping optimized image locally:", uploadErr.message);
         // Clean up raw original, keep the optimized local file
         await fs.unlink(localPath).catch(() => {});
-        return `/uploads/${optimizedFilename}`;
+        return `/uploads/${artistId}/${optimizedFilename}`;
       }
     } catch (error) {
       console.error("Lỗi nén/upload image in uploadLocalToCloud:", error);
       // Fallback: if sharp failed completely, keep original raw image and return its local URL
-      return `/uploads/${filename}`;
+      return `/uploads/${artistId}/${filename}`;
     }
   }
 
   // Non-image, non-audio files (fallback)
   try {
     const fileBuffer = await fs.readFile(localPath);
-    const storageRef = ref(firebaseStorage, `uploads/${filename}`);
+    const storageRef = ref(firebaseStorage, `uploads/${artistId}/${filename}`);
     await uploadBytes(storageRef, fileBuffer, { contentType: mimetype });
     const cloudUrl = await getDownloadURL(storageRef);
     await fs.unlink(localPath).catch(() => {});
     return cloudUrl;
   } catch (error) {
-    return `/uploads/${filename}`;
+    return `/uploads/${artistId}/${filename}`;
   }
 }
 
@@ -503,8 +519,11 @@ async function uploadUrlOrFileToCloud(urlOrPath: string, globalBaseUrl?: string)
 
 // Multer setup
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, UPLOADS_DIR);
+  destination: function (req: any, file, cb) {
+    const artistId = req.artist?.id || 'common';
+    const dest = path.join(UPLOADS_DIR, artistId);
+    fsSync.mkdirSync(dest, { recursive: true });
+    cb(null, dest);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -797,7 +816,12 @@ async function startServer() {
             cookies[parts[0].trim()] = decodeURIComponent(parts[1].trim());
           }
         });
-        token = cookies['adminToken'] || '';
+        const artist = (req as any).artist;
+        if (artist) {
+          token = cookies[`adminToken_${artist.username}`] || '';
+        } else {
+          token = cookies['adminToken'] || '';
+        }
       }
     }
 
@@ -1149,12 +1173,14 @@ async function startServer() {
     const { 
       tagline, heroTitle, heroSubtitle, heroDescription, footerText,
       feature1Title, feature1Desc, feature2Title, feature2Desc,
-      feature3Title, feature3Desc, feature4Title, feature4Desc
+      feature3Title, feature3Desc, feature4Title, feature4Desc,
+      cloudSyncEnabled
     } = req.body;
     await saveLandingConfig({ 
       tagline, heroTitle, heroSubtitle, heroDescription, footerText,
       feature1Title, feature1Desc, feature2Title, feature2Desc,
-      feature3Title, feature3Desc, feature4Title, feature4Desc
+      feature3Title, feature3Desc, feature4Title, feature4Desc,
+      cloudSyncEnabled: cloudSyncEnabled !== false
     });
     res.json({ success: true, landingConfig });
   });
@@ -1199,6 +1225,7 @@ async function startServer() {
     }
     
     const newArtist = {
+      id: Math.random().toString(36).substring(2, 15),
       artistName,
       username: username.toLowerCase().trim(),
       extension: extension.toLowerCase().trim(),
@@ -1288,18 +1315,27 @@ async function startServer() {
     }
     
     if (artist && artist.password === password) {
-      res.setHeader('Set-Cookie', `adminToken=${artist.password}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`);
+      res.setHeader('Set-Cookie', [
+        `adminToken_${artist.username}=${artist.password}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`,
+        `adminToken=${artist.password}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000` // Keep legacy for backward compat
+      ]);
       res.json({ success: true, token: artist.password, extension: artist.extension, username: artist.username, artist });
     } else {
       res.status(401).json({ error: 'Username hoặc mật khẩu không chính xác!' });
     }
   });
 
-  app.post('/api/admin/logout', (req, res) => {
-    res.setHeader('Set-Cookie', [
+  app.post('/api/admin/logout', (req: any, res) => {
+    const artist = req.artist;
+    const cookieHeaders = [
       'adminToken=; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=0',
       'adminToken=; Path=/; HttpOnly; Max-Age=0'
-    ]);
+    ];
+    if (artist) {
+      cookieHeaders.push(`adminToken_${artist.username}=; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=0`);
+      cookieHeaders.push(`adminToken_${artist.username}=; Path=/; HttpOnly; Max-Age=0`);
+    }
+    res.setHeader('Set-Cookie', cookieHeaders);
     res.json({ success: true });
   });
 
@@ -1341,7 +1377,10 @@ async function startServer() {
     artist.password = newPassword;
     await saveArtists(artists);
     
-    res.setHeader('Set-Cookie', `adminToken=${newPassword}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`);
+    res.setHeader('Set-Cookie', [
+      `adminToken_${artist.username}=${newPassword}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`,
+      `adminToken=${newPassword}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`
+    ]);
     res.json({ success: true, token: newPassword });
   });
 
@@ -1835,8 +1874,9 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     if (existingSlug) slug = slug + '-' + Date.now().toString().slice(-4);
 
     let coverUrl = '';
+    const artistId = req.artist?.id || 'common';
     if (coverFile) {
-      coverUrl = await uploadLocalToCloud(coverFile.path, coverFile.filename, coverFile.mimetype);
+      coverUrl = await uploadLocalToCloud(coverFile.path, coverFile.filename, coverFile.mimetype, artistId);
     } else {
       const inputCover = req.body.coverUrl ? processDriveLink(req.body.coverUrl) : '';
       if (inputCover) {
@@ -1855,7 +1895,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
 
     let audioUrl = '';
     if (audioFile) {
-      audioUrl = await uploadLocalToCloud(audioFile.path, audioFile.filename, audioFile.mimetype);
+      audioUrl = await uploadLocalToCloud(audioFile.path, audioFile.filename, audioFile.mimetype, artistId);
     } else {
       audioUrl = req.body.audioUrl || '';
     }
@@ -1911,8 +1951,9 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
            updatedData.lyrics = parseLyricsBeforeSave(updatedData.lyrics);
         }
         let newAudioUrl = '';
+        const artistId = req.artist?.id || 'common';
         if (audioFile) {
-           newAudioUrl = await uploadLocalToCloud(audioFile.path, audioFile.filename, audioFile.mimetype);
+           newAudioUrl = await uploadLocalToCloud(audioFile.path, audioFile.filename, audioFile.mimetype, artistId);
         } else if (req.body.audioUrl !== undefined && req.body.audioUrl !== data.demos[idx].audioUrl) {
            newAudioUrl = req.body.audioUrl;
         }
@@ -1935,7 +1976,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         }
         if (coverFile) {
            const oldCoverUrl = data.demos[idx].coverUrl;
-            updatedData.coverUrl = await uploadLocalToCloud(coverFile.path, coverFile.filename, coverFile.mimetype);
+            updatedData.coverUrl = await uploadLocalToCloud(coverFile.path, coverFile.filename, coverFile.mimetype, artistId);
             if (oldCoverUrl && oldCoverUrl !== updatedData.coverUrl) {
                await deleteFileByUrl(oldCoverUrl);
             }
@@ -2469,15 +2510,16 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
   // Serve static files from public/uploads
   app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 
-  app.post('/api/upload', upload.single('file'), async (req, res) => {
+  app.post('/api/upload', upload.single('file'), async (req: any, res) => {
     if (!isRequestAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
+    const artistId = req.artist?.id || 'common';
     if (req.file) {
       if (req.file.mimetype.startsWith('image/')) {
         try {
            const optimizedFilename = `${req.file.filename.split('.')[0]}-${Date.now()}.jpg`;
-           const optimizedPath = path.join(process.cwd(), 'public', 'uploads', optimizedFilename);
+           const optimizedPath = path.join(process.cwd(), 'public', 'uploads', artistId, optimizedFilename);
            
            await sharp(req.file.path)
             .jpeg({ quality: 80, progressive: true })
@@ -2490,7 +2532,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
            // Upload to Firebase Storage
            try {
               const fileBuffer = await fs.readFile(optimizedPath);
-              const storageRef = ref(firebaseStorage, `uploads/${optimizedFilename}`);
+              const storageRef = ref(firebaseStorage, `uploads/${artistId}/${optimizedFilename}`);
               await uploadBytes(storageRef, fileBuffer, { contentType: 'image/jpeg' });
               const cloudUrl = await getDownloadURL(storageRef);
               
@@ -2499,13 +2541,13 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
               res.json({ url: cloudUrl });
            } catch (firebaseErr: any) {
               console.warn("⚠️ Bỏ qua Firebase Storage cho ảnh optimized. Đã lưu offline!", firebaseErr.message);
-              res.json({ url: `/uploads/${optimizedFilename}` });
+              res.json({ url: `/uploads/${artistId}/${optimizedFilename}` });
            }
         } catch (error) {
            console.error("Lỗi nén ảnh:", error);
            try {
               const fileBuffer = await fs.readFile(req.file.path);
-              const storageRef = ref(firebaseStorage, `uploads/${req.file.filename}`);
+              const storageRef = ref(firebaseStorage, `uploads/${artistId}/${req.file.filename}`);
               await uploadBytes(storageRef, fileBuffer, { contentType: req.file.mimetype });
               const cloudUrl = await getDownloadURL(storageRef);
               
@@ -2514,7 +2556,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
               res.json({ url: cloudUrl });
            } catch (firebaseErr: any) {
               console.warn("⚠️ Bỏ qua Firebase Storage cho ảnh gốc. Đã lưu offline!", firebaseErr.message);
-              res.json({ url: `/uploads/${req.file.filename}` });
+              res.json({ url: `/uploads/${artistId}/${req.file.filename}` });
            }
         }
       } else {
@@ -2529,7 +2571,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
             console.log(`Đang chạy cơ chế tự chuyển đổi: File WAV được phát hiện (${req.file.originalname}). Khởi động FFmpeg để convert thành MP3.`);
             const wavPath = req.file.path;
             const mp3Filename = `${req.file.filename.split('.')[0]}-${Date.now()}.mp3`;
-            const mp3Path = path.join(process.cwd(), 'public', 'uploads', mp3Filename);
+            const mp3Path = path.join(process.cwd(), 'public', 'uploads', artistId, mp3Filename);
 
             // Chuyển đổi WAV sang MP3 bằng ffmpeg
             await new Promise<void>((resolve, reject) => {
@@ -2555,14 +2597,14 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
             }
 
             // Theo thông số mới: file nhạc chỉ lưu lên server, không lưu lên firebase
-            res.json({ url: `/uploads/${mp3Filename}` });
+            res.json({ url: `/uploads/${artistId}/${mp3Filename}` });
           } catch (convertErr: any) {
             console.error("Lỗi chuyển đổi (.wav -> .mp3): Khôi phục cơ chế mặc định.", convertErr);
-            res.json({ url: `/uploads/${req.file.filename}` });
+            res.json({ url: `/uploads/${artistId}/${req.file.filename}` });
           }
         } else {
           // File nhạc MP3 hoặc các định dạng khác: chỉ lưu lên server, không lưu lên firebase
-          res.json({ url: `/uploads/${req.file.filename}` });
+          res.json({ url: `/uploads/${artistId}/${req.file.filename}` });
         }
       }
     } else {
@@ -2570,10 +2612,11 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     }
   });
 
-  app.post('/api/upload-base64', express.json({limit: '50mb'}), async (req, res) => {
+  app.post('/api/upload-base64', express.json({limit: '50mb'}), async (req: any, res) => {
     if (!isRequestAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
+    const artistId = req.artist?.id || 'common';
     try {
       const { image } = req.body;
       if (!image) return res.status(400).json({ error: 'No image provided' });
@@ -2582,7 +2625,10 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
       const rawBuffer = Buffer.from(base64Data, 'base64');
       
       const filename = `thumb-${Date.now()}.jpg`;
-      const filepath = path.join(process.cwd(), 'public', 'uploads', filename);
+      const filepath = path.join(process.cwd(), 'public', 'uploads', artistId, filename);
+      
+      // Ensure directory exists
+      await fs.mkdir(path.dirname(filepath), { recursive: true }).catch(() => {});
       
       // Nén ảnh base64 thành JPEG chất lượng 80 và resize về max-width 1600
       const optimizedBuffer = await sharp(rawBuffer)
@@ -2595,7 +2641,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
       
       // Upload to Firebase Storage
       try {
-         const storageRef = ref(firebaseStorage, `uploads/${filename}`);
+         const storageRef = ref(firebaseStorage, `uploads/${artistId}/${filename}`);
          await uploadBytes(storageRef, optimizedBuffer, { contentType: 'image/jpeg' });
          const cloudUrl = await getDownloadURL(storageRef);
          
@@ -2604,7 +2650,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
          res.json({ url: cloudUrl });
       } catch (firebaseErr) {
          console.warn("⚠️ Bỏ qua upload Firebase Storage cho ảnh base64. Giữ lại cục bộ offline.");
-         res.json({ url: `/uploads/${filename}` });
+         res.json({ url: `/uploads/${artistId}/${filename}` });
       }
     } catch (e) {
       console.error(e);

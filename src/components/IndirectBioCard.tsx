@@ -66,7 +66,16 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false }: Indirec
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    setIsAdmin(!!localStorage.getItem('adminToken'));
+    const getArtistExtensionFromUrl = () => {
+      const match = window.location.pathname.match(/^\/([^\/]+)/);
+      if (match && !['admin', 'api', 'upload', 'demo', 'song', 'playlist', 'assets'].includes(match[1])) {
+        return match[1];
+      }
+      return '';
+    };
+    const getAdminTokenKey = () => getArtistExtensionFromUrl() ? `adminToken_${getArtistExtensionFromUrl()}` : 'adminToken';
+    
+    setIsAdmin(!!localStorage.getItem(getAdminTokenKey()));
   }, []);
 
   const shareUrl = `${window.location.origin}/song/${demo.slug || demo.id}`;

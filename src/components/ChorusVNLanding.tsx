@@ -232,11 +232,16 @@ export default function ChorusVNLanding() {
       {/* Header / Navbar */}
       <header className="sticky top-0 z-40 backdrop-blur-md bg-[#faf9f6]/80 border-b border-neutral-200/40 px-6 sm:px-10 py-5">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center relative shadow-sm border-2 border-black border-r-white animate-[spin_4s_linear_infinite]">
-              <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-8.5 h-8.5 rounded-full bg-neutral-950 flex items-center justify-center relative shadow-md border-[3px] border-neutral-950 border-r-white animate-[spin_3s_linear_infinite] group-hover:scale-105 transition-transform duration-300">
+              {/* High fidelity vinyl grooves */}
+              <div className="absolute inset-0.5 rounded-full border border-neutral-800 opacity-40"></div>
+              {/* Spindle center hole with a clean white plate */}
+              <div className="w-3 h-3 rounded-full bg-white relative z-10 flex items-center justify-center">
+                <div className="w-1 h-1 rounded-full bg-neutral-950"></div>
+              </div>
             </div>
-            <span className="text-sm font-black tracking-[0.2em] font-sans text-black">
+            <span className="text-sm font-black tracking-[0.2em] font-sans text-black group-hover:text-neutral-700 transition-colors">
               CHORUS.VN
             </span>
           </Link>
@@ -282,9 +287,49 @@ export default function ChorusVNLanding() {
             <span>{config.tagline || t('tagline')}</span>
           </div>
 
-          {/* Brand Title: Chorus.vn (Classic Bold & Serif Italic pairing) */}
-          <h1 className="text-6xl sm:text-[5.5rem] font-bold tracking-tight text-neutral-950 flex items-center justify-center font-sans">
-            Chorus<span className="font-serif italic font-light text-neutral-400 select-none">.vn</span>
+          {/* Brand Title: Chorus.vn (Classic Bold & Serif Italic pairing with staggered letter animation) */}
+          <h1 className="text-6xl sm:text-[5.5rem] font-bold tracking-tight text-neutral-950 flex flex-wrap items-center justify-center font-sans gap-x-1 sm:gap-x-2 select-none overflow-visible py-2">
+            <span className="flex">
+              {"Chorus".split("").map((char, index) => (
+                <motion.span
+                  key={index}
+                  initial={{ opacity: 0, y: 35, scale: 0.7, filter: 'blur(6px)' }}
+                  animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                  transition={{
+                    duration: 0.9,
+                    delay: index * 0.08,
+                    ease: [0.16, 1, 0.3, 1], // Custom ultra-premium easeOutExpo
+                  }}
+                  whileHover={{ 
+                    scale: 1.18, 
+                    y: -4,
+                    color: '#8b5cf6', // Violet accent
+                    textShadow: '0 0 25px rgba(139, 92, 246, 0.7)' 
+                  }}
+                  className="cursor-default inline-block origin-bottom transition-colors duration-200"
+                >
+                  {char}
+                </motion.span>
+              ))}
+            </span>
+            <motion.span
+              initial={{ opacity: 0, x: -30, scale: 0.7, rotate: -10, filter: 'blur(8px)' }}
+              animate={{ opacity: 1, x: 0, scale: 1, rotate: 0, filter: 'blur(0px)' }}
+              transition={{
+                duration: 1.3,
+                delay: 0.6,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              whileHover={{ 
+                scale: 1.18, 
+                rotate: 6,
+                color: '#f43f5e', // Rose accent
+                textShadow: '0 0 25px rgba(244, 63, 94, 0.7)' 
+              }}
+              className="font-serif italic font-light text-neutral-400 cursor-default inline-block origin-center transition-all duration-300"
+            >
+              .vn
+            </motion.span>
           </h1>
 
           {/* Slogan */}

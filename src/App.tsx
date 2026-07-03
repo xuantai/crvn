@@ -95,6 +95,23 @@ const getArtistExtensionFromUrl = () => {
   return '';
 };
 
+const getAdminLink = (subPath: string = '') => {
+  const ext = getArtistExtensionFromUrl();
+  return ext ? `/${ext}/admin${subPath}` : `/admin${subPath}`;
+};
+
+const getAdminTokenKey = () => getArtistExtensionFromUrl() ? `adminToken_${getArtistExtensionFromUrl()}` : 'adminToken';
+const getMemberTokenKey = () => getArtistExtensionFromUrl() ? `memberToken_${getArtistExtensionFromUrl()}` : 'memberToken';
+
+const getAdminToken = () => localStorage.getItem(getAdminTokenKey());
+const setAdminToken = (token: string) => localStorage.setItem(getAdminTokenKey(), token);
+const removeAdminToken = () => localStorage.removeItem(getAdminTokenKey());
+
+const getMemberToken = () => localStorage.getItem(getMemberTokenKey());
+const setMemberToken = (token: string) => localStorage.setItem(getMemberTokenKey(), token);
+const removeMemberToken = () => localStorage.removeItem(getMemberTokenKey());
+
+
 // Patch window.fetch to automatically route to artist collections using Object.defineProperty to support read-only (getter-only) envs
 const originalFetch = window.fetch;
 const customFetch = function(this: any, input: any, init: any) {
@@ -186,7 +203,7 @@ import ChorusVNLanding from './components/ChorusVNLanding';
 // ---- ADMIN LOGIN & REQUIRE ADMIN ----
 function AdminLogin() {
   const ext = getArtistExtensionFromUrl();
-  const [usr, setUsr] = useState(ext || '');
+  const [usr, setUsr] = useState('');
   const [pwd, setPwd] = useState('');
   const [err, setErr] = useState('');
 
@@ -200,7 +217,7 @@ function AdminLogin() {
       });
       if (res.ok) {
         const data = await res.json();
-        localStorage.setItem('adminToken', data.token || pwd);
+        setAdminToken(data.token || pwd);
         const extPath = data.extension ? `/${data.extension}` : '';
         window.location.href = `${extPath}/admin`;
       } else {
@@ -258,7 +275,7 @@ function MemberLogin() {
   const [pwd, setPwd] = useState('');
   const [err, setErr] = useState('');
   const [artistName, setArtistName] = useState('Nghệ sĩ');
-  const isMember = !!localStorage.getItem('memberToken');
+  const isMember = !!getMemberToken();
 
   useEffect(() => {
     fetch('/api/data').then(res => res.json()).then(data => {
@@ -278,7 +295,7 @@ function MemberLogin() {
       });
       if (res.ok) {
         const data = await res.json();
-        localStorage.setItem('memberToken', data.token || pwd);
+        setMemberToken(data.token || pwd);
         const ext = getArtistExtensionFromUrl();
         window.location.href = ext ? `/${ext}` : '/';
       } else {
@@ -291,7 +308,7 @@ function MemberLogin() {
   };
 
   const handleLogout = async () => {
-    localStorage.removeItem('memberToken');
+    removeMemberToken();
     try {
       await fetch('/api/member/logout', { method: 'POST' });
     } catch (e) {}
@@ -384,7 +401,7 @@ function MemberLogin() {
 }
 
 function RequireAdmin({ children }: { children: React.ReactNode }) {
-  const token = localStorage.getItem('adminToken');
+  const token = getAdminToken();
   if (!token) {
     return <AdminLogin />;
   }
@@ -425,7 +442,7 @@ function AnimatedRoutes() {
 }
 
 function AdminFloatingControls({ onLogout }: { onLogout: () => void }) {
-  const isAdmin = !!localStorage.getItem('adminToken');
+  const isAdmin = !!getAdminToken();
   const location = useLocation();
   
   if (!isAdmin) return null;
@@ -445,7 +462,7 @@ function AdminFloatingControls({ onLogout }: { onLogout: () => void }) {
     }>
        {isAdminPage ? (
          <a 
-           href="/"
+           href={getArtistExtensionFromUrl() ? `/${getArtistExtensionFromUrl()}` : "/"}
            className="flex items-center justify-center p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/40 shadow-[0_4px_12px_rgba(0,0,0,0.15)] transition-all duration-300 hover:scale-115"
            title="Trang chủ"
          >
@@ -453,7 +470,7 @@ function AdminFloatingControls({ onLogout }: { onLogout: () => void }) {
          </a>
        ) : (
          <a 
-           href="/admin"
+           href={getAdminLink()}
            className="flex items-center justify-center p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/40 shadow-[0_4px_12px_rgba(0,0,0,0.15)] transition-all duration-300 hover:scale-115 cursor-pointer"
            title="Cài đặt (Admin)"
          >
@@ -475,7 +492,7 @@ export default function App() {
   const [lang, setLang] = useState('vi');
 
   const handleLogout = async () => {
-    localStorage.removeItem('adminToken');
+    removeAdminToken();
     try {
       await fetch('/api/admin/logout', { method: 'POST' });
     } catch (e) {}
@@ -2986,7 +3003,7 @@ function PlaylistPlayer() {
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('secret') || urlParams.get('token') || sessionStorage.getItem(`playlist_token_${id}`) || '';
       fetch(`/api/playlists/${id}${token ? `?token=${encodeURIComponent(token)}` : ''}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken') || localStorage.getItem('memberToken') || ''}` }
+        headers: { 'Authorization': `Bearer ${getAdminToken() || getMemberToken() || ''}` }
       })
       .then(async res => {
         const data = await res.json();
@@ -3244,7 +3261,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
   const [searchParams] = useSearchParams();
   const secretKey = searchParams.get('secret');
   const navigate = useNavigate();
-  const isAdmin = !!localStorage.getItem('adminToken');
+  const isAdmin = !!getAdminToken();
   const [demo, setDemo] = useState<DemoSong | null>(null);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -3569,11 +3586,11 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
       }
     }
 
-    const memberToken = localStorage.getItem('memberToken') || '';
+    const memberToken = getMemberToken() || '';
     const isMember = memberToken === 'XuanTaiDepTrai';
     fetch(`/api/demos/${id}${queryParam}`, {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('adminToken') || memberToken || ''}`
+        'Authorization': `Bearer ${getAdminToken() || memberToken || ''}`
       }
     })
       .then(res => res.json())
@@ -4462,7 +4479,7 @@ function AdminTemplatesSettings({ isPCPreviewMode, setIsPCPreviewMode }: { isPCP
 
   useEffect(() => {
     fetch('/api/admin/data', {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}` }
+      headers: { 'Authorization': `Bearer ${getAdminToken() || ''}` }
     })
       .then(res => res.json())
       .then(data => {
@@ -4492,7 +4509,7 @@ function AdminTemplatesSettings({ isPCPreviewMode, setIsPCPreviewMode }: { isPCP
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+        'Authorization': `Bearer ${getAdminToken() || ''}`
       },
       body: JSON.stringify({ configs: configsToSave })
     });
@@ -4725,7 +4742,7 @@ function AdminDatabaseSettings() {
   const fetchConfigs = async () => {
     try {
       const res = await fetch('/api/admin/firebase-configs', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+        headers: { 'Authorization': `Bearer ${getAdminToken()}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -4750,7 +4767,7 @@ function AdminDatabaseSettings() {
       const res = await fetch('/api/admin/firebase-configs', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+          'Authorization': `Bearer ${getAdminToken()}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(newConfigsData)
@@ -4787,7 +4804,7 @@ function AdminDatabaseSettings() {
       const res = await fetch('/api/admin/firebase-configs', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+          'Authorization': `Bearer ${getAdminToken()}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(newConfigsData)
@@ -4889,7 +4906,7 @@ function AdminDatabaseSettings() {
               try {
                 const res = await fetch('/api/admin/firebase-wipe', {
                   method: 'POST',
-                  headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+                  headers: { 'Authorization': `Bearer ${getAdminToken()}` }
                 });
                 if (res.ok) {
                   setSuccess('Đã xóa sạch dữ liệu trong DB hiện tại. Vui lòng tải lại trang!');
@@ -5016,7 +5033,7 @@ function AdminDashboard() {
   };
 
   const handleLogoutAdmin = async () => {
-    localStorage.removeItem('adminToken');
+    removeAdminToken();
     try {
       await fetch('/api/admin/logout', { method: 'POST' });
     } catch (e) {}
@@ -5058,12 +5075,12 @@ function AdminDashboard() {
   const loadData = () => {
     fetch('/api/admin/data', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+        'Authorization': `Bearer ${getAdminToken() || ''}`
       }
     })
       .then(res => {
         if (res.status === 401) {
-          localStorage.removeItem('adminToken');
+          removeAdminToken();
           window.location.href = '/admin';
           throw new Error('Unauthorized');
         }
@@ -5100,7 +5117,7 @@ function AdminDashboard() {
       formData.append('file', file);
       const xhr = new XMLHttpRequest();
       xhr.open('POST', '/api/upload', true);
-      xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('adminToken') || ''}`);
+      xhr.setRequestHeader('Authorization', `Bearer ${getAdminToken() || ''}`);
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) {
           setProgress(Math.round((e.loaded / e.total) * 100));
@@ -5147,7 +5164,7 @@ function AdminDashboard() {
     await fetch(endpoint, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+        'Authorization': `Bearer ${getAdminToken() || ''}`
       }
     });
     
@@ -5162,7 +5179,7 @@ function AdminDashboard() {
        const res = await fetch(`/api/demos/${id}/duplicate`, {
          method: 'POST',
          headers: {
-           'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+           'Authorization': `Bearer ${getAdminToken() || ''}`
          }
        });
        if (res.ok) {
@@ -5186,7 +5203,7 @@ function AdminDashboard() {
     await fetch(endpoint, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+        'Authorization': `Bearer ${getAdminToken() || ''}`
       }
     });
     
@@ -5204,7 +5221,7 @@ function AdminDashboard() {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+        'Authorization': `Bearer ${getAdminToken() || ''}`
       },
       body: JSON.stringify({
         pageTitle: payload.pageTitle,
@@ -5256,7 +5273,7 @@ function AdminDashboard() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+          'Authorization': `Bearer ${getAdminToken() || ''}`
         },
         body: JSON.stringify({
           oldPassword: oldAdminPass,
@@ -5267,7 +5284,7 @@ function AdminDashboard() {
 
       const resData = await res.json();
       if (res.ok) {
-        localStorage.setItem('adminToken', resData.token);
+        setAdminToken(resData.token);
         setAdminPassSuccess('Đổi mật khẩu quản trị thành công!');
         setOldAdminPass('');
         setNewAdminPass('');
@@ -5297,7 +5314,7 @@ function AdminDashboard() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+          'Authorization': `Bearer ${getAdminToken() || ''}`
         },
         body: JSON.stringify({ memberPassword: memberPassInput })
       });
@@ -5622,7 +5639,7 @@ function AdminDashboard() {
                           method: 'POST',
                           headers: { 
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                            'Authorization': `Bearer ${getAdminToken()}`
                           },
                           body: JSON.stringify({ title })
                         });
@@ -5739,7 +5756,7 @@ function AdminDashboard() {
                               method: 'POST',
                               headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                                'Authorization': `Bearer ${getAdminToken()}`
                               },
                               body: JSON.stringify({ demoIds: [...items, ...((data.demos || []).filter(d => (!d.isReleased || d.isDraft) && !d.deleted))].map(d => d.id) })
                             });
@@ -5829,7 +5846,7 @@ function AdminDashboard() {
                               method: 'POST',
                               headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                                'Authorization': `Bearer ${getAdminToken()}`
                               },
                               body: JSON.stringify({ demoIds: [...((data.demos || []).filter(d => (d.isReleased || d.isDraft) && !d.deleted)), ...items].map(d => d.id) })
                             });
@@ -5923,7 +5940,7 @@ function AdminDashboard() {
                               method: 'POST',
                               headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                                'Authorization': `Bearer ${getAdminToken()}`
                               },
                               body: JSON.stringify({ demoIds: [...items, ...((data.demos || []).filter(d => !d.isDraft && !d.deleted))].map(d => d.id) })
                             });
@@ -6006,7 +6023,7 @@ function AdminDashboard() {
                                 method: 'POST',
                                 headers: {
                                   'Content-Type': 'application/json',
-                                  'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                                  'Authorization': `Bearer ${getAdminToken()}`
                                 },
                                 body: JSON.stringify({ playlistIds: items.map(p => p.id) })
                               });
@@ -6326,7 +6343,7 @@ function AdminDashboard() {
                               method: 'POST',
                               headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+                                'Authorization': `Bearer ${getAdminToken() || ''}`
                               }
                             });
                             
@@ -6380,7 +6397,7 @@ function AdminDashboard() {
                       const res = await fetch('/api/admin/reset-secret-links', {
                         method: 'POST',
                         headers: {
-                          'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+                          'Authorization': `Bearer ${getAdminToken() || ''}`
                         }
                       });
                       if (res.ok) {
@@ -6566,7 +6583,7 @@ function PlaylistSelect({ selectedIds, onChange }: { selectedIds: string[], onCh
   
   useEffect(() => {
     fetch('/api/admin/data', {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}` }
+      headers: { 'Authorization': `Bearer ${getAdminToken() || ''}` }
     })
     .then(res => res.json())
     .then(data => {
@@ -6590,7 +6607,7 @@ function PlaylistSelect({ selectedIds, onChange }: { selectedIds: string[], onCh
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+        'Authorization': `Bearer ${getAdminToken() || ''}`
       },
       body: JSON.stringify({ title: newTitle.trim() })
     });
@@ -6862,7 +6879,7 @@ function AdminCreateDemo() {
 
   useEffect(() => {
     fetch('/api/admin/data', {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}` }
+      headers: { 'Authorization': `Bearer ${getAdminToken() || ''}` }
     })
       .then(res => res.json())
       .then(data => {
@@ -6918,7 +6935,7 @@ function AdminCreateDemo() {
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', '/api/upload', true);
-    xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('adminToken') || ''}`);
+    xhr.setRequestHeader('Authorization', `Bearer ${getAdminToken() || ''}`);
 
     xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
@@ -7005,7 +7022,7 @@ function AdminCreateDemo() {
         const res = await fetch('/api/demos', {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+              'Authorization': `Bearer ${getAdminToken() || ''}`
             },
             body: formData
         });
@@ -7343,12 +7360,12 @@ function AdminEditDemo() {
   useEffect(() => {
     fetch('/api/admin/data', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+        'Authorization': `Bearer ${getAdminToken() || ''}`
       }
     })
       .then(res => {
         if (res.status === 401) {
-          localStorage.removeItem('adminToken');
+          removeAdminToken();
           window.location.href = '/admin';
           throw new Error('Unauthorized');
         }
@@ -7425,7 +7442,7 @@ function AdminEditDemo() {
       const res = await fetch(`/api/demos/${id}/revert`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+          'Authorization': `Bearer ${getAdminToken() || ''}`
         }
       });
       if (res.ok) {
@@ -7476,7 +7493,7 @@ function AdminEditDemo() {
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', '/api/upload', true);
-    xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('adminToken') || ''}`);
+    xhr.setRequestHeader('Authorization', `Bearer ${getAdminToken() || ''}`);
 
     xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
@@ -7565,7 +7582,7 @@ function AdminEditDemo() {
         const res = await fetch(`/api/demos/${id}/update`, {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+              'Authorization': `Bearer ${getAdminToken() || ''}`
             },
             body: formData
         });
@@ -7600,7 +7617,7 @@ function AdminEditDemo() {
                  const res = await fetch(`/api/demos/${demo.id}/duplicate`, {
                    method: 'POST',
                    headers: {
-                     'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+                     'Authorization': `Bearer ${getAdminToken() || ''}`
                    }
                  });
                  if (res.ok) {
@@ -7937,7 +7954,7 @@ function AdminEditDemo() {
                         const res = await fetch(`/api/demos/${demo.id}/reset-secret`, {
                           method: 'POST',
                           headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+                            'Authorization': `Bearer ${getAdminToken() || ''}`
                           }
                         });
                         if (res.ok) {
@@ -8022,7 +8039,7 @@ function AdminPlaylistEdit() {
       formData.append('file', file);
       const xhr = new XMLHttpRequest();
       xhr.open('POST', '/api/upload', true);
-      xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('adminToken') || ''}`);
+      xhr.setRequestHeader('Authorization', `Bearer ${getAdminToken() || ''}`);
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) {
           setProgress(Math.round((e.loaded / e.total) * 100));
@@ -8043,10 +8060,10 @@ function AdminPlaylistEdit() {
   useEffect(() => {
     Promise.all([
       fetch(`/api/playlists/${id}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}` }
+        headers: { 'Authorization': `Bearer ${getAdminToken() || ''}` }
       }).then(r => r.json()),
       fetch('/api/admin/data', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}` }
+        headers: { 'Authorization': `Bearer ${getAdminToken() || ''}` }
       }).then(r => r.json())
     ]).then(([playlistData, data]) => {
       setPlaylist(playlistData.playlist);
@@ -8067,7 +8084,7 @@ function AdminPlaylistEdit() {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}` 
+        'Authorization': `Bearer ${getAdminToken() || ''}` 
       },
       body: JSON.stringify({ title, coverUrl: coverUrlPreview, songIds, isDraft, password, secretLink })
     });
@@ -8104,7 +8121,7 @@ function AdminPlaylistEdit() {
       )}
       <header className="bg-white border-b border-stone-200 sticky top-0 z-20">
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/admin" className="text-sm font-medium text-stone-500 hover:text-stone-900 flex items-center gap-1">
+          <Link to={getAdminLink()} className="text-sm font-medium text-stone-500 hover:text-stone-900 flex items-center gap-1">
              <ArrowLeft className="w-4 h-4" /> Quay lại
           </Link>
           <button onClick={handleSave} className="bg-stone-900 text-white px-4 py-2 rounded-lg font-medium hover:bg-stone-800 transition-colors shadow-sm">Lưu thay đổi</button>
