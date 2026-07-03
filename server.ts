@@ -92,11 +92,33 @@ const ARTISTS_FILE = path.join(process.cwd(), 'artists.json');
 let artists: any[] = [];
 
 async function loadArtists() {
+  if (!isFirestoreDisabled && landingConfig.cloudSyncEnabled !== false) {
+    try {
+      const masterDoc = doc(db, 'app_data', 'master');
+      const snap = await getDoc(masterDoc);
+      if (snap.exists() && snap.data().artists) {
+        artists = snap.data().artists;
+        let changed = false;
+        artists.forEach(artist => {
+          if (!artist.id) {
+            artist.id = Math.random().toString(36).substring(2, 15);
+            changed = true;
+          }
+        });
+        await fs.writeFile(ARTISTS_FILE, JSON.stringify(artists, null, 2), 'utf-8');
+        if (changed) await setDoc(masterDoc, { artists });
+        return artists;
+      }
+    } catch (e) {
+      console.error("Firebase error loading artists:", e);
+    }
+  }
+
+  // Fallback to local
   try {
     if (fsSync.existsSync(ARTISTS_FILE)) {
       const content = await fs.readFile(ARTISTS_FILE, 'utf-8');
       artists = JSON.parse(content);
-      
       let changed = false;
       artists.forEach(artist => {
         if (!artist.id) {
@@ -122,7 +144,7 @@ async function loadArtists() {
       await fs.writeFile(ARTISTS_FILE, JSON.stringify(artists, null, 2), 'utf-8');
     }
   } catch (e) {
-    console.error("Error loading artists:", e);
+    console.error("Error loading artists local:", e);
     artists = [
       {
         id: Math.random().toString(36).substring(2, 15),
@@ -139,10 +161,8 @@ async function loadArtists() {
   if (!isFirestoreDisabled && landingConfig.cloudSyncEnabled !== false) {
     try {
       const masterDoc = doc(db, 'app_data', 'master');
-      await setDoc(masterDoc, { artists });
-    } catch (e) {
-      handleFirebaseError(e);
-    }
+      await setDoc(masterDoc, { artists }, { merge: true });
+    } catch (e) {}
   }
   return artists;
 }
@@ -788,11 +808,25 @@ async function startServer() {
       }
     }
 
-    if (ext) {
+        if (ext) {
       const artist = artists.find(a => a.extension === ext || a.username === ext);
       if (artist) return artist;
+      
+      // Auto-create artist dynamically for subdomains to prevent falling back to acxuantai
+      const newArtist = {
+        id: Math.random().toString(36).substring(2, 15),
+        artistName: ext,
+        username: ext,
+        extension: ext,
+        password: "XuanTaiDepTrai",
+        verified: false,
+        dbConfig: "",
+        memberPassword: ""
+      };
+      artists.push(newArtist);
+      saveArtists(artists).catch(e => console.error(e));
+      return newArtist;
     }
-
     return artists.find(a => a.username === 'acxuantai') || artists[0] || { username: 'acxuantai', artistName: 'A.C Xuân Tài', password: 'XuanTaiDepTrai' };
   };
 
@@ -1461,7 +1495,7 @@ async function startServer() {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     const data = await loadData();
-    res.json({ ...data, memberPassword: req.artist?.memberPassword || '' });
+    res.json({ ...data, memberPassword: req.artist?.memberPassword || '', isMasterAdmin: req.artist?.username === 'acxuantai' });
   });
 
   app.get('/api/admin/firebase-configs', (req, res) => {
@@ -1935,8 +1969,8 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
       status: req.body.status || 'public',
       password: req.body.password || '',
       createdAt: Date.now(),
-      composer: req.body.composer || 'A.C Xuân Tài',
-      singer: req.body.singer || 'A.C Xuân Tài',
+      composer: req.body.composer || data.artistName || 'Nghệ sĩ',
+      singer: req.body.singer || data.artistName || 'Nghệ sĩ',
       isReleased: req.body.isReleased === 'true',
       isDraft: req.body.isDraft === 'true',
       releaseYear: req.body.releaseYear || '',
@@ -2030,10 +2064,10 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
             updatedData.backgroundUrl = processDriveLink(req.body.backgroundUrl);
         }
         
-        if (updatedData.composer === '') updatedData.composer = 'A.C Xuân Tài';
-        if (updatedData.singer === '') updatedData.singer = 'A.C Xuân Tài';
-        if (!updatedData.composer && !data.demos[idx].composer) updatedData.composer = 'A.C Xuân Tài';
-        if (!updatedData.singer && !data.demos[idx].singer) updatedData.singer = 'A.C Xuân Tài';
+        if (updatedData.composer === '') updatedData.composer = data.artistName || 'Nghệ sĩ';
+        if (updatedData.singer === '') updatedData.singer = data.artistName || 'Nghệ sĩ';
+        if (!updatedData.composer && !data.demos[idx].composer) updatedData.composer = data.artistName || 'Nghệ sĩ';
+        if (!updatedData.singer && !data.demos[idx].singer) updatedData.singer = data.artistName || 'Nghệ sĩ';
         if (req.body.isReleased !== undefined) {
              updatedData.isReleased = req.body.isReleased === 'true';
         }
@@ -2773,8 +2807,8 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         html = await fs.readFile(path.join(process.cwd(), 'dist', 'index.html'), 'utf-8');
       }
 
-      const defaultDesc = data.pageTitle || `Kho nhạc của ${data.artistName || 'A.C Xuân Tài'}`;
-      let ogTitle = data.pageTitle || `Thiên đường âm nhạc của ${data.artistName || 'A.C Xuân Tài'}`;
+      const defaultDesc = data.pageTitle || `Kho nhạc của ${data.artistName || 'Nghệ sĩ'}`;
+      let ogTitle = data.pageTitle || `Thiên đường âm nhạc của ${data.artistName || 'Nghệ sĩ'}`;
       
       const initialOgImage = data.ogImageUrl || data.homeCoverUrl || (data.slideshowImages && data.slideshowImages.length > 0 ? data.slideshowImages[0] : "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80");
       let ogImage = formatUrl(initialOgImage, data.globalBaseUrl) || '';
@@ -2782,7 +2816,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
       const cleanPath = url.split('?')[0];
       const isHomepage = cleanPath === '/' || cleanPath === '/index.html' || cleanPath === '';
       let ogDesc = isHomepage 
-        ? `Nơi cập nhật sản phẩm và demo của ${data.artistName || 'A.C Xuân Tài'}`
+        ? `Nơi cập nhật sản phẩm và demo của ${data.artistName || 'Nghệ sĩ'}`
         : defaultDesc;
 
       // Extract active song slug / query robustly (case-insensitive)
@@ -2811,7 +2845,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
       }
 
       if (activeSong) {
-        const titleSuffix = activeSong.singer || activeSong.author || activeSong.composer || 'A.C Xuân Tài';
+        const titleSuffix = activeSong.singer || activeSong.author || activeSong.composer || data.artistName || 'Nghệ sĩ';
         ogTitle = activeSong.isReleased 
           ? `${activeSong.title} - ${titleSuffix}`
           : `${activeSong.title} - ${titleSuffix} ( demo )`;
@@ -2840,7 +2874,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         if (data.playlists) {
           const playlist = data.playlists.find((p: any) => String(p.id || '').toLowerCase() === playlistId && !p.deleted);
           if (playlist) {
-            ogTitle = `${playlist.title} - A.C Xuân Tài`;
+            ogTitle = `${playlist.title} - ${data.artistName || 'Nghệ sĩ'}`;
             
             let pCover = playlist.coverUrl;
             if (!pCover) {

@@ -82,6 +82,7 @@ export interface AppData {
   demos: DemoSong[];
   playlists?: Playlist[];
   adminPassword?: string;
+  isMasterAdmin?: boolean;
   memberPassword?: string;
   templateConfigs?: TemplateConfig[];
   autoSwitchTabs?: boolean;

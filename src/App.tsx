@@ -35,25 +35,7 @@ function formatText(text: string | null | undefined, disableLinks = false) {
                 );
               }
               
-              const parts = segment.split(/(A\.C Xuân Tài|AC Xuân Tài)/gi);
-              return (
-                <React.Fragment key={`${lineIdx}-${segIdx}`}>
-                  {parts.map((part, i) => {
-                    const lower = part.toLowerCase();
-                    if (lower === 'a.c xuân tài' || lower === 'ac xuân tài') {
-                      if (disableLinks) {
-                        return <span key={`${lineIdx}-${segIdx}-${i}`}>{part}</span>;
-                      }
-                      return (
-                        <a key={`${lineIdx}-${segIdx}-${i}`} href="https://acxuantai.com" target="_blank" rel="noreferrer" className="transition-colors hover:opacity-80">
-                          {part}
-                        </a>
-                      );
-                    }
-                    return <span key={`${lineIdx}-${segIdx}-${i}`}>{part}</span>;
-                  })}
-                </React.Fragment>
-              );
+              return <span key={`${lineIdx}-${segIdx}`}>{segment}</span>;
             })}
           </React.Fragment>
         );
@@ -857,6 +839,16 @@ function Home() {
   const [isHomeSearchExpanded, setIsHomeSearchExpanded] = useState(false);
   const observer = useRef<IntersectionObserver>();
 
+  useEffect(() => {
+    if (data && data.demos) {
+      const hasReleased = data.demos.some(d => (d.status === 'public' || d.linkType === 'indirect') && !d.isDraft && (d.isReleased || d.linkType === 'indirect'));
+      const hasDemos = data.demos.some(d => (d.status === 'public' || d.linkType === 'indirect') && !d.isDraft && (!d.isReleased && d.linkType !== 'indirect'));
+      if (!hasReleased && hasDemos && activeListTab === 'released') {
+        setActiveListTab('demos');
+      }
+    }
+  }, [data, activeListTab]);
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
@@ -866,20 +858,20 @@ function Home() {
     if (!trimmed) return;
 
     if (value.endsWith(' ')) {
-      const hasReleasedMatches = (data?.demos?.filter(d => d.linkType === 'indirect' || d.status === 'public')
+      const hasReleasedMatches = (data?.demos?.filter(d => (d.linkType === 'indirect' || d.status === 'public') && !d.isDraft)
         .filter(d => d.isReleased || d.linkType === 'indirect') || [])
         .some(d => d.title.toLowerCase().includes(trimmed));
 
-      const hasDemosMatches = (data?.demos?.filter(d => d.linkType === 'indirect' || d.status === 'public')
+      const hasDemosMatches = (data?.demos?.filter(d => (d.linkType === 'indirect' || d.status === 'public') && !d.isDraft)
         .filter(d => !d.isReleased && d.linkType !== 'indirect') || [])
         .some(d => d.title.toLowerCase().includes(trimmed));
 
       const hasAlbumsMatches = (data?.playlists?.filter((playlist: any) => {
-        const songsInPlaylist = data.demos.filter(d => d.status === 'public' && d.playlistIds && d.playlistIds.includes(playlist.id));
+        const songsInPlaylist = data.demos.filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id));
         return songsInPlaylist.length > 0;
       }) || []).some((playlist: any) => {
         if (playlist.title.toLowerCase().includes(trimmed)) return true;
-        const songsInPlaylist = data?.demos.filter(d => d.status === 'public' && d.playlistIds && d.playlistIds.includes(playlist.id)) || [];
+        const songsInPlaylist = data?.demos.filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id)) || [];
         return songsInPlaylist.some(d => d.title.toLowerCase().includes(trimmed));
       });
 
@@ -976,7 +968,7 @@ function Home() {
     fetch('/api/data').then(res => res.json()).then(data => {
       setData(data);
       if (data) {
-        document.title = data.pageTitle || `${t.dDesc} ${data.artistName || 'A.C Xuân Tài'}`;
+        document.title = data.pageTitle || `${t.dDesc} ${data.artistName || 'Nghệ sĩ'}`;
         if (data.faviconUrl) {
           let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
           if (!link) {
@@ -1029,7 +1021,7 @@ function Home() {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 1.05 }}
       transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-      className="min-h-screen bg-neutral-950 text-white font-sans selection:bg-rose-500 selection:text-white relative z-0 bg-notebook-dark"
+      className="min-h-screen flex flex-col bg-neutral-950 text-white font-sans selection:bg-rose-500 selection:text-white relative z-0 bg-notebook-dark"
     >
       <SocialCarousel data={data} />
       {data.slideshowImages && data.slideshowImages.length > 0 ? (
@@ -1294,7 +1286,7 @@ function Home() {
       </section>
 
       {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-6 sm:px-12 pb-32 space-y-12 sm:space-y-16">
+      <main className="flex-1 w-full max-w-5xl mx-auto px-6 sm:px-12 pb-32 space-y-12 sm:space-y-16">
         
         {/* Demos Section */}
         <section id="music-tabs-section" className="scroll-mt-24">
@@ -1414,17 +1406,17 @@ function Home() {
           {(() => {
             let currentListItems = activeListTab === 'albums' 
               ? (data?.playlists?.filter((playlist: any) => {
-                  const songsInPlaylist = data.demos.filter(d => d.status === 'public' && d.playlistIds && d.playlistIds.includes(playlist.id));
+                  const songsInPlaylist = data.demos.filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id));
                   return songsInPlaylist.length > 0;
                 }) || [])
-              : (data?.demos.filter(d => d.linkType === 'indirect' || d.status === 'public').filter(d => activeListTab === 'demos' ? (!d.isReleased && d.linkType !== 'indirect') : (d.isReleased || d.linkType === 'indirect')) || []);
+              : (data?.demos.filter(d => (d.linkType === 'indirect' || d.status === 'public') && !d.isDraft).filter(d => activeListTab === 'demos' ? (!d.isReleased && d.linkType !== 'indirect') : (d.isReleased || d.linkType === 'indirect')) || []);
 
             if (searchQuery.trim()) {
               const query = searchQuery.trim().toLowerCase();
               if (activeListTab === 'albums') {
                 currentListItems = currentListItems.filter((playlist: any) => {
                   if (playlist.title.toLowerCase().includes(query)) return true;
-                  const songsInPlaylist = data?.demos.filter(d => d.status === 'public' && d.playlistIds && d.playlistIds.includes(playlist.id)) || [];
+                  const songsInPlaylist = data?.demos.filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id)) || [];
                   return songsInPlaylist.some(d => d.title.toLowerCase().includes(query));
                 });
               } else {
@@ -1474,7 +1466,7 @@ function Home() {
                 >
                   {activeListTab === 'albums' ? (
                     paginatedItems.map((playlist: any) => {
-                      const songsInPlaylist = data.demos.filter(d => d.status === 'public' && d.playlistIds && d.playlistIds.includes(playlist.id));
+                      const songsInPlaylist = data.demos.filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id));
                       if (songsInPlaylist.length === 0) return null;
                       
                       let coverUrl = playlist.coverUrl || '';
@@ -1596,7 +1588,7 @@ function Home() {
                               <HoverTranslate text={demo.title} format={true} />
                             </h3>
                             <p className={`text-neutral-400 mt-1 ${demo.achievements?.length ? 'text-[9px] leading-tight whitespace-normal break-words' : 'text-xs truncate'}`}>
-                              {formatText(demo.singer || demo.author || 'A.C Xuân Tài', true)}
+                              {formatText(demo.singer || demo.author || data?.artistName || 'Nghệ sĩ', true)}
                             </p>
                           </div>
                           {demo.achievements && demo.achievements.length > 0 && (
@@ -3670,7 +3662,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
 
   useEffect(() => {
      if (demo) {
-        let titleSuffix = demo.singer || demo.author || demo.composer || 'A.C Xuân Tài';
+        let titleSuffix = demo.singer || demo.author || demo.composer || (demo as any)?.defaultArtistName || 'Nghệ sĩ';
         if (demo.secretKey && /secret/i.test(titleSuffix)) {
           titleSuffix = titleSuffix.replace(/secret/gi, 'Ca sĩ Bí Mật');
         }
@@ -3849,8 +3841,8 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
             <HoverTranslate text={demo.title} />
           </h2>
           <p className="text-sm font-medium text-center mb-6 opacity-80">
-             {formatText(demo.singer || demo.author || 'A.C Xuân Tài', !!playlistSongs)}
-             <span className="block text-xs mt-1 opacity-70">Sáng tác: {formatText(demo.composer || 'A.C Xuân Tài', !!playlistSongs)}</span>
+             {formatText(demo.singer || demo.author || (demo as any)?.defaultArtistName || 'Nghệ sĩ', !!playlistSongs)}
+             <span className="block text-xs mt-1 opacity-70">Sáng tác: {formatText(demo.composer || (demo as any)?.defaultArtistName || 'Nghệ sĩ', !!playlistSongs)}</span>
           </p>
           
           <p className="text-center mb-6 text-sm font-semibold opacity-70">
@@ -4228,12 +4220,12 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
               textShadow: isLight ? '0 1px 1.5px rgba(255,255,255,0.7)' : '0 1.5px 3px rgba(0,0,0,0.85)',
             }}
           >
-            {formatText(demo.singer || demo.author || 'A.C Xuân Tài', !!playlistSongs)}
+            {formatText(demo.singer || demo.author || (demo as any)?.defaultArtistName || 'Nghệ sĩ', !!playlistSongs)}
           </p>
           <p 
             className={`text-xs md:text-sm text-center mb-1 md:mb-6 ${templateType === '6' ? 'font-semibold text-[#fef08a]' : 'font-medium opacity-60'}`}
           >
-            {t.sAuth} {formatText(demo.composer || 'A.C Xuân Tài', !!playlistSongs)}
+            {t.sAuth} {formatText(demo.composer || (demo as any)?.defaultArtistName || 'Nghệ sĩ', !!playlistSongs)}
           </p>
           </motion.div>
           
@@ -5477,11 +5469,13 @@ function AdminDashboard() {
             } ${activeTab === 'security' ? 'bg-stone-900 text-white' : 'hover:bg-stone-200 text-stone-600'}`} title="Bảo Mật">
               <Lock className="w-5 h-5" /> {!effectiveSidebarCollapsed && <span>Bảo Mật</span>}
             </button>
-            <button onClick={() => setActiveTab('database')} className={`flex items-center transition-colors ${
-              effectiveSidebarCollapsed ? 'justify-center w-10 h-10 rounded-xl mx-auto' : 'justify-start w-full gap-3 px-4 py-3 rounded-xl font-medium'
-            } ${activeTab === 'database' ? 'bg-stone-900 text-white' : 'hover:bg-stone-200 text-stone-600'}`} title="Cơ Sở Dữ Liệu">
-              <Database className="w-5 h-5" /> {!effectiveSidebarCollapsed && <span>Database (Firebase)</span>}
-            </button>
+            {data?.isMasterAdmin && (
+              <button onClick={() => setActiveTab('database')} className={`flex items-center transition-colors ${
+                effectiveSidebarCollapsed ? 'justify-center w-10 h-10 rounded-xl mx-auto' : 'justify-start w-full gap-3 px-4 py-3 rounded-xl font-medium'
+              } ${activeTab === 'database' ? 'bg-stone-900 text-white' : 'hover:bg-stone-200 text-stone-600'}`} title="Cơ Sở Dữ Liệu">
+                <Database className="w-5 h-5" /> {!effectiveSidebarCollapsed && <span>Database (Firebase)</span>}
+              </button>
+            )}
           </div>
         </aside>
 
@@ -7122,11 +7116,11 @@ function AdminCreateDemo() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-2">Sáng tác</label>
-                <input name="composer" value={composer} onChange={e => setComposer(e.target.value)} placeholder="Sáng tác (A.C Xuân Tài)" className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+                <input name="composer" value={composer} onChange={e => setComposer(e.target.value)} placeholder={`Sáng tác (${appData?.artistName || 'Nghệ sĩ'})`} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-2">Ca sĩ thể hiện</label>
-                <input name="singer" value={singer} onChange={e => setSinger(e.target.value)} placeholder="Ca sĩ (A.C Xuân Tài)" className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+                <input name="singer" value={singer} onChange={e => setSinger(e.target.value)} placeholder={`Ca sĩ (${appData?.artistName || 'Nghệ sĩ'})`} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-2">Năm phát hành</label>
@@ -7315,8 +7309,8 @@ function AdminCreateDemo() {
             previewData={{
               id: 'preview',
               title: title,
-              singer: singer || 'A.C Xuân Tài',
-              composer: composer || 'A.C Xuân Tài',
+              singer: singer || appData?.artistName || 'Nghệ sĩ',
+              composer: composer || appData?.artistName || 'Nghệ sĩ',
               audioUrl: uploadedAudioUrl || 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
               coverUrl: uploadedCoverUrl || randomSlideUrl || (slideshowImages && slideshowImages.length > 0 ? slideshowImages[0] : '') || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80",
               backgroundUrl: uploadedBgUrl,
@@ -7707,11 +7701,11 @@ function AdminEditDemo() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-2">Sáng tác</label>
-                <input name="composer" value={composer} onChange={e => setComposer(e.target.value)} placeholder="Sáng tác (A.C Xuân Tài)" className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+                <input name="composer" value={composer} onChange={e => setComposer(e.target.value)} placeholder={`Sáng tác (${appData?.artistName || 'Nghệ sĩ'})`} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-2">Ca sĩ thể hiện</label>
-                <input name="singer" value={singer} onChange={e => setSinger(e.target.value)} placeholder="Ca sĩ (A.C Xuân Tài)" className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+                <input name="singer" value={singer} onChange={e => setSinger(e.target.value)} placeholder={`Ca sĩ (${appData?.artistName || 'Nghệ sĩ'})`} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-2">Năm phát hành</label>
@@ -8013,8 +8007,8 @@ function AdminEditDemo() {
             previewData={{
               id: id || 'preview',
               title: title,
-              singer: singer || 'A.C Xuân Tài',
-              composer: composer || 'A.C Xuân Tài',
+              singer: singer || appData?.artistName || 'Nghệ sĩ',
+              composer: composer || appData?.artistName || 'Nghệ sĩ',
               audioUrl: uploadedAudioUrl || demo?.audioUrl,
               coverUrl: uploadedCoverUrl || demo?.coverUrl || randomSlideUrl || (appData?.slideshowImages && appData.slideshowImages.length > 0 ? appData.slideshowImages[0] : '') || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80",
               backgroundUrl: uploadedBgUrl || demo?.backgroundUrl,
