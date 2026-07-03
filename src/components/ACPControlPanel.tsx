@@ -585,15 +585,26 @@ export default function ACPControlPanel() {
                           </td>
                           <td className="p-4 text-sm font-mono text-neutral-400">{artist.username}</td>
                           <td className="p-4 text-sm">
-                            <a 
-                              href={`/${artist.extension}`} 
-                              target="_blank" 
-                              rel="noreferrer"
-                              className="text-purple-400 hover:underline flex items-center gap-1 font-medium group"
-                            >
-                              /{artist.extension}
-                              <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </a>
+                            <div className="flex flex-col gap-1">
+                              <a 
+                                href={`/${artist.extension}`} 
+                                target="_blank" 
+                                rel="noreferrer"
+                                className="text-purple-400 hover:underline flex items-center gap-1 font-medium group text-xs"
+                              >
+                                chorus.vn/{artist.extension}
+                                <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </a>
+                              <a 
+                                href={`https://${artist.extension}.chorus.vn`} 
+                                target="_blank" 
+                                rel="noreferrer"
+                                className="text-teal-400 hover:underline flex items-center gap-1 font-medium group text-xs"
+                              >
+                                {artist.extension}.chorus.vn
+                                <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </a>
+                            </div>
                           </td>
                           <td className="p-4">
                             {artist.isPublic !== false ? (
@@ -997,7 +1008,9 @@ export default function ACPControlPanel() {
                     className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none font-mono"
                     placeholder="acxuantai"
                   />
-                  <p className="text-[10px] text-neutral-500 mt-1">Truy cập qua: chorus.vn/{"<phần_mở_rộng>"}</p>
+                  <p className="text-[10px] text-neutral-500 mt-1">
+                    Truy cập qua: <strong>chorus.vn/{"{phần_mở_rộng}"}</strong> HOẶC cấu hình DNS trỏ subdomain <strong>{"{phần_mở_rộng}"}.chorus.vn</strong> về IP máy chủ để dùng như trang độc lập.
+                  </p>
                 </div>
               </div>
 
@@ -1120,6 +1133,9 @@ export default function ACPControlPanel() {
                   className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none font-mono"
                   placeholder="acxuantai"
                 />
+                <p className="text-[10px] text-neutral-500 mt-1">
+                    Truy cập qua: <strong>chorus.vn/{"{phần_mở_rộng}"}</strong> HOẶC subdomain <strong>{"{phần_mở_rộng}"}.chorus.vn</strong>
+                </p>
               </div>
 
               <div>

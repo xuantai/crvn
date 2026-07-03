@@ -232,7 +232,7 @@ function AdminLogin() {
         const host = window.location.hostname.replace(/^www\./, '');
         const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
         if (isSubdomain) {
-          window.location.href = '/admin';
+          window.location.href = getAdminLink();
         } else {
           const extPath = data.extension ? `/${data.extension}` : '';
           window.location.href = `${extPath}/admin`;
@@ -416,6 +416,15 @@ function MemberLogin() {
 }
 
 function RequireAdmin({ children }: { children: React.ReactNode }) {
+  const ext = getArtistExtensionFromUrl();
+  const host = window.location.hostname.replace(/^www\./, '');
+  const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
+  
+  if (!ext && !isSubdomain && host === 'chorus.vn') {
+     window.location.href = '/acp';
+     return null;
+  }
+  
   const token = getAdminToken();
   if (!token) {
     return <AdminLogin />;
@@ -3992,7 +4001,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
 
           {isAdmin && demo && (
             <div id="admin-controls-ui" className="fixed top-6 left-1/2 -translate-x-1/2 flex items-center gap-2 z-[999]">
-              <Link to={`/admin/edit/${demo.id}`} className="opacity-80 hover:opacity-100 flex items-center justify-center transition-all bg-black/40 p-3 rounded-full backdrop-blur-md border border-white/20 text-white shadow-xl hover:scale-110" title={t.edit}>
+              <Link to={getAdminLink(`/edit/${demo.id}`)} className="opacity-80 hover:opacity-100 flex items-center justify-center transition-all bg-black/40 p-3 rounded-full backdrop-blur-md border border-white/20 text-white shadow-xl hover:scale-110" title={t.edit}>
                 <Edit3 className="w-5 h-5" />
               </Link>
             </div>
@@ -5099,7 +5108,7 @@ function AdminDashboard() {
       .then(res => {
         if (res.status === 401) {
           removeAdminToken();
-          window.location.href = '/admin';
+          window.location.href = getAdminLink();
           throw new Error('Unauthorized');
         }
         return res.json();
@@ -5205,7 +5214,7 @@ function AdminDashboard() {
           setToast('Đã tạo bản sao thành công! Đang chuyển hướng...');
           setTimeout(() => {
             setToast('');
-            navigate(`/admin/edit/${newDemo.id}`);
+            navigate(getAdminLink(`/edit/${newDemo.id}`));
           }, 1000);
        } else {
           alert('Lỗi khi duplicate bản ghi.');
@@ -5672,7 +5681,7 @@ function AdminDashboard() {
                       <Plus className="w-4 h-4" /> Tạo Playlist
                     </button>
                   ) : demosSubTab !== 'trash' ? (
-                    <Link to="/admin/new" className="bg-stone-900 text-white px-4 py-2 rounded-xl flex items-center justify-center hover:bg-stone-800 transition-colors shadow-sm font-bold" title="Tạo mới bài viết">
+                    <Link to={getAdminLink('/new')} className="bg-stone-900 text-white px-4 py-2 rounded-xl flex items-center justify-center hover:bg-stone-800 transition-colors shadow-sm font-bold" title="Tạo mới bài viết">
                       <Plus className="w-5 h-5" />
                     </Link>
                   ) : null}
@@ -5719,7 +5728,7 @@ function AdminDashboard() {
                             <button type="button" onClick={() => handleDuplicate(demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title="Nhân bản">
                                <Copy className="w-4 h-4" />
                             </button>
-                            <Link to={`/admin/edit/${demo.id}`} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title="Chỉnh sửa">
+                            <Link to={getAdminLink(`/edit/${demo.id}`)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title="Chỉnh sửa">
                                <Edit3 className="w-4 h-4" />
                             </Link>
                             <button type="button" onClick={() => handleDeleteClick('song', demo.id, demo.title)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold text-lg" title="Xóa">
@@ -5809,7 +5818,7 @@ function AdminDashboard() {
                             <button type="button" onClick={() => handleDuplicate(demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title="Nhân bản">
                                <Copy className="w-4 h-4" />
                             </button>
-                            <Link to={`/admin/edit/${demo.id}`} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title="Chỉnh sửa">
+                            <Link to={getAdminLink(`/edit/${demo.id}`)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title="Chỉnh sửa">
                                <Edit3 className="w-4 h-4" />
                             </Link>
                             <button type="button" onClick={() => handleDeleteClick('song', demo.id, demo.title)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold text-lg" title="Xóa">
@@ -5903,7 +5912,7 @@ function AdminDashboard() {
                             <button type="button" onClick={() => handleDuplicate(demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title="Nhân bản">
                                <Copy className="w-4 h-4" />
                             </button>
-                            <Link to={`/admin/edit/${demo.id}`} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title="Chỉnh sửa">
+                            <Link to={getAdminLink(`/edit/${demo.id}`)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title="Chỉnh sửa">
                                <Edit3 className="w-4 h-4" />
                             </Link>
                             <button type="button" onClick={() => handleDeleteClick('song', demo.id, demo.title)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold text-lg" title="Xóa">
@@ -5968,7 +5977,7 @@ function AdminDashboard() {
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
                             <div className="flex flex-col gap-1 flex-1 min-w-0">
-                              <Link to={`/admin/edit/${demo.id}`} className="hover:text-amber-600 font-bold text-stone-850 text-sm md:text-base block truncate">
+                              <Link to={getAdminLink(`/edit/${demo.id}`)} className="hover:text-amber-600 font-bold text-stone-850 text-sm md:text-base block truncate">
                                 {demo.title || '(Chưa đặt tiêu đề)'}
                               </Link>
                               <div className="flex items-center flex-wrap gap-2 text-[10px] md:text-xs">
@@ -5981,7 +5990,7 @@ function AdminDashboard() {
                             <button type="button" onClick={() => handleDuplicate(demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title="Nhân bản">
                                <Copy className="w-4 h-4" />
                             </button>
-                            <Link to={`/admin/edit/${demo.id}`} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title="Chỉnh sửa">
+                            <Link to={getAdminLink(`/edit/${demo.id}`)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title="Chỉnh sửa">
                                <Edit3 className="w-4 h-4" />
                             </Link>
                             <button type="button" onClick={() => handleDeleteClick('song', demo.id, demo.title || 'Bản nháp')} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold text-lg" title="Xóa">
@@ -6056,7 +6065,7 @@ function AdminDashboard() {
                               </div>
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0 self-end md:self-auto">
-                              <Link to={`/admin/playlist/${pl.id}`} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title="Chỉnh sửa playlist">
+                              <Link to={getAdminLink(`/playlist/${pl.id}`)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title="Chỉnh sửa playlist">
                                 <Edit3 className="w-4 h-4 text-blue-600" />
                               </Link>
                               <button type="button" onClick={() => handleDeleteClick('playlist', pl.id, pl.title)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold" title="Xóa playlist">
@@ -7048,10 +7057,10 @@ function AdminCreateDemo() {
             const newDemo = await res.json();
             if (isDraft) {
                alert('Đã lưu bản nháp thành công!');
-               navigate(`/admin/edit/${newDemo.id}`);
+               navigate(getAdminLink(`/edit/${newDemo.id}`));
             } else {
                alert('Đăng bài hát thành công!');
-               navigate('/admin');
+               navigate(getAdminLink());
             }
         } else alert('Lỗi tải lên bài hát!');
     } catch (err) {
@@ -7068,7 +7077,7 @@ function AdminCreateDemo() {
   return (
     <div className="min-h-screen bg-stone-100 text-stone-900 font-sans py-12 px-4">
       <div className="max-w-2xl mx-auto">
-        <Link to="/admin" className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-900 font-medium mb-8 transition-colors">
+        <Link to={getAdminLink()} className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-900 font-medium mb-8 transition-colors">
           <ArrowLeft className="w-5 h-5" /> Trở về Dashboard
         </Link>
         
@@ -7384,7 +7393,7 @@ function AdminEditDemo() {
       .then(res => {
         if (res.status === 401) {
           removeAdminToken();
-          window.location.href = '/admin';
+          window.location.href = getAdminLink();
           throw new Error('Unauthorized');
         }
         return res.json();
@@ -7606,7 +7615,7 @@ function AdminEditDemo() {
         });
         if (res.ok) {
             alert(isDraft ? 'Cập nhật bản nháp thành công!' : 'Cập nhật thành công!');
-            navigate('/admin');
+            navigate(getAdminLink());
         } else alert('Lỗi cập nhật. Thử tải lại trang và làm lại!');
     } catch(err) {
         alert('Lỗi mạng!');
@@ -7625,7 +7634,7 @@ function AdminEditDemo() {
     <div className="min-h-screen bg-stone-100 text-stone-900 font-sans py-12 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <Link to="/admin" className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-900 font-medium transition-colors">
+          <Link to={getAdminLink()} className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-900 font-medium transition-colors">
             <ArrowLeft className="w-5 h-5" /> Trở về Dashboard
           </Link>
           <button 
@@ -7643,7 +7652,7 @@ function AdminEditDemo() {
                     setToast('Đã tạo bản sao thành công! Đang chuyển hướng...');
                     setTimeout(() => {
                       setToast('');
-                      navigate(`/admin/edit/${newDemo.id}`);
+                      navigate(getAdminLink(`/edit/${newDemo.id}`));
                     }, 1500);
                  } else {
                     alert('Lỗi khi duplicate bản ghi.');
