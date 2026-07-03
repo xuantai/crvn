@@ -1,0 +1,106 @@
+{
+  "entities": {
+    "AppData": {
+      "title": "AppData",
+      "description": "System state including custom artist settings, song lists, albums, and credentials",
+      "type": "object",
+      "properties": {
+        "pageTitle": {
+          "type": "string",
+          "description": "The title of the website"
+        },
+        "artistName": {
+          "type": "string",
+          "description": "The name of the artist"
+        },
+        "artistBio": {
+          "type": "string",
+          "description": "The biography of the artist"
+        },
+        "homeCoverUrl": {
+          "type": "string",
+          "description": "Background cover image url"
+        },
+        "faviconUrl": {
+          "type": "string",
+          "description": "Favicon image url"
+        },
+        "ogImageUrl": {
+          "type": "string",
+          "description": "OG Facebook preview image url"
+        },
+        "youtubePlaylistUrl": {
+          "type": "string",
+          "description": "YouTube channel or playlist URL to scrape MVs"
+        },
+        "spotifyUrl": {
+          "type": "string",
+          "description": "Spotify artist link for monthly listeners and Spotify play button"
+        },
+        "socialFacebook": {
+          "type": "string"
+        },
+        "socialInstagram": {
+          "type": "string"
+        },
+        "socialYoutube": {
+          "type": "string"
+        },
+        "socialTiktok": {
+          "type": "string"
+        },
+        "globalPassword": {
+          "type": "string",
+          "description": "Passcode required to listen to any protected demo"
+        },
+        "globalBaseUrl": {
+          "type": "string",
+          "description": "The base domain where assets are fallback served"
+        },
+        "slideshowImages": {
+          "type": "array"
+        },
+        "releasedSongs": {
+          "type": "array"
+        },
+        "demos": {
+          "type": "array"
+        },
+        "playlists": {
+          "type": "array"
+        },
+        "adminPassword": {
+          "type": "string"
+        },
+        "memberPassword": {
+          "type": "string"
+        },
+        "templateConfigs": {
+          "type": "array"
+        },
+        "autoSwitchTabs": {
+          "type": "boolean"
+        },
+        "tab1Name": {
+          "type": "string"
+        },
+        "tab2Name": {
+          "type": "string"
+        },
+        "tab3Name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "artistName",
+        "artistBio"
+      ]
+    }
+  },
+  "firestore": {
+    "/app_data/{docId}": {
+      "schema": "AppData",
+      "description": "The core configuration collection storing full system state including passwords and all music metadata"
+    }
+  }
+}
