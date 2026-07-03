@@ -84,6 +84,12 @@ const LanguageContext = createContext<LangContextType>({ lang: 'vi', setLang: ()
 
 // ---- GLOBAL MULTI-ARTIST INTERCEPTORS ----
 const getArtistExtensionFromUrl = () => {
+  const host = window.location.hostname.replace(/^www\./, '');
+  if (host.endsWith('.chorus.vn') && host !== 'chorus.vn') {
+    const sub = host.replace('.chorus.vn', '');
+    if (sub) return sub;
+  }
+
   const segments = window.location.pathname.split('/').filter(Boolean);
   if (segments.length > 0) {
     const firstSegment = segments[0];
@@ -96,6 +102,11 @@ const getArtistExtensionFromUrl = () => {
 };
 
 const getAdminLink = (subPath: string = '') => {
+  const host = window.location.hostname.replace(/^www\./, '');
+  const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
+  if (isSubdomain) {
+    return `/admin${subPath}`;
+  }
   const ext = getArtistExtensionFromUrl();
   return ext ? `/${ext}/admin${subPath}` : `/admin${subPath}`;
 };
@@ -218,8 +229,14 @@ function AdminLogin() {
       if (res.ok) {
         const data = await res.json();
         setAdminToken(data.token || pwd);
-        const extPath = data.extension ? `/${data.extension}` : '';
-        window.location.href = `${extPath}/admin`;
+        const host = window.location.hostname.replace(/^www\./, '');
+        const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
+        if (isSubdomain) {
+          window.location.href = '/admin';
+        } else {
+          const extPath = data.extension ? `/${data.extension}` : '';
+          window.location.href = `${extPath}/admin`;
+        }
       } else {
         const data = await res.json();
         setErr(data.error || 'Sai tên đăng nhập hoặc mật khẩu!');
@@ -236,19 +253,18 @@ function AdminLogin() {
         <p className="text-stone-500 mb-6 text-center text-sm">Vui lòng nhập thông tin đăng nhập quản trị</p>
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-1">Tên Đăng Nhập</label>
+            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-1">Username</label>
             <input 
               type="text" 
               required
               value={usr}
               onChange={(e) => setUsr(e.target.value)}
               className="w-full border border-stone-300 px-4 py-3 rounded-xl focus:border-stone-900 focus:outline-none"
-              placeholder="Username của bạn"
             />
           </div>
           
           <div>
-            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-1">Mật khẩu</label>
+            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-1">Password</label>
             <input 
               type="password" 
               required
@@ -256,7 +272,6 @@ function AdminLogin() {
               value={pwd}
               onChange={(e) => setPwd(e.target.value)}
               className="w-full border border-stone-300 px-4 py-3 rounded-xl focus:border-stone-900 focus:outline-none"
-              placeholder="••••••••"
             />
           </div>
 
@@ -410,12 +425,15 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
 
 function AnimatedRoutes() {
   const location = useLocation();
+  const host = window.location.hostname.replace(/^www\./, '');
+  const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
+
   return (
     <AnimatePresence mode="wait">
       {/* @ts-ignore */}
       <Routes location={location} key={location.pathname}>
         {/* Core Root Routes */}
-        <Route path="/" element={<ChorusVNLanding />} />
+        <Route path="/" element={isSubdomain ? <Home /> : <ChorusVNLanding />} />
         <Route path="/acp" element={<ACPControlPanel />} />
         <Route path="/mem" element={<MemberLogin />} />
         <Route path="/demo/:id" element={<DemoPlayer />} />

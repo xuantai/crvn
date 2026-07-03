@@ -751,17 +751,37 @@ async function startServer() {
       ext = (req.headers['x-artist-extension'] || req.headers['x-artist']) as string;
     }
     
+    // Check subdomain (e.g. abc.chorus.vn)
+    if (!ext && req.headers.host) {
+      const host = req.headers.host.replace(/^www\./, '');
+      if (host.endsWith('.chorus.vn') && host !== 'chorus.vn') {
+        const sub = host.replace('.chorus.vn', '');
+        if (sub) ext = sub;
+      }
+    }
+
     if (!ext) {
       const referer = req.headers['referer'];
       if (referer) {
         try {
           const parsedUrl = new URL(referer);
-          const segments = parsedUrl.pathname.split('/').filter(Boolean);
-          if (segments.length > 0) {
-            const possibleExt = segments[0];
-            const reserved = ['admin', 'acp', 'mem', 'demo', 'song', 'playlist', 'api'];
-            if (!reserved.includes(possibleExt)) {
-              ext = possibleExt;
+          // Also check referer hostname
+          const refHost = parsedUrl.hostname.replace(/^www\./, '');
+          if (refHost.endsWith('.chorus.vn') && refHost !== 'chorus.vn') {
+            const sub = refHost.replace('.chorus.vn', '');
+            if (sub) {
+              ext = sub;
+            }
+          }
+          
+          if (!ext) {
+            const segments = parsedUrl.pathname.split('/').filter(Boolean);
+            if (segments.length > 0) {
+              const possibleExt = segments[0];
+              const reserved = ['admin', 'acp', 'mem', 'demo', 'song', 'playlist', 'api'];
+              if (!reserved.includes(possibleExt)) {
+                ext = possibleExt;
+              }
             }
           }
         } catch (e) {}
@@ -1859,7 +1879,7 @@ async function startServer() {
   return cleanedLines.join('\n');
 };
 
-app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'cover', maxCount: 1 }]), async (req, res) => {
+app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'cover', maxCount: 1 }]), async (req: any, res) => {
     if (!isRequestAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -1935,7 +1955,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     res.json(newDemo);
   });
   
-  app.post('/api/demos/:id/update', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'cover', maxCount: 1 }]), async (req, res) => {
+  app.post('/api/demos/:id/update', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'cover', maxCount: 1 }]), async (req: any, res) => {
      if (!isRequestAdmin(req)) {
         return res.status(401).json({ error: 'Unauthorized' });
      }
