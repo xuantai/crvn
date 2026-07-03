@@ -6481,10 +6481,13 @@ function AdminDashboard() {
                       placeholder="Nhập mật khẩu hiện tại"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">Mật khẩu mới</label>
+                                    <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-sm font-bold text-stone-700">Mật khẩu mới</label>
+                      <button type="button" onClick={() => { const p = Math.random().toString(36).slice(-8); setNewAdminPass(p); setConfirmAdminPass(p); }} className="text-xs text-rose-500 hover:text-rose-600 font-bold flex items-center gap-1"><Sparkles className="w-3 h-3" /> Đề xuất Random</button>
+                    </div>
                     <input 
-                      type="password"
+                      type="text"
                       value={newAdminPass}
                       onChange={(e) => setNewAdminPass(e.target.value)}
                       className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono"
@@ -6494,7 +6497,7 @@ function AdminDashboard() {
                   <div>
                     <label className="block text-sm font-bold text-stone-700 mb-2">Xác nhận mật khẩu mới</label>
                     <input 
-                      type="password"
+                      type="text"
                       value={confirmAdminPass}
                       onChange={(e) => setConfirmAdminPass(e.target.value)}
                       className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono"
@@ -6522,8 +6525,11 @@ function AdminDashboard() {
                 <p className="text-sm text-stone-500 mb-6">Người dùng nhập mật khẩu này tại trang <code className="bg-stone-100 px-1.5 py-0.5 rounded font-mono text-red-600">/mem</code> để nghe tự do mọi album/bài hát có passcode mà không cần nhập code riêng biệt.</p>
                 
                 <form onSubmit={handleMemberPasswordChange} className="space-y-4 max-w-md">
-                  <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">Mật khẩu thành viên hiện tại hoặc mới</label>
+                                    <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-sm font-bold text-stone-700">Mật khẩu thành viên hiện tại hoặc mới</label>
+                      <button type="button" onClick={() => setMemberPassInput(Math.random().toString(36).slice(-8))} className="text-xs text-rose-500 hover:text-rose-600 font-bold flex items-center gap-1"><Sparkles className="w-3 h-3" /> Đề xuất Random</button>
+                    </div>
                     <input 
                       type="text"
                       value={memberPassInput}

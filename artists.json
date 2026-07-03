@@ -10,12 +10,13 @@
   },
   {
     "id": "05ld1sirzmik",
-    "artistName": "mxt",
+    "artistName": "Mai Xuân Thứ",
     "username": "mxt",
     "extension": "mxt",
     "password": "XuanTaiDepTrai",
     "verified": false,
     "dbConfig": "",
-    "memberPassword": ""
+    "memberPassword": "",
+    "isPublic": true
   }
 ]

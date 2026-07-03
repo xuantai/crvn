@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X,
-  LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2
+  LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles
 } from 'lucide-react';
 
 interface Artist {
@@ -1014,8 +1014,11 @@ export default function ACPControlPanel() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Mật khẩu *</label>
+                            <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400">Mật khẩu *</label>
+                  <button type="button" onClick={() => setArtistPassword(Math.random().toString(36).slice(-8))} className="text-[10px] text-purple-400 hover:text-purple-300 font-bold flex items-center gap-1 uppercase tracking-wider"><Sparkles className="w-3 h-3" /> Random</button>
+                </div>
                 <input 
                   type="text" 
                   required
@@ -1138,8 +1141,11 @@ export default function ACPControlPanel() {
                 </p>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Mật khẩu *</label>
+                            <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400">Mật khẩu *</label>
+                  <button type="button" onClick={() => setArtistPassword(Math.random().toString(36).slice(-8))} className="text-[10px] text-purple-400 hover:text-purple-300 font-bold flex items-center gap-1 uppercase tracking-wider"><Sparkles className="w-3 h-3" /> Random</button>
+                </div>
                 <input 
                   type="text" 
                   required
