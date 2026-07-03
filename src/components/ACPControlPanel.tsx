@@ -21,6 +21,7 @@ export default function ACPControlPanel() {
   const [password, setPassword] = useState('');
   const [loginErr, setLoginErr] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [toast, setToast] = useState('');
 
   // ACP Navigation / Tab system
   const [activeTab, setActiveTab] = useState<'artists' | 'landing'>('artists');
@@ -259,6 +260,8 @@ export default function ACPControlPanel() {
       });
       if (res.ok) {
         fetchArtists();
+        setToast('Đã duyệt yêu cầu đổi tên nghệ sĩ!');
+        setTimeout(() => setToast(''), 3000);
       } else {
         const data = await res.json();
         alert(data.error || 'Không thể duyệt yêu cầu');
@@ -281,6 +284,8 @@ export default function ACPControlPanel() {
       });
       if (res.ok) {
         fetchArtists();
+        setToast('Đã từ chối yêu cầu đổi tên nghệ sĩ!');
+        setTimeout(() => setToast(''), 3000);
       } else {
         const data = await res.json();
         alert(data.error || 'Không thể từ chối yêu cầu');
@@ -303,6 +308,8 @@ export default function ACPControlPanel() {
       });
       if (res.ok) {
         fetchArtists();
+        setToast('Đã duyệt yêu cầu đổi username!');
+        setTimeout(() => setToast(''), 3000);
       } else {
         const data = await res.json();
         alert(data.error || 'Không thể duyệt yêu cầu');
@@ -325,6 +332,8 @@ export default function ACPControlPanel() {
       });
       if (res.ok) {
         fetchArtists();
+        setToast('Đã từ chối yêu cầu đổi username!');
+        setTimeout(() => setToast(''), 3000);
       } else {
         const data = await res.json();
         alert(data.error || 'Không thể từ chối yêu cầu');
@@ -1069,7 +1078,7 @@ export default function ACPControlPanel() {
                   value={artistName}
                   onChange={(e) => setArtistName(e.target.value)}
                   className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
-                  placeholder="vd: Mai Xuân Thứ"
+                  placeholder="vd: Tên Nghệ Sĩ"
                 />
               </div>
 
@@ -1082,7 +1091,7 @@ export default function ACPControlPanel() {
                     value={artistUsername}
                     onChange={(e) => setArtistUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase())}
                     className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none font-mono"
-                    placeholder="vd: maixuanthu"
+                    placeholder="vd: username"
                   />
                 </div>
 
@@ -1094,7 +1103,7 @@ export default function ACPControlPanel() {
                     value={artistExtension}
                     onChange={(e) => setArtistExtension(e.target.value.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase())}
                     className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none font-mono"
-                    placeholder="vd: maixuanthu"
+                    placeholder="vd: tennghesi"
                   />
                   <p className="text-[10px] text-neutral-500 mt-1">
                     Truy cập qua: <strong>chorus.vn/{"{phần_mở_rộng}"}</strong> HOẶC cấu hình DNS trỏ subdomain <strong>{"{phần_mở_rộng}"}.chorus.vn</strong> về IP máy chủ để dùng như trang độc lập.
@@ -1113,7 +1122,7 @@ export default function ACPControlPanel() {
                   value={artistPassword}
                   onChange={(e) => setArtistPassword(e.target.value)}
                   className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
-                  placeholder="Mật khẩu của họ"
+                  placeholder="Mật khẩu"
                 />
               </div>
 
@@ -1210,7 +1219,7 @@ export default function ACPControlPanel() {
                   value={artistName}
                   onChange={(e) => setArtistName(e.target.value)}
                   className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
-                  placeholder="vd: Mai Xuân Thứ"
+                  placeholder="vd: Tên Nghệ Sĩ"
                 />
               </div>
 
@@ -1222,7 +1231,7 @@ export default function ACPControlPanel() {
                   value={artistExtension}
                   onChange={(e) => setArtistExtension(e.target.value.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase())}
                   className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none font-mono"
-                  placeholder="vd: maixuanthu"
+                  placeholder="vd: tennghesi"
                 />
                 <p className="text-[10px] text-neutral-500 mt-1">
                     Truy cập qua: <strong>chorus.vn/{"{phần_mở_rộng}"}</strong> HOẶC subdomain <strong>{"{phần_mở_rộng}"}.chorus.vn</strong>
@@ -1308,6 +1317,14 @@ export default function ACPControlPanel() {
           </div>
         </div>
       )}
+
+      {toast && (
+        <div className="fixed bottom-4 right-4 bg-emerald-500 text-white px-6 py-3 rounded-xl shadow-2xl font-medium animate-in slide-in-from-bottom-5 z-50 flex items-center gap-2">
+          <CheckCircle2 className="w-5 h-5" />
+          {toast}
+        </div>
+      )}
     </div>
   );
+
 }

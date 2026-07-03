@@ -1,6 +1,6 @@
 {
   "pageTitle": "Kho nhạc của mxt",
-  "artistName": "mxt",
+  "artistName": "Mai Xuân Thứ",
   "artistBio": "Thiên đường nhạc của mxt",
   "homeCoverUrl": "",
   "faviconUrl": "",
@@ -10,6 +10,13 @@
   "releasedSongs": [],
   "demos": [],
   "playlists": [],
-  "adminPassword": "XuanTaiDepTrai",
-  "memberPassword": ""
+  "adminPassword": "tttttttt",
+  "memberPassword": "",
+  "globalPassword": "",
+  "globalBaseUrl": "",
+  "autoSwitchTabs": false,
+  "tab1Name": "",
+  "tab2Name": "",
+  "tab3Name": "",
+  "slideshowImages": []
 }

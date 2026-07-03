@@ -331,6 +331,10 @@ async function uploadLocalToCloud(localPath: string, filename: string, mimetype:
         .toFile(optimizedPath);
 
       // Now we have the optimized image locally. Try to upload it to Firebase.
+      if (isFirestoreDisabled) {
+        await fs.unlink(localPath).catch(() => {});
+        return `/uploads/${artistId}/${optimizedFilename}`;
+      }
       try {
         const fileBuffer = await fs.readFile(optimizedPath);
         const storageRef = ref(firebaseStorage, `uploads/${artistId}/${optimizedFilename}`);
@@ -342,7 +346,7 @@ async function uploadLocalToCloud(localPath: string, filename: string, mimetype:
         await fs.unlink(optimizedPath).catch(() => {});
         return cloudUrl;
       } catch (uploadErr: any) {
-        console.warn("⚠️ Firebase Storage upload failed. Keeping optimized image locally:", uploadErr.message);
+        console.log("[Firebase Storage] Upload skipped or failed. Keeping optimized image locally.");
         // Clean up raw original, keep the optimized local file
         await fs.unlink(localPath).catch(() => {});
         return `/uploads/${artistId}/${optimizedFilename}`;
@@ -381,6 +385,7 @@ async function deleteFileByUrl(url: string) {
     }
   } else if (url.includes(firebaseConfig.storageBucket)) {
     // If Firebase Storage URL, delete from Firebase Storage
+    if (isFirestoreDisabled) return;
     try {
       const decodedUrl = decodeURIComponent(url);
       const match = decodedUrl.match(/\/o\/(uploads\/[^?]+)/);
@@ -390,7 +395,7 @@ async function deleteFileByUrl(url: string) {
         console.log(`[Revert/Cleanup] Đã xóa file trên Firebase Storage thành công: ${match[1]}`);
       }
     } catch (err: any) {
-      console.warn(`[Revert/Cleanup] Lỗi khi xóa file trên Firebase Storage:`, err.message);
+      console.log(`[Revert/Cleanup] Firebase Storage delete skipped or failed:`, err.message);
     }
   }
 }
@@ -511,6 +516,13 @@ async function uploadUrlOrFileToCloud(urlOrPath: string, globalBaseUrl?: string)
           .resize({ width: 1600, withoutEnlargement: true })
           .toBuffer();
 
+        if (isFirestoreDisabled) {
+          await fs.writeFile(optimizedPath, optimizedBuffer);
+          if (localSourceFullPath && localSourceFullPath !== optimizedPath) {
+            await fs.unlink(localSourceFullPath).catch(() => {});
+          }
+          return `/uploads/${optimizedFilename}`;
+        }
         try {
           const storageRef = ref(firebaseStorage, `uploads/${optimizedFilename}`);
           await uploadBytes(storageRef, optimizedBuffer, { contentType: 'image/jpeg' });
@@ -521,7 +533,7 @@ async function uploadUrlOrFileToCloud(urlOrPath: string, globalBaseUrl?: string)
           }
           return cloudUrl;
         } catch (storageErr: any) {
-          console.warn("⚠️ Firebase Storage upload failed. Storing image locally instead:", storageErr.message);
+          console.log("[Firebase Storage] Upload skipped or failed. Storing image locally instead.");
           await fs.writeFile(optimizedPath, optimizedBuffer);
           if (localSourceFullPath && localSourceFullPath !== optimizedPath) {
             await fs.unlink(localSourceFullPath).catch(() => {});
@@ -1105,7 +1117,7 @@ async function startServer() {
   };
 
   app.get('/api/data', async (req, res) => {
-    let data = await loadData();
+    let data = await loadData((req as any).artist?.username);
     data = applyBaseUrl(data);
     
     if (data.demos) {
@@ -1436,7 +1448,7 @@ async function startServer() {
       return res.status(400).json({ error: 'Mật khẩu mới phải từ 4 ký tự trở lên!' });
     }
 
-    const data = await loadData();
+    const data = await loadData((req as any).artist?.username);
     data.adminPassword = newPassword;
     await saveData(data);
     
@@ -1461,7 +1473,7 @@ async function startServer() {
 
     const { memberPassword } = req.body;
     
-    const data = await loadData();
+    const data = await loadData((req as any).artist?.username);
     data.memberPassword = memberPassword || "";
     await saveData(data);
     
@@ -1506,7 +1518,7 @@ async function startServer() {
     if (!isRequestAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const data = await loadData();
+    const data = await loadData((req as any).artist?.username);
     res.json({ 
       ...data, 
       memberPassword: req.artist?.memberPassword || '', 
@@ -1592,7 +1604,7 @@ async function startServer() {
     if (!isRequestAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const data = await loadData();
+    const data = await loadData((req as any).artist?.username);
     const artist = req.artist;
     if (artist) {
       if (req.body.type === 'name') {
@@ -1612,7 +1624,7 @@ async function startServer() {
     if (!isRequestAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const data = await loadData();
+    const data = await loadData((req as any).artist?.username);
     data.pageTitle = req.body.pageTitle ?? data.pageTitle;
     
     let nameChangeNotice = false;
@@ -1678,7 +1690,7 @@ async function startServer() {
     }
 
     try {
-      const data = await loadData();
+      const data = await loadData((req as any).artist?.username);
       const logs: string[] = [];
       let updatedCount = 0;
 
@@ -1886,7 +1898,7 @@ async function startServer() {
     if (!isRequestAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const data = await loadData();
+    const data = await loadData((req as any).artist?.username);
     data.releasedSongs = req.body.releasedSongs || [];
     await saveData(data);
     res.json(data);
@@ -1965,7 +1977,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     if (!isRequestAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const data = await loadData();
+    const data = await loadData((req as any).artist?.username);
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     const audioFile = files['audio']?.[0];
     const coverFile = files['cover']?.[0];
@@ -2041,7 +2053,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
      if (!isRequestAdmin(req)) {
         return res.status(401).json({ error: 'Unauthorized' });
      }
-     const data = await loadData();
+     const data = await loadData((req as any).artist?.username);
      const idx = data.demos.findIndex((d: any) => d.id === req.params.id || d.slug === req.params.id);
      if (idx >= 0) {
         const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
@@ -2141,7 +2153,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
      if (!isRequestAdmin(req)) {
         return res.status(401).json({ error: 'Unauthorized' });
      }
-     const data = await loadData();
+     const data = await loadData((req as any).artist?.username);
      const idx = data.demos.findIndex((d: any) => d.id === req.params.id || d.slug === req.params.id);
      if (idx >= 0) {
         const demo = data.demos[idx];
@@ -2167,7 +2179,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
      if (!isRequestAdmin(req)) {
         return res.status(401).json({ error: 'Unauthorized' });
      }
-     const data = await loadData();
+     const data = await loadData((req as any).artist?.username);
      data.demos = data.demos.map((d: any) => ({
         ...d,
         secretKey: crypto.randomBytes(8).toString('hex')
@@ -2180,7 +2192,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
      if (!isRequestAdmin(req)) {
         return res.status(401).json({ error: 'Unauthorized' });
      }
-     const data = await loadData();
+     const data = await loadData((req as any).artist?.username);
      let found = false;
      data.demos = data.demos.map((d: any) => {
         if (d.id === req.params.id || d.slug === req.params.id) {
@@ -2201,7 +2213,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
      if (!isRequestAdmin(req)) {
         return res.status(401).json({ error: 'Unauthorized' });
      }
-     const data = await loadData();
+     const data = await loadData((req as any).artist?.username);
      const idx = data.demos.findIndex((d: any) => d.id === req.params.id || d.slug === req.params.id);
      if (idx >= 0) {
         data.demos[idx].deleted = true;
@@ -2217,7 +2229,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
      if (!isRequestAdmin(req)) {
         return res.status(401).json({ error: 'Unauthorized' });
      }
-     const data = await loadData();
+     const data = await loadData((req as any).artist?.username);
      const idx = data.demos.findIndex((d: any) => d.id === req.params.id || d.slug === req.params.id);
      if (idx >= 0) {
         data.demos[idx].deleted = false;
@@ -2233,7 +2245,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
      if (!isRequestAdmin(req)) {
         return res.status(401).json({ error: 'Unauthorized' });
      }
-     const data = await loadData();
+     const data = await loadData((req as any).artist?.username);
      const originalDemo = data.demos.find((d: any) => d.id === req.params.id || d.slug === req.params.id);
      if (originalDemo) {
         const newId = Math.random().toString(36).substring(2, 9);
@@ -2267,7 +2279,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
      if (!Array.isArray(demoIds)) {
         return res.status(400).json({ error: 'Invalid payload' });
      }
-     const data = await loadData();
+     const data = await loadData((req as any).artist?.username);
      const demosMap = new Map(data.demos.map((d: any) => [d.id, d]));
      const orderedDemos: any[] = [];
      
@@ -2292,7 +2304,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     if (!isRequestAdmin(req)) {
        return res.status(401).json({ error: 'Unauthorized' });
     }
-    const data = await loadData();
+    const data = await loadData((req as any).artist?.username);
     const newPlaylist = {
        id: Date.now().toString(),
        title: req.body.title || 'Untitled Playlist',
@@ -2310,7 +2322,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     if (!isRequestAdmin(req)) {
        return res.status(401).json({ error: 'Unauthorized' });
     }
-    const data = await loadData();
+    const data = await loadData((req as any).artist?.username);
     if (!data.playlists) data.playlists = [];
     const idx = data.playlists.findIndex((p: any) => p.id === req.params.id);
     if (idx >= 0) {
@@ -2335,7 +2347,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     if (!isRequestAdmin(req)) {
        return res.status(401).json({ error: 'Unauthorized' });
     }
-    const data = await loadData();
+    const data = await loadData((req as any).artist?.username);
     if (!data.playlists) data.playlists = [];
     const idx = data.playlists.findIndex((p: any) => p.id === req.params.id);
     if (idx >= 0) {
@@ -2352,7 +2364,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     if (!isRequestAdmin(req)) {
        return res.status(401).json({ error: 'Unauthorized' });
     }
-    const data = await loadData();
+    const data = await loadData((req as any).artist?.username);
     if (!data.playlists) data.playlists = [];
     const idx = data.playlists.findIndex((p: any) => p.id === req.params.id);
     if (idx >= 0) {
@@ -2373,7 +2385,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     if (!Array.isArray(playlistIds)) {
        return res.status(400).json({ error: 'Invalid payload' });
     }
-    const data = await loadData();
+    const data = await loadData((req as any).artist?.username);
     const playlistsMap = new Map((data.playlists || []).map((p: any) => [p.id, p]));
     const orderedPlaylists: any[] = [];
     
@@ -2403,14 +2415,14 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
        return res.status(400).json({ error: 'Invalid payload' });
     }
     
-    const data = await loadData();
+    const data = await loadData((req as any).artist?.username);
     data.templateConfigs = configs;
     await saveData(data);
     res.json({ success: true });
   });
 
   app.post('/api/demos/:id/verify', async (req, res) => {
-    const data = await loadData();
+    const data = await loadData((req as any).artist?.username);
     let demo = data.demos.find((d: any) => d.id === req.params.id || d.slug === req.params.id);
     if (!demo) return res.status(404).json({ error: 'Not found' });
 
@@ -2457,7 +2469,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
   });
 
   app.post('/api/playlists/:id/verify', async (req, res) => {
-    const data = await loadData();
+    const data = await loadData((req as any).artist?.username);
     let playlist = data.playlists?.find((p: any) => p.id === req.params.id);
     if (!playlist) return res.status(404).json({ error: 'Not found' });
     
@@ -2471,7 +2483,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
   });
 
   app.get('/api/playlists/:id', async (req, res) => {
-      const data = await loadData();
+      const data = await loadData((req as any).artist?.username);
       const playlist = data.playlists?.find((p: any) => p.id === req.params.id && !p.deleted);
       if (!playlist) return res.status(404).json({ error: 'Playlist not found' });
       
@@ -2547,7 +2559,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
   });
 
   app.get('/api/demos/:id', async (req, res) => {
-      const data = await loadData();
+      const data = await loadData((req as any).artist?.username);
       let demo = data.demos.find((d: any) => (d.id === req.params.id || d.slug === req.params.id) && !d.deleted);
       if (!demo) return res.status(404).json({ error: 'Not found' });
       
@@ -2632,33 +2644,41 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
            await fs.unlink(req.file.path).catch(() => {});
            
            // Upload to Firebase Storage
-           try {
-              const fileBuffer = await fs.readFile(optimizedPath);
-              const storageRef = ref(firebaseStorage, `uploads/${artistId}/${optimizedFilename}`);
-              await uploadBytes(storageRef, fileBuffer, { contentType: 'image/jpeg' });
-              const cloudUrl = await getDownloadURL(storageRef);
-              
-              // Xóa file optimized cục bộ để gọn dung lượng server, chỉ lưu trên Firebase
-              await fs.unlink(optimizedPath).catch(() => {});
-              res.json({ url: cloudUrl });
-           } catch (firebaseErr: any) {
-              console.warn("⚠️ Bỏ qua Firebase Storage cho ảnh optimized. Đã lưu offline!", firebaseErr.message);
+           if (isFirestoreDisabled) {
               res.json({ url: `/uploads/${artistId}/${optimizedFilename}` });
+           } else {
+              try {
+                 const fileBuffer = await fs.readFile(optimizedPath);
+                 const storageRef = ref(firebaseStorage, `uploads/${artistId}/${optimizedFilename}`);
+                 await uploadBytes(storageRef, fileBuffer, { contentType: 'image/jpeg' });
+                 const cloudUrl = await getDownloadURL(storageRef);
+                 
+                 // Xóa file optimized cục bộ để gọn dung lượng server, chỉ lưu trên Firebase
+                 await fs.unlink(optimizedPath).catch(() => {});
+                 res.json({ url: cloudUrl });
+              } catch (firebaseErr: any) {
+                 console.log("[Firebase Storage] Upload skipped or failed. Storing image locally instead.");
+                 res.json({ url: `/uploads/${artistId}/${optimizedFilename}` });
+              }
            }
         } catch (error) {
            console.error("Lỗi nén ảnh:", error);
-           try {
-              const fileBuffer = await fs.readFile(req.file.path);
-              const storageRef = ref(firebaseStorage, `uploads/${artistId}/${req.file.filename}`);
-              await uploadBytes(storageRef, fileBuffer, { contentType: req.file.mimetype });
-              const cloudUrl = await getDownloadURL(storageRef);
-              
-              // Xóa file gốc cục bộ
-              await fs.unlink(req.file.path).catch(() => {});
-              res.json({ url: cloudUrl });
-           } catch (firebaseErr: any) {
-              console.warn("⚠️ Bỏ qua Firebase Storage cho ảnh gốc. Đã lưu offline!", firebaseErr.message);
+           if (isFirestoreDisabled) {
               res.json({ url: `/uploads/${artistId}/${req.file.filename}` });
+           } else {
+              try {
+                 const fileBuffer = await fs.readFile(req.file.path);
+                 const storageRef = ref(firebaseStorage, `uploads/${artistId}/${req.file.filename}`);
+                 await uploadBytes(storageRef, fileBuffer, { contentType: req.file.mimetype });
+                 const cloudUrl = await getDownloadURL(storageRef);
+                 
+                 // Xóa file gốc cục bộ
+                 await fs.unlink(req.file.path).catch(() => {});
+                 res.json({ url: cloudUrl });
+              } catch (firebaseErr: any) {
+                 console.log("[Firebase Storage] Original upload skipped or failed. Storing image locally instead.");
+                 res.json({ url: `/uploads/${artistId}/${req.file.filename}` });
+              }
            }
         }
       } else {
@@ -2742,17 +2762,21 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
       await fs.writeFile(filepath, optimizedBuffer);
       
       // Upload to Firebase Storage
-      try {
-         const storageRef = ref(firebaseStorage, `uploads/${artistId}/${filename}`);
-         await uploadBytes(storageRef, optimizedBuffer, { contentType: 'image/jpeg' });
-         const cloudUrl = await getDownloadURL(storageRef);
-         
-         // Xóa file cục bộ sau khi đã upload lên cloud thành công để tiết kiệm dung lượng
-         await fs.unlink(filepath).catch(() => {});
-         res.json({ url: cloudUrl });
-      } catch (firebaseErr) {
-         console.warn("⚠️ Bỏ qua upload Firebase Storage cho ảnh base64. Giữ lại cục bộ offline.");
+      if (isFirestoreDisabled) {
          res.json({ url: `/uploads/${artistId}/${filename}` });
+      } else {
+         try {
+            const storageRef = ref(firebaseStorage, `uploads/${artistId}/${filename}`);
+            await uploadBytes(storageRef, optimizedBuffer, { contentType: 'image/jpeg' });
+            const cloudUrl = await getDownloadURL(storageRef);
+            
+            // Xóa file cục bộ sau khi đã upload lên cloud thành công để tiết kiệm dung lượng
+            await fs.unlink(filepath).catch(() => {});
+            res.json({ url: cloudUrl });
+         } catch (firebaseErr) {
+            console.log("[Firebase Storage] Base64 upload skipped or failed. Storing locally instead.");
+            res.json({ url: `/uploads/${artistId}/${filename}` });
+         }
       }
     } catch (e) {
       console.error(e);
@@ -2764,7 +2788,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     if (!isRequestAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const data = await loadData();
+    const data = await loadData((req as any).artist?.username);
     const idx = data.demos.findIndex((d: any) => d.id === req.params.id || d.slug === req.params.id);
     if (idx >= 0) {
        data.demos[idx].ogImageUrl = req.body.ogImageUrl;
@@ -2813,7 +2837,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
   // Fallback for missing uploads: redirect to the production domain
   app.use('/uploads', async (req, res, next) => {
      try {
-        const data = await loadData();
+        const data = await loadData((req as any).artist?.username);
         if (data.globalBaseUrl) {
            const base = data.globalBaseUrl.startsWith('http') ? data.globalBaseUrl : `https://${data.globalBaseUrl}`;
            const cleanBase = base.replace(/\/$/, "");
@@ -2845,7 +2869,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
   app.get('*', async (req, res, next) => {
     try {
       const url = req.originalUrl;
-      const data = await loadData();
+      const data = await loadData((req as any).artist?.username);
       
       let html = '';
       if (process.env.NODE_ENV !== 'production') {

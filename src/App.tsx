@@ -200,6 +200,14 @@ function AdminLogin() {
   const [pwd, setPwd] = useState('');
   const [err, setErr] = useState('');
 
+  useEffect(() => {
+    const host = window.location.hostname.replace(/^www\./, '');
+    const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
+    if (!isSubdomain && window.location.pathname === '/admin') {
+      window.location.href = '/';
+    }
+  }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -402,8 +410,8 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
   const host = window.location.hostname.replace(/^www\./, '');
   const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
   
-  if (!ext && !isSubdomain && host === 'chorus.vn') {
-     window.location.href = '/acp';
+  if (!ext && !isSubdomain) {
+     window.location.href = '/';
      return null;
   }
   
@@ -3022,7 +3030,9 @@ function PlaylistPlayer() {
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('secret') || urlParams.get('token') || sessionStorage.getItem(`playlist_token_${id}`) || '';
       fetch(`/api/playlists/${id}${token ? `?token=${encodeURIComponent(token)}` : ''}`, {
-        headers: { 'Authorization': `Bearer ${getAdminToken() || getMemberToken() || ''}` }
+        headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+ 'Authorization': `Bearer ${getAdminToken() || getMemberToken() || ''}` }
       })
       .then(async res => {
         const data = await res.json();
@@ -3609,6 +3619,8 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
     const isMember = memberToken === 'XuanTaiDepTrai';
     fetch(`/api/demos/${id}${queryParam}`, {
       headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
         'Authorization': `Bearer ${getAdminToken() || memberToken || ''}`
       }
     })
@@ -4498,7 +4510,9 @@ function AdminTemplatesSettings({ isPCPreviewMode, setIsPCPreviewMode }: { isPCP
 
   useEffect(() => {
     fetch('/api/admin/data', {
-      headers: { 'Authorization': `Bearer ${getAdminToken() || ''}` }
+      headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+ 'Authorization': `Bearer ${getAdminToken() || ''}` }
     })
       .then(res => res.json())
       .then(data => {
@@ -4527,6 +4541,8 @@ function AdminTemplatesSettings({ isPCPreviewMode, setIsPCPreviewMode }: { isPCP
     fetch('/api/admin/save-templates', {
       method: 'POST',
       headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${getAdminToken() || ''}`
       },
@@ -4761,7 +4777,9 @@ function AdminDatabaseSettings() {
   const fetchConfigs = async () => {
     try {
       const res = await fetch('/api/admin/firebase-configs', {
-        headers: { 'Authorization': `Bearer ${getAdminToken()}` }
+        headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+ 'Authorization': `Bearer ${getAdminToken()}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -4786,6 +4804,8 @@ function AdminDatabaseSettings() {
       const res = await fetch('/api/admin/firebase-configs', {
         method: 'POST',
         headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
           'Authorization': `Bearer ${getAdminToken()}`,
           'Content-Type': 'application/json'
         },
@@ -4823,6 +4843,8 @@ function AdminDatabaseSettings() {
       const res = await fetch('/api/admin/firebase-configs', {
         method: 'POST',
         headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
           'Authorization': `Bearer ${getAdminToken()}`,
           'Content-Type': 'application/json'
         },
@@ -4925,7 +4947,9 @@ function AdminDatabaseSettings() {
               try {
                 const res = await fetch('/api/admin/firebase-wipe', {
                   method: 'POST',
-                  headers: { 'Authorization': `Bearer ${getAdminToken()}` }
+                  headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+ 'Authorization': `Bearer ${getAdminToken()}` }
                 });
                 if (res.ok) {
                   setSuccess('Đã xóa sạch dữ liệu trong DB hiện tại. Vui lòng tải lại trang!');
@@ -5094,6 +5118,8 @@ function AdminDashboard() {
   const loadData = () => {
     fetch('/api/admin/data', {
       headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
         'Authorization': `Bearer ${getAdminToken() || ''}`
       }
     })
@@ -5137,6 +5163,7 @@ function AdminDashboard() {
       const xhr = new XMLHttpRequest();
       xhr.open('POST', '/api/upload', true);
       xhr.setRequestHeader('Authorization', `Bearer ${getAdminToken() || ''}`);
+    xhr.setRequestHeader('x-artist-extension', getArtistExtensionFromUrl());
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) {
           setProgress(Math.round((e.loaded / e.total) * 100));
@@ -5183,6 +5210,8 @@ function AdminDashboard() {
     await fetch(endpoint, {
       method: 'POST',
       headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
         'Authorization': `Bearer ${getAdminToken() || ''}`
       }
     });
@@ -5198,6 +5227,8 @@ function AdminDashboard() {
        const res = await fetch(`/api/demos/${id}/duplicate`, {
          method: 'POST',
          headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
            'Authorization': `Bearer ${getAdminToken() || ''}`
          }
        });
@@ -5222,6 +5253,8 @@ function AdminDashboard() {
     await fetch(endpoint, {
       method: 'POST',
       headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
         'Authorization': `Bearer ${getAdminToken() || ''}`
       }
     });
@@ -5234,9 +5267,20 @@ function AdminDashboard() {
   const handleCancelRequest = async (type: 'name' | 'username') => {
     if (!window.confirm('Bạn có chắc muốn hủy yêu cầu này?')) return;
     try {
+      // Optimistically clear the pending status so the inputs unlock immediately
+      setData(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          pendingNameChange: type === 'name' ? undefined : prev.pendingNameChange,
+          pendingUsernameChange: type === 'username' ? undefined : prev.pendingUsernameChange
+        };
+      });
+
       const res = await fetch('/api/profile/cancel-request', {
         method: 'POST',
         headers: {
+          'x-artist-extension': getArtistExtensionFromUrl(),
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${getAdminToken() || ''}`
         },
@@ -5246,8 +5290,13 @@ function AdminDashboard() {
         setToast('Đã hủy yêu cầu!');
         setTimeout(() => setToast(''), 3000);
         loadData();
+      } else {
+        // Rollback on error
+        loadData();
       }
-    } catch (e) {}
+    } catch (e) {
+      loadData();
+    }
   };
 
   const handleProfileSave = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -5255,38 +5304,51 @@ function AdminDashboard() {
     const formData = new FormData(e.currentTarget);
     const payload: any = Object.fromEntries(formData);
 
-    await fetch('/api/profile', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getAdminToken() || ''}`
-      },
-      body: JSON.stringify({
-        pageTitle: payload.pageTitle,
-        artistName: payload.artistName,
-        username: payload.username,
-        artistBio: payload.artistBio,
-        homeCoverUrl: payload.homeCoverUrl,
-        faviconUrl: payload.faviconUrl,
-        ogImageUrl: payload.ogImageUrl,
-        youtubePlaylistUrl: payload.youtubePlaylistUrl,
-        spotifyUrl: payload.spotifyUrl,
-        socialFacebook: payload.socialFacebook,
-        socialInstagram: payload.socialInstagram,
-        socialYoutube: payload.socialYoutube,
-        socialTiktok: payload.socialTiktok,
-        globalPassword: payload.globalPassword,
-        globalBaseUrl: payload.globalBaseUrl,
-        autoSwitchTabs: payload.autoSwitchTabs === 'true',
-        slideshowImages: slideshowImages,
-        tab1Name: payload.tab1Name,
-        tab2Name: payload.tab2Name,
-        tab3Name: payload.tab3Name
-      }),
-    });
-    
-    setToast('Đã lưu thông tin thành công!');
-    setTimeout(() => setToast(''), 3000);
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'POST',
+        headers: {
+          'x-artist-extension': getArtistExtensionFromUrl(),
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getAdminToken() || ''}`
+        },
+        body: JSON.stringify({
+          pageTitle: payload.pageTitle,
+          artistName: payload.artistName,
+          username: payload.username,
+          artistBio: payload.artistBio,
+          homeCoverUrl: payload.homeCoverUrl,
+          faviconUrl: payload.faviconUrl,
+          ogImageUrl: payload.ogImageUrl,
+          youtubePlaylistUrl: payload.youtubePlaylistUrl,
+          spotifyUrl: payload.spotifyUrl,
+          socialFacebook: payload.socialFacebook,
+          socialInstagram: payload.socialInstagram,
+          socialYoutube: payload.socialYoutube,
+          socialTiktok: payload.socialTiktok,
+          globalPassword: payload.globalPassword,
+          globalBaseUrl: payload.globalBaseUrl,
+          autoSwitchTabs: payload.autoSwitchTabs === 'true',
+          slideshowImages: slideshowImages,
+          tab1Name: payload.tab1Name,
+          tab2Name: payload.tab2Name,
+          tab3Name: payload.tab3Name
+        }),
+      });
+      
+      if (res.ok) {
+        const updatedData = await res.json();
+        setData(updatedData);
+        setToast('Đã lưu thông tin thành công!');
+        setTimeout(() => setToast(''), 3000);
+      } else {
+        setToast('Lỗi khi lưu thông tin!');
+        setTimeout(() => setToast(''), 3000);
+      }
+    } catch (error) {
+      setToast('Lỗi kết nối máy chủ!');
+      setTimeout(() => setToast(''), 3000);
+    }
   };
 
   const handleAdminPasswordChange = async (e: React.FormEvent) => {
@@ -5311,6 +5373,8 @@ function AdminDashboard() {
       const res = await fetch('/api/admin/change-password', {
         method: 'POST',
         headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${getAdminToken() || ''}`
         },
@@ -5352,6 +5416,8 @@ function AdminDashboard() {
       const res = await fetch('/api/admin/set-member-password', {
         method: 'POST',
         headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${getAdminToken() || ''}`
         },
@@ -5678,7 +5744,9 @@ function AdminDashboard() {
                         if (!title) return;
                         const res = await fetch('/api/playlists', {
                           method: 'POST',
-                          headers: { 
+                          headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+ 
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${getAdminToken()}`
                           },
@@ -5797,6 +5865,8 @@ function AdminDashboard() {
                             fetch('/api/admin/reorder-demos', {
                               method: 'POST',
                               headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${getAdminToken()}`
                               },
@@ -5887,6 +5957,8 @@ function AdminDashboard() {
                             fetch('/api/admin/reorder-demos', {
                               method: 'POST',
                               headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${getAdminToken()}`
                               },
@@ -5981,6 +6053,8 @@ function AdminDashboard() {
                             fetch('/api/admin/reorder-demos', {
                               method: 'POST',
                               headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${getAdminToken()}`
                               },
@@ -6064,6 +6138,8 @@ function AdminDashboard() {
                               fetch('/api/admin/reorder-playlists', {
                                 method: 'POST',
                                 headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
                                   'Content-Type': 'application/json',
                                   'Authorization': `Bearer ${getAdminToken()}`
                                 },
@@ -6408,6 +6484,8 @@ function AdminDashboard() {
                             const res = await fetch('/api/admin/sync-covers-to-cloud', {
                               method: 'POST',
                               headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${getAdminToken() || ''}`
                               }
@@ -6463,6 +6541,8 @@ function AdminDashboard() {
                       const res = await fetch('/api/admin/reset-secret-links', {
                         method: 'POST',
                         headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
                           'Authorization': `Bearer ${getAdminToken() || ''}`
                         }
                       });
@@ -6655,7 +6735,9 @@ function PlaylistSelect({ selectedIds, onChange }: { selectedIds: string[], onCh
   
   useEffect(() => {
     fetch('/api/admin/data', {
-      headers: { 'Authorization': `Bearer ${getAdminToken() || ''}` }
+      headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+ 'Authorization': `Bearer ${getAdminToken() || ''}` }
     })
     .then(res => res.json())
     .then(data => {
@@ -6678,6 +6760,8 @@ function PlaylistSelect({ selectedIds, onChange }: { selectedIds: string[], onCh
     const res = await fetch('/api/playlists', {
       method: 'POST',
       headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${getAdminToken() || ''}`
       },
@@ -6901,7 +6985,9 @@ function AdminCreateDemo() {
     const fetchData = async () => {
       try {
         const res = await fetch('/api/admin/data', {
-          headers: { 'Authorization': `Bearer ${getAdminToken() || ''}` }
+          headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+ 'Authorization': `Bearer ${getAdminToken() || ''}` }
         });
         const data = await res.json();
         setAppData(data);
@@ -6990,7 +7076,9 @@ function AdminCreateDemo() {
 
   useEffect(() => {
     fetch('/api/admin/data', {
-      headers: { 'Authorization': `Bearer ${getAdminToken() || ''}` }
+      headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+ 'Authorization': `Bearer ${getAdminToken() || ''}` }
     })
       .then(res => res.json())
       .then(data => {
@@ -7047,6 +7135,7 @@ function AdminCreateDemo() {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', '/api/upload', true);
     xhr.setRequestHeader('Authorization', `Bearer ${getAdminToken() || ''}`);
+    xhr.setRequestHeader('x-artist-extension', getArtistExtensionFromUrl());
 
     xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
@@ -7133,6 +7222,8 @@ function AdminCreateDemo() {
         const res = await fetch('/api/demos', {
             method: 'POST',
             headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
               'Authorization': `Bearer ${getAdminToken() || ''}`
             },
             body: formData
@@ -7471,6 +7562,8 @@ function AdminEditDemo() {
   useEffect(() => {
     fetch('/api/admin/data', {
       headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
         'Authorization': `Bearer ${getAdminToken() || ''}`
       }
     })
@@ -7553,6 +7646,8 @@ function AdminEditDemo() {
       const res = await fetch(`/api/demos/${id}/revert`, {
         method: 'POST',
         headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
           'Authorization': `Bearer ${getAdminToken() || ''}`
         }
       });
@@ -7605,6 +7700,7 @@ function AdminEditDemo() {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', '/api/upload', true);
     xhr.setRequestHeader('Authorization', `Bearer ${getAdminToken() || ''}`);
+    xhr.setRequestHeader('x-artist-extension', getArtistExtensionFromUrl());
 
     xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
@@ -7693,6 +7789,8 @@ function AdminEditDemo() {
         const res = await fetch(`/api/demos/${id}/update`, {
             method: 'POST',
             headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
               'Authorization': `Bearer ${getAdminToken() || ''}`
             },
             body: formData
@@ -7728,6 +7826,8 @@ function AdminEditDemo() {
                  const res = await fetch(`/api/demos/${demo.id}/duplicate`, {
                    method: 'POST',
                    headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
                      'Authorization': `Bearer ${getAdminToken() || ''}`
                    }
                  });
@@ -8065,6 +8165,8 @@ function AdminEditDemo() {
                         const res = await fetch(`/api/demos/${demo.id}/reset-secret`, {
                           method: 'POST',
                           headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
                             'Authorization': `Bearer ${getAdminToken() || ''}`
                           }
                         });
@@ -8151,6 +8253,7 @@ function AdminPlaylistEdit() {
       const xhr = new XMLHttpRequest();
       xhr.open('POST', '/api/upload', true);
       xhr.setRequestHeader('Authorization', `Bearer ${getAdminToken() || ''}`);
+    xhr.setRequestHeader('x-artist-extension', getArtistExtensionFromUrl());
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) {
           setProgress(Math.round((e.loaded / e.total) * 100));
@@ -8171,10 +8274,14 @@ function AdminPlaylistEdit() {
   useEffect(() => {
     Promise.all([
       fetch(`/api/playlists/${id}`, {
-        headers: { 'Authorization': `Bearer ${getAdminToken() || ''}` }
+        headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+ 'Authorization': `Bearer ${getAdminToken() || ''}` }
       }).then(r => r.json()),
       fetch('/api/admin/data', {
-        headers: { 'Authorization': `Bearer ${getAdminToken() || ''}` }
+        headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+ 'Authorization': `Bearer ${getAdminToken() || ''}` }
       }).then(r => r.json())
     ]).then(([playlistData, data]) => {
       setPlaylist(playlistData.playlist);
@@ -8193,7 +8300,9 @@ function AdminPlaylistEdit() {
     const songIds = songs.map(s => s.id);
     await fetch(`/api/playlists/${id}/update`, {
       method: 'POST',
-      headers: { 
+      headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+ 
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${getAdminToken() || ''}` 
       },
