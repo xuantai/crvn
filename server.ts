@@ -196,7 +196,8 @@ let landingConfig = {
   feature3Desc: "Lưu trữ dữ liệu kép trên Cloud Firestore chất lượng cao kết hợp cơ chế dự phòng cục bộ. Cam kết phát nhạc ổn định, tốc độ load nhanh ngay cả khi internet quốc tế gặp sự cố.",
   feature4Title: "Bố cục mang đậm dấu ấn cá nhân",
   feature4Desc: "Tùy chỉnh ảnh bìa đại diện, màu sắc chủ đạo, ảnh đại diện, viết bio, cập nhật danh sách mạng xã hội. Trang cá nhân hoạt động độc lập như một website thu nhỏ của riêng bạn.",
-  cloudSyncEnabled: true
+  cloudSyncEnabled: true,
+  systemIp: "103.1.2.3"
 };
 
 const SUBSCRIBERS_FILE = path.join(process.cwd(), 'subscribers.json');
@@ -800,10 +801,17 @@ async function startServer() {
       ext = (req.headers['x-artist-extension'] || req.headers['x-artist']) as string;
     }
     
-    // Check subdomain (e.g. abc.chorus.vn)
+    // Check subdomain (e.g. abc.chorus.vn) or custom domain
     if (!ext && req.headers.host) {
-      const host = req.headers.host.replace(/^www\./, '');
-      if (host.endsWith('.chorus.vn') && host !== 'chorus.vn') {
+      const host = req.headers.host.replace(/^www\./, '').toLowerCase().trim();
+      const matchedArtist = artists.find(a => {
+        const cd = (a.customDomain || '').replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].toLowerCase().trim();
+        const ew = (a.externalWebsiteUrl || '').replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].toLowerCase().trim();
+        return (cd && cd === host) || (ew && ew === host);
+      });
+      if (matchedArtist) {
+        ext = matchedArtist.extension;
+      } else if (host.endsWith('.chorus.vn') && host !== 'chorus.vn') {
         const sub = host.replace('.chorus.vn', '');
         if (sub) ext = sub;
       }
@@ -815,8 +823,15 @@ async function startServer() {
         try {
           const parsedUrl = new URL(referer);
           // Also check referer hostname
-          const refHost = parsedUrl.hostname.replace(/^www\./, '');
-          if (refHost.endsWith('.chorus.vn') && refHost !== 'chorus.vn') {
+          const refHost = parsedUrl.hostname.replace(/^www\./, '').toLowerCase().trim();
+          const matchedArtistByRef = artists.find(a => {
+            const cd = (a.customDomain || '').replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].toLowerCase().trim();
+            const ew = (a.externalWebsiteUrl || '').replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].toLowerCase().trim();
+            return (cd && cd === refHost) || (ew && ew === refHost);
+          });
+          if (matchedArtistByRef) {
+            ext = matchedArtistByRef.extension;
+          } else if (refHost.endsWith('.chorus.vn') && refHost !== 'chorus.vn') {
             const sub = refHost.replace('.chorus.vn', '');
             if (sub) {
               ext = sub;
@@ -1176,23 +1191,133 @@ async function startServer() {
     const publicArtists = artists.filter(a => a.isPublic !== false && a.isPublic !== 'false');
     for (const artist of publicArtists) {
       try {
-        const data = await loadData(artist.username);
-        const allDemos = data.demos || [];
-        const nonDeletedDemos = allDemos.filter((d: any) => !d.deleted);
-        const trackCount = nonDeletedDemos.filter((d: any) => d.isReleased === true || d.isReleased === 'true').length;
-        const demoCount = nonDeletedDemos.filter((d: any) => d.isReleased !== true && d.isReleased !== 'true').length;
-        
+        let pageTitle = `Kho nhạc của ${artist.artistName}`;
+        let artistBio = `Thiên đường nhạc của ${artist.artistName}`;
+        let homeCoverUrl = '';
+        let trackCount = 0;
+        let demoCount = 0;
+        let playlistCount = 0;
+        let slideshowImages: string[] = [];
+
+        if (artist.hasExternalWebsite && artist.externalWebsiteUrl) {
+          const urlStr = artist.externalWebsiteUrl.trim();
+          const cleanUrl = urlStr.replace(/^https?:\/\//i, '');
+          
+          let extData: any = null;
+          let usedProto = 'https';
+          
+          try {
+            const apiRes = await fetch(`https://${cleanUrl}/api/data`, { timeout: 4000 } as any);
+            if (apiRes.ok) {
+              extData = await apiRes.json();
+              usedProto = 'https';
+            }
+          } catch (e1) {
+            try {
+              const apiRes = await fetch(`http://${cleanUrl}/api/data`, { timeout: 4000 } as any);
+              if (apiRes.ok) {
+                extData = await apiRes.json();
+                usedProto = 'http';
+              }
+            } catch (e2) {
+              console.error(`Failed to fetch external website data for ${artist.artistName}:`, e2);
+            }
+          }
+
+          if (extData) {
+            pageTitle = extData.pageTitle || pageTitle;
+            artistBio = extData.artistBio || artistBio;
+            
+            let extHomeCoverUrl = extData.homeCoverUrl || '';
+            if (extHomeCoverUrl && !extHomeCoverUrl.startsWith('http')) {
+              extHomeCoverUrl = `${usedProto}://${cleanUrl}${extHomeCoverUrl.startsWith('/') ? '' : '/'}${extHomeCoverUrl}`;
+            }
+            homeCoverUrl = extHomeCoverUrl;
+
+            const allDemos = extData.demos || [];
+            const nonDeletedDemos = allDemos.filter((d: any) => !d.deleted);
+            trackCount = nonDeletedDemos.filter((d: any) => d.isReleased === true || d.isReleased === 'true').length;
+            demoCount = nonDeletedDemos.filter((d: any) => d.isReleased !== true && d.isReleased !== 'true').length;
+            playlistCount = (extData.playlists || []).filter((p: any) => !p.deleted && !p.isDraft).length;
+            
+            let extSlideshowImages = extData.slideshowImages || [];
+            extSlideshowImages = extSlideshowImages.map((s: string) => {
+              if (s && !s.startsWith('http')) {
+                return `${usedProto}://${cleanUrl}${s.startsWith('/') ? '' : '/'}${s}`;
+              }
+              return s;
+            });
+            slideshowImages = extSlideshowImages;
+          } else {
+            // Fallback if external fetch fails
+            const data = await loadData(artist.username);
+            const allDemos = data.demos || [];
+            const nonDeletedDemos = allDemos.filter((d: any) => !d.deleted);
+            trackCount = nonDeletedDemos.filter((d: any) => d.isReleased === true || d.isReleased === 'true').length;
+            demoCount = nonDeletedDemos.filter((d: any) => d.isReleased !== true && d.isReleased !== 'true').length;
+            playlistCount = (data.playlists || []).filter((p: any) => !p.deleted && !p.isDraft).length;
+            pageTitle = data.pageTitle || pageTitle;
+            artistBio = data.artistBio || artistBio;
+            
+            let extHomeCoverUrl = data.homeCoverUrl || '';
+            const extBaseUrl = data.globalBaseUrl || '';
+            if (extHomeCoverUrl && !extHomeCoverUrl.startsWith('http') && extBaseUrl) {
+              extHomeCoverUrl = `${extBaseUrl.endsWith('/') && extHomeCoverUrl.startsWith('/') ? extBaseUrl.slice(0, -1) : extBaseUrl}${extHomeCoverUrl.startsWith('/') ? '' : '/'}${extHomeCoverUrl}`;
+            }
+            homeCoverUrl = extHomeCoverUrl;
+
+            let extSlideshowImages = data.slideshowImages || [];
+            extSlideshowImages = extSlideshowImages.map((s: string) => {
+              if (s && !s.startsWith('http')) {
+                return extBaseUrl ? `${extBaseUrl.endsWith('/') && s.startsWith('/') ? extBaseUrl.slice(0, -1) : extBaseUrl}${s.startsWith('/') ? '' : '/'}${s}` : s;
+              }
+              return s;
+            });
+            slideshowImages = extSlideshowImages;
+          }
+        } else {
+          // Standard local load
+          const data = await loadData(artist.username);
+          const allDemos = data.demos || [];
+          const nonDeletedDemos = allDemos.filter((d: any) => !d.deleted);
+          trackCount = nonDeletedDemos.filter((d: any) => d.isReleased === true || d.isReleased === 'true').length;
+          demoCount = nonDeletedDemos.filter((d: any) => d.isReleased !== true && d.isReleased !== 'true').length;
+          playlistCount = (data.playlists || []).filter((p: any) => !p.deleted && !p.isDraft).length;
+          pageTitle = data.pageTitle || pageTitle;
+          artistBio = data.artistBio || artistBio;
+          
+          let localHomeCoverUrl = data.homeCoverUrl || '';
+          const localBaseUrl = data.globalBaseUrl || '';
+          if (localHomeCoverUrl && !localHomeCoverUrl.startsWith('http') && localBaseUrl) {
+            localHomeCoverUrl = `${localBaseUrl.endsWith('/') && localHomeCoverUrl.startsWith('/') ? localBaseUrl.slice(0, -1) : localBaseUrl}${localHomeCoverUrl.startsWith('/') ? '' : '/'}${localHomeCoverUrl}`;
+          }
+          homeCoverUrl = localHomeCoverUrl;
+
+          let localSlideshowImages = data.slideshowImages || [];
+          localSlideshowImages = localSlideshowImages.map((s: string) => {
+            if (s && !s.startsWith('http')) {
+              return localBaseUrl ? `${localBaseUrl.endsWith('/') && s.startsWith('/') ? localBaseUrl.slice(0, -1) : localBaseUrl}${s.startsWith('/') ? '' : '/'}${s}` : s;
+            }
+            return s;
+          });
+          slideshowImages = localSlideshowImages;
+        }
+
         list.push({
           artistName: artist.artistName,
           extension: artist.extension,
           verified: !!artist.verified,
           isPublic: true,
-          pageTitle: data.pageTitle || `Kho nhạc của ${artist.artistName}`,
-          artistBio: data.artistBio || `Thiên đường nhạc của ${artist.artistName}`,
-          homeCoverUrl: data.homeCoverUrl || '',
+          pageTitle: pageTitle,
+          artistBio: artistBio,
+          homeCoverUrl: homeCoverUrl,
           demoCount: demoCount,
           trackCount: trackCount,
-          playlistCount: (data.playlists || []).filter((p: any) => !p.deleted && !p.isDraft).length
+          playlistCount: playlistCount,
+          customDomain: artist.customDomain || '',
+          hasExternalWebsite: !!artist.hasExternalWebsite,
+          externalWebsiteUrl: artist.externalWebsiteUrl || '',
+          slideshowImages: slideshowImages
         });
       } catch (e) {
         list.push({
@@ -1205,7 +1330,11 @@ async function startServer() {
           homeCoverUrl: '',
           demoCount: 0,
           trackCount: 0,
-          playlistCount: 0
+          playlistCount: 0,
+          customDomain: artist.customDomain || '',
+          hasExternalWebsite: !!artist.hasExternalWebsite,
+          externalWebsiteUrl: artist.externalWebsiteUrl || '',
+          slideshowImages: []
         });
       }
     }
@@ -1242,13 +1371,14 @@ async function startServer() {
       tagline, heroTitle, heroSubtitle, heroDescription, footerText,
       feature1Title, feature1Desc, feature2Title, feature2Desc,
       feature3Title, feature3Desc, feature4Title, feature4Desc,
-      cloudSyncEnabled
+      cloudSyncEnabled, systemIp
     } = req.body;
     await saveLandingConfig({ 
       tagline, heroTitle, heroSubtitle, heroDescription, footerText,
       feature1Title, feature1Desc, feature2Title, feature2Desc,
       feature3Title, feature3Desc, feature4Title, feature4Desc,
-      cloudSyncEnabled: cloudSyncEnabled !== false
+      cloudSyncEnabled: cloudSyncEnabled !== false,
+      systemIp: systemIp || ''
     });
     res.json({ success: true, landingConfig });
   });
@@ -1283,7 +1413,7 @@ async function startServer() {
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const { artistName, username, extension, password, verified, dbConfig, isPublic } = req.body;
+    const { artistName, username, extension, password, verified, dbConfig, isPublic, hasExternalWebsite, externalWebsiteUrl } = req.body;
     if (!artistName || !username || !extension || !password) {
       return res.status(400).json({ error: 'Vui lòng điền đầy đủ các thông tin bắt buộc!' });
     }
@@ -1301,7 +1431,9 @@ async function startServer() {
       verified: !!verified,
       isPublic: isPublic !== false,
       dbConfig: dbConfig || "",
-      memberPassword: ""
+      memberPassword: "",
+      hasExternalWebsite: !!hasExternalWebsite,
+      externalWebsiteUrl: externalWebsiteUrl || ""
     };
     
     artists.push(newArtist);
@@ -1315,7 +1447,7 @@ async function startServer() {
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const { originalUsername, artistName, extension, password, verified, dbConfig, isPublic, approveNameChange, rejectNameChange, approveUsernameChange, rejectUsernameChange } = req.body;
+    const { originalUsername, artistName, extension, password, verified, dbConfig, isPublic, approveNameChange, rejectNameChange, approveUsernameChange, rejectUsernameChange, hasExternalWebsite, externalWebsiteUrl } = req.body;
     const artistIdx = artists.findIndex(a => a.username === originalUsername);
     if (artistIdx === -1) {
       return res.status(404).json({ error: 'Không tìm thấy nghệ sĩ!' });
@@ -1367,6 +1499,8 @@ async function startServer() {
       artist.verified = verified !== undefined ? !!verified : artist.verified;
       artist.isPublic = isPublic !== undefined ? !!isPublic : (artist.isPublic !== false);
       artist.dbConfig = dbConfig !== undefined ? dbConfig : artist.dbConfig;
+      artist.hasExternalWebsite = hasExternalWebsite !== undefined ? !!hasExternalWebsite : artist.hasExternalWebsite;
+      artist.externalWebsiteUrl = externalWebsiteUrl !== undefined ? externalWebsiteUrl : artist.externalWebsiteUrl;
       
       const data = await loadData(artist.username);
       data.artistName = artist.artistName;
@@ -1542,7 +1676,8 @@ async function startServer() {
       isMasterAdmin: req.artist?.username === 'acxuantai',
       username: req.artist?.username,
       pendingNameChange: req.artist?.pendingNameChange,
-      pendingUsernameChange: req.artist?.pendingUsernameChange
+      pendingUsernameChange: req.artist?.pendingUsernameChange,
+      systemIp: landingConfig.systemIp || ''
     });
   });
 
@@ -1700,6 +1835,7 @@ async function startServer() {
     data.socialTiktok = req.body.socialTiktok ?? data.socialTiktok;
     data.globalPassword = req.body.globalPassword ?? data.globalPassword;
     data.globalBaseUrl = req.body.globalBaseUrl !== undefined ? req.body.globalBaseUrl : data.globalBaseUrl;
+    data.customDomain = req.body.customDomain !== undefined ? req.body.customDomain : data.customDomain;
     data.autoSwitchTabs = req.body.autoSwitchTabs !== undefined ? req.body.autoSwitchTabs : data.autoSwitchTabs;
     data.tab1Name = req.body.tab1Name !== undefined ? req.body.tab1Name : data.tab1Name;
     data.tab2Name = req.body.tab2Name !== undefined ? req.body.tab2Name : data.tab2Name;
@@ -2527,7 +2663,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
       }
 
       if (!authorized) {
-          return res.status(401).json({ error: 'Mật khẩu không đúng', isProtected: true, coverUrl: playlist.coverUrl ? formatUrl(playlist.coverUrl, data.globalBaseUrl) : undefined, title: playlist.title });
+          return res.status(401).json({ error: 'Mật khẩu không đúng', isProtected: true, coverUrl: playlist.coverUrl ? formatUrl(playlist.coverUrl, data.globalBaseUrl) : undefined, title: playlist.title, artistExtension: (req as any).artist?.username });
       }
 
       let songs = data.demos.filter((d: any) => {
@@ -2577,10 +2713,11 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
          coverUrl: playlist.coverUrl ? formatUrl(playlist.coverUrl, data.globalBaseUrl) : (songs[0]?.coverUrl || ''),
          password: !!playlist.password,
          hasSecretLink: !!playlist.secretLink,
-         secretLink: undefined
+         secretLink: undefined,
+         artistExtension: (req as any).artist?.username
       };
 
-      res.json({ playlist: formattedPlaylist, songs });
+      res.json({ playlist: formattedPlaylist, songs, artistExtension: (req as any).artist?.username });
   });
 
   app.get('/api/demos/:id', async (req, res) => {
@@ -2640,10 +2777,11 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
               globalCoverUrl: formatUrl(data.homeCoverUrl, data.globalBaseUrl),
               slideshowImages: data.slideshowImages || [],
               requiresPassword: true,
-              hasPassword: true
+              hasPassword: true,
+              artistExtension: (req as any).artist?.username
           });
       }
-      res.json({ ...demo, slideshowImages: data.slideshowImages || [], globalCoverUrl: formatUrl(data.homeCoverUrl, data.globalBaseUrl), requiresPassword: !!expectedPassword && !isValidSecret && !isUserMember, hasPassword: !!expectedPassword });
+      res.json({ ...demo, artistExtension: (req as any).artist?.username, slideshowImages: data.slideshowImages || [], globalCoverUrl: formatUrl(data.homeCoverUrl, data.globalBaseUrl), requiresPassword: !!expectedPassword && !isValidSecret && !isUserMember, hasPassword: !!expectedPassword });
   });
 
   // Serve static files from public/uploads

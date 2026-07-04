@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X,
-  LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles
+  LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home
 } from 'lucide-react';
 
 interface Artist {
@@ -13,6 +13,9 @@ interface Artist {
   isPublic?: boolean;
   dbConfig?: string;
   pendingNameChange?: string;
+  hasExternalWebsite?: boolean;
+  externalWebsiteUrl?: string;
+  customDomain?: string;
 }
 
 export default function ACPControlPanel() {
@@ -41,6 +44,8 @@ export default function ACPControlPanel() {
   const [artistVerified, setArtistVerified] = useState(true);
   const [artistIsPublic, setArtistIsPublic] = useState(true);
   const [artistDbConfig, setArtistDbConfig] = useState('');
+  const [artistHasExternalWebsite, setArtistHasExternalWebsite] = useState(false);
+  const [artistExternalWebsiteUrl, setArtistExternalWebsiteUrl] = useState('');
   const [formErr, setFormErr] = useState('');
 
   // Form states (Landing Config)
@@ -49,6 +54,7 @@ export default function ACPControlPanel() {
   const [landingHeroSubtitle, setLandingHeroSubtitle] = useState('');
   const [landingHeroDesc, setLandingHeroDesc] = useState('');
   const [landingFooterText, setLandingFooterText] = useState('');
+  const [systemIp, setSystemIp] = useState('');
   const [cloudSyncEnabled, setCloudSyncEnabled] = useState(true);
   
   // Feature section states
@@ -122,6 +128,7 @@ export default function ACPControlPanel() {
         setLandingHeroSubtitle(data.heroSubtitle || 'Nơi những ca khúc khởi đầu.');
         setLandingHeroDesc(data.heroDescription || '');
         setLandingFooterText(data.footerText || '');
+        setSystemIp(data.systemIp || '');
         setCloudSyncEnabled(data.cloudSyncEnabled !== false);
         setFeature1Title(data.feature1Title || 'Bảo mật demo & tuyển tập');
         setFeature1Desc(data.feature1Desc || 'Thiết lập mật mã cho từng tác phẩm chưa công bố, ngăn chặn nghe trộm hoặc chia sẻ trái phép. Gửi link demo bảo mật cho ca sĩ, nhạc sĩ phối khí và các đối tác đáng tin cậy.');
@@ -192,7 +199,9 @@ export default function ACPControlPanel() {
           password: artistPassword,
           verified: artistVerified,
           isPublic: artistIsPublic,
-          dbConfig: artistDbConfig
+          dbConfig: artistDbConfig,
+          hasExternalWebsite: artistHasExternalWebsite,
+          externalWebsiteUrl: artistExternalWebsiteUrl
         })
       });
 
@@ -229,7 +238,9 @@ export default function ACPControlPanel() {
           password: artistPassword,
           verified: artistVerified,
           isPublic: artistIsPublic,
-          dbConfig: artistDbConfig
+          dbConfig: artistDbConfig,
+          hasExternalWebsite: artistHasExternalWebsite,
+          externalWebsiteUrl: artistExternalWebsiteUrl
         })
       });
 
@@ -388,6 +399,7 @@ export default function ACPControlPanel() {
           heroSubtitle: landingHeroSubtitle,
           heroDescription: landingHeroDesc,
           footerText: landingFooterText,
+          systemIp,
           feature1Title,
           feature1Desc,
           feature2Title,
@@ -423,6 +435,8 @@ export default function ACPControlPanel() {
     setArtistVerified(artist.verified);
     setArtistIsPublic(artist.isPublic !== false);
     setArtistDbConfig(artist.dbConfig || '');
+    setArtistHasExternalWebsite(!!artist.hasExternalWebsite);
+    setArtistExternalWebsiteUrl(artist.externalWebsiteUrl || '');
     setShowEditModal(true);
   };
 
@@ -434,6 +448,8 @@ export default function ACPControlPanel() {
     setArtistVerified(true);
     setArtistIsPublic(true);
     setArtistDbConfig('');
+    setArtistHasExternalWebsite(false);
+    setArtistExternalWebsiteUrl('');
     setFormErr('');
   };
 
@@ -516,12 +532,20 @@ export default function ACPControlPanel() {
             </div>
           </div>
 
-          <button 
-            onClick={handleLogout}
-            className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white py-2 px-4 rounded-xl text-xs transition-all font-bold cursor-pointer"
-          >
-            <LogOut className="w-4 h-4" /> Đăng xuất
-          </button>
+          <div className="flex items-center gap-2">
+            <a 
+              href="/"
+              className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white py-2 px-4 rounded-xl text-xs transition-all font-bold cursor-pointer"
+            >
+              <Home className="w-4 h-4 text-purple-400" /> Trang chủ
+            </a>
+            <button 
+              onClick={handleLogout}
+              className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white py-2 px-4 rounded-xl text-xs transition-all font-bold cursor-pointer"
+            >
+              <LogOut className="w-4 h-4 text-rose-400" /> Đăng xuất
+            </button>
+          </div>
         </div>
       </header>
 
@@ -842,6 +866,22 @@ export default function ACPControlPanel() {
                   />
                 </div>
 
+                <div>
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400 mb-1.5">
+                    Địa chỉ IP hệ thống (System IP)
+                  </label>
+                  <input 
+                    type="text" 
+                    value={systemIp}
+                    onChange={(e) => setSystemIp(e.target.value)}
+                    className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none font-mono"
+                    placeholder="VD: 103.111.222.33"
+                  />
+                  <p className="text-neutral-400 text-[11px] mt-1.5 leading-relaxed">
+                    Dùng làm IP hướng dẫn để các nghệ sĩ trỏ bản ghi A (Custom Domain DNS) về hệ thống.
+                  </p>
+                </div>
+
                 <div className="border-t border-white/10 pt-6 mt-6">
                   <h3 className="text-sm font-extrabold text-purple-400 uppercase tracking-widest mb-4">
                     Cài đặt Đồng bộ Cloud
@@ -1154,6 +1194,38 @@ export default function ACPControlPanel() {
                 </div>
               </div>
 
+              <div className="bg-neutral-900/40 p-4 rounded-xl border border-white/5 space-y-3">
+                <div className="flex items-center gap-3">
+                  <input 
+                    type="checkbox" 
+                    id="add-has-external"
+                    checked={artistHasExternalWebsite}
+                    onChange={(e) => setArtistHasExternalWebsite(e.target.checked)}
+                    className="w-5 h-5 accent-purple-500 rounded border-white/10"
+                  />
+                  <label htmlFor="add-has-external" className="text-sm font-bold select-none cursor-pointer text-amber-400">
+                    Nghệ sĩ đã có Website riêng
+                  </label>
+                </div>
+                {artistHasExternalWebsite && (
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">
+                      Đường dẫn Website riêng
+                    </label>
+                    <input 
+                      type="text"
+                      value={artistExternalWebsiteUrl}
+                      onChange={(e) => setArtistExternalWebsiteUrl(e.target.value)}
+                      className="w-full bg-black/40 text-white border border-white/10 px-4 py-2.5 rounded-xl focus:border-purple-500 focus:outline-none font-mono text-sm"
+                      placeholder="VD: tai.com"
+                    />
+                    <p className="text-[10px] text-neutral-400 mt-1 leading-relaxed">
+                      Hệ thống sẽ tự động đồng bộ & lấy ảnh bìa, danh sách bài hát, danh mục và số lượng bài hát từ Website này để hiển thị trực tiếp lên trang chủ.
+                    </p>
+                  </div>
+                )}
+              </div>
+
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5 flex items-center gap-1.5">
                   <Database className="w-3.5 h-3.5" /> Thông tin Database riêng (Nếu có)
@@ -1278,6 +1350,38 @@ export default function ACPControlPanel() {
                     Hiển thị trên Trang chủ
                   </label>
                 </div>
+              </div>
+
+              <div className="bg-neutral-900/40 p-4 rounded-xl border border-white/5 space-y-3">
+                <div className="flex items-center gap-3">
+                  <input 
+                    type="checkbox" 
+                    id="edit-has-external"
+                    checked={artistHasExternalWebsite}
+                    onChange={(e) => setArtistHasExternalWebsite(e.target.checked)}
+                    className="w-5 h-5 accent-purple-500 rounded border-white/10"
+                  />
+                  <label htmlFor="edit-has-external" className="text-sm font-bold select-none cursor-pointer text-amber-400">
+                    Nghệ sĩ đã có Website riêng
+                  </label>
+                </div>
+                {artistHasExternalWebsite && (
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">
+                      Đường dẫn Website riêng
+                    </label>
+                    <input 
+                      type="text"
+                      value={artistExternalWebsiteUrl}
+                      onChange={(e) => setArtistExternalWebsiteUrl(e.target.value)}
+                      className="w-full bg-black/40 text-white border border-white/10 px-4 py-2.5 rounded-xl focus:border-purple-500 focus:outline-none font-mono text-sm"
+                      placeholder="VD: tai.com"
+                    />
+                    <p className="text-[10px] text-neutral-400 mt-1 leading-relaxed">
+                      Hệ thống sẽ tự động đồng bộ & lấy ảnh bìa, danh sách bài hát, danh mục và số lượng bài hát từ Website này để hiển thị trực tiếp lên trang chủ.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div>

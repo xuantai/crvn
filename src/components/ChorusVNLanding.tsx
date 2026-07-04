@@ -13,6 +13,10 @@ interface LandingArtist {
   demoCount: number;
   trackCount?: number;
   playlistCount: number;
+  customDomain?: string;
+  hasExternalWebsite?: boolean;
+  externalWebsiteUrl?: string;
+  slideshowImages?: string[];
 }
 
 interface LandingConfig {
@@ -133,6 +137,295 @@ const dict = {
   }
 };
 
+const FALLBACK_SLIDESHOW = [
+  "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=600&auto=format&fit=crop&q=80"
+];
+
+function ArtistLandingCard({ artist, t }: { artist: any; t: any; key?: any }) {
+  // Determine images to use for the background slideshow
+  let bgImages = artist.slideshowImages && artist.slideshowImages.length > 0
+    ? artist.slideshowImages
+    : [];
+
+  // Filter out the homeCoverUrl to avoid duplicate elements
+  bgImages = bgImages.filter(img => img !== artist.homeCoverUrl);
+
+  // If empty, fall back to premium stock music backgrounds
+  if (bgImages.length === 0) {
+    bgImages = FALLBACK_SLIDESHOW;
+  }
+
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  useEffect(() => {
+    if (bgImages.length <= 1) return;
+    const timer = setInterval(() => {
+      setActiveIdx((prev) => (prev + 1) % bgImages.length);
+    }, 5000); // 5s crossfade transition
+    return () => clearInterval(timer);
+  }, [bgImages]);
+
+  // Route URL calculations
+  const isProduction = window.location.hostname.includes('chorus.vn');
+  let href = `/${artist.extension}`;
+  let isExternal = false;
+
+  if (artist.hasExternalWebsite && artist.externalWebsiteUrl) {
+    const cleanUrl = artist.externalWebsiteUrl.trim().replace(/^https?:\/\//i, '');
+    href = `https://${cleanUrl}`;
+    isExternal = true;
+  } else if (artist.customDomain) {
+    const cleanUrl = artist.customDomain.trim().replace(/^https?:\/\//i, '');
+    href = `https://${cleanUrl}`;
+    isExternal = true;
+  } else if (isProduction) {
+    href = `https://${artist.extension}.chorus.vn`;
+    isExternal = true;
+  }
+
+  return (
+    <motion.div
+      whileHover={{ y: -6, scale: 1.01 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      className="group relative h-[480px] rounded-[2.5rem] overflow-hidden border border-neutral-200/40 shadow-lg hover:shadow-2xl transition-all duration-300 bg-neutral-950 flex flex-col justify-between"
+    >
+      {/* Slideshow background with cross-fade & Ken Burns zoom transition */}
+      <div className="absolute inset-0 z-0">
+        <AnimatePresence mode="popLayout">
+          <motion.div
+            key={activeIdx}
+            initial={{ opacity: 0, scale: 1.08 }}
+            animate={{ opacity: 0.55, scale: 1.02 }}
+            exit={{ opacity: 0, scale: 1 }}
+            transition={{ duration: 1.5, ease: 'easeInOut' }}
+            className="absolute inset-0 w-full h-full"
+          >
+            <img
+              src={bgImages[activeIdx]}
+              alt={`${artist.artistName} cover slide`}
+              className="w-full h-full object-cover select-none pointer-events-none"
+              referrerPolicy="no-referrer"
+            />
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Dynamic Dark Gradient & ambient blur to ensure white text is perfectly scannable and beautiful */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-black/10 z-10" />
+        <div className="absolute inset-0 bg-neutral-950/20 backdrop-blur-[1px] z-10" />
+
+        {/* Animated Wavy Music Staff & Notes SVG Background */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-15 opacity-40 select-none">
+          <svg className="w-full h-full" viewBox="0 0 400 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Five undulating staff lines */}
+            <g className="stroke-white/15" strokeWidth="1">
+              <motion.path
+                d="M -50,180 C 100,100 200,280 450,140"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 3, delay: 0.2, ease: "easeInOut" }}
+              />
+              <motion.path
+                d="M -50,188 C 100,108 200,288 450,148"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 3, delay: 0.3, ease: "easeInOut" }}
+              />
+              <motion.path
+                d="M -50,196 C 100,116 200,296 450,156"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 3, delay: 0.4, ease: "easeInOut" }}
+              />
+              <motion.path
+                d="M -50,204 C 100,124 200,304 450,164"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 3, delay: 0.5, ease: "easeInOut" }}
+              />
+              <motion.path
+                d="M -50,212 C 100,132 200,312 450,172"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 3, delay: 0.6, ease: "easeInOut" }}
+              />
+            </g>
+
+            {/* G-Clef (Khóa Sol) - styled elegantly, fade in and draw */}
+            <motion.text
+              x="30"
+              y="225"
+              className="fill-white/30 font-serif text-[72px]"
+              initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+              animate={{ opacity: 0.35, scale: 1, rotate: 0 }}
+              transition={{ duration: 2, delay: 0.8, ease: "easeOut" }}
+            >
+              𝄞
+            </motion.text>
+
+            {/* Floating Music Notes */}
+            <motion.text
+              x="160"
+              y="210"
+              className="fill-white/35 font-sans text-2xl select-none"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: [0, 0.45, 0.45, 0], y: [15, -15, -35, -55], x: [0, 8, -8, 4] }}
+              transition={{ duration: 6, repeat: Infinity, delay: 1.5, ease: "easeInOut" }}
+            >
+              ♪
+            </motion.text>
+
+            <motion.text
+              x="250"
+              y="180"
+              className="fill-white/35 font-sans text-3xl select-none"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: [0, 0.4, 0.4, 0], y: [20, -20, -45, -65], x: [0, -10, 10, -5] }}
+              transition={{ duration: 7, repeat: Infinity, delay: 3.2, ease: "easeInOut" }}
+            >
+              ♫
+            </motion.text>
+
+            <motion.text
+              x="190"
+              y="240"
+              className="fill-white/30 font-sans text-3xl select-none"
+              initial={{ opacity: 0, y: 25 }}
+              animate={{ opacity: [0, 0.35, 0.35, 0], y: [25, -10, -35, -50], x: [0, 12, -12, 6] }}
+              transition={{ duration: 8, repeat: Infinity, delay: 0.5, ease: "easeInOut" }}
+            >
+              ♬
+            </motion.text>
+
+            <motion.text
+              x="310"
+              y="220"
+              className="fill-white/35 font-sans text-2xl select-none"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: [0, 0.45, 0.45, 0], y: [15, -15, -35, -50], x: [0, -6, 6, -3] }}
+              transition={{ duration: 6.5, repeat: Infinity, delay: 4.8, ease: "easeInOut" }}
+            >
+              ♩
+            </motion.text>
+          </svg>
+        </div>
+      </div>
+
+      {/* Card Header Row */}
+      <div className="p-8 relative z-20 flex justify-between items-center w-full">
+        {/* Pulsing ring around the circular avatar */}
+        <div className="relative">
+          <motion.div 
+            animate={{ 
+              boxShadow: [
+                "0 0 0 0px rgba(255, 255, 255, 0.2)",
+                "0 0 0 8px rgba(255, 255, 255, 0)",
+              ]
+            }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className="w-16 h-16 rounded-full border-2 border-white bg-white/15 backdrop-blur-md shadow-lg overflow-hidden shrink-0 flex items-center justify-center"
+          >
+            {artist.homeCoverUrl ? (
+              <img
+                src={artist.homeCoverUrl}
+                alt={artist.artistName}
+                className="w-full h-full object-cover rounded-full"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <Music className="w-5 h-5 text-white" />
+            )}
+          </motion.div>
+          {/* Active status pulse badge */}
+          <span className="absolute bottom-0 right-0 w-4.5 h-4.5 bg-emerald-500 border-2 border-neutral-950 rounded-full flex items-center justify-center">
+            <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
+          </span>
+        </div>
+
+        {/* Frosted domain badge */}
+        <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md border border-white/10 px-3.5 py-1.5 rounded-xl text-[10px] font-extrabold tracking-wider text-neutral-200 shadow-sm uppercase">
+          <Globe className="w-3.5 h-3.5 text-rose-450 shrink-0 animate-spin" style={{ animationDuration: '8s' }} />
+          <span>
+            {artist.hasExternalWebsite && artist.externalWebsiteUrl ? (
+              artist.externalWebsiteUrl.trim().replace(/^https?:\/\//i, '').replace(/^www\./i, '')
+            ) : artist.customDomain ? (
+              artist.customDomain.trim().replace(/^https?:\/\//i, '').replace(/^www\./i, '')
+            ) : (
+              `${artist.extension}.chorus.vn`
+            )}
+          </span>
+        </div>
+      </div>
+
+      {/* Overlaid Info - text over cover, optimized vertical footprint, elegant typography */}
+      <div className="p-8 relative z-20 w-full flex flex-col justify-end space-y-6">
+        <div className="space-y-1">
+          <p className="text-neutral-200 text-xs line-clamp-1 font-serif italic tracking-wide drop-shadow-sm">
+            {artist.artistBio || `Thiên đường nhạc của`}
+          </p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="text-3xl font-black tracking-tight text-white drop-shadow-md">
+              {artist.artistName}
+            </h3>
+            {artist.verified && (
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 p-1 rounded-full shadow-sm shrink-0">
+                <BadgeCheck className="w-5 h-5 text-sky-400 fill-sky-450 shrink-0" title="Tài khoản xác thực" />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Count Pill badges */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/15">
+          <div className="flex flex-wrap items-center gap-2 text-[10px] font-extrabold text-neutral-200">
+            <div className="flex items-center gap-1 bg-white/10 backdrop-blur-md border border-white/10 px-3 py-1 rounded-lg">
+              <Music className="w-3.5 h-3.5 text-neutral-300" />
+              <span>{artist.trackCount || 0} {t('totalTracks')}</span>
+            </div>
+            
+            <div className="flex items-center gap-1 bg-white/10 backdrop-blur-md border border-white/10 px-3 py-1 rounded-lg">
+              <Sparkles className="w-3.5 h-3.5 text-rose-300 animate-pulse" />
+              <span>{artist.demoCount || 0} Demo</span>
+            </div>
+
+            {artist.playlistCount > 0 && (
+              <div className="flex items-center gap-1 bg-white/10 backdrop-blur-md border border-white/10 px-3 py-1 rounded-lg">
+                <ListMusic className="w-3.5 h-3.5 text-purple-300" />
+                <span>{artist.playlistCount} {t('totalPlaylists')}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Solid elegant action button */}
+        <div>
+          {isExternal ? (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-between bg-white text-black hover:bg-black hover:text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 border border-white/20 shadow-lg active:scale-95"
+            >
+              <span className="text-[10px] uppercase tracking-wider">{t('accessStore')}</span>
+              <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1.5 transition-transform stroke-[2.5]" />
+            </a>
+          ) : (
+            <Link
+              to={href}
+              className="w-full flex items-center justify-between bg-white text-black hover:bg-black hover:text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 border border-white/20 shadow-lg active:scale-95"
+            >
+              <span className="text-[10px] uppercase tracking-wider">{t('accessStore')}</span>
+              <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1.5 transition-transform stroke-[2.5]" />
+            </Link>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function ChorusVNLanding() {
   const [artists, setArtists] = useState<LandingArtist[]>([]);
   const [loading, setLoading] = useState(true);
@@ -229,18 +522,300 @@ export default function ChorusVNLanding() {
       {/* Delicate Radial Dot Grid Pattern Background matching the screenshot texture */}
       <div className="absolute inset-0 bg-[radial-gradient(#e5e2dd_1.2px,transparent_1.2px)] [background-size:24px_24px] pointer-events-none opacity-80" />
 
+      {/* Animated Wavy Music Staff & Notes Global Background */}
+      <div className="absolute top-0 left-0 right-0 h-[1000px] pointer-events-none z-0 overflow-hidden select-none">
+        <svg className="w-full h-full min-w-[1200px]" viewBox="0 0 1920 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="globalStaffGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#e5e5e5" stopOpacity="0.1" />
+              <stop offset="25%" stopColor="#8b5cf6" stopOpacity="0.22" />
+              <stop offset="50%" stopColor="#ec4899" stopOpacity="0.22" />
+              <stop offset="75%" stopColor="#3b82f6" stopOpacity="0.18" />
+              <stop offset="100%" stopColor="#e5e5e5" stopOpacity="0.1" />
+            </linearGradient>
+          </defs>
+
+          {/* 5 undulating stairway-to-heaven staff lines drawing left-to-right */}
+          <g stroke="url(#globalStaffGradient)" strokeWidth="1.5">
+            <motion.path
+              d="M -100,730 C 300,680 600,430 960,380 C 1320,330 1600,180 2020,130"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 0.8 }}
+              transition={{ duration: 4.5, ease: "easeInOut", delay: 0.1 }}
+            />
+            <motion.path
+              d="M -100,740 C 300,690 600,440 960,390 C 1320,340 1600,190 2020,140"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 0.8 }}
+              transition={{ duration: 4.5, ease: "easeInOut", delay: 0.2 }}
+            />
+            <motion.path
+              d="M -100,750 C 300,700 600,450 960,400 C 1320,350 1600,200 2020,150"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 0.8 }}
+              transition={{ duration: 4.5, ease: "easeInOut", delay: 0.3 }}
+            />
+            <motion.path
+              d="M -100,760 C 300,710 600,460 960,410 C 1320,360 1600,210 2020,160"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 0.8 }}
+              transition={{ duration: 4.5, ease: "easeInOut", delay: 0.4 }}
+            />
+            <motion.path
+              d="M -100,770 C 300,720 600,470 960,420 C 1320,370 1600,220 2020,170"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 0.8 }}
+              transition={{ duration: 4.5, ease: "easeInOut", delay: 0.5 }}
+            />
+          </g>
+
+          {/* Elegant G-Clef (Khóa Sol) appearing gradually */}
+          <motion.text
+            x="200"
+            y="615"
+            className="fill-purple-500/25 font-serif text-[110px]"
+            initial={{ opacity: 0, scale: 0.6, rotate: -15 }}
+            animate={{ opacity: 0.35, scale: 1, rotate: 0 }}
+            transition={{ duration: 2, delay: 1.8, ease: "easeOut" }}
+          >
+            𝄞
+          </motion.text>
+
+          {/* Floating Music Notes appearing gradually with continuous animations */}
+          <motion.text
+            x="500"
+            y="430"
+            className="fill-purple-400/25 font-sans text-5xl"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ 
+              opacity: 0.3, 
+              scale: 1,
+              y: [430, 410, 430],
+              rotate: [0, 10, -10, 0]
+            }}
+            transition={{
+              opacity: { delay: 2.2, duration: 1.2 },
+              scale: { delay: 2.2, duration: 1.2 },
+              y: { repeat: Infinity, duration: 6, ease: "easeInOut" },
+              rotate: { repeat: Infinity, duration: 7, ease: "easeInOut" }
+            }}
+          >
+            ♫
+          </motion.text>
+
+          <motion.text
+            x="650"
+            y="410"
+            className="fill-rose-400/20 font-sans text-4xl"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ 
+              opacity: 0.25, 
+              scale: 1,
+              y: [410, 395, 410],
+              rotate: [0, -8, 8, 0]
+            }}
+            transition={{
+              opacity: { delay: 2.6, duration: 1.2 },
+              scale: { delay: 2.6, duration: 1.2 },
+              y: { repeat: Infinity, duration: 5.5, ease: "easeInOut" },
+              rotate: { repeat: Infinity, duration: 6.5, ease: "easeInOut" }
+            }}
+          >
+            ♪
+          </motion.text>
+
+          <motion.text
+            x="850"
+            y="360"
+            className="fill-rose-500/25 font-sans text-5xl"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ 
+              opacity: 0.32, 
+              scale: 1,
+              y: [360, 340, 360],
+              rotate: [0, 12, -12, 0]
+            }}
+            transition={{
+              opacity: { delay: 2.8, duration: 1.2 },
+              scale: { delay: 2.8, duration: 1.2 },
+              y: { repeat: Infinity, duration: 6.5, ease: "easeInOut" },
+              rotate: { repeat: Infinity, duration: 8, ease: "easeInOut" }
+            }}
+          >
+            ♬
+          </motion.text>
+
+          <motion.text
+            x="1150"
+            y="300"
+            className="fill-blue-400/25 font-sans text-4xl"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ 
+              opacity: 0.28, 
+              scale: 1,
+              y: [300, 280, 300],
+              rotate: [0, -10, 10, 0]
+            }}
+            transition={{
+              opacity: { delay: 3.2, duration: 1.2 },
+              scale: { delay: 3.2, duration: 1.2 },
+              y: { repeat: Infinity, duration: 7, ease: "easeInOut" },
+              rotate: { repeat: Infinity, duration: 7.5, ease: "easeInOut" }
+            }}
+          >
+            ♩
+          </motion.text>
+
+          <motion.text
+            x="1450"
+            y="220"
+            className="fill-purple-500/20 font-sans text-3xl"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ 
+              opacity: 0.22, 
+              scale: 1,
+              y: [220, 205, 220],
+              rotate: [0, 8, -8, 0]
+            }}
+            transition={{
+              opacity: { delay: 3.5, duration: 1.2 },
+              scale: { delay: 3.5, duration: 1.2 },
+              y: { repeat: Infinity, duration: 5.8, ease: "easeInOut" },
+              rotate: { repeat: Infinity, duration: 6.2, ease: "easeInOut" }
+            }}
+          >
+            ♭
+          </motion.text>
+
+          <motion.text
+            x="1750"
+            y="160"
+            className="fill-rose-400/25 font-sans text-4xl"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ 
+              opacity: 0.26, 
+              scale: 1,
+              y: [160, 145, 160],
+              rotate: [0, -12, 12, 0]
+            }}
+            transition={{
+              opacity: { delay: 3.8, duration: 1.2 },
+              scale: { delay: 3.8, duration: 1.2 },
+              y: { repeat: Infinity, duration: 6.2, ease: "easeInOut" },
+              rotate: { repeat: Infinity, duration: 6.8, ease: "easeInOut" }
+            }}
+          >
+            ♯
+          </motion.text>
+        </svg>
+      </div>
+
       {/* Header / Navbar */}
       <header className="sticky top-0 z-40 backdrop-blur-md bg-[#faf9f6]/80 border-b border-neutral-200/40 px-6 sm:px-10 py-5">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-8.5 h-8.5 rounded-full bg-neutral-950 flex items-center justify-center relative shadow-md border-[3px] border-neutral-950 border-r-white animate-[spin_3s_linear_infinite] group-hover:scale-105 transition-transform duration-300">
-              {/* High fidelity vinyl grooves */}
-              <div className="absolute inset-0.5 rounded-full border border-neutral-800 opacity-40"></div>
-              {/* Spindle center hole with a clean white plate */}
-              <div className="w-3 h-3 rounded-full bg-white relative z-10 flex items-center justify-center">
-                <div className="w-1 h-1 rounded-full bg-neutral-950"></div>
-              </div>
-            </div>
+            <svg 
+              className="w-10 h-10 select-none pointer-events-none group-hover:scale-105 transition-all duration-300"
+              viewBox="0 0 120 120" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {/* Definitions for split masking or clipping */}
+              <defs>
+                {/* Left side clip path: X <= 60 */}
+                <clipPath id="leftHalf">
+                  <rect x="0" y="0" width="60" height="120" />
+                </clipPath>
+                {/* Right side clip path: X > 60 */}
+                <clipPath id="rightHalf">
+                  <rect x="60" y="0" width="60" height="120" />
+                </clipPath>
+              </defs>
+
+              {/* ROTATING VINYL DISC GROUP */}
+              <motion.g
+                id="vinyl-disc"
+                style={{ transformOrigin: "60px 60px" }}
+                animate={{ rotate: 360 }}
+                transition={{ 
+                  duration: 4, 
+                  ease: "linear", 
+                  repeat: Infinity, 
+                  delay: 1.5 
+                }}
+              >
+                {/* 1. Base Black/Dark Tracks for the "C" shape */}
+                <g stroke="#1c1917" strokeWidth="9" strokeLinecap="round">
+                  <path d="M 79.66 73.77 A 24 24 0 1 1 79.66 46.23" />
+                  <path d="M 85.40 77.78 A 31 31 0 1 1 85.40 42.22" />
+                  <path d="M 91.13 81.80 A 38 38 0 1 1 91.13 38.20" />
+                  <path d="M 96.86 85.81 A 45 45 0 1 1 96.86 34.19" />
+                  <path d="M 102.60 89.83 A 52 52 0 1 1 102.60 30.17" />
+                </g>
+
+                {/* 2. White Fill on the Left Half of the tracks */}
+                <g stroke="#ffffff" strokeWidth="4.5" strokeLinecap="round" clipPath="url(#leftHalf)">
+                  <path d="M 79.66 73.77 A 24 24 0 1 1 79.66 46.23" />
+                  <path d="M 85.40 77.78 A 31 31 0 1 1 85.40 42.22" />
+                  <path d="M 91.13 81.80 A 38 38 0 1 1 91.13 38.20" />
+                  <path d="M 96.86 85.81 A 45 45 0 1 1 96.86 34.19" />
+                  <path d="M 102.60 89.83 A 52 52 0 1 1 102.60 30.17" />
+                </g>
+
+                {/* 3. Gold Fill on the Right Half of the tracks */}
+                <g stroke="#dca134" strokeWidth="4.5" strokeLinecap="round" clipPath="url(#rightHalf)">
+                  <path d="M 79.66 73.77 A 24 24 0 1 1 79.66 46.23" />
+                  <path d="M 85.40 77.78 A 31 31 0 1 1 85.40 42.22" />
+                  <path d="M 91.13 81.80 A 38 38 0 1 1 91.13 38.20" />
+                  <path d="M 96.86 85.81 A 45 45 0 1 1 96.86 34.19" />
+                  <path d="M 102.60 89.83 A 52 52 0 1 1 102.60 30.17" />
+                </g>
+
+                {/* 4. Center Gold Disc with Black Outline */}
+                <circle cx="60" cy="60" r="17" fill="#dca134" stroke="#1c1917" strokeWidth="4.5" />
+
+                {/* 5. Small White Spindle Hole in the middle */}
+                <circle cx="60" cy="60" r="4" fill="#ffffff" />
+              </motion.g>
+
+              {/* 6. Stylized "r"-shaped Tonearm/Stylus dropping onto the record */}
+              <motion.g
+                id="tonearm"
+                style={{ transformOrigin: "105px 15px" }}
+                initial={{ rotate: -32, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                transition={{ duration: 1.5, ease: [0.25, 1, 0.5, 1] }}
+              >
+                {/* Pivot base (tiny metallic circle) */}
+                <circle cx="105" cy="15" r="4.5" fill="#1c1917" stroke="#ffffff" strokeWidth="1" />
+                <circle cx="105" cy="15" r="1.5" fill="#dca134" />
+
+                {/* Vertical stem of the "r" shape */}
+                <line x1="105" y1="15" x2="105" y2="42" stroke="#1c1917" strokeWidth="4.5" strokeLinecap="round" />
+                <line x1="105" y1="15" x2="105" y2="42" stroke="#dca134" strokeWidth="2.2" strokeLinecap="round" />
+
+                {/* Arched arm of the "r" shape reaching over to the record */}
+                <path 
+                  d="M 105 23 C 94 13, 80 20, 75 48" 
+                  stroke="#1c1917" 
+                  strokeWidth="3.5" 
+                  strokeLinecap="round" 
+                  fill="none" 
+                />
+                <path 
+                  d="M 105 23 C 94 13, 80 20, 75 48" 
+                  stroke="#ffffff" 
+                  strokeWidth="1.5" 
+                  strokeLinecap="round" 
+                  fill="none" 
+                />
+
+                {/* Stylus needle head shell (bright ruby red) touching the tracks */}
+                <rect x="71" y="45" width="8" height="5" rx="1.5" fill="#e11d48" stroke="#1c1917" strokeWidth="1" />
+                {/* Subtle needle line */}
+                <line x1="75" y1="50" x2="74" y2="53" stroke="#1c1917" strokeWidth="1.5" />
+              </motion.g>
+            </svg>
             <span className="text-sm font-black tracking-[0.2em] font-sans text-black group-hover:text-neutral-700 transition-colors">
               CHORUS.VN
             </span>
@@ -444,91 +1019,7 @@ export default function ChorusVNLanding() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {artists.map((artist) => (
-              <motion.div
-                key={artist.extension}
-                whileHover={{ y: -4 }}
-                transition={{ duration: 0.2 }}
-                className="group relative bg-white border border-neutral-200/60 hover:border-neutral-300 rounded-[2.5rem] overflow-hidden flex flex-col justify-between transition-all duration-300 shadow-sm hover:shadow-md"
-              >
-                {/* Visual cover blur overlay */}
-                <div className="absolute top-0 left-0 right-0 h-32 opacity-20 group-hover:opacity-25 transition-all overflow-hidden pointer-events-none border-b border-neutral-100 bg-neutral-900">
-                  {artist.homeCoverUrl ? (
-                    <img
-                      src={artist.homeCoverUrl}
-                      alt={artist.artistName}
-                      className="w-full h-full object-cover blur-[2px] scale-105"
-                      referrerPolicy="no-referrer"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-r from-neutral-800 to-neutral-950"></div>
-                  )}
-                </div>
-
-                {/* Overlapping circular avatar */}
-                <div className="px-8 mt-16 relative z-20 flex justify-start">
-                  <div className="w-20 h-20 rounded-full border-4 border-white bg-white shadow-md overflow-hidden shrink-0">
-                    {artist.homeCoverUrl ? (
-                      <img
-                        src={artist.homeCoverUrl}
-                        alt={artist.artistName}
-                        className="w-full h-full object-cover rounded-full"
-                        referrerPolicy="no-referrer"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-neutral-200 flex items-center justify-center rounded-full">
-                        <Music className="w-6 h-6 text-neutral-400" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Main Card Info */}
-                <div className="p-8 pt-4 relative z-10 flex-grow flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-2xl font-bold tracking-tight text-neutral-900 group-hover:text-black transition-colors">
-                        {artist.artistName}
-                      </h3>
-                      {artist.verified && (
-                        <BadgeCheck className="w-5 h-5 text-sky-500 fill-sky-100 shrink-0" title="Tài khoản xác thực" />
-                      )}
-                    </div>
-                    <p className="text-neutral-400 font-mono text-[10px] font-semibold mt-1">
-                      chorus.vn/{artist.extension}
-                    </p>
-
-                    {/* Album, Demo & Playlist count badges */}
-                    <div className="mt-6 flex flex-wrap items-center gap-2.5 text-[10px] font-extrabold text-neutral-500">
-                      <div className="flex items-center gap-1 bg-neutral-100 border border-neutral-200/30 px-3.5 py-1.5 rounded-xl">
-                        <Music className="w-3.5 h-3.5 text-neutral-400" />
-                        <span>{artist.trackCount || 0} {t('totalTracks')}</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-1 bg-neutral-100 border border-neutral-200/30 px-3.5 py-1.5 rounded-xl">
-                        <Sparkles className="w-3.5 h-3.5 text-neutral-400" />
-                        <span>{artist.demoCount || 0} Demo</span>
-                      </div>
-
-                      {artist.playlistCount > 0 && (
-                        <div className="flex items-center gap-1 bg-neutral-100 border border-neutral-200/30 px-3.5 py-1.5 rounded-xl">
-                          <ListMusic className="w-3.5 h-3.5 text-neutral-400" />
-                          <span>{artist.playlistCount} {t('totalPlaylists')}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-8 pt-0 relative z-10">
-                  <Link
-                    to={`/${artist.extension}`}
-                    className="w-full flex items-center justify-between bg-neutral-50 group-hover:bg-black text-neutral-700 group-hover:text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 border border-neutral-200/60 group-hover:border-black shadow-sm"
-                  >
-                    <span className="text-[10px] uppercase tracking-wider">{t('accessStore')}</span>
-                    <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </div>
-              </motion.div>
+              <ArtistLandingCard key={artist.extension} artist={artist} t={t} />
             ))}
           </div>
         )}

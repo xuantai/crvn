@@ -513,7 +513,8 @@ export default function App() {
     try {
       await fetch('/api/admin/logout', { method: 'POST' });
     } catch (e) {}
-    window.location.href = '/';
+    const ext = getArtistExtensionFromUrl();
+    window.location.href = ext ? `/${ext}` : '/';
   };
 
   useEffect(() => {
@@ -3008,7 +3009,7 @@ function PlaylistPlayer() {
   const [isProtected, setIsProtected] = useState(false);
   const [password, setPassword] = useState('');
   const [verifying, setVerifying] = useState(false);
-  const [protectedInfo, setProtectedInfo] = useState<{ title?: string; coverUrl?: string }>({});
+  const [protectedInfo, setProtectedInfo] = useState<{ title?: string; coverUrl?: string; artistExtension?: string }>({});
 
   useEffect(() => {
     if (id === 'released') {
@@ -3054,7 +3055,7 @@ function PlaylistPlayer() {
         const data = await res.json();
         if (res.status === 401 && data.isProtected) {
            setIsProtected(true);
-           setProtectedInfo({ title: data.title, coverUrl: data.coverUrl });
+           setProtectedInfo({ title: data.title, coverUrl: data.coverUrl, artistExtension: data.artistExtension });
            setLoading(false);
            return;
         }
@@ -3094,6 +3095,16 @@ function PlaylistPlayer() {
       setError('Lỗi kết nối!');
     }
     setVerifying(false);
+  };
+
+  const handleBackPlaylist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const ext = getArtistExtensionFromUrl() || protectedInfo?.artistExtension || playlist?.artistExtension;
+    if (ext) {
+      navigate(`/${ext}`);
+    } else {
+      navigate('/');
+    }
   };
 
   const handleNext = useCallback(() => {
@@ -3153,7 +3164,10 @@ function PlaylistPlayer() {
 
   if (loading) return <div className="min-h-screen bg-black text-white flex items-center justify-center">{t.load}</div>;
   if (isProtected) return (
-     <div className="min-h-screen bg-stone-950 flex items-center justify-center p-4 relative overflow-hidden">
+     <div className="min-h-screen bg-stone-950 flex items-center justify-center p-4 relative overflow-hidden text-white font-sans">
+        <button onClick={handleBackPlaylist} className="fixed top-6 left-6 opacity-60 hover:opacity-100 flex items-center gap-2 z-20 transition-opacity font-medium text-white cursor-pointer" title={t.back}>
+          <ArrowLeft className="w-5 h-5" /> {t.back}
+        </button>
         {protectedInfo.coverUrl && (
           <div className="absolute inset-0 z-0">
              <div className="absolute inset-0 bg-stone-950/80 backdrop-blur-2xl z-10" />
@@ -3684,7 +3698,12 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
     if (location.state?.fromAdmin) {
       navigate(-1);
     } else {
-      navigate('/');
+      const ext = getArtistExtensionFromUrl() || (demo as any)?.artistExtension;
+      if (ext) {
+        navigate(`/${ext}`);
+      } else {
+        navigate('/');
+      }
     }
   };
 
@@ -5044,6 +5063,7 @@ function AdminDashboard() {
   const [ogImageProgress, setOgImageProgress] = useState(0);
   const [syncingCovers, setSyncingCovers] = useState(false);
   const [syncLogs, setSyncLogs] = useState<string[]>([]);
+  const [customDomain, setCustomDomain] = useState('');
   const [slideProgress, setSlideProgress] = useState(0);
   const [draggingSlideIdx, setDraggingSlideIdx] = useState<number | null>(null);
   
@@ -5096,7 +5116,8 @@ function AdminDashboard() {
     try {
       await fetch('/api/admin/logout', { method: 'POST' });
     } catch (e) {}
-    window.location.href = '/';
+    const ext = getArtistExtensionFromUrl();
+    window.location.href = ext ? `/${ext}` : '/';
   };
 
   const renderPagination = (totalItems: number) => {
@@ -5149,6 +5170,9 @@ function AdminDashboard() {
       })
       .then(resData => {
         setData(resData);
+        if (resData.customDomain) {
+          setCustomDomain(resData.customDomain);
+        }
         if (resData.slideshowImages) {
           setSlideshowImages(resData.slideshowImages);
         }
@@ -5344,6 +5368,7 @@ function AdminDashboard() {
           socialTiktok: payload.socialTiktok,
           globalPassword: payload.globalPassword,
           globalBaseUrl: payload.globalBaseUrl,
+          customDomain: payload.customDomain,
           autoSwitchTabs: payload.autoSwitchTabs === 'true',
           slideshowImages: slideshowImages,
           tab1Name: payload.tab1Name,
@@ -5471,7 +5496,7 @@ function AdminDashboard() {
           </div>
           <div className="flex items-center gap-3">
             <Link 
-              to="/" 
+              to={getArtistExtensionFromUrl() ? `/${getArtistExtensionFromUrl()}` : "/"} 
               className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 shadow-sm transition-all duration-300 hover:scale-105 animate-[fade-in_0.3s_ease-out]"
               title="Trang chủ"
               id="admin-top-home-btn"
@@ -6466,87 +6491,79 @@ function AdminDashboard() {
                   <input name="globalPassword" defaultValue={data.globalPassword} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono" placeholder="Để trống nếu không muốn dùng mật khẩu chung" />
                   <p className="text-sm text-stone-500 mt-2">Tất cả các link ở trang chủ nếu chưa đặt mật khẩu riêng thì sẽ được bảo vệ bởi mật khẩu chung này.</p>
                 </div>
-                <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">URL Gốc cho Tài nguyên (Tùy chọn) (không cần nhập https://)</label>
-                  <input name="globalBaseUrl" defaultValue={data.globalBaseUrl} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono" placeholder="VD: tài.com" />
-                  <p className="text-sm text-stone-500 mt-2">Dùng để đồng bộ nếu host file ở server khác. Nếu link nhạc/ảnh là đường dẫn tương đối (bắt đầu bằng /) hoặc bị lỗi Gốc, hệ thống sẽ thêm/đổi sang URL này.</p>
-                </div>
-
-                <hr className="border-stone-200 my-6" />
-                <div className="bg-stone-50 border border-stone-200 rounded-2xl p-6">
-                  <h3 className="font-bold text-stone-800 text-lg mb-2 flex items-center gap-2">
-                    🔄 Đồng bộ và Sao lưu Toàn bộ Dữ liệu (Ảnh Bìa & Nhạc) lên Cloud Storage
-                  </h3>
-                  <p className="text-sm text-stone-600 mb-4">
-                    Nếu bạn có những ca khúc hoặc album cũ hiển thị ảnh bìa hoặc file nhạc từ tệp cục bộ thiết bị hoặc liên kết ngoài cũ, nhấp vào đây để hệ thống tự động tải về, sao lưu vạch định và đồng thời lưu song song trên cả <strong>Server lẫn Firebase Storage (Cloud)</strong> giúp an toàn 2 lớp.
-                  </p>
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50/50 border border-amber-200/60 rounded-2xl p-6 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <label className="block text-sm font-extrabold text-stone-800 uppercase tracking-wider">
+                        Cấu hình tên miền riêng (Custom Domain)
+                      </label>
+                      <span className="flex items-center gap-1 bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest shadow-sm animate-pulse">
+                        <span className="text-xs">✨</span> VIP
+                      </span>
+                    </div>
+                  </div>
                   
+                  <p className="text-xs text-stone-600 mb-4 leading-relaxed">
+                    Sử dụng tên miền riêng của bạn (ví dụ: <code className="font-mono bg-stone-100 px-1 rounded">nghesi.com</code> hoặc <code className="font-mono bg-stone-100 px-1 rounded">music.nghesi.com</code>) thay vì sử dụng địa chỉ mặc định của hệ thống.
+                  </p>
+
                   <div className="space-y-4">
-                    {syncingCovers ? (
-                      <div className="flex items-center gap-3 text-stone-700 text-sm font-semibold">
-                        <span className="w-4 h-4 border-2 border-stone-900 border-t-transparent rounded-full animate-spin"></span>
-                        Đang rà soát và nạp ảnh bìa + nhạc lên Cloud Storage... Vui lòng giữ kết nối!
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          if (!confirm("Bắt đầu quét và đồng bộ hóa toàn bộ ảnh bìa và file nhạc lên Firebase Storage? (Giữ lại cả file cục bộ để backup 2 nơi)")) return;
-                          
-                          setSyncingCovers(true);
-                          setSyncLogs(["Đang thiết lập kết nối tới máy chủ..."]);
-                          
-                          try {
-                            const res = await fetch('/api/admin/sync-covers-to-cloud', {
-                              method: 'POST',
-                              headers: {
-        'x-artist-extension': getArtistExtensionFromUrl(),
+                    <div>
+                      <input 
+                        type="text" 
+                        name="customDomain" 
+                        value={customDomain}
+                        onChange={(e) => setCustomDomain(e.target.value)}
+                        className="w-full border border-stone-300 bg-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono text-sm text-stone-900" 
+                        placeholder="VD: nghesi.com" 
+                      />
+                    </div>
 
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${getAdminToken() || ''}`
-                              }
-                            });
-                            
-                            const result = await res.json();
-                            if (res.ok && result.success) {
-                              setSyncLogs(result.logs || ["Đồng bộ Cloud hoàn tất!"]);
-                              setToast(`Đồng bộ thành công ${result.updatedCount} mục dữ liệu!`);
-                              setTimeout(() => setToast(''), 3000);
-                              loadData(); // Nạp lại dữ liệu UI mới ngay lập tức
-                            } else {
-                              setSyncLogs(prev => [...prev, `❌ Lỗi: ${result.error || 'Yêu cầu không được chấp nhận'}`]);
-                            }
-                          } catch (err: any) {
-                            setSyncLogs(prev => [...prev, `❌ Lỗi kết nối: ${err.message || err}`]);
-                          } finally {
-                            setSyncingCovers(false);
-                          }
-                        }}
-                        className="bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300 font-bold px-5 py-3 rounded-xl transition-colors text-sm flex items-center gap-2"
-                      >
-                        🚀 Nạp toàn bộ Ảnh bìa & Nhạc lên Cloud Storage vĩnh viễn (Giữ song song 2 nơi)
-                      </button>
-                    )}
-
-                    {syncLogs.length > 0 && (
-                      <div className="mt-4">
-                        <div className="text-xs font-bold text-stone-500 mb-1 flex justify-between items-center">
-                          <span>Nhật ký tiến trình đồng bộ:</span>
-                          <button
-                            type="button"
-                            onClick={() => setSyncLogs([])}
-                            className="text-stone-400 hover:text-stone-600 underline text-[10px]"
-                          >
-                            Xóa nhật ký
-                          </button>
+                    {/* Show setup instructions if domain format looks okay */}
+                    {customDomain.trim().length > 3 && /^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}$/.test(customDomain.trim()) ? (
+                      <div className="bg-white border border-amber-200 rounded-xl p-5 space-y-3 shadow-inner text-stone-800">
+                        <div className="flex items-center gap-2 text-amber-800 font-bold text-xs uppercase tracking-wide">
+                          <span>📋 Hướng dẫn cấu hình DNS</span>
                         </div>
-                        <div className="bg-stone-950 text-emerald-400 font-mono text-[11px] p-4 rounded-xl max-h-[220px] overflow-y-auto space-y-1">
-                          {syncLogs.map((log, idx) => (
-                            <div key={idx} className="leading-relaxed">{log}</div>
-                          ))}
+                        <p className="text-xs text-stone-600 leading-relaxed">
+                          Vui lòng truy cập trang quản lý tên miền của bạn (ví dụ: Cloudflare, GoDaddy, Nhân Hòa...) và thiết lập bản ghi sau để kết nối tên miền này:
+                        </p>
+                        
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left text-xs border-collapse">
+                            <thead>
+                              <tr className="border-b border-stone-200 text-stone-400">
+                                <th className="pb-2 font-semibold uppercase">Loại bản ghi</th>
+                                <th className="pb-2 font-semibold uppercase">Tên (Host)</th>
+                                <th className="pb-2 font-semibold uppercase">Giá trị (Points to)</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr className="border-b border-stone-100">
+                                <td className="py-2.5 font-mono font-bold text-stone-800">A</td>
+                                <td className="py-2.5 font-mono text-stone-600">{customDomain.trim().split('.').length > 2 ? customDomain.trim().split('.')[0] : '@'}</td>
+                                <td className="py-2.5 font-mono font-bold text-amber-600">{(data as any)?.systemIp || '103.1.2.3'}</td>
+                              </tr>
+                              {customDomain.trim().split('.').length <= 2 && (
+                                <tr>
+                                  <td className="py-2.5 font-mono font-bold text-stone-800">CNAME</td>
+                                  <td className="py-2.5 font-mono text-stone-600">www</td>
+                                  <td className="py-2.5 font-mono text-stone-600">{getArtistExtensionFromUrl() || 'artist'}.chorus.vn</td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div className="text-[11px] text-stone-500 leading-relaxed bg-amber-50/50 p-3 rounded-lg border border-amber-100">
+                          <strong>💡 Lưu ý:</strong> Sau khi cấu hình xong, quá trình cập nhật DNS có thể mất từ vài phút đến tối đa 24 giờ tùy nhà đăng ký tên miền.
                         </div>
                       </div>
-                    )}
+                    ) : customDomain.trim().length > 0 ? (
+                      <div className="text-xs text-rose-500 font-medium">
+                        ⚠️ Định dạng tên miền không hợp lệ (ví dụ đúng: nghesi.com, sub.nghesi.com)
+                      </div>
+                    ) : null}
                   </div>
                 </div>
 

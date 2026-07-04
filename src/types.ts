@@ -80,6 +80,8 @@ export interface AppData {
   socialTiktok?: string;
   globalPassword?: string;
   globalBaseUrl?: string;
+  customDomain?: string;
+  systemIp?: string;
   slideshowImages?: string[];
   releasedSongs: ReleasedSong[];
   demos: DemoSong[];
