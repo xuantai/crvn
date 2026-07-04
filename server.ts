@@ -741,14 +741,18 @@ async function saveData(usernameOrData: any, data?: any) {
     realData = data;
   } else {
     // Attempt to detect artist from the data object itself
-    const foundArtist = artists.find(a => 
-      (realData.artistName && a.artistName === realData.artistName) ||
-      (realData.adminPassword && a.password === realData.adminPassword)
-    );
-    if (foundArtist) {
-      currentUsername = foundArtist.username;
+    if (realData && realData.username) {
+      currentUsername = realData.username;
     } else {
-      currentUsername = artistStorage.getStore() || 'acxuantai';
+      const foundArtist = artists.find(a => 
+        (realData.artistName && a.artistName === realData.artistName) ||
+        (realData.adminPassword && a.password === realData.adminPassword)
+      );
+      if (foundArtist) {
+        currentUsername = foundArtist.username;
+      } else {
+        currentUsername = artistStorage.getStore() || 'acxuantai';
+      }
     }
     realData = usernameOrData;
   }

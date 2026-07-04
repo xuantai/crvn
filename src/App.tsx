@@ -836,6 +836,7 @@ function Home() {
   const [spotifyInfo, setSpotifyInfo] = useState<any>(null);
   const [visibleMVs, setVisibleMVs] = useState(4);
   const [activeListTab, setActiveListTab] = useState<'demos'|'released'|'albums'>('released');
+  const [hasInitializedTab, setHasInitializedTab] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [showArtist, setShowArtist] = useState(false);
@@ -848,14 +849,15 @@ function Home() {
   const observer = useRef<IntersectionObserver>();
 
   useEffect(() => {
-    if (data && data.demos) {
+    if (data && data.demos && !hasInitializedTab) {
       const hasReleased = data.demos.some(d => (d.status === 'public' || d.linkType === 'indirect') && !d.isDraft && (d.isReleased || d.linkType === 'indirect'));
       const hasDemos = data.demos.some(d => (d.status === 'public' || d.linkType === 'indirect') && !d.isDraft && (!d.isReleased && d.linkType !== 'indirect'));
-      if (!hasReleased && hasDemos && activeListTab === 'released') {
+      if (!hasReleased && hasDemos) {
         setActiveListTab('demos');
       }
+      setHasInitializedTab(true);
     }
-  }, [data, activeListTab]);
+  }, [data, hasInitializedTab]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -1457,197 +1459,211 @@ function Home() {
 
             return (
               <>
-                <motion.div 
-                  key={activeListTab}
-                  variants={{
-                    hidden: { opacity: 0 },
-                    show: {
-                      opacity: 1,
-                      transition: {
-                        staggerChildren: 0.04
+                {totalItems === 0 ? (
+                  <motion.div
+                    key="empty-state"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: "spring", stiffness: 100, damping: 15 }}
+                    className="col-span-full py-16 px-4 text-center rounded-2xl bg-neutral-900/40 border border-white/5 backdrop-blur-md flex flex-col items-center justify-center shadow-lg"
+                  >
+                    <Disc3 className="w-12 h-12 text-neutral-600 animate-spin-slow mb-4" />
+                    <p className="text-neutral-300 font-bold text-lg">Chưa có bài hát nào</p>
+                    <p className="text-neutral-500 text-sm mt-1">Danh sách đang được cập nhật, bạn vui lòng quay lại sau nhé!</p>
+                  </motion.div>
+                ) : (
+                  <motion.div 
+                    key={activeListTab}
+                    variants={{
+                      hidden: { opacity: 0 },
+                      show: {
+                        opacity: 1,
+                        transition: {
+                          staggerChildren: 0.04
+                        }
                       }
-                    }
-                  }}
-                  initial="hidden"
-                  animate="show"
-                  className="grid grid-cols-1 md:grid-cols-2 gap-4"
-                >
-                  {activeListTab === 'albums' ? (
-                    paginatedItems.map((playlist: any) => {
-                      const songsInPlaylist = data.demos.filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id));
-                      if (songsInPlaylist.length === 0) return null;
-                      
-                      let coverUrl = playlist.coverUrl || '';
-                      if (!coverUrl && data.slideshowImages && data.slideshowImages.length > 0) {
-                         const hash = Array.from(playlist.id as string).reduce((sum: number, char: any) => sum + char.charCodeAt(0), 0);
-                         coverUrl = data.slideshowImages[hash % data.slideshowImages.length];
-                      }
+                    }}
+                    initial="hidden"
+                    animate="show"
+                    className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                  >
+                    {activeListTab === 'albums' ? (
+                      paginatedItems.map((playlist: any) => {
+                        const songsInPlaylist = data.demos.filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id));
+                        if (songsInPlaylist.length === 0) return null;
+                        
+                        let coverUrl = playlist.coverUrl || '';
+                        if (!coverUrl && data.slideshowImages && data.slideshowImages.length > 0) {
+                           const hash = Array.from(playlist.id as string).reduce((sum: number, char: any) => sum + char.charCodeAt(0), 0);
+                           coverUrl = data.slideshowImages[hash % data.slideshowImages.length];
+                        }
 
-                      return (
+                        return (
+                          <motion.div
+                            key={playlist.id}
+                            variants={{
+                              hidden: { opacity: 0, y: 15 },
+                              show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
+                            }}
+                          >
+                            <Link to={`/playlist/${playlist.id}`} className="group relative bg-neutral-900/50 border border-white/5 hover:border-purple-500/50 rounded-2xl p-3 sm:p-4 transition-all duration-300 hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.3)] overflow-hidden flex items-center gap-3 sm:gap-4 w-full">
+                              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/0 group-hover:from-purple-500/10 transition-all duration-500"></div>
+                              <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl overflow-hidden relative z-10 border border-white/10 group-hover:border-purple-500/30 transition-colors">
+                                {coverUrl ? (
+                                   <img src={coverUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={playlist.title} />
+                                ) : (
+                                   <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-neutral-600 group-hover:text-purple-500 transition-colors">
+                                     <ListMusic className="w-6 h-6 sm:w-8 sm:h-8" />
+                                   </div>
+                                )}
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                  <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center scale-75 group-hover:scale-100 transition-transform shadow-lg">
+                                    <Play className="w-3 h-3 text-white ml-0.5" fill="currentColor" />
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex-1 min-w-0 relative z-10 pr-12">
+                                <h3 className="text-base sm:text-lg font-bold group-hover:text-purple-400 transition-colors truncate">
+                                  {playlist.title}
+                                </h3>
+                                <p className="text-xs sm:text-sm text-neutral-400 mt-1">{songsInPlaylist.length} bài hát</p>
+                              </div>
+                              <button
+                                onClick={async (e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  let url = `${window.location.origin}/playlist/${playlist.id}`;
+                                  url = formatShareUrl(url);
+                                  await copyToClipboard(url);
+                                  setToast('Đã copy link playlist!');
+                                  setTimeout(() => setToast(''), 3000);
+                                }}
+                                className="absolute bottom-3 right-3 z-20 bg-black/40 hover:bg-black/70 text-white/80 hover:text-white p-2 rounded-full border border-white/10 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-95 group-hover:scale-100 active:scale-90"
+                                title="Chia sẻ playlist"
+                              >
+                                <Share2 className="w-3.5 h-3.5 stroke-[1.5]" />
+                              </button>
+                            </Link>
+                          </motion.div>
+                        );
+                      })
+                    ) : (
+                      paginatedItems.map((demo: any) => (
                         <motion.div
-                          key={playlist.id}
+                          key={demo.id}
                           variants={{
                             hidden: { opacity: 0, y: 15 },
                             show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
                           }}
                         >
-                          <Link to={`/playlist/${playlist.id}`} className="group relative bg-neutral-900/50 border border-white/5 hover:border-purple-500/50 rounded-2xl p-3 sm:p-4 transition-all duration-300 hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.3)] overflow-hidden flex items-center gap-3 sm:gap-4 w-full">
-                            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/0 group-hover:from-purple-500/10 transition-all duration-500"></div>
-                            <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl overflow-hidden relative z-10 border border-white/10 group-hover:border-purple-500/30 transition-colors">
-                              {coverUrl ? (
-                                 <img src={coverUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={playlist.title} />
-                              ) : (
-                                 <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-neutral-600 group-hover:text-purple-500 transition-colors">
-                                   <ListMusic className="w-6 h-6 sm:w-8 sm:h-8" />
-                                 </div>
-                              )}
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center scale-75 group-hover:scale-100 transition-transform shadow-lg">
-                                  <Play className="w-3 h-3 text-white ml-0.5" fill="currentColor" />
+                          <Link 
+                            to={activeListTab === 'released' ? `/playlist/released?song=${demo.slug || demo.id}` : `/song/${demo.slug || demo.id}`} 
+                            onClick={(e) => {
+                              if (demo.linkType === 'indirect') {
+                                e.preventDefault();
+                                const indirectLinks = [
+                                  demo.linkSpotify, 
+                                  demo.linkApple, 
+                                  demo.linkZing, 
+                                  demo.linkYoutubeMusic, 
+                                  demo.linkYoutube
+                                ].filter(l => !!l);
+                                
+                                if (indirectLinks.length === 1 && indirectLinks[0]) {
+                                   window.open(indirectLinks[0], '_blank');
+                                } else {
+                                   setActiveBioSong(demo);
+                                }
+                              }
+                            }}
+                            className={`group relative rounded-2xl p-3 sm:p-4 transition-all duration-300 flex items-center gap-3 w-full ${demo.achievements?.length ? 'hover:shadow-[0_0_20px_rgba(251,191,36,0.25)]' : 'hover:shadow-[0_0_30px_-5px_rgba(244,63,94,0.3)]'}`}
+                          >
+                            {demo.achievements && demo.achievements.length > 0 ? (
+                              <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0">
+                                <div className="absolute inset-[-50%] bg-[conic-gradient(from_0deg,transparent_0_280deg,theme(colors.amber.500)_360deg)] animate-rotate-border z-0 opacity-80" />
+                                <div className="absolute inset-[1px] rounded-[15px] bg-neutral-900/80 backdrop-blur-md z-0" />
+                                <div className="absolute inset-[1px] rounded-[15px] bg-gradient-to-br from-amber-950/30 to-transparent z-0" />
+                                <div className="absolute inset-[1px] rounded-[15px] bg-gradient-to-r from-transparent via-amber-500/10 to-transparent -translate-x-full animate-shimmer-sweep z-0 pointer-events-none skew-x-[-20deg]" />
+                              </div>
+                            ) : (
+                              <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0 bg-neutral-900/50 border border-white/5 group-hover:border-rose-500/50 transition-all duration-300">
+                                <div className="absolute inset-0 bg-gradient-to-br from-rose-500/0 to-rose-500/0 group-hover:from-rose-500/10 transition-all duration-500 z-0"></div>
+                              </div>
+                            )}
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 relative z-10 select-none">
+                              <div className="w-full h-full rounded-xl overflow-hidden relative border border-white/10 group-hover:border-rose-500/30 transition-colors">
+                                {demo.coverUrl ? (
+                                   <img src={demo.coverUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={demo.title} />
+                                ) : (
+                                   <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-neutral-600 group-hover:text-rose-500 transition-colors">
+                                      <Disc3 className="w-6 h-6 sm:w-8 sm:h-8" />
+                                   </div>
+                                )}
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                  <div className="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center scale-75 group-hover:scale-100 transition-transform shadow-lg">
+                                    <Play className="w-3 h-3 text-white ml-0.5" fill="currentColor" />
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                            <div className="flex-1 min-w-0 relative z-10 pr-12">
-                              <h3 className="text-base sm:text-lg font-bold group-hover:text-purple-400 transition-colors truncate">
-                                {playlist.title}
+                            <div className={`flex-1 min-w-0 relative z-10 flex flex-col justify-center ${demo.achievements?.length ? 'pr-1.5' : (demo.isReleased ? 'pr-12' : 'pr-4')}`}>
+                              <h3 className={`font-bold transition-colors ${demo.achievements?.length ? 'text-[11px] sm:text-[13px] group-hover:text-amber-400 leading-tight whitespace-normal break-words' : 'text-base sm:text-lg group-hover:text-rose-400 truncate'}`}>
+                                <HoverTranslate text={demo.title} format={true} />
                               </h3>
-                              <p className="text-xs sm:text-sm text-neutral-400 mt-1">{songsInPlaylist.length} bài hát</p>
+                              <p className={`text-neutral-400 mt-1 ${demo.achievements?.length ? 'text-[9px] leading-tight whitespace-normal break-words' : 'text-xs truncate'}`}>
+                                {formatText(demo.singer || demo.author || data?.artistName || 'Nghệ sĩ', true)}
+                              </p>
                             </div>
-                            <button
-                              onClick={async (e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                let url = `${window.location.origin}/playlist/${playlist.id}`;
-                                url = formatShareUrl(url);
-                                await copyToClipboard(url);
-                                setToast('Đã copy link playlist!');
-                                setTimeout(() => setToast(''), 3000);
-                              }}
-                              className="absolute bottom-3 right-3 z-20 bg-black/40 hover:bg-black/70 text-white/80 hover:text-white p-2 rounded-full border border-white/10 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-95 group-hover:scale-100 active:scale-90"
-                              title="Chia sẻ playlist"
-                            >
-                              <Share2 className="w-3.5 h-3.5 stroke-[1.5]" />
-                            </button>
+                            {demo.achievements && demo.achievements.length > 0 && (
+                              <div className="relative z-10 shrink-0 w-[120px] sm:w-[150px] pr-2 sm:pr-3">
+                                 <AchievementCycle achievements={demo.achievements} />
+                              </div>
+                            )}
+                            {demo.isReleased ? (
+                              <>
+                                <span className="absolute top-0 right-0 translate-x-[20%] -translate-y-[10%] rotate-[15deg] bg-emerald-600 text-[7px] font-black text-white px-1.5 py-0.5 rounded shadow-[0_0_10px_rgba(5,150,105,0.6)] tracking-widest border border-emerald-400/50 select-none flex-shrink-0 z-20 animate-released-wiggle">
+                                  {t.lReleasedMark || 'RELEASED'}
+                                </span>
+                                <button
+                                  onClick={async (e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    let url = `${window.location.origin}/song/${demo.slug || demo.id}`;
+                                    url = formatShareUrl(url);
+                                    await copyToClipboard(url);
+                                    setToast('Đã copy link bài hát!');
+                                    setTimeout(() => setToast(''), 3000);
+                                  }}
+                                  className="absolute bottom-3 right-3 z-20 bg-black/40 hover:bg-black/70 text-white/80 hover:text-white p-2 rounded-full border border-white/10 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-95 group-hover:scale-100 active:scale-90"
+                                  title="Chia sẻ bài hát"
+                                >
+                                  <Share2 className="w-3.5 h-3.5 stroke-[1.5]" />
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <span className={`absolute top-2 right-2 rotate-[15deg] ${demo.linkType === 'indirect' ? 'bg-indigo-600 shadow-[0_0_10px_rgba(79,70,229,0.8)]' : 'bg-rose-600 shadow-[0_0_10px_rgba(225,29,72,0.8)]'} text-[8px] font-black text-white px-1.5 py-0.5 rounded animate-[pulse_2s_ease-in-out_infinite] tracking-widest border border-white/20 select-none flex-shrink-0 z-20`}>
+                                  {demo.linkType === 'indirect' ? 'Landing Page' : (t.lDemoMark || 'DEMO')}
+                                </span>
+                              </>
+                            )}
+                            {(demo.password || data?.globalPassword) && !demo.isReleased && demo.linkType !== 'indirect' && (
+                              <div className="absolute bottom-3 right-3 z-20 bg-black/60 p-1.5 rounded-full border border-white/10 shadow-md">
+                                 <Lock className="w-3.5 h-3.5 text-yellow-500" />
+                              </div>
+                            )}
+                            {demo.releaseYear && (
+                              <div className="absolute bottom-0 left-0 bg-gradient-to-tr from-rose-950/90 via-stone-900/90 to-amber-950/85 backdrop-blur-[4px] text-[8px] sm:text-[9.5px] font-mono font-black text-rose-200 px-3 py-0.5 rounded-tr-xl rounded-bl-[15px] border-t border-r border-rose-500/30 z-20 transition-all duration-300 group-hover:from-rose-600 group-hover:to-pink-600 group-hover:text-white group-hover:border-rose-400/50 shadow-[0_2px_12px_rgba(244,63,94,0.15)] group-hover:shadow-[0_4px_20px_rgba(244,63,94,0.4)] pointer-events-none select-none tracking-widest flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse group-hover:bg-white shrink-0"></span>
+                                {demo.releaseYear}
+                              </div>
+                            )}
                           </Link>
                         </motion.div>
-                      );
-                    })
-                  ) : (
-                    paginatedItems.map((demo: any) => (
-                      <motion.div
-                        key={demo.id}
-                        variants={{
-                          hidden: { opacity: 0, y: 15 },
-                          show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
-                        }}
-                      >
-                        <Link 
-                          to={activeListTab === 'released' ? `/playlist/released?song=${demo.slug || demo.id}` : `/song/${demo.slug || demo.id}`} 
-                          onClick={(e) => {
-                            if (demo.linkType === 'indirect') {
-                              e.preventDefault();
-                              const indirectLinks = [
-                                demo.linkSpotify, 
-                                demo.linkApple, 
-                                demo.linkZing, 
-                                demo.linkYoutubeMusic, 
-                                demo.linkYoutube
-                              ].filter(l => !!l);
-                              
-                              if (indirectLinks.length === 1 && indirectLinks[0]) {
-                                 window.open(indirectLinks[0], '_blank');
-                              } else {
-                                 setActiveBioSong(demo);
-                              }
-                            }
-                          }}
-                          className={`group relative rounded-2xl p-3 sm:p-4 transition-all duration-300 flex items-center gap-3 w-full ${demo.achievements?.length ? 'hover:shadow-[0_0_20px_rgba(251,191,36,0.25)]' : 'hover:shadow-[0_0_30px_-5px_rgba(244,63,94,0.3)]'}`}
-                        >
-                          {demo.achievements && demo.achievements.length > 0 ? (
-                            <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0">
-                              <div className="absolute inset-[-50%] bg-[conic-gradient(from_0deg,transparent_0_280deg,theme(colors.amber.500)_360deg)] animate-rotate-border z-0 opacity-80" />
-                              <div className="absolute inset-[1px] rounded-[15px] bg-neutral-900/80 backdrop-blur-md z-0" />
-                              <div className="absolute inset-[1px] rounded-[15px] bg-gradient-to-br from-amber-950/30 to-transparent z-0" />
-                              <div className="absolute inset-[1px] rounded-[15px] bg-gradient-to-r from-transparent via-amber-500/10 to-transparent -translate-x-full animate-shimmer-sweep z-0 pointer-events-none skew-x-[-20deg]" />
-                            </div>
-                          ) : (
-                            <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0 bg-neutral-900/50 border border-white/5 group-hover:border-rose-500/50 transition-all duration-300">
-                              <div className="absolute inset-0 bg-gradient-to-br from-rose-500/0 to-rose-500/0 group-hover:from-rose-500/10 transition-all duration-500 z-0"></div>
-                            </div>
-                          )}
-                          <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 relative z-10 select-none">
-                            <div className="w-full h-full rounded-xl overflow-hidden relative border border-white/10 group-hover:border-rose-500/30 transition-colors">
-                              {demo.coverUrl ? (
-                                 <img src={demo.coverUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={demo.title} />
-                              ) : (
-                                 <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-neutral-600 group-hover:text-rose-500 transition-colors">
-                                    <Disc3 className="w-6 h-6 sm:w-8 sm:h-8" />
-                                 </div>
-                              )}
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <div className="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center scale-75 group-hover:scale-100 transition-transform shadow-lg">
-                                  <Play className="w-3 h-3 text-white ml-0.5" fill="currentColor" />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className={`flex-1 min-w-0 relative z-10 flex flex-col justify-center ${demo.achievements?.length ? 'pr-1.5' : (demo.isReleased ? 'pr-12' : 'pr-4')}`}>
-                            <h3 className={`font-bold transition-colors ${demo.achievements?.length ? 'text-[11px] sm:text-[13px] group-hover:text-amber-400 leading-tight whitespace-normal break-words' : 'text-base sm:text-lg group-hover:text-rose-400 truncate'}`}>
-                              <HoverTranslate text={demo.title} format={true} />
-                            </h3>
-                            <p className={`text-neutral-400 mt-1 ${demo.achievements?.length ? 'text-[9px] leading-tight whitespace-normal break-words' : 'text-xs truncate'}`}>
-                              {formatText(demo.singer || demo.author || data?.artistName || 'Nghệ sĩ', true)}
-                            </p>
-                          </div>
-                          {demo.achievements && demo.achievements.length > 0 && (
-                            <div className="relative z-10 shrink-0 w-[120px] sm:w-[150px] pr-2 sm:pr-3">
-                               <AchievementCycle achievements={demo.achievements} />
-                            </div>
-                          )}
-                          {demo.isReleased ? (
-                            <>
-                              <span className="absolute top-0 right-0 translate-x-[20%] -translate-y-[10%] rotate-[15deg] bg-emerald-600 text-[7px] font-black text-white px-1.5 py-0.5 rounded shadow-[0_0_10px_rgba(5,150,105,0.6)] tracking-widest border border-emerald-400/50 select-none flex-shrink-0 z-20 animate-released-wiggle">
-                                {t.lReleasedMark || 'RELEASED'}
-                              </span>
-                              <button
-                                onClick={async (e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  let url = `${window.location.origin}/song/${demo.slug || demo.id}`;
-                                  url = formatShareUrl(url);
-                                  await copyToClipboard(url);
-                                  setToast('Đã copy link bài hát!');
-                                  setTimeout(() => setToast(''), 3000);
-                                }}
-                                className="absolute bottom-3 right-3 z-20 bg-black/40 hover:bg-black/70 text-white/80 hover:text-white p-2 rounded-full border border-white/10 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-95 group-hover:scale-100 active:scale-90"
-                                title="Chia sẻ bài hát"
-                              >
-                                <Share2 className="w-3.5 h-3.5 stroke-[1.5]" />
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <span className={`absolute top-2 right-2 rotate-[15deg] ${demo.linkType === 'indirect' ? 'bg-indigo-600 shadow-[0_0_10px_rgba(79,70,229,0.8)]' : 'bg-rose-600 shadow-[0_0_10px_rgba(225,29,72,0.8)]'} text-[8px] font-black text-white px-1.5 py-0.5 rounded animate-[pulse_2s_ease-in-out_infinite] tracking-widest border border-white/20 select-none flex-shrink-0 z-20`}>
-                                {demo.linkType === 'indirect' ? 'Landing Page' : (t.lDemoMark || 'DEMO')}
-                              </span>
-                            </>
-                          )}
-                          {(demo.password || data?.globalPassword) && !demo.isReleased && demo.linkType !== 'indirect' && (
-                            <div className="absolute bottom-3 right-3 z-20 bg-black/60 p-1.5 rounded-full border border-white/10 shadow-md">
-                               <Lock className="w-3.5 h-3.5 text-yellow-500" />
-                            </div>
-                          )}
-                          {demo.releaseYear && (
-                            <div className="absolute bottom-0 left-0 bg-gradient-to-tr from-rose-950/90 via-stone-900/90 to-amber-950/85 backdrop-blur-[4px] text-[8px] sm:text-[9.5px] font-mono font-black text-rose-200 px-3 py-0.5 rounded-tr-xl rounded-bl-[15px] border-t border-r border-rose-500/30 z-20 transition-all duration-300 group-hover:from-rose-600 group-hover:to-pink-600 group-hover:text-white group-hover:border-rose-400/50 shadow-[0_2px_12px_rgba(244,63,94,0.15)] group-hover:shadow-[0_4px_20px_rgba(244,63,94,0.4)] pointer-events-none select-none tracking-widest flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse group-hover:bg-white shrink-0"></span>
-                              {demo.releaseYear}
-                            </div>
-                          )}
-                        </Link>
-                      </motion.div>
-                    ))
-                  )}
-                </motion.div>
+                      ))
+                    )}
+                  </motion.div>
+                )}
 
                 {totalItems > 0 && (
                   <div className="col-span-full flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-white/10">
