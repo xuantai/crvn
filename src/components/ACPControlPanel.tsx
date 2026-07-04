@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X,
-  LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home
+  LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home, Upload
 } from 'lucide-react';
 
 interface Artist {
@@ -56,6 +56,13 @@ export default function ACPControlPanel() {
   const [landingFooterText, setLandingFooterText] = useState('');
   const [systemIp, setSystemIp] = useState('');
   const [cloudSyncEnabled, setCloudSyncEnabled] = useState(true);
+
+  // Metadata & Custom sharing states
+  const [landingPageTitle, setLandingPageTitle] = useState('');
+  const [landingOgImageUrl, setLandingOgImageUrl] = useState('');
+  const [landingFaviconUrl, setLandingFaviconUrl] = useState('');
+  const [faviconProgress, setFaviconProgress] = useState(0);
+  const [ogImageProgress, setOgImageProgress] = useState(0);
   
   // Feature section states
   const [feature1Title, setFeature1Title] = useState('');
@@ -70,6 +77,30 @@ export default function ACPControlPanel() {
   const [isSavingLanding, setIsSavingLanding] = useState(false);
   const [landingSuccessMsg, setLandingSuccessMsg] = useState('');
   const [subscribers, setSubscribers] = useState<string[]>([]);
+
+  const uploadWithProgress = (file: File, setProgress: (p: number) => void): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/upload', true);
+      xhr.setRequestHeader('Authorization', `Bearer ${token || ''}`);
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          setProgress(Math.round((e.loaded / e.total) * 100));
+        }
+      };
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          setProgress(100);
+          const res = JSON.parse(xhr.responseText);
+          resolve(res.url);
+        } else reject(new Error('Upload failed'));
+      };
+      xhr.onerror = () => reject(new Error('Network error'));
+      xhr.send(formData);
+    });
+  };
 
   useEffect(() => {
     if (token) {
@@ -130,6 +161,9 @@ export default function ACPControlPanel() {
         setLandingFooterText(data.footerText || '');
         setSystemIp(data.systemIp || '');
         setCloudSyncEnabled(data.cloudSyncEnabled !== false);
+        setLandingPageTitle(data.pageTitle || '');
+        setLandingOgImageUrl(data.ogImageUrl || '');
+        setLandingFaviconUrl(data.faviconUrl || '');
         setFeature1Title(data.feature1Title || 'Bảo mật demo & tuyển tập');
         setFeature1Desc(data.feature1Desc || 'Thiết lập mật mã cho từng tác phẩm chưa công bố, ngăn chặn nghe trộm hoặc chia sẻ trái phép. Gửi link demo bảo mật cho ca sĩ, nhạc sĩ phối khí và các đối tác đáng tin cậy.');
         setFeature2Title(data.feature2Title || 'Dịch thuật thông minh (AI Translation)');
@@ -400,6 +434,9 @@ export default function ACPControlPanel() {
           heroDescription: landingHeroDesc,
           footerText: landingFooterText,
           systemIp,
+          pageTitle: landingPageTitle,
+          ogImageUrl: landingOgImageUrl,
+          faviconUrl: landingFaviconUrl,
           feature1Title,
           feature1Desc,
           feature2Title,
@@ -880,6 +917,138 @@ export default function ACPControlPanel() {
                   <p className="text-neutral-400 text-[11px] mt-1.5 leading-relaxed">
                     Dùng làm IP hướng dẫn để các nghệ sĩ trỏ bản ghi A (Custom Domain DNS) về hệ thống.
                   </p>
+                </div>
+
+                <div className="border-t border-white/10 pt-6 mt-6 space-y-6">
+                  <h3 className="text-sm font-extrabold text-purple-400 uppercase tracking-widest mb-4">
+                    Cấu hình chia sẻ & Metadata (SEO)
+                  </h3>
+                  
+                  <div>
+                    <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400 mb-1.5">
+                      Tiêu đề chia sẻ (Sharing Title)
+                    </label>
+                    <input 
+                      type="text" 
+                      value={landingPageTitle}
+                      onChange={(e) => setLandingPageTitle(e.target.value)}
+                      className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
+                      placeholder="VD: Chorus.vn - Nơi những ca khúc bắt đầu"
+                    />
+                    <p className="text-neutral-400 text-[11px] mt-1.5 leading-relaxed">
+                      Tiêu đề hiển thị trên tab trình duyệt và tiêu đề khi chia sẻ liên kết lên mạng xã hội.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400 mb-2">
+                        Favicon (Icon tab trình duyệt)
+                      </label>
+                      <div className="flex items-center gap-4">
+                        {landingFaviconUrl && (
+                          <img src={landingFaviconUrl} className="w-12 h-12 bg-black/20 rounded-xl object-contain border border-white/10 shadow-sm" />
+                        )}
+                        <button 
+                          type="button" 
+                          onClick={() => document.getElementById('landingFaviconUpload')?.click()}
+                          className={`w-12 h-12 rounded-xl flex items-center justify-center relative overflow-hidden transition-all border shadow-sm ${
+                            faviconProgress === 100 
+                              ? 'border-purple-500 bg-purple-500/10 text-purple-400' 
+                              : 'border-white/10 bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white cursor-pointer'
+                          }`}
+                        >
+                          {faviconProgress > 0 && faviconProgress < 100 ? (
+                            <span className="text-[10px] font-bold">{faviconProgress}%</span>
+                          ) : (
+                            <Upload className="w-5 h-5" />
+                          )}
+                        </button>
+                        {landingFaviconUrl && (
+                          <button 
+                            type="button" 
+                            onClick={() => { setLandingFaviconUrl(''); setFaviconProgress(0); }} 
+                            className="w-8 h-8 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-full flex items-center justify-center transition-colors cursor-pointer"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                        <input 
+                          type="file" 
+                          id="landingFaviconUpload" 
+                          className="hidden" 
+                          accept="image/*" 
+                          onChange={async (e) => {
+                            if (!e.target.files?.[0]) return;
+                            try {
+                              const url = await uploadWithProgress(e.target.files[0], setFaviconProgress);
+                              setLandingFaviconUrl(url);
+                            } catch (err) {
+                              alert('Lỗi upload icon!');
+                              setFaviconProgress(0);
+                            }
+                          }} 
+                        />
+                      </div>
+                      <p className="text-neutral-400 text-[11px] mt-1.5">
+                        Ảnh icon vuông định dạng .png hoặc .ico hiển thị trên tab trình duyệt.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400 mb-2">
+                        Custom Thumbnail (Ảnh đại diện chia sẻ)
+                      </label>
+                      <div className="flex items-center gap-4">
+                        {landingOgImageUrl && (
+                          <img src={landingOgImageUrl} className="w-20 h-12 bg-black/20 rounded-xl object-cover border border-white/10 shadow-sm" />
+                        )}
+                        <button 
+                          type="button" 
+                          onClick={() => document.getElementById('landingOgUpload')?.click()}
+                          className={`w-12 h-12 rounded-xl flex items-center justify-center relative overflow-hidden transition-all border shadow-sm ${
+                            ogImageProgress === 100 
+                              ? 'border-purple-500 bg-purple-500/10 text-purple-400' 
+                              : 'border-white/10 bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white cursor-pointer'
+                          }`}
+                        >
+                          {ogImageProgress > 0 && ogImageProgress < 100 ? (
+                            <span className="text-[10px] font-bold">{ogImageProgress}%</span>
+                          ) : (
+                            <Upload className="w-5 h-5" />
+                          )}
+                        </button>
+                        {landingOgImageUrl && (
+                          <button 
+                            type="button" 
+                            onClick={() => { setLandingOgImageUrl(''); setOgImageProgress(0); }} 
+                            className="w-8 h-8 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-full flex items-center justify-center transition-colors cursor-pointer"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                        <input 
+                          type="file" 
+                          id="landingOgUpload" 
+                          className="hidden" 
+                          accept="image/*" 
+                          onChange={async (e) => {
+                            if (!e.target.files?.[0]) return;
+                            try {
+                              const url = await uploadWithProgress(e.target.files[0], setOgImageProgress);
+                              setLandingOgImageUrl(url);
+                            } catch (err) {
+                              alert('Lỗi upload thumbnail!');
+                              setOgImageProgress(0);
+                            }
+                          }} 
+                        />
+                      </div>
+                      <p className="text-neutral-400 text-[11px] mt-1.5">
+                        Ảnh dùng làm banner khi chia sẻ link lên Facebook, Zalo, Twitter.
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="border-t border-white/10 pt-6 mt-6">

@@ -955,6 +955,21 @@ async function startServer() {
     if (artists.length === 0) {
       await loadArtists();
     }
+    
+    // Check if accessing an unregistered subdomain of .chorus.vn
+    if (req.headers.host) {
+      const host = req.headers.host.replace(/^www\./, '').toLowerCase().trim();
+      if (host.endsWith('.chorus.vn') && host !== 'chorus.vn') {
+        const sub = host.replace('.chorus.vn', '');
+        if (sub) {
+          const matchedArtist = artists.find(a => a.extension === sub || a.username === sub);
+          if (!matchedArtist) {
+            return res.redirect(302, `https://chorus.vn${req.originalUrl}`);
+          }
+        }
+      }
+    }
+
     const artist = getArtistFromRequest(req);
     req.artist = artist;
     req.artists = artists;
@@ -1371,14 +1386,18 @@ async function startServer() {
       tagline, heroTitle, heroSubtitle, heroDescription, footerText,
       feature1Title, feature1Desc, feature2Title, feature2Desc,
       feature3Title, feature3Desc, feature4Title, feature4Desc,
-      cloudSyncEnabled, systemIp
+      cloudSyncEnabled, systemIp,
+      pageTitle, ogImageUrl, faviconUrl
     } = req.body;
     await saveLandingConfig({ 
       tagline, heroTitle, heroSubtitle, heroDescription, footerText,
       feature1Title, feature1Desc, feature2Title, feature2Desc,
       feature3Title, feature3Desc, feature4Title, feature4Desc,
       cloudSyncEnabled: cloudSyncEnabled !== false,
-      systemIp: systemIp || ''
+      systemIp: systemIp || '',
+      pageTitle: pageTitle || '',
+      ogImageUrl: ogImageUrl || '',
+      faviconUrl: faviconUrl || ''
     });
     res.json({ success: true, landingConfig });
   });
@@ -3042,110 +3061,139 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         html = await fs.readFile(path.join(process.cwd(), 'dist', 'index.html'), 'utf-8');
       }
 
-      const defaultDesc = data.pageTitle || `Kho nhạc của ${data.artistName || 'Nghệ sĩ'}`;
-      let ogTitle = data.pageTitle || `Thiên đường âm nhạc của ${data.artistName || 'Nghệ sĩ'}`;
+      const host = req.get('x-forwarded-host') || req.get('host') || '';
+      const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
       
-      const initialOgImage = data.ogImageUrl || data.homeCoverUrl || (data.slideshowImages && data.slideshowImages.length > 0 ? data.slideshowImages[0] : "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80");
-      let ogImage = formatUrl(initialOgImage, data.globalBaseUrl) || '';
-      
+      const isCustomDomain = artists.some(a => {
+        const cd = (a.customDomain || '').replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].toLowerCase().trim();
+        const ew = (a.externalWebsiteUrl || '').replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].toLowerCase().trim();
+        return (cd && cd === host) || (ew && ew === host);
+      });
+
       const cleanPath = url.split('?')[0];
-      const isHomepage = cleanPath === '/' || cleanPath === '/index.html' || cleanPath === '';
-      let ogDesc = isHomepage 
-        ? `Nơi cập nhật sản phẩm và demo của ${data.artistName || 'Nghệ sĩ'}`
-        : defaultDesc;
+      const segments = cleanPath.split('/').filter(Boolean);
+      const firstSegment = segments[0];
+      const reserved = ['admin', 'acp', 'mem', 'demo', 'song', 'playlist', 'api', 'uploads'];
+      const hasArtistPath = firstSegment && !reserved.includes(firstSegment) && artists.some(a => a.extension === firstSegment || a.username === firstSegment);
 
-      // Extract active song slug / query robustly (case-insensitive)
-      let querySongSlug = (req.query.song as string) || (req.query.demo as string) || '';
-      let activeSong: any = null;
-      
-      if (querySongSlug) {
-        const decodedSlug = decodeURIComponent(querySongSlug).trim().toLowerCase();
-        activeSong = data.demos.find((d: any) => {
-          const fid = String(d.id || '').toLowerCase();
-          const fslug = String(d.slug || '').toLowerCase();
-          return (fid === decodedSlug || fslug === decodedSlug) && !d.deleted;
-        });
-      }
+      const isMainLandingPage = !isSubdomain && !isCustomDomain && !hasArtistPath;
 
-      if (!activeSong) {
-        const songPathMatch = cleanPath.match(/^\/(?:demo|song)\/([^\/?]+)/i);
-        if (songPathMatch) {
-          const slug = decodeURIComponent(songPathMatch[1]).trim().toLowerCase();
+      let ogTitle = '';
+      let ogDesc = '';
+      let ogImage = '';
+      let faviconUrlToInject = '';
+
+      if (isMainLandingPage) {
+        ogTitle = (landingConfig as any).pageTitle || (landingConfig as any).heroTitle || 'Chorus';
+        ogDesc = (landingConfig as any).heroSubtitle || (landingConfig as any).heroDescription || 'CHORUS.VN © 2026 - Nơi những ca khúc bắt đầu.';
+        ogImage = (landingConfig as any).ogImageUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80';
+        faviconUrlToInject = (landingConfig as any).faviconUrl || '';
+      } else {
+        const defaultDesc = data.pageTitle || `Kho nhạc của ${data.artistName || 'Nghệ sĩ'}`;
+        ogTitle = data.pageTitle || `Thiên đường âm nhạc của ${data.artistName || 'Nghệ sĩ'}`;
+        
+        const initialOgImage = data.ogImageUrl || data.homeCoverUrl || (data.slideshowImages && data.slideshowImages.length > 0 ? data.slideshowImages[0] : "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80");
+        ogImage = formatUrl(initialOgImage, data.globalBaseUrl) || '';
+        
+        const isHomepage = cleanPath === '/' || cleanPath === '/index.html' || cleanPath === '';
+        ogDesc = isHomepage 
+          ? `Nơi cập nhật sản phẩm và demo của ${data.artistName || 'Nghệ sĩ'}`
+          : defaultDesc;
+
+        faviconUrlToInject = data.faviconUrl || '';
+
+        // Extract active song slug / query robustly (case-insensitive)
+        let querySongSlug = (req.query.song as string) || (req.query.demo as string) || '';
+        let activeSong: any = null;
+        
+        if (querySongSlug) {
+          const decodedSlug = decodeURIComponent(querySongSlug).trim().toLowerCase();
           activeSong = data.demos.find((d: any) => {
             const fid = String(d.id || '').toLowerCase();
             const fslug = String(d.slug || '').toLowerCase();
-            return (fid === slug || fslug === slug) && !d.deleted;
+            return (fid === decodedSlug || fslug === decodedSlug) && !d.deleted;
           });
         }
-      }
 
-      if (activeSong) {
-        const titleSuffix = activeSong.singer || activeSong.author || activeSong.composer || data.artistName || 'Nghệ sĩ';
-        ogTitle = activeSong.isReleased 
-          ? `${activeSong.title} - ${titleSuffix}`
-          : `${activeSong.title} - ${titleSuffix} ( demo )`;
-        
-        let coverToUse = activeSong.coverUrl || activeSong.ogImageUrl;
-        if (!coverToUse && data.slideshowImages && data.slideshowImages.length > 0) {
-            const idStr = String(activeSong.id || '');
-            let hash = 0;
-            for (let i = 0; i < idStr.length; i++) {
-               hash += idStr.charCodeAt(i);
-            }
-            coverToUse = data.slideshowImages[hash % data.slideshowImages.length];
+        if (!activeSong) {
+          const songPathMatch = cleanPath.match(/^\/(?:demo|song)\/([^\/?]+)/i);
+          if (songPathMatch) {
+            const slug = decodeURIComponent(songPathMatch[1]).trim().toLowerCase();
+            activeSong = data.demos.find((d: any) => {
+              const fid = String(d.id || '').toLowerCase();
+              const fslug = String(d.slug || '').toLowerCase();
+              return (fid === slug || fslug === slug) && !d.deleted;
+            });
+          }
         }
-        
-        if (!coverToUse) {
-            coverToUse = "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80";
-        }
-        
-        ogImage = formatUrl(coverToUse, data.globalBaseUrl) || '';
-        ogDesc = defaultDesc;
-      }
 
-      const playlistMatch = cleanPath.match(/^\/playlist\/([^\/?]+)/i);
-      if (playlistMatch && !activeSong) {
-        const playlistId = decodeURIComponent(playlistMatch[1]).trim().toLowerCase();
-        if (data.playlists) {
-          const playlist = data.playlists.find((p: any) => String(p.id || '').toLowerCase() === playlistId && !p.deleted);
-          if (playlist) {
-            ogTitle = `${playlist.title} - ${data.artistName || 'Nghệ sĩ'}`;
-            
-            let pCover = playlist.coverUrl;
-            if (!pCover) {
-              const pSongs = data.demos.filter((d: any) => !d.deleted && d.status === 'public' && d.playlistIds && d.playlistIds.includes(playlist.id));
-              if (playlist.songIds && playlist.songIds.length > 0) {
-                 pSongs.sort((a: any, b: any) => {
-                    const indexA = playlist.songIds.indexOf(a.id);
-                    const indexB = playlist.songIds.indexOf(b.id);
-                    if (indexA === -1 && indexB === -1) return 0;
-                    if (indexA === -1) return 1;
-                    if (indexB === -1) return -1;
-                    return indexA - indexB;
-                 });
+        if (activeSong) {
+          const titleSuffix = activeSong.singer || activeSong.author || activeSong.composer || data.artistName || 'Nghệ sĩ';
+          ogTitle = activeSong.isReleased 
+            ? `${activeSong.title} - ${titleSuffix}`
+            : `${activeSong.title} - ${titleSuffix} ( demo )`;
+          
+          let coverToUse = activeSong.coverUrl || activeSong.ogImageUrl;
+          if (!coverToUse && data.slideshowImages && data.slideshowImages.length > 0) {
+              const idStr = String(activeSong.id || '');
+              let hash = 0;
+              for (let i = 0; i < idStr.length; i++) {
+                 hash += idStr.charCodeAt(i);
               }
-              if (pSongs.length > 0) {
-                 let firstSong = pSongs[0];
-                 let firstSongCover = firstSong.coverUrl;
-                 if (!firstSongCover && data.slideshowImages && data.slideshowImages.length > 0) {
-                     const idStr = String(firstSong.id || '');
-                     const hash = Array.from(idStr).reduce((sum: number, char: string) => sum + char.charCodeAt(0), 0);
-                     firstSongCover = data.slideshowImages[hash % data.slideshowImages.length];
-                 }
-                 pCover = firstSongCover;
+              coverToUse = data.slideshowImages[hash % data.slideshowImages.length];
+          }
+          
+          if (!coverToUse) {
+              coverToUse = "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80";
+          }
+          
+          ogImage = formatUrl(coverToUse, data.globalBaseUrl) || '';
+          ogDesc = defaultDesc;
+        }
+
+        const playlistMatch = cleanPath.match(/^\/playlist\/([^\/?]+)/i);
+        if (playlistMatch && !activeSong) {
+          const playlistId = decodeURIComponent(playlistMatch[1]).trim().toLowerCase();
+          if (data.playlists) {
+            const playlist = data.playlists.find((p: any) => String(p.id || '').toLowerCase() === playlistId && !p.deleted);
+            if (playlist) {
+              ogTitle = `${playlist.title} - ${data.artistName || 'Nghệ sĩ'}`;
+              
+              let pCover = playlist.coverUrl;
+              if (!pCover) {
+                const pSongs = data.demos.filter((d: any) => !d.deleted && d.status === 'public' && d.playlistIds && d.playlistIds.includes(playlist.id));
+                if (playlist.songIds && playlist.songIds.length > 0) {
+                   pSongs.sort((a: any, b: any) => {
+                      const indexA = playlist.songIds.indexOf(a.id);
+                      const indexB = playlist.songIds.indexOf(b.id);
+                      if (indexA === -1 && indexB === -1) return 0;
+                      if (indexA === -1) return 1;
+                      if (indexB === -1) return -1;
+                      return indexA - indexB;
+                   });
+                }
+                if (pSongs.length > 0) {
+                   let firstSong = pSongs[0];
+                   let firstSongCover = firstSong.coverUrl;
+                   if (!firstSongCover && data.slideshowImages && data.slideshowImages.length > 0) {
+                       const idStr = String(firstSong.id || '');
+                       const hash = Array.from(idStr).reduce((sum: number, char: string) => sum + char.charCodeAt(0), 0);
+                       firstSongCover = data.slideshowImages[hash % data.slideshowImages.length];
+                   }
+                   pCover = firstSongCover;
+                }
               }
+              
+              if (!pCover) {
+                pCover = "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80";
+              }
+              ogImage = formatUrl(pCover, data.globalBaseUrl) || '';
+              ogDesc = defaultDesc;
             }
-            
-            if (!pCover) {
-              pCover = "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80";
-            }
-            ogImage = formatUrl(pCover, data.globalBaseUrl) || '';
-            ogDesc = defaultDesc;
           }
         }
       }
 
-      const host = req.get('x-forwarded-host') || req.get('host') || '';
       if (ogImage && ogImage.startsWith('/')) {
          ogImage = `https://${host}${ogImage}`;
       } else if (ogImage && !ogImage.startsWith('http')) {
@@ -3191,7 +3239,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
       // Inject tags
       html = html.replace(/<title>.*?<\/title>/i, `<title>${escapedTitle}</title>`);
       
-      const metaTags = `
+      let metaTags = `
         <meta property="og:title" content="${escapedTitle}" />
         <meta property="og:description" content="${escapedDesc}" />
         <meta property="og:image" content="${escapedImage}" />
@@ -3204,6 +3252,9 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         <meta name="twitter:description" content="${escapedDesc}" />
         <meta name="twitter:image" content="${escapedImage}" />
       `;
+      if (faviconUrlToInject) {
+        metaTags += `\n        <link rel="icon" href="${escapeHtmlAttr(faviconUrlToInject)}" />`;
+      }
       html = html.replace(/<\/head>/i, `${metaTags}</head>`);
 
       res.status(200).set({ 'Content-Type': 'text/html' }).end(html);

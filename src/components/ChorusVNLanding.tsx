@@ -465,6 +465,18 @@ export default function ChorusVNLanding() {
       .then((data) => {
         if (data) {
           setConfig((prev) => ({ ...prev, ...data }));
+          if (data.pageTitle) {
+            document.title = data.pageTitle;
+          }
+          if (data.faviconUrl) {
+            let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+            if (!link) {
+              link = document.createElement('link');
+              link.rel = 'icon';
+              document.head.appendChild(link);
+            }
+            link.href = data.faviconUrl;
+          }
         }
       })
       .catch((err) => console.error('Error fetching landing config:', err));
@@ -753,8 +765,8 @@ export default function ChorusVNLanding() {
                   <path d="M 102.60 89.83 A 52 52 0 1 1 102.60 30.17" />
                 </g>
 
-                {/* 2. White Fill on the Left Half of the tracks */}
-                <g stroke="#ffffff" strokeWidth="4.5" strokeLinecap="round" clipPath="url(#leftHalf)">
+                {/* 2. Blue Fill on the Left Half of the tracks to prevent blending with background */}
+                <g stroke="#2563eb" strokeWidth="4.5" strokeLinecap="round" clipPath="url(#leftHalf)">
                   <path d="M 79.66 73.77 A 24 24 0 1 1 79.66 46.23" />
                   <path d="M 85.40 77.78 A 31 31 0 1 1 85.40 42.22" />
                   <path d="M 91.13 81.80 A 38 38 0 1 1 91.13 38.20" />

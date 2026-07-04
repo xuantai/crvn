@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { Settings, Play, Music, Lock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw } from 'lucide-react';
+import { Settings, Play, Music, Lock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { AppData, DemoSong, TemplateConfig, Achievement } from './types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -3408,7 +3408,17 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
       let trimmed = textLine.trim();
       let lower = trimmed.toLowerCase();
       
-      if (/^ver\s*(\d+)[:]*\s*$/i.test(lower)) {
+      if (/^\[?\s*(dk|đk)\s*(\d+)?\s*\]?[:]*\s*$/i.test(lower)) {
+        const match = trimmed.match(/^\[?\s*(dk|đk)\s*(\d+)?\s*\]?[:]*\s*$/i);
+        textLine = match?.[2] ? `Chorus ${match[2]}` : "Chorus";
+        trimmed = textLine.trim();
+        lower = trimmed.toLowerCase();
+      } else if (/^\[?\s*pk\s*(\d+)?\s*\]?[:]*\s*$/i.test(lower)) {
+        const match = trimmed.match(/^\[?\s*pk\s*(\d+)?\s*\]?[:]*\s*$/i);
+        textLine = match?.[1] ? `Verse ${match[1]}` : "Verse";
+        trimmed = textLine.trim();
+        lower = trimmed.toLowerCase();
+      } else if (/^ver\s*(\d+)[:]*\s*$/i.test(lower)) {
         textLine = trimmed.replace(/^ver\s*(\d+)[:]*\s*/i, "Verse $1");
         trimmed = textLine.trim();
         lower = trimmed.toLowerCase();
@@ -3468,7 +3478,17 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
       let trimmed = textLine.trim();
       let lower = trimmed.toLowerCase();
 
-      if (/^ver\s*(\d+)[:]*\s*$/i.test(lower)) {
+      if (/^\[?\s*(dk|đk)\s*(\d+)?\s*\]?[:]*\s*$/i.test(lower)) {
+        const match = trimmed.match(/^\[?\s*(dk|đk)\s*(\d+)?\s*\]?[:]*\s*$/i);
+        textLine = match?.[2] ? `Chorus ${match[2]}` : "Chorus";
+        trimmed = textLine.trim();
+        lower = trimmed.toLowerCase();
+      } else if (/^\[?\s*pk\s*(\d+)?\s*\]?[:]*\s*$/i.test(lower)) {
+        const match = trimmed.match(/^\[?\s*pk\s*(\d+)?\s*\]?[:]*\s*$/i);
+        textLine = match?.[1] ? `Verse ${match[1]}` : "Verse";
+        trimmed = textLine.trim();
+        lower = trimmed.toLowerCase();
+      } else if (/^ver\s*(\d+)[:]*\s*$/i.test(lower)) {
         textLine = trimmed.replace(/^ver\s*(\d+)[:]*\s*/i, "Verse $1");
         trimmed = textLine.trim();
         lower = trimmed.toLowerCase();
@@ -6322,6 +6342,9 @@ function AdminDashboard() {
                   ) : (
                     <input name="username" defaultValue={data.username} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono" />
                   )}
+                  <p className="text-xs text-stone-500 mt-1.5">
+                    Của bạn đang là <strong className="text-stone-700">{data.username}.chorus.vn</strong>
+                  </p>
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-stone-700 mb-2">Giới thiệu ngắn</label>
@@ -6880,7 +6903,7 @@ function TemplatePickerModal({
               <button onClick={() => setIsPCPreviewMode(true)} className={`hidden md:flex items-center justify-center p-2 rounded-lg transition-all duration-300 ${isPCPreviewMode ? 'border-2 border-stone-850 bg-transparent text-stone-900' : 'border border-stone-200 bg-transparent text-stone-400 hover:text-stone-700 hover:border-stone-400'} shadow-sm`} title="Xem giao diện máy tính">
                 <Monitor className="w-5 h-5 stroke-[1.5]"/>
               </button>
-              <button type="button" onClick={() => onSelect(selectedId)} className="bg-stone-900 text-white px-5 py-2 rounded-xl text-sm font-bold shadow hover:bg-stone-800">Chọn Giao Diện</button>
+              <button type="button" onClick={() => onSelect(selectedId)} className="bg-stone-900 text-white px-5 py-2 rounded-xl text-sm font-bold shadow hover:bg-stone-800">Chọn</button>
           </div>
       </div>
       <div className="flex flex-1 flex-col md:flex-row overflow-y-auto md:overflow-hidden relative border-t-0">
@@ -7152,13 +7175,13 @@ function AdminCreateDemo() {
       .catch(console.error);
   }, []);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'audio' | 'cover' | 'background') => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const [isDraggingCover, setIsDraggingCover] = useState(false);
+  const [isDraggingAudio, setIsDraggingAudio] = useState(false);
+  const [isDraggingBg, setIsDraggingBg] = useState(false);
 
+  const uploadFileDirectly = (file: File, type: 'audio' | 'cover' | 'background') => {
     if (file.size > 100 * 1024 * 1024) { // 100MB limit check client-side
         alert('File quá nặng. Vui lòng chọn file dưới 100MB (Hệ thống hỗ trợ tự động convert nhạc WAV sang MP3 và tối ưu hóa ảnh).');
-        e.target.value = '';
         return;
     }
 
@@ -7209,6 +7232,12 @@ function AdminCreateDemo() {
     };
 
     xhr.send(formData);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'audio' | 'cover' | 'background') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    uploadFileDirectly(file, type);
   };
 
   const saveDemo = async (isDraft: boolean) => {
@@ -7290,7 +7319,6 @@ function AdminCreateDemo() {
         </Link>
         
         <div className="bg-white p-8 rounded-3xl border border-stone-200 shadow-xl shadow-stone-200/50">
-          <h1 className="text-3xl font-bold mb-6">Demo mới</h1>
           
           <div className="flex bg-stone-100 p-1 rounded-xl mb-8 w-full max-w-xs mx-auto">
             <button type="button" onClick={() => setLinkType('direct')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${linkType === 'direct' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}>Trực Tiếp</button>
@@ -7344,14 +7372,41 @@ function AdminCreateDemo() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-bold text-stone-700 mb-2">Ảnh Bìa</label>
-                <div className="flex flex-wrap gap-4 items-center">
-                  {uploadedCoverUrl && <img src={getPreviewUrl(uploadedCoverUrl)} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />}
-                  <button type="button" className={`w-16 h-16 rounded-xl flex items-center justify-center relative overflow-hidden transition-colors border shadow-sm ${coverUploadProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('coverCreateUpload')?.click()}>
-                      {coverUploadProgress > 0 && coverUploadProgress < 100 && <div className="absolute left-0 bottom-0 right-0 bg-stone-200 transition-all duration-300" style={{ height: `${coverUploadProgress}%` }}></div>}
-                      <span className="relative z-10 font-bold text-[10px] flex flex-col items-center gap-1"><Upload className="w-5 h-5"/> {coverUploadProgress > 0 && coverUploadProgress < 100 ? `${coverUploadProgress}%` : ''}</span>
-                  </button>
-                  {uploadedCoverUrl && <button type="button" onClick={() => { setUploadedCoverUrl(''); setCoverUploadProgress(0); (document.getElementById('coverCreateUpload') as HTMLInputElement).value = ''; }} className="w-10 h-10 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-5 h-5"/></button>}
+                <label className="block text-sm font-bold text-stone-700 mb-2">Bìa Đĩa (Dùng làm thumbnail)</label>
+                <div 
+                  onDragOver={(e) => { e.preventDefault(); setIsDraggingCover(true); }}
+                  onDragLeave={() => setIsDraggingCover(false)}
+                  onDrop={(e) => { 
+                    e.preventDefault(); 
+                    setIsDraggingCover(false); 
+                    const file = e.dataTransfer.files?.[0]; 
+                    if (file && file.type.startsWith('image/')) uploadFileDirectly(file, 'cover'); 
+                  }}
+                  className={`flex flex-wrap gap-4 items-center p-3 rounded-2xl border-2 transition-all duration-200 ${
+                    isDraggingCover 
+                      ? 'border-indigo-500 bg-indigo-50/50 border-dashed scale-[1.01]' 
+                      : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
+                  }`}
+                >
+                  {uploadedCoverUrl ? (
+                    <img src={getPreviewUrl(uploadedCoverUrl)} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-xl border border-dashed border-stone-300 flex items-center justify-center bg-stone-100 text-stone-400">
+                      <Image className="w-6 h-6" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-[150px]">
+                    <div className="flex items-center gap-2">
+                      <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${coverUploadProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('coverCreateUpload')?.click()}>
+                          <Upload className="w-4 h-4"/>
+                          <span>{coverUploadProgress > 0 && coverUploadProgress < 100 ? `Đang tải ${coverUploadProgress}%` : 'Chọn bìa đĩa'}</span>
+                      </button>
+                      {uploadedCoverUrl && (
+                        <button type="button" onClick={() => { setUploadedCoverUrl(''); setCoverUploadProgress(0); (document.getElementById('coverCreateUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-4 h-4"/></button>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-stone-400 mt-1.5">Kéo thả bìa đĩa trực tiếp vào ô này</p>
+                  </div>
                   <input type="hidden" name="coverUrl" value={uploadedCoverUrl} />
                   <input type="file" id="coverCreateUpload" name="cover" accept="image/*" onChange={e => handleFileUpload(e, 'cover')} className="hidden" />
                 </div>
@@ -7362,18 +7417,41 @@ function AdminCreateDemo() {
               <div className="grid grid-cols-1 gap-6">
                  <div>
                   <label className="block text-sm font-bold text-stone-700 mb-2">File Nhạc (Audio) *</label>
-                  <div className="bg-stone-50 border border-stone-200 rounded-2xl p-4 sm:p-5 flex flex-col gap-4 shadow-sm">
-                    <div className="flex gap-4 items-center">
-                      {(uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com') || audioUploadProgress === 100) && (
-                        <div className="w-16 h-16 rounded-xl bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-500 shadow-sm"><FileAudio className="w-8 h-8"/></div>
+                  <div 
+                    onDragOver={(e) => { e.preventDefault(); setIsDraggingAudio(true); }}
+                    onDragLeave={() => setIsDraggingAudio(false)}
+                    onDrop={(e) => { 
+                      e.preventDefault(); 
+                      setIsDraggingAudio(false); 
+                      const file = e.dataTransfer.files?.[0]; 
+                      if (file && (file.type.startsWith('audio/') || file.name.endsWith('.mp3') || file.name.endsWith('.wav') || file.name.endsWith('.m4a'))) {
+                        uploadFileDirectly(file, 'audio');
+                      }
+                    }}
+                    className={`bg-stone-50 border-2 rounded-2xl p-4 sm:p-5 flex flex-col gap-4 shadow-sm transition-all duration-200 ${
+                      isDraggingAudio 
+                        ? 'border-indigo-500 bg-indigo-50/50 border-dashed scale-[1.01]' 
+                        : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
+                    }`}
+                  >
+                    <div className="flex flex-wrap gap-4 items-center">
+                      {(uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com') || audioUploadProgress === 100) ? (
+                        <div className="w-16 h-16 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shadow-sm"><FileAudio className="w-8 h-8"/></div>
+                      ) : (
+                        <div className="w-16 h-16 rounded-xl bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-400 shadow-sm"><FileAudio className="w-8 h-8"/></div>
                       )}
-                      <button type="button" className={`w-16 h-16 rounded-xl flex items-center justify-center relative overflow-hidden transition-colors border shadow-sm ${audioUploadProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('audioCreateUpload')?.click()}>
-                          {audioUploadProgress > 0 && audioUploadProgress < 100 && <div className="absolute left-0 bottom-0 right-0 bg-stone-200 transition-all duration-300" style={{ height: `${audioUploadProgress}%` }}></div>}
-                          <span className="relative z-10 font-bold text-[10px] flex flex-col items-center gap-1"><Upload className="w-5 h-5"/> {audioUploadProgress > 0 && audioUploadProgress < 100 ? `${audioUploadProgress}%` : ''}</span>
-                      </button>
-                      {(uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com') || audioUploadProgress === 100) && (
-                        <button type="button" onClick={() => { setUploadedAudioUrl(''); setAudioUploadProgress(0); (document.getElementById('audioCreateUpload') as HTMLInputElement).value = ''; }} className="w-10 h-10 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-5 h-5"/></button>
-                      )}
+                      <div className="flex-1 min-w-[150px]">
+                        <div className="flex items-center gap-2">
+                          <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${audioUploadProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('audioCreateUpload')?.click()}>
+                              <Upload className="w-4 h-4"/>
+                              <span>{audioUploadProgress > 0 && audioUploadProgress < 100 ? `Đang tải ${audioUploadProgress}%` : 'Chọn file nhạc'}</span>
+                          </button>
+                          {(uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com') || audioUploadProgress === 100) && (
+                            <button type="button" onClick={() => { setUploadedAudioUrl(''); setAudioUploadProgress(0); (document.getElementById('audioCreateUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-4 h-4"/></button>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-stone-400 mt-1.5">Kéo thả file nhạc (.mp3, .wav) trực tiếp vào ô này</p>
+                      </div>
                       <input type="file" id="audioCreateUpload" name="audio" accept="audio/mp3,audio/wav,audio/*" onChange={e => handleFileUpload(e, 'audio')} className="hidden" />
                     </div>
                   </div>
@@ -7385,14 +7463,41 @@ function AdminCreateDemo() {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">Ảnh Nền</label>
-                    <div className="flex flex-wrap gap-4 items-center">
-                      {uploadedBgUrl && <img src={uploadedBgUrl} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />}
-                      <button type="button" className={`w-16 h-16 rounded-xl flex items-center justify-center relative overflow-hidden transition-colors border shadow-sm ${bgUploadProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('bgCreateUpload')?.click()}>
-                          {bgUploadProgress > 0 && bgUploadProgress < 100 && <div className="absolute left-0 bottom-0 right-0 bg-stone-200 transition-all duration-300" style={{ height: `${bgUploadProgress}%` }}></div>}
-                          <span className="relative z-10 font-bold text-[10px] flex flex-col items-center gap-1"><Upload className="w-5 h-5"/> {bgUploadProgress > 0 && bgUploadProgress < 100 ? `${bgUploadProgress}%` : ''}</span>
-                      </button>
-                      {uploadedBgUrl && <button type="button" onClick={() => { setUploadedBgUrl(''); setBgUploadProgress(0); (document.getElementById('bgCreateUpload') as HTMLInputElement).value = ''; }} className="w-10 h-10 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-5 h-5"/></button>}
+                    <label className="block text-sm font-bold text-stone-700 mb-2">Ảnh Nền (Nếu có)</label>
+                    <div 
+                      onDragOver={(e) => { e.preventDefault(); setIsDraggingBg(true); }}
+                      onDragLeave={() => setIsDraggingBg(false)}
+                      onDrop={(e) => { 
+                        e.preventDefault(); 
+                        setIsDraggingBg(false); 
+                        const file = e.dataTransfer.files?.[0]; 
+                        if (file && file.type.startsWith('image/')) uploadFileDirectly(file, 'background'); 
+                      }}
+                      className={`flex flex-wrap gap-4 items-center p-3 rounded-2xl border-2 transition-all duration-200 ${
+                        isDraggingBg 
+                          ? 'border-indigo-500 bg-indigo-50/50 border-dashed scale-[1.01]' 
+                          : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
+                      }`}
+                    >
+                      {uploadedBgUrl ? (
+                        <img src={uploadedBgUrl} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />
+                      ) : (
+                        <div className="w-16 h-16 rounded-xl border border-dashed border-stone-300 flex items-center justify-center bg-stone-100 text-stone-400">
+                          <Image className="w-6 h-6" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-[150px]">
+                        <div className="flex items-center gap-2">
+                          <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${bgUploadProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('bgCreateUpload')?.click()}>
+                              <Upload className="w-4 h-4"/>
+                              <span>{bgUploadProgress > 0 && bgUploadProgress < 100 ? `Đang tải ${bgUploadProgress}%` : 'Chọn ảnh nền'}</span>
+                          </button>
+                          {uploadedBgUrl && (
+                            <button type="button" onClick={() => { setUploadedBgUrl(''); setBgUploadProgress(0); (document.getElementById('bgCreateUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-4 h-4"/></button>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-stone-400 mt-1.5">Kéo thả ảnh nền trực tiếp vào ô này</p>
+                      </div>
                       <input type="hidden" name="backgroundUrl" value={uploadedBgUrl} />
                       <input type="file" id="bgCreateUpload" name="background" accept="image/*" onChange={e => handleFileUpload(e, 'background')} className="hidden" />
                     </div>
@@ -7717,13 +7822,13 @@ function AdminEditDemo() {
     }
   }, [title, isSlugEdited, demo]);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'audio' | 'cover' | 'background') => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const [isDraggingCover, setIsDraggingCover] = useState(false);
+  const [isDraggingAudio, setIsDraggingAudio] = useState(false);
+  const [isDraggingBg, setIsDraggingBg] = useState(false);
 
+  const uploadFileDirectly = (file: File, type: 'audio' | 'cover' | 'background') => {
     if (file.size > 100 * 1024 * 1024) { // 100MB limit check client-side
         alert('File quá nặng. Vui lòng chọn file dưới 100MB (Hệ thống hỗ trợ tự động convert nhạc WAV sang MP3 và tối ưu hóa ảnh).');
-        e.target.value = '';
         return;
     }
 
@@ -7774,6 +7879,12 @@ function AdminEditDemo() {
     };
 
     xhr.send(formData);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'audio' | 'cover' | 'background') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    uploadFileDirectly(file, type);
   };
 
   const saveDemo = async (isDraft: boolean) => {
@@ -7938,14 +8049,41 @@ function AdminEditDemo() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
               <div>
-                <label className="block text-sm font-bold text-stone-700 mb-2">Ảnh Bìa Mới (Tùy chọn)</label>
-                <div className="flex flex-wrap gap-4 items-center">
-                  {(uploadedCoverUrl || demo?.coverUrl) && <img src={getPreviewUrl(uploadedCoverUrl || demo?.coverUrl)} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />}
-                  <button type="button" className={`w-16 h-16 rounded-xl flex items-center justify-center relative overflow-hidden transition-colors border shadow-sm ${coverUploadProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('coverEditUpload')?.click()}>
-                      {coverUploadProgress > 0 && coverUploadProgress < 100 && <div className="absolute left-0 bottom-0 right-0 bg-stone-200 transition-all duration-300" style={{ height: `${coverUploadProgress}%` }}></div>}
-                      <span className="relative z-10 font-bold text-[10px] flex flex-col items-center gap-1"><Upload className="w-5 h-5"/> {coverUploadProgress > 0 && coverUploadProgress < 100 ? `${coverUploadProgress}%` : ''}</span>
-                  </button>
-                  {uploadedCoverUrl && <button type="button" onClick={() => { setUploadedCoverUrl(''); setCoverUploadProgress(0); (document.getElementById('coverEditUpload') as HTMLInputElement).value = ''; }} className="w-10 h-10 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-5 h-5"/></button>}
+                <label className="block text-sm font-bold text-stone-700 mb-2">Bìa Đĩa Mới (Dùng làm thumbnail - Tùy chọn)</label>
+                <div 
+                  onDragOver={(e) => { e.preventDefault(); setIsDraggingCover(true); }}
+                  onDragLeave={() => setIsDraggingCover(false)}
+                  onDrop={(e) => { 
+                    e.preventDefault(); 
+                    setIsDraggingCover(false); 
+                    const file = e.dataTransfer.files?.[0]; 
+                    if (file && file.type.startsWith('image/')) uploadFileDirectly(file, 'cover'); 
+                  }}
+                  className={`flex flex-wrap gap-4 items-center p-3 rounded-2xl border-2 transition-all duration-200 ${
+                    isDraggingCover 
+                      ? 'border-indigo-500 bg-indigo-50/50 border-dashed scale-[1.01]' 
+                      : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
+                  }`}
+                >
+                  {(uploadedCoverUrl || demo?.coverUrl) ? (
+                    <img src={getPreviewUrl(uploadedCoverUrl || demo?.coverUrl)} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-xl border border-dashed border-stone-300 flex items-center justify-center bg-stone-100 text-stone-400">
+                      <Image className="w-6 h-6" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-[150px]">
+                    <div className="flex items-center gap-2">
+                      <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${coverUploadProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('coverEditUpload')?.click()}>
+                          <Upload className="w-4 h-4"/>
+                          <span>{coverUploadProgress > 0 && coverUploadProgress < 100 ? `Đang tải ${coverUploadProgress}%` : 'Chọn bìa đĩa'}</span>
+                      </button>
+                      {uploadedCoverUrl && (
+                        <button type="button" onClick={() => { setUploadedCoverUrl(''); setCoverUploadProgress(0); (document.getElementById('coverEditUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-4 h-4"/></button>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-stone-400 mt-1.5">Kéo thả bìa đĩa trực tiếp vào ô này</p>
+                  </div>
                   <input type="hidden" name="coverUrl" value={uploadedCoverUrl} />
                   <input type="file" id="coverEditUpload" name="cover" accept="image/*" onChange={e => handleFileUpload(e, 'cover')} className="hidden" />
                 </div>
@@ -7956,7 +8094,23 @@ function AdminEditDemo() {
               <div className="grid grid-cols-1 gap-6">
                  <div>
                   <label className="block text-sm font-bold text-stone-700 mb-2">File Nhạc (Audio) *</label>
-                  <div className="bg-stone-50 border border-stone-200 rounded-2xl p-4 sm:p-5 flex flex-col gap-4 shadow-sm">
+                  <div 
+                    onDragOver={(e) => { e.preventDefault(); setIsDraggingAudio(true); }}
+                    onDragLeave={() => setIsDraggingAudio(false)}
+                    onDrop={(e) => { 
+                      e.preventDefault(); 
+                      setIsDraggingAudio(false); 
+                      const file = e.dataTransfer.files?.[0]; 
+                      if (file && (file.type.startsWith('audio/') || file.name.endsWith('.mp3') || file.name.endsWith('.wav') || file.name.endsWith('.m4a'))) {
+                        uploadFileDirectly(file, 'audio');
+                      }
+                    }}
+                    className={`bg-stone-50 border-2 rounded-2xl p-4 sm:p-5 flex flex-col gap-4 shadow-sm transition-all duration-200 ${
+                      isDraggingAudio 
+                        ? 'border-indigo-500 bg-indigo-50/50 border-dashed scale-[1.01]' 
+                        : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
+                    }`}
+                  >
                     {/* Current Audio Info if exists */}
                     {(demo?.audioUrl || uploadedAudioUrl) && (
                       <div className="text-xs text-stone-500 border-b border-stone-200 pb-3 mb-1 flex justify-between items-center flex-wrap gap-2">
@@ -7995,17 +8149,24 @@ function AdminEditDemo() {
                       </div>
                     )}
 
-                    <div className="flex gap-4 items-center">
-                      {(uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com') || audioUploadProgress === 100) && (
-                        <div className="w-16 h-16 rounded-xl bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-500 shadow-sm"><FileAudio className="w-8 h-8"/></div>
+                    <div className="flex flex-wrap gap-4 items-center">
+                      {(uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com') || audioUploadProgress === 100) ? (
+                        <div className="w-16 h-16 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shadow-sm"><FileAudio className="w-8 h-8"/></div>
+                      ) : (
+                        <div className="w-16 h-16 rounded-xl bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-400 shadow-sm"><FileAudio className="w-8 h-8"/></div>
                       )}
-                      <button type="button" className={`w-16 h-16 rounded-xl flex items-center justify-center relative overflow-hidden transition-colors border shadow-sm ${audioUploadProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('audioEditUpload')?.click()}>
-                          {audioUploadProgress > 0 && audioUploadProgress < 100 && <div className="absolute left-0 bottom-0 right-0 bg-stone-200 transition-all duration-300" style={{ height: `${audioUploadProgress}%` }}></div>}
-                          <span className="relative z-10 font-bold text-[10px] flex flex-col items-center gap-1"><Upload className="w-5 h-5"/> {audioUploadProgress > 0 && audioUploadProgress < 100 ? `${audioUploadProgress}%` : ''}</span>
-                      </button>
-                      {(uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com') || audioUploadProgress === 100) && (
-                        <button type="button" onClick={() => { setUploadedAudioUrl(''); setAudioUploadProgress(0); (document.getElementById('audioEditUpload') as HTMLInputElement).value = ''; }} className="w-10 h-10 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-5 h-5"/></button>
-                      )}
+                      <div className="flex-1 min-w-[150px]">
+                        <div className="flex items-center gap-2">
+                          <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${audioUploadProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('audioEditUpload')?.click()}>
+                              <Upload className="w-4 h-4"/>
+                              <span>{audioUploadProgress > 0 && audioUploadProgress < 100 ? `Đang tải ${audioUploadProgress}%` : 'Chọn file nhạc'}</span>
+                          </button>
+                          {(uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com') || audioUploadProgress === 100) && (
+                            <button type="button" onClick={() => { setUploadedAudioUrl(''); setAudioUploadProgress(0); (document.getElementById('audioEditUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-4 h-4"/></button>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-stone-400 mt-1.5">Kéo thả file nhạc (.mp3, .wav) trực tiếp vào ô này</p>
+                      </div>
                       <input type="file" id="audioEditUpload" name="audio" accept="audio/mp3,audio/wav,audio/*" onChange={e => handleFileUpload(e, 'audio')} className="hidden" />
                     </div>
                   </div>
@@ -8017,14 +8178,41 @@ function AdminEditDemo() {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">Ảnh Nền Mới (Tùy chọn)</label>
-                    <div className="flex flex-wrap gap-4 items-center">
-                      {(uploadedBgUrl || demo?.backgroundUrl) && <img src={getPreviewUrl(uploadedBgUrl || demo?.backgroundUrl)} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />}
-                      <button type="button" className={`w-16 h-16 rounded-xl flex items-center justify-center relative overflow-hidden transition-colors border shadow-sm ${bgUploadProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('bgEditUpload')?.click()}>
-                          {bgUploadProgress > 0 && bgUploadProgress < 100 && <div className="absolute left-0 bottom-0 right-0 bg-stone-200 transition-all duration-300" style={{ height: `${bgUploadProgress}%` }}></div>}
-                          <span className="relative z-10 font-bold text-[10px] flex flex-col items-center gap-1"><Upload className="w-5 h-5"/> {bgUploadProgress > 0 && bgUploadProgress < 100 ? `${bgUploadProgress}%` : ''}</span>
-                      </button>
-                      {uploadedBgUrl && <button type="button" onClick={() => { setUploadedBgUrl(''); setBgUploadProgress(0); (document.getElementById('bgEditUpload') as HTMLInputElement).value = ''; }} className="w-10 h-10 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-5 h-5"/></button>}
+                    <label className="block text-sm font-bold text-stone-700 mb-2">Ảnh Nền Mới (Nếu có - Tùy chọn)</label>
+                    <div 
+                      onDragOver={(e) => { e.preventDefault(); setIsDraggingBg(true); }}
+                      onDragLeave={() => setIsDraggingBg(false)}
+                      onDrop={(e) => { 
+                        e.preventDefault(); 
+                        setIsDraggingBg(false); 
+                        const file = e.dataTransfer.files?.[0]; 
+                        if (file && file.type.startsWith('image/')) uploadFileDirectly(file, 'background'); 
+                      }}
+                      className={`flex flex-wrap gap-4 items-center p-3 rounded-2xl border-2 transition-all duration-200 ${
+                        isDraggingBg 
+                          ? 'border-indigo-500 bg-indigo-50/50 border-dashed scale-[1.01]' 
+                          : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
+                      }`}
+                    >
+                      {(uploadedBgUrl || demo?.backgroundUrl) ? (
+                        <img src={getPreviewUrl(uploadedBgUrl || demo?.backgroundUrl)} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />
+                      ) : (
+                        <div className="w-16 h-16 rounded-xl border border-dashed border-stone-300 flex items-center justify-center bg-stone-100 text-stone-400">
+                          <Image className="w-6 h-6" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-[150px]">
+                        <div className="flex items-center gap-2">
+                          <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${bgUploadProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('bgEditUpload')?.click()}>
+                              <Upload className="w-4 h-4"/>
+                              <span>{bgUploadProgress > 0 && bgUploadProgress < 100 ? `Đang tải ${bgUploadProgress}%` : 'Chọn ảnh nền'}</span>
+                          </button>
+                          {uploadedBgUrl && (
+                            <button type="button" onClick={() => { setUploadedBgUrl(''); setBgUploadProgress(0); (document.getElementById('bgEditUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-4 h-4"/></button>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-stone-400 mt-1.5">Kéo thả ảnh nền trực tiếp vào ô này</p>
+                      </div>
                       <input type="hidden" name="backgroundUrl" value={uploadedBgUrl} />
                       <input type="file" id="bgEditUpload" name="background" accept="image/*" onChange={e => handleFileUpload(e, 'background')} className="hidden" />
                     </div>
