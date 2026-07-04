@@ -8,7 +8,38 @@
   "youtubePlaylistUrl": "",
   "spotifyUrl": "",
   "releasedSongs": [],
-  "demos": [],
+  "demos": [
+    {
+      "id": "1783116326595",
+      "slug": "dfewdfwsfsdfsdf",
+      "title": "dfewdfwsfsdfsdf",
+      "author": "",
+      "audioUrl": "/uploads/05ld1sirzmik/1783116318961-993906430.mp3",
+      "backupAudioUrl": "/uploads/05ld1sirzmik/1783116318961-993906430.mp3",
+      "coverUrl": "/uploads/05ld1sirzmik/1783116320867-706173643-1783116320868.jpg",
+      "secretKey": "f4a21da6709c91fb",
+      "backgroundUrl": "",
+      "lyrics": "ffsdfsdfsdfsdf",
+      "template": "1",
+      "status": "public",
+      "password": "",
+      "createdAt": 1783116326596,
+      "composer": "Mai Xuân Thứ",
+      "singer": "Mai Xuân Thứ",
+      "isReleased": false,
+      "isDraft": false,
+      "releaseYear": "",
+      "playlistIds": [],
+      "achievements": [],
+      "linkType": "direct",
+      "linkZing": "",
+      "linkSpotify": "",
+      "linkApple": "",
+      "linkYoutubeMusic": "",
+      "linkYoutube": "",
+      "linkDrive": ""
+    }
+  ],
   "playlists": [],
   "adminPassword": "tttttttt",
   "memberPassword": "",
@@ -18,5 +49,7 @@
   "tab1Name": "",
   "tab2Name": "",
   "tab3Name": "",
-  "slideshowImages": []
+  "slideshowImages": [],
+  "pendingNameChange": "Mai Xuân Thứ fix",
+  "username": "mxt"
 }

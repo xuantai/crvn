@@ -170,10 +170,11 @@ async function loadArtists() {
 async function saveArtists(list: any[]) {
   artists = list;
   try {
-    await fs.writeFile(ARTISTS_FILE, JSON.stringify(artists, null, 2), 'utf-8');
+    const cleanedArtists = JSON.parse(JSON.stringify(artists));
+    await fs.writeFile(ARTISTS_FILE, JSON.stringify(cleanedArtists, null, 2), 'utf-8');
     if (!isFirestoreDisabled && landingConfig.cloudSyncEnabled !== false) {
       const masterDoc = doc(db, 'app_data', 'master');
-      await setDoc(masterDoc, { artists });
+      await setDoc(masterDoc, { artists: cleanedArtists });
     }
   } catch (e) {
     console.error("Error saving artists:", e);
@@ -739,9 +740,21 @@ async function saveData(usernameOrData: any, data?: any) {
     currentUsername = usernameOrData;
     realData = data;
   } else {
-    currentUsername = artistStorage.getStore() || 'acxuantai';
+    // Attempt to detect artist from the data object itself
+    const foundArtist = artists.find(a => 
+      (realData.artistName && a.artistName === realData.artistName) ||
+      (realData.adminPassword && a.password === realData.adminPassword)
+    );
+    if (foundArtist) {
+      currentUsername = foundArtist.username;
+    } else {
+      currentUsername = artistStorage.getStore() || 'acxuantai';
+    }
     realData = usernameOrData;
   }
+
+  // Ensure username is always explicitly stored in the data file for future reliability
+  realData.username = currentUsername;
 
   const artist = artists.find(a => a.username === currentUsername) || artists[0] || { username: 'acxuantai' };
   const artistDataFile = path.join(process.cwd(), `data_${currentUsername}.json`);
@@ -1308,15 +1321,15 @@ async function startServer() {
     
     if (approveNameChange && artist.pendingNameChange) {
       artist.artistName = artist.pendingNameChange;
-      artist.pendingNameChange = undefined;
+      delete artist.pendingNameChange;
       const data = await loadData(artist.username);
       data.artistName = artist.artistName;
-      data.pendingNameChange = undefined;
+      delete data.pendingNameChange;
       await saveData(artist.username, data);
     } else if (rejectNameChange) {
-      artist.pendingNameChange = undefined;
+      delete artist.pendingNameChange;
       const data = await loadData(artist.username);
-      data.pendingNameChange = undefined;
+      delete data.pendingNameChange;
       await saveData(artist.username, data);
     } else if (approveUsernameChange && artist.pendingUsernameChange) {
       // Need to rename the data file and username
@@ -1325,12 +1338,12 @@ async function startServer() {
       
       // Update artist object
       artist.username = newUsername;
-      artist.pendingUsernameChange = undefined;
+      delete artist.pendingUsernameChange;
       
       // Load old data, change, save as new, delete old
       const data = await loadData(oldUsername);
       data.username = newUsername;
-      data.pendingUsernameChange = undefined;
+      delete data.pendingUsernameChange;
       await saveData(newUsername, data);
       
       const fs = require('fs');
@@ -1339,9 +1352,9 @@ async function startServer() {
         fs.unlinkSync(path.join(process.cwd(), `data_${oldUsername}.json`));
       } catch(e) {}
     } else if (rejectUsernameChange) {
-      artist.pendingUsernameChange = undefined;
+      delete artist.pendingUsernameChange;
       const data = await loadData(artist.username);
-      data.pendingUsernameChange = undefined;
+      delete data.pendingUsernameChange;
       await saveData(artist.username, data);
     } else if (!approveNameChange && !rejectNameChange && !approveUsernameChange && !rejectUsernameChange) {
       artist.artistName = artistName || artist.artistName;
@@ -1608,11 +1621,19 @@ async function startServer() {
     const artist = req.artist;
     if (artist) {
       if (req.body.type === 'name') {
-        artist.pendingNameChange = undefined;
-        data.pendingNameChange = undefined;
+        delete artist.pendingNameChange;
+        delete data.pendingNameChange;
+        const idx = artists.findIndex(a => a.username === artist.username);
+        if (idx !== -1) {
+          delete artists[idx].pendingNameChange;
+        }
       } else if (req.body.type === 'username') {
-        artist.pendingUsernameChange = undefined;
-        data.pendingUsernameChange = undefined;
+        delete artist.pendingUsernameChange;
+        delete data.pendingUsernameChange;
+        const idx = artists.findIndex(a => a.username === artist.username);
+        if (idx !== -1) {
+          delete artists[idx].pendingUsernameChange;
+        }
       }
       await saveArtists(artists);
       await saveData(artist.username, data);
