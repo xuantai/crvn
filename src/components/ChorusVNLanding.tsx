@@ -150,11 +150,15 @@ function ArtistLandingCard({ artist, t }: { artist: any; t: any; key?: any }) {
     ? artist.slideshowImages
     : [];
 
-  // Filter out the homeCoverUrl to avoid duplicate elements
-  bgImages = bgImages.filter(img => img !== artist.homeCoverUrl);
-
-  // If empty, fall back to premium stock music backgrounds
-  if (bgImages.length === 0) {
+  // Filter out the homeCoverUrl ONLY if there are other images (chia ra)
+  const otherImages = bgImages.filter(img => img !== artist.homeCoverUrl);
+  if (otherImages.length > 0) {
+    bgImages = otherImages;
+  } else if (artist.homeCoverUrl) {
+    // If only one image exists, use it for both purposes (dùng hình đó cho cả 2 mục đích)
+    bgImages = [artist.homeCoverUrl];
+  } else {
+    // If empty, fall back to premium stock music backgrounds
     bgImages = FALLBACK_SLIDESHOW;
   }
 
