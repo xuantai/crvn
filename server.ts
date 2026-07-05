@@ -1958,8 +1958,10 @@ async function startServer() {
       memberPassword: req.artist?.memberPassword || '', 
       isMasterAdmin: req.artist?.username === 'acxuantai',
       username: req.artist?.username,
+      extension: req.artist?.extension,
       pendingNameChange: req.artist?.pendingNameChange,
       pendingUsernameChange: req.artist?.pendingUsernameChange,
+      pendingExtensionChange: req.artist?.pendingExtensionChange,
       systemIp: landingConfig.systemIp || ''
     });
   });
@@ -2085,6 +2087,16 @@ async function startServer() {
       if (artist) {
         artist.pendingUsernameChange = req.body.username;
         data.pendingUsernameChange = req.body.username;
+        await saveArtists(artists);
+        nameChangeNotice = true;
+      }
+    }
+    
+    if (req.body.extension !== undefined && req.body.extension !== req.artist.extension) {
+      const artist = req.artist;
+      if (artist) {
+        artist.pendingExtensionChange = req.body.extension;
+        data.pendingExtensionChange = req.body.extension;
         await saveArtists(artists);
         nameChangeNotice = true;
       }

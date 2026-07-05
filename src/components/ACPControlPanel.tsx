@@ -974,6 +974,25 @@ export default function ACPControlPanel() {
                                     </button>
                                   </div>
                                 )}
+                                {artist.pendingExtensionChange && (
+                                  <div className="mt-1.5 flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 text-purple-400 py-1 px-2.5 rounded-lg text-[10px] font-bold">
+                                    <span>Đang muốn đổi Sub-domain thành: "{artist.pendingExtensionChange}"</span>
+                                    <button 
+                                      onClick={() => handleApproveExtensionChange(artist.username)}
+                                      className="bg-emerald-500 text-white p-0.5 rounded-md hover:bg-emerald-600 transition-colors cursor-pointer"
+                                      title="Duyệt"
+                                    >
+                                      <Check className="w-2.5 h-2.5 stroke-[3]" />
+                                    </button>
+                                    <button 
+                                      onClick={() => handleRejectExtensionChange(artist.username)}
+                                      className="bg-red-500 text-white p-0.5 rounded-md hover:bg-red-600 transition-colors cursor-pointer"
+                                      title="Từ chối"
+                                    >
+                                      <X className="w-2.5 h-2.5 stroke-[3]" />
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </td>

@@ -6858,11 +6858,11 @@ function AdminDashboard() {
                       <button type="button" onClick={() => handleCancelRequest('name')} className="shrink-0 bg-stone-100 hover:bg-stone-200 text-stone-600 px-4 py-3 rounded-xl font-bold transition-colors cursor-pointer">Cancel</button>
                     </div>
                   ) : (
-                    <input name="artistName" defaultValue={data.artistName} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
+                    <input name="artistName" defaultValue={data.artistName} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" autoComplete="off" data-lpignore="true" data-1p-ignore="true" />
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">Username (Phần mở rộng)</label>
+                  <label className="block text-sm font-bold text-stone-700 mb-2">Username đăng nhập</label>
                   {data.pendingUsernameChange ? (
                     <div className="flex items-center gap-2">
                       <div className="w-full border border-stone-200 bg-stone-100 text-stone-500 rounded-xl px-4 py-3 flex items-center justify-between opacity-80 select-none">
@@ -6872,10 +6872,24 @@ function AdminDashboard() {
                       <button type="button" onClick={() => handleCancelRequest('username')} className="shrink-0 bg-stone-100 hover:bg-stone-200 text-stone-600 px-4 py-3 rounded-xl font-bold transition-colors cursor-pointer">Cancel</button>
                     </div>
                   ) : (
-                    <input name="username" defaultValue={data.username} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono" />
+                    <input name="username" defaultValue={data.username} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono" autoComplete="off" data-lpignore="true" data-1p-ignore="true" />
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-stone-700 mb-2">Phần mở rộng (Sub-domain)</label>
+                  {data.pendingExtensionChange ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-full border border-stone-200 bg-stone-100 text-stone-500 rounded-xl px-4 py-3 flex items-center justify-between opacity-80 select-none">
+                        <span>Đang yêu cầu đổi thành: <strong>{data.pendingExtensionChange}</strong></span>
+                        <Lock className="w-4 h-4 text-stone-400" />
+                      </div>
+                      <button type="button" onClick={() => handleCancelRequest('extension')} className="shrink-0 bg-stone-100 hover:bg-stone-200 text-stone-600 px-4 py-3 rounded-xl font-bold transition-colors cursor-pointer">Cancel</button>
+                    </div>
+                  ) : (
+                    <input name="extension" defaultValue={data.extension} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono" autoComplete="off" data-lpignore="true" data-1p-ignore="true" />
                   )}
                   <p className="text-xs text-stone-500 mt-1.5">
-                    Của bạn đang là <strong className="text-stone-700">{data.username}.chorus.vn</strong>
+                    Link của bạn đang là <strong className="text-stone-700">{data.extension}.chorus.vn</strong>
                   </p>
                 </div>
 
@@ -7134,7 +7148,7 @@ function AdminDashboard() {
                 <hr className="border-stone-200" />
                 <div>
                   <label className="block text-sm font-bold text-stone-700 mb-2">Mật khẩu chung cho các Demo</label>
-                  <input name="globalPassword" defaultValue={data.globalPassword} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono" placeholder="Để trống nếu không muốn dùng mật khẩu chung" />
+                  <input name="globalPassword" defaultValue={data.globalPassword} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono" placeholder="Để trống nếu không muốn dùng mật khẩu chung" autoComplete="new-password" data-lpignore="true" data-1p-ignore="true" />
                   <p className="text-sm text-stone-500 mt-2">Tất cả các link ở trang chủ nếu chưa đặt mật khẩu riêng thì sẽ được bảo vệ bởi mật khẩu chung này.</p>
                 </div>
                 <div className="bg-gradient-to-br from-amber-50 to-orange-50/50 border border-amber-200/60 rounded-2xl p-6 shadow-sm">
@@ -7213,23 +7227,7 @@ function AdminDashboard() {
                   </div>
                 </div>
 
-<div className="bg-stone-50 border border-stone-200 p-5 rounded-2xl space-y-4">
-                  <h3 className="font-bold text-stone-800 text-sm">Tên tùy chỉnh các Tab Danh Sách Nhạc</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-stone-600 mb-1.5">Tab 1 (Nhạc phát hành)</label>
-                      <input name="tab1Name" defaultValue={data.tab1Name} placeholder="Mặc định: Ra Rồi" className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-stone-600 mb-1.5">Tab 2 (Nhạc đề mô)</label>
-                      <input name="tab2Name" defaultValue={data.tab2Name} placeholder="Mặc định: Đề Mô" className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-stone-600 mb-1.5">Tab 3 (Album/EP)</label>
-                      <input name="tab3Name" defaultValue={data.tab3Name} placeholder="Mặc định: Album/EP" className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
-                    </div>
-                  </div>
-                </div>
+
 
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-3 bg-stone-50 border border-stone-200 p-4 rounded-xl">
