@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X,
-  LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home, Upload,
-  MessageSquare, Send, AlertTriangle, Disc3, Bell
-} from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ChorusLogo } from './ChorusLogo';
+import { Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X, LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home, Upload, MessageSquare, Send, AlertTriangle, Disc3, Bell, ChevronLeft } from 'lucide-react';
+
 
 interface Artist {
   artistName: string;
@@ -28,6 +27,12 @@ export default function ACPControlPanel() {
   const [toast, setToast] = useState('');
 
   // ACP Navigation / Tab system
+  const [actionConfirm, setActionConfirm] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
   const [activeTab, setActiveTab] = useState<'artists' | 'landing' | 'tickets'>('artists');
 
   // ACP data
@@ -250,8 +255,71 @@ export default function ACPControlPanel() {
     }
   };
 
+  const handleReopenTicket = async (ticketId: string) => {
+    setActionConfirm({
+      isOpen: true,
+      title: "Mở lại yêu cầu",
+      message: "Bạn có chắc chắn muốn mở lại ticket này không?",
+      onConfirm: async () => {
+        setIsHandlingTicketAction(true);
+        try {
+          const res = await fetch(`/api/acp/tickets/${ticketId}/reopen`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (res.ok) {
+            const result = await res.json();
+            setSelectedTicket(result.ticket);
+            setToast("Đã mở lại ticket thành công!");
+            fetchTickets();
+          } else {
+            const err = await res.json();
+            setToast(`Lỗi: ${err.error}`);
+          }
+        } catch (e) {
+          console.error(e);
+          setToast("Lỗi kết nối");
+        } finally {
+          setIsHandlingTicketAction(false);
+        }
+      }
+    });
+  };
+
   const handleResolveTicket = async (ticketId: string) => {
-    setIsHandlingTicketAction(true);
+    setActionConfirm({
+      isOpen: true,
+      title: "Từ chối yêu cầu",
+      message: "Bạn có chắc chắn muốn từ chối yêu cầu và đóng ticket này?",
+      onConfirm: async () => {
+        setIsHandlingTicketAction(true);
+        try {
+          const res = await fetch(`/api/acp/tickets/${ticketId}/resolve`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (res.ok) {
+            const result = await res.json();
+            setSelectedTicket(result.ticket);
+            setToast("Đã đóng ticket thành công!");
+            fetchTickets();
+          } else {
+            const err = await res.json();
+            alert(`Lỗi: ${err.error || 'Không thể đóng ticket'}`);
+          }
+        } catch (e: any) {
+          alert(`Lỗi: ${e.message}`);
+        } finally {
+          setIsHandlingTicketAction(false);
+        }
+      }
+    });
+  };
+  const handleResolveTicketOriginal = async (ticketId: string) => {
     try {
       const res = await fetch(`/api/acp/tickets/${ticketId}/resolve`, {
         method: 'POST',
@@ -276,10 +344,37 @@ export default function ACPControlPanel() {
   };
 
   const handleAdminRemoveSong = async (ticketId: string) => {
-    if (!window.confirm("Bạn có chắc chắn muốn GỠ bài hát này khỏi hệ thống? Quyết định này không thể hoàn tác!")) {
-      return;
-    }
-    setIsHandlingTicketAction(true);
+    setActionConfirm({
+      isOpen: true,
+      title: "Gỡ bài hát",
+      message: "Bạn có chắc chắn muốn GỠ bài hát này khỏi hệ thống? Quyết định này không thể hoàn tác!",
+      onConfirm: async () => {
+        setIsHandlingTicketAction(true);
+        try {
+          const res = await fetch(`/api/acp/tickets/${ticketId}/remove-song`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (res.ok) {
+            const result = await res.json();
+            setSelectedTicket(result.ticket);
+            setToast("Đã gỡ bài hát và đóng ticket!");
+            fetchTickets();
+          } else {
+            const err = await res.json();
+            alert(`Lỗi: ${err.error || 'Không thể gỡ bài hát'}`);
+          }
+        } catch (e: any) {
+          alert(`Lỗi: ${e.message}`);
+        } finally {
+          setIsHandlingTicketAction(false);
+        }
+      }
+    });
+  };
+  const handleAdminRemoveSongOriginal = async (ticketId: string) => {
     try {
       const res = await fetch(`/api/acp/tickets/${ticketId}/remove-song`, {
         method: 'POST',
@@ -1511,7 +1606,6 @@ export default function ACPControlPanel() {
 
                           <div className="text-[11px] text-neutral-400 flex flex-col gap-0.5 w-full">
                             <div className="truncate">Người yêu cầu: <strong className="text-neutral-200">@{ticket.reporter.username}</strong></div>
-                            <div className="truncate">Kênh đăng tải: <strong className="text-neutral-200">@{ticket.sourceArtist}</strong></div>
                           </div>
 
                           {lastMsg && (
@@ -1527,7 +1621,7 @@ export default function ACPControlPanel() {
               </div>
 
               {/* Chat / Moderation Panel */}
-              <div className="lg:col-span-2 bg-gradient-to-br from-neutral-900/50 to-neutral-800/30 border border-white/5 rounded-3xl p-6 backdrop-blur-md flex flex-col h-full overflow-hidden min-h-0">
+              <div className={`lg:col-span-2 bg-gradient-to-br from-neutral-900/50 to-neutral-800/30 border border-white/5 rounded-3xl p-6 backdrop-blur-md flex-col h-full overflow-hidden min-h-0 ${!selectedTicket ? 'hidden lg:flex' : 'flex'}`}>
                 {selectedTicket ? (
                   <div className="flex flex-col h-full overflow-hidden min-h-0">
                     {/* Header */}
@@ -1546,25 +1640,43 @@ export default function ACPControlPanel() {
                           )}
                         </div>
                         <p className="text-xs text-neutral-400 mt-1">
-                          Người yêu cầu: <strong className="text-neutral-200">{selectedTicket.reporter.name}</strong> (@{selectedTicket.reporter.username}) | Kênh uploader: <strong className="text-neutral-200">{selectedTicket.sourceArtist}</strong>
+                          <span className="hidden sm:inline">Người yêu cầu: </span><strong className="text-neutral-200">{selectedTicket.reporter.name}</strong><span className="hidden sm:inline"> (@{selectedTicket.reporter.username})</span> | Kênh uploader: <strong className="text-neutral-200">{selectedTicket.sourceArtist}</strong>
                         </p>
                       </div>
 
                       {selectedTicket.status === 'open' && (
                         <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleAdminRemoveSong(selectedTicket.id)}
-                            disabled={isHandlingTicketAction}
-                            className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold py-2 px-3.5 rounded-xl text-xs flex items-center gap-1.5 cursor-pointer shadow-lg shadow-red-600/10 transition-all active:scale-95"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" /> Gỡ bài hát
-                          </button>
+                          {selectedTicket.type === 'remove' && (
+                            <button
+                              onClick={() => handleAdminRemoveSong(selectedTicket.id)}
+                              disabled={isHandlingTicketAction}
+                              className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold p-2 sm:px-3 sm:py-2 rounded-lg text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-red-600/10 transition-all active:scale-95"
+                              title="Gỡ Bài Hát"
+                            >
+                              <Check className="w-4 h-4" />
+                              <span className="hidden sm:inline font-bold whitespace-nowrap">Đồng Ý</span>
+                            </button>
+                          )}
                           <button
                             onClick={() => handleResolveTicket(selectedTicket.id)}
                             disabled={isHandlingTicketAction}
-                            className="bg-neutral-800 hover:bg-neutral-700 disabled:opacity-50 text-neutral-200 hover:text-white font-bold py-2 px-3.5 rounded-xl text-xs flex items-center gap-1.5 cursor-pointer border border-white/5 transition-all active:scale-95"
+                            className="bg-neutral-800 hover:bg-neutral-700 disabled:opacity-50 text-neutral-200 hover:text-white font-bold p-2 sm:px-3 sm:py-2 rounded-lg text-xs flex items-center justify-center gap-1.5 cursor-pointer border border-white/5 transition-all active:scale-95"
+                            title="Từ Chối"
                           >
-                            <CheckCircle className="w-3.5 h-3.5" /> Đóng yêu cầu
+                            <X className="w-4 h-4" />
+                            <span className="hidden sm:inline font-bold whitespace-nowrap">Từ Chối</span>
+                          </button>
+                        </div>
+                      )}
+                      {selectedTicket.status !== 'open' && (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleReopenTicket(selectedTicket.id)}
+                            disabled={isHandlingTicketAction}
+                            className="bg-neutral-800 hover:bg-neutral-700 disabled:opacity-50 text-neutral-200 hover:text-white font-bold p-2 sm:px-3 sm:py-2 rounded-lg text-xs flex items-center justify-center gap-1.5 cursor-pointer border border-white/5 transition-all active:scale-95"
+                            title="Mở Lại"
+                          >
+                            <span className="hidden sm:inline font-bold whitespace-nowrap">Mở Lại</span>
                           </button>
                         </div>
                       )}
@@ -1583,21 +1695,31 @@ export default function ACPControlPanel() {
 
                       {/* Messages loop */}
                       {selectedTicket.messages.map((msg: any, idx: number) => {
-                        const isMe = msg.sender === 'admin';
-                        const isReporter = msg.sender === selectedTicket.reporter.username;
+                        let senderUsername = msg.sender;
+                        if (msg.sender === 'admin' && msg.senderName !== 'Hệ thống' && msg.senderName !== 'Admin hệ thống' && msg.senderName !== 'Admin') {
+                          const found = artists.find(a => a.artistName === msg.senderName);
+                          if (found) senderUsername = found.username;
+                        }
+                        if (msg.sender === 'reporter' || msg.role === 'reporter') senderUsername = selectedTicket.reporter.username;
+                        if (msg.sender === 'source' || msg.role === 'target') senderUsername = selectedTicket.sourceArtist;
                         
-                        const initial = (msg.senderName || msg.sender || '?').charAt(0).toUpperCase();
+                        const isSystemAdmin = msg.senderName === 'Hệ thống' || msg.senderName === 'Admin hệ thống' || (msg.sender === 'admin' && msg.senderName === 'Admin');
+                        // In ACP, the viewer is the System Admin
+                        const isMe = isSystemAdmin;
+                        const isReporter = !isSystemAdmin && (msg.sender === 'reporter' || msg.role === 'reporter' || senderUsername === selectedTicket.reporter.username || msg.senderName === selectedTicket.reporter.name);
+                        
+                        const initial = (msg.senderName || senderUsername || '?').charAt(0).toUpperCase();
                         
                         let avatarBg = 'bg-gradient-to-tr from-neutral-600 to-neutral-700';
-                        if (isMe) {
-                          avatarBg = 'bg-gradient-to-tr from-purple-500 to-indigo-600';
+                        if (isSystemAdmin) {
+                          avatarBg = 'bg-gradient-to-tr from-rose-500 to-amber-500';
                         } else if (isReporter) {
                           avatarBg = 'bg-gradient-to-tr from-sky-500 to-blue-600';
                         } else {
                           avatarBg = 'bg-gradient-to-tr from-emerald-500 to-teal-600';
                         }
                         
-                        const artistAvatar = msg.sender === 'admin' ? landingFaviconUrl : artists.find(a => a.extension === msg.sender)?.homeCoverUrl;
+                        const artistAvatar = isSystemAdmin ? landingFaviconUrl : artists.find(a => a.extension === senderUsername || a.username === senderUsername)?.homeCoverUrl;
 
                         return (
                           <div 
@@ -1605,34 +1727,47 @@ export default function ACPControlPanel() {
                             className={`flex gap-3 items-end w-full ${isMe ? 'flex-row-reverse' : 'flex-row'} mb-4`}
                           >
                             {/* Avatar */}
-                            <div className={`w-8 h-8 rounded-full ${artistAvatar ? 'bg-transparent' : avatarBg} text-white flex items-center justify-center text-xs font-extrabold shadow-md shrink-0 mb-1 overflow-hidden`}>
-                              {artistAvatar ? (
-                                <img src={artistAvatar} alt={msg.senderName} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                              ) : (
-                                initial
-                              )}
-                            </div>
+                            {!isSystemAdmin && (
+                              <Link to={`/${senderUsername}`} target="_blank" className={`w-8 h-8 rounded-full ${artistAvatar ? 'bg-transparent' : avatarBg} text-white flex items-center justify-center text-xs font-extrabold shadow-md shrink-0 mb-1 overflow-hidden cursor-pointer hover:opacity-80 transition-opacity`}>
+                                {artistAvatar ? (
+                                  <img src={artistAvatar} alt={msg.senderName} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                ) : (
+                                  initial
+                                )}
+                              </Link>
+                            )}
+                            {isSystemAdmin && (
+                              <div className="w-8 h-8 shrink-0 mb-1 flex items-center justify-center">
+                                <ChorusLogo className="w-8 h-8" />
+                              </div>
+                            )}
 
                             {/* Message bubble & details */}
                             <div className={`flex flex-col max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
                               {/* Sender Name & Role Badge */}
                               <div className="text-[10px] text-neutral-400 mb-1 px-1 flex items-center gap-1.5">
                                 <span className="font-semibold">{msg.senderName}</span>
-                                <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                                  msg.sender === 'admin' 
-                                    ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' 
-                                    : isReporter 
-                                    ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' 
-                                    : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                                }`}>
-                                  {msg.sender === 'admin' ? 'Admin' : isReporter ? 'Reporter' : 'Uploader'}
-                                </span>
+                                {isSystemAdmin ? (
+                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                                    Admin
+                                  </span>
+                                ) : isReporter ? (
+                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                                    Reporter
+                                  </span>
+                                ) : (
+                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                    Uploader
+                                  </span>
+                                )}
                               </div>
 
                               {/* Bubble Box */}
-                              <div className={`p-3 rounded-2xl text-xs leading-relaxed shadow-md transition-all relative ${
+                              <div 
+                                title={msg.createdAt ? new Date(msg.createdAt).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }) : ''}
+                                className={`p-3 rounded-2xl text-xs leading-relaxed shadow-md transition-all relative ${
                                 isMe 
-                                  ? 'bg-blue-600 text-white rounded-br-none font-medium' 
+                                  ? 'bg-rose-600 text-white rounded-br-none font-medium shadow-rose-500/20' 
                                   : 'bg-neutral-800 border border-white/10 text-neutral-100 rounded-bl-none'
                               }`}>
                                 <p className="whitespace-pre-wrap break-words">{msg.text}</p>
@@ -2022,6 +2157,28 @@ export default function ACPControlPanel() {
         </div>
       )}
 
+      {actionConfirm?.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-fade-in-up text-black">
+            <h3 className="text-xl font-bold mb-2">{actionConfirm.title}</h3>
+            <p className="text-stone-600 mb-6">{actionConfirm.message}</p>
+            <div className="flex gap-3 justify-end">
+              <button 
+                onClick={() => setActionConfirm(null)} 
+                className="px-4 py-2 rounded-xl bg-stone-100 text-stone-700 font-bold hover:bg-stone-200 transition-colors cursor-pointer"
+              >
+                Hủy
+              </button>
+              <button 
+                onClick={() => { actionConfirm.onConfirm(); setActionConfirm(null); }} 
+                className="px-4 py-2 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors cursor-pointer"
+              >
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {toast && (
         <div className="fixed bottom-4 right-4 bg-emerald-500 text-white px-6 py-3 rounded-xl shadow-2xl font-medium animate-in slide-in-from-bottom-5 z-50 flex items-center gap-2">
           <CheckCircle2 className="w-5 h-5" />

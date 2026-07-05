@@ -1435,7 +1435,7 @@ async function startServer() {
 
         list.push({
           artistName: artist.artistName,
-          extension: artist.extension,
+          extension: artist.extension, username: artist.username,
           verified: !!artist.verified,
           isPublic: true,
           pageTitle: pageTitle,
@@ -1452,7 +1452,7 @@ async function startServer() {
       } catch (e) {
         list.push({
           artistName: artist.artistName,
-          extension: artist.extension,
+          extension: artist.extension, username: artist.username,
           verified: !!artist.verified,
           isPublic: true,
           pageTitle: `Kho nhạc của ${artist.artistName}`,
@@ -1542,7 +1542,19 @@ async function startServer() {
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    res.json(artists);
+    const enrichedArtists = [];
+    for (const a of artists) {
+      try {
+        const d = await loadData(a.username);
+        enrichedArtists.push({
+          ...a,
+          homeCoverUrl: d?.config?.homeCoverUrl || ''
+        });
+      } catch (err) {
+        enrichedArtists.push(a);
+      }
+    }
+    res.json(enrichedArtists);
   });
 
   app.post('/api/acp/artists/create', async (req, res) => {
@@ -1711,6 +1723,33 @@ async function startServer() {
     res.json({ success: true, ticket: mapTicket(ticket) });
   });
 
+  app.post('/api/acp/tickets/:id/reopen', async (req, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    await loadTickets();
+    const ticketIdx = tickets.findIndex(t => t.id === req.params.id);
+    if (ticketIdx === -1) {
+      return res.status(404).json({ error: 'Không tìm thấy ticket!' });
+    }
+
+    const ticket = tickets[ticketIdx];
+    ticket.status = 'open';
+    ticket.messages.push({
+      id: crypto.randomBytes(8).toString('hex'),
+      sender: 'admin',
+      senderName: 'Hệ thống',
+      text: 'Admin hệ thống đã mở lại ticket này.',
+      createdAt: new Date().toISOString()
+    });
+
+    await saveTickets(tickets);
+    if (artists.length === 0) {
+      await loadArtists();
+    }
+    res.json({ success: true, ticket: mapTicket(ticket) });
+  });
+
   app.post('/api/acp/tickets/:id/resolve', async (req, res) => {
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -1764,7 +1803,7 @@ async function startServer() {
         id: crypto.randomBytes(8).toString('hex'),
         sender: 'admin',
         senderName: 'Hệ thống',
-        text: `Admin hệ thống đã ra quyết định GỠ BÀI HÁT này khỏi kênh của ${ticket.sourceArtist}.`,
+        text: `Hệ thống đã gỡ bài hát này khỏi kênh của ${ticket.sourceArtist} theo yêu cầu của ${mapTicket(ticket).reporter.name}.`,
         createdAt: new Date().toISOString()
       });
 
@@ -2659,14 +2698,50 @@ app.post('/api/admin/tickets/:id/message', async (req: any, res) => {
   }
 
   let sender: 'reporter' | 'source' | 'admin' = 'reporter';
-  if (isAdmin) sender = 'admin';
+  if (isReporter) sender = 'reporter';
   else if (isSource) sender = 'source';
+  else if (isAdmin) sender = 'admin';
 
   ticket.messages.push({
     id: crypto.randomBytes(8).toString('hex'),
     sender,
     senderName: req.artist.artistName,
     text,
+    createdAt: new Date().toISOString()
+  });
+
+  await saveTickets(tickets);
+  if (artists.length === 0) {
+    await loadArtists();
+  }
+  res.json({ success: true, ticket: mapTicket(ticket) });
+});
+
+app.post('/api/admin/tickets/:id/reopen', async (req: any, res) => {
+  if (!isRequestAdmin(req)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  await loadTickets();
+  const ticketIdx = tickets.findIndex(t => t.id === req.params.id);
+  if (ticketIdx === -1) {
+    return res.status(404).json({ error: 'Không tìm thấy ticket!' });
+  }
+
+  const ticket = tickets[ticketIdx];
+  const isReporter = req.artist.username === ticket.reporterArtist;
+  const isSource = req.artist.username === ticket.sourceArtist;
+  const isAdmin = req.artist.username === 'acxuantai';
+
+  if (!isAdmin) {
+    return res.status(403).json({ error: 'Chỉ Admin mới có quyền mở lại ticket!' });
+  }
+
+  ticket.status = 'open';
+  ticket.messages.push({
+    sender: 'admin',
+    senderName: 'Hệ thống',
+    text: 'Admin hệ thống đã mở lại ticket này.',
     createdAt: new Date().toISOString()
   });
 
@@ -2742,7 +2817,7 @@ app.post('/api/admin/tickets/:id/remove-song', async (req: any, res) => {
     ticket.messages.push({
       sender: 'admin',
       senderName: 'Hệ thống',
-      text: `Admin hệ thống đã ra quyết định GỠ BÀI HÁT này khỏi kênh của ${ticket.sourceArtist}.`,
+      text: `Hệ thống đã gỡ bài hát này khỏi kênh của ${ticket.sourceArtist} theo yêu cầu của ${mapTicket(ticket).reporter.name}.`,
       createdAt: new Date().toISOString()
     });
 

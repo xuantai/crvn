@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react';
+import { ChorusLogo } from './components/ChorusLogo';
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { Settings, Play, Music, Lock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check } from 'lucide-react';
+import { Settings, Play, Music, Lock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check , ChevronLeft} from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { AppData, DemoSong, TemplateConfig, Achievement } from './types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -162,10 +163,16 @@ const getArtistExtensionFromUrl = () => {
 
   const segments = window.location.pathname.split('/').filter(Boolean);
   if (segments.length > 0) {
-    const firstSegment = segments[0];
+    const firstSegment = segments[0].toLowerCase();
+    
+    // If we are on /admin/tennghesi or /mem/tennghesi
+    if ((firstSegment === 'admin' || firstSegment === 'mem') && segments.length > 1) {
+      return segments[1];
+    }
+    
     const reserved = ['admin', 'acp', 'mem', 'demo', 'song', 'playlist'];
     if (!reserved.includes(firstSegment)) {
-      return firstSegment;
+      return segments[0];
     }
   }
   return '';
@@ -5436,7 +5443,59 @@ function AdminDashboard() {
     }
   };
 
+  const handleReopenTicket = async (ticketId: string) => {
+    setActionConfirm({
+      isOpen: true,
+      title: "Mở lại yêu cầu",
+      message: "Bạn có chắc chắn muốn mở lại ticket này không?",
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/admin/tickets/${ticketId}/reopen`, {
+            method: 'POST',
+            headers: {
+              'x-artist-extension': getArtistExtensionFromUrl(),
+              'Authorization': `Bearer ${getAdminToken() || ''}`
+            }
+          });
+          if (res.ok) {
+            setToast("Đã mở lại ticket thành công!");
+            fetchTickets();
+          } else {
+             const err = await res.json();
+             setToast(`Lỗi: ${err.error}`);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    });
+  };
+
   const handleResolveTicket = async (ticketId: string) => {
+    setActionConfirm({
+      isOpen: true,
+      title: "Từ chối yêu cầu",
+      message: "Bạn có chắc chắn muốn từ chối yêu cầu và đóng ticket này?",
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/admin/tickets/${ticketId}/resolve`, {
+            method: 'POST',
+            headers: {
+              'x-artist-extension': getArtistExtensionFromUrl(),
+              'Authorization': `Bearer ${getAdminToken() || ''}`
+            }
+          });
+          if (res.ok) {
+            setToast("Đã đóng ticket thành công!");
+            fetchTickets();
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    });
+  };
+  const handleResolveTicketOriginal = async (ticketId: string) => {
     try {
       const res = await fetch(`/api/admin/tickets/${ticketId}/resolve`, {
         method: 'POST',
@@ -5455,7 +5514,33 @@ function AdminDashboard() {
   };
 
   const handleAdminRemoveSong = async (ticketId: string) => {
-    if (!window.confirm("Bạn có chắc chắn muốn duyệt GỠ bài hát này khỏi kênh của đối tác không? Hành động này không thể hoàn tác.")) return;
+    setActionConfirm({
+      isOpen: true,
+      title: "Xác nhận gỡ bài",
+      message: "Bạn có chắc chắn gỡ bài hát này khỏi trang của mình theo yêu cầu của đối tác không?",
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/admin/tickets/${ticketId}/remove-song`, {
+            method: 'POST',
+            headers: {
+              'x-artist-extension': getArtistExtensionFromUrl(),
+              'Authorization': `Bearer ${getAdminToken() || ''}`
+            }
+          });
+          if (res.ok) {
+            setToast("Đã ra quyết định gỡ bài hát và đóng ticket!");
+            fetchTickets();
+          } else {
+            const err = await res.json();
+            setToast(`Lỗi: ${err.error}`);
+          }
+        } catch (e: any) {
+          setToast(`Lỗi: ${e.message}`);
+        }
+      }
+    });
+  };
+  const handleAdminRemoveSongOriginal = async (ticketId: string) => {
     try {
       const res = await fetch(`/api/admin/tickets/${ticketId}/remove-song`, {
         method: 'POST',
@@ -5478,6 +5563,12 @@ function AdminDashboard() {
   const [draggedItemIdx, setDraggedItemIdx] = useState<number | null>(null);
   const [itemsPerPage, setItemsPerPage] = useState<number>(20);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [actionConfirm, setActionConfirm] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{
     isOpen: boolean;
     type: 'song' | 'playlist';
@@ -5920,8 +6011,9 @@ function AdminDashboard() {
       <header className="bg-white border-b border-stone-200 sticky top-0 z-20 shadow-xs">
         <div className="max-w-6xl mx-auto px-6 h-16 w-full flex items-center justify-between">
           <div className="flex items-center gap-3 font-bold text-lg select-none">
-            <div className="w-8 h-8 bg-stone-900 text-white rounded-lg flex items-center justify-center font-black text-sm shadow-sm">A</div>
-            <span className="leading-none">Admin</span>
+            <ChorusLogo className="w-9 h-9" />
+            
+            <span className="leading-none mt-1 ml-1 text-stone-400">Admin</span>
           </div>
           <div className="flex items-center gap-3">
             <Link 
@@ -6061,13 +6153,7 @@ function AdminDashboard() {
             } ${activeTab === 'security' ? 'bg-stone-900 text-white' : 'hover:bg-stone-200 text-stone-600'}`} title="Bảo Mật">
               <Lock className="w-5 h-5" /> {!effectiveSidebarCollapsed && <span>Bảo Mật</span>}
             </button>
-            {data?.isMasterAdmin && (
-              <button onClick={() => setActiveTab('database')} className={`flex items-center transition-colors ${
-                effectiveSidebarCollapsed ? 'justify-center w-10 h-10 rounded-xl mx-auto' : 'justify-start w-full gap-3 px-4 py-3 rounded-xl font-medium'
-              } ${activeTab === 'database' ? 'bg-stone-900 text-white' : 'hover:bg-stone-200 text-stone-600'}`} title="Cơ Sở Dữ Liệu">
-                <Database className="w-5 h-5" /> {!effectiveSidebarCollapsed && <span>Database (Firebase)</span>}
-              </button>
-            )}
+
           </div>
         </aside>
 
@@ -6302,7 +6388,7 @@ function AdminDashboard() {
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
                             <div className="flex flex-col gap-1 flex-1 min-w-0">
-                              <Link to={`/song/${demo.slug || demo.id}`} state={{ fromAdmin: true }} className="hover:text-pink-600 font-bold text-stone-850 text-sm md:text-base block truncate max-w-[150px] xs:max-w-[240px] sm:max-w-[320px] md:max-w-[280px] lg:max-w-[420px] xl:max-w-[580px]">
+                              <Link to={getArtistLink(`/song/${demo.slug || demo.id}`)} state={{ fromAdmin: true }} className="hover:text-pink-600 font-bold text-stone-850 text-sm md:text-base block truncate max-w-[150px] xs:max-w-[240px] sm:max-w-[320px] md:max-w-[280px] lg:max-w-[420px] xl:max-w-[580px]">
                                 {demo.title}
                               </Link>
                               <div className="flex items-center flex-wrap gap-2 text-[10px] md:text-xs">
@@ -6384,7 +6470,7 @@ function AdminDashboard() {
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
                             <div className="flex flex-col gap-1 flex-1 min-w-0">
-                              <Link to={`/song/${demo.slug || demo.id}`} state={{ fromAdmin: true }} className="hover:text-blue-600 font-bold text-stone-850 text-sm md:text-base block truncate max-w-[150px] xs:max-w-[240px] sm:max-w-[320px] md:max-w-[280px] lg:max-w-[420px] xl:max-w-[580px]">
+                              <Link to={getArtistLink(`/song/${demo.slug || demo.id}`)} state={{ fromAdmin: true }} className="hover:text-blue-600 font-bold text-stone-850 text-sm md:text-base block truncate max-w-[150px] xs:max-w-[240px] sm:max-w-[320px] md:max-w-[280px] lg:max-w-[420px] xl:max-w-[580px]">
                                 {demo.title}
                               </Link>
                               <div className="flex items-center flex-wrap gap-2 text-[10px] md:text-xs">
@@ -6476,7 +6562,7 @@ function AdminDashboard() {
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
                             <div className="flex flex-col gap-1 flex-1 min-w-0">
-                              <Link to={`/song/${demo.slug || demo.id}`} state={{ fromAdmin: true }} className="hover:text-blue-600 font-bold text-stone-850 text-sm md:text-base block truncate max-w-[150px] xs:max-w-[240px] sm:max-w-[320px] md:max-w-[280px] lg:max-w-[420px] xl:max-w-[580px]">
+                              <Link to={getArtistLink(`/song/${demo.slug || demo.id}`)} state={{ fromAdmin: true }} className="hover:text-blue-600 font-bold text-stone-850 text-sm md:text-base block truncate max-w-[150px] xs:max-w-[240px] sm:max-w-[320px] md:max-w-[280px] lg:max-w-[420px] xl:max-w-[580px]">
                                 {demo.title}
                               </Link>
                               <div className="flex items-center flex-wrap gap-2 text-[10px] md:text-xs">
@@ -6756,11 +6842,12 @@ function AdminDashboard() {
             <div className="max-w-2xl">
               <h2 className="text-2xl font-bold mb-8">Thông tin hồ sơ</h2>
               <form onSubmit={handleProfileSave} className="space-y-6">
+
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">Tiêu đề Website</label>
-                  <input name="pageTitle" defaultValue={data.pageTitle} placeholder="Để trống sẽ dùng mặc định: Thiên Đường Demo của [Tên nghệ sĩ]" className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
+                  <label className="block text-sm font-bold text-stone-700 mb-2">Giới thiệu ngắn</label>
+                  <input name="artistBio" defaultValue={data.artistBio} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
                 </div>
-                                                <div>
+                <div>
                   <label className="block text-sm font-bold text-stone-700 mb-2">Tên nghệ sĩ</label>
                   {data.pendingNameChange ? (
                     <div className="flex items-center gap-2">
@@ -6791,66 +6878,54 @@ function AdminDashboard() {
                     Của bạn đang là <strong className="text-stone-700">{data.username}.chorus.vn</strong>
                   </p>
                 </div>
-                <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">Giới thiệu ngắn</label>
-                  <input name="artistBio" defaultValue={data.artistBio} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
-                </div>
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-3 bg-stone-50 border border-stone-200 p-4 rounded-xl">
-                    <input 
-                      type="checkbox" 
-                      id="autoSwitchTabs" 
-                      name="autoSwitchTabs" 
-                      defaultChecked={data.autoSwitchTabs} 
-                      value="true" 
-                      className="w-5 h-5 rounded border-stone-300 text-stone-900 focus:ring-stone-900 cursor-pointer" 
-                    />
-                    <label htmlFor="autoSwitchTabs" className="text-sm font-bold text-stone-700 cursor-pointer select-none">
-                      Tự động chuyển tab ở trang chủ (Music / Demo / Playlist)
-                    </label>
-                  </div>
 
-                  <div className="flex items-center gap-3 bg-stone-50 border border-stone-200 p-4 rounded-xl">
-                    <input 
-                      type="checkbox" 
-                      id="hideFromHomepage" 
-                      name="hideFromHomepage" 
-                      defaultChecked={data.hideFromHomepage} 
-                      value="true" 
-                      className="w-5 h-5 rounded border-stone-300 text-stone-900 focus:ring-stone-900 cursor-pointer" 
-                    />
-                    <label htmlFor="hideFromHomepage" className="text-sm font-bold text-stone-700 cursor-pointer select-none">
-                      Ẩn kho nhạc khỏi trang chủ Chorus.vn (tick vào thì sẽ ẩn khỏi danh sách các nghệ sĩ công khai trên chorus.vn)
-                    </label>
-                  </div>
-                </div>
-
-                <div className="bg-stone-50 border border-stone-200 p-5 rounded-2xl space-y-4">
-                  <h3 className="font-bold text-stone-800 text-sm">Tên tùy chỉnh các Tab Danh Sách Nhạc</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-stone-600 mb-1.5">Tab 1 (Nhạc phát hành)</label>
-                      <input name="tab1Name" defaultValue={data.tab1Name} placeholder="Mặc định: Ra Rồi" className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
+<div>
+                  <label className="block text-sm font-bold text-stone-700 mb-2">Avatar Nghệ Sĩ</label>
+                  <div 
+                    className="flex items-center gap-4 p-4 rounded-3xl border-2 border-dashed border-stone-200 bg-stone-50/50 hover:border-stone-300 transition-colors"
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onDrop={async (e) => {
+                        e.preventDefault(); e.stopPropagation();
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) {
+                            try {
+                                const url = await uploadWithProgress(file, setHomeCoverProgress);
+                                setHomeCoverUrlPreview(url);
+                            } catch (err) {
+                                alert('Lỗi upload');
+                                setHomeCoverProgress(0);
+                            }
+                        }
+                    }}
+                  >
+                    {homeCoverUrlPreview ? (
+                      <img src={getPreviewUrl(homeCoverUrlPreview)} className="w-20 h-20 rounded-2xl object-cover border border-stone-200 shadow-sm" />
+                    ) : (
+                      <div className="w-20 h-20 rounded-2xl border border-stone-200 bg-stone-100/50 flex items-center justify-center text-stone-400 shadow-inner shrink-0">
+                        <Image className="w-8 h-8" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-[150px]">
+                      <div className="flex items-center gap-2">
+                        <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${homeCoverProgress === 100 || homeCoverUrlPreview ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('homeCoverUpload')?.click()}>
+                            <Upload className="w-4 h-4"/>
+                            <span className="max-w-[150px] truncate">{homeCoverProgress > 0 && homeCoverProgress < 100 ? `Đang tải ${homeCoverProgress}%` : (homeCoverUrlPreview ? 'Thay đổi' : 'Chọn ảnh')}</span>
+                        </button>
+                        {homeCoverProgress > 0 && homeCoverProgress < 100 ? (
+                          <button type="button" onClick={() => setHomeCoverProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title="Hủy tải lên"><X className="w-4 h-4"/></button>
+                        ) : (homeCoverUrlPreview ? (
+                          <button type="button" onClick={() => { setHomeCoverUrlPreview(''); setHomeCoverProgress(0); (document.getElementById('homeCoverUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                        ) : null)}
+                      </div>
+                      {homeCoverProgress > 0 && homeCoverProgress < 100 && (
+                        <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-2">
+                          <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${homeCoverProgress}%` }} />
+                        </div>
+                      )}
+                      <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
+                        Kéo thả ảnh trực tiếp vào ô này
+                      </p>
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold text-stone-600 mb-1.5">Tab 2 (Nhạc đề mô)</label>
-                      <input name="tab2Name" defaultValue={data.tab2Name} placeholder="Mặc định: Đề Mô" className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-stone-600 mb-1.5">Tab 3 (Album/EP)</label>
-                      <input name="tab3Name" defaultValue={data.tab3Name} placeholder="Mặc định: Album/EP" className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">Ảnh bìa trang chủ</label>
-                  <div className="flex flex-wrap gap-4 items-center">
-                    {homeCoverUrlPreview && <img src={getPreviewUrl(homeCoverUrlPreview)} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />}
-                    <button type="button" className={`w-16 h-16 rounded-xl flex items-center justify-center relative overflow-hidden transition-colors border shadow-sm ${homeCoverProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('homeCoverUpload')?.click()}>
-                        {homeCoverProgress > 0 && homeCoverProgress < 100 && <div className="absolute left-0 bottom-0 right-0 bg-stone-200 transition-all duration-300" style={{ height: `${homeCoverProgress}%` }}></div>}
-                        <span className="relative z-10 font-bold text-[10px] flex flex-col items-center gap-1"><Upload className="w-5 h-5"/> {homeCoverProgress > 0 && homeCoverProgress < 100 ? `${homeCoverProgress}%` : ''}</span>
-                    </button>
-                    {homeCoverUrlPreview && <button type="button" onClick={() => { setHomeCoverUrlPreview(''); setHomeCoverProgress(0); (document.getElementById('homeCoverUpload') as HTMLInputElement).value = ''; }} className="w-10 h-10 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-5 h-5"/></button>}
                     <input type="hidden" name="homeCoverUrl" value={homeCoverUrlPreview} />
                     <input type="file" id="homeCoverUpload" className="hidden" accept="image/*" onChange={async (e) => {
                       if (!e.target.files?.[0]) return;
@@ -6863,10 +6938,10 @@ function AdminDashboard() {
                       }
                     }} />
                   </div>
-                  <p className="text-xs text-stone-500 mt-2">Dùng để tạo hiệu ứng nền cho trang chủ, nên dùng ảnh ngang chất lượng cao.</p>
+                  <p className="text-xs text-stone-500 mt-2">Dùng đại diện cho kho nhạc, nên chọn ảnh vuông.</p>
                 </div>
-                <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">Ảnh Slideshow Trang chủ (Tự động thay đổi, kéo thả để sắp xếp, bấm xóa để gỡ ảnh)</label>
+<div>
+                  <label className="block text-sm font-bold text-stone-700 mb-2">Ảnh nền trang chủ ( Chọn nhiều ảnh để chạy slideshow )</label>
                   <div className="flex flex-col gap-3">
                     <div className="flex flex-wrap gap-3">
                        {slideshowImages.map((src, i) => (
@@ -6914,15 +6989,55 @@ function AdminDashboard() {
                     }} />
                   </div>
                 </div>
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+  
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">Favicon (Icon tab trình duyệt)</label>
-                  <div className="flex flex-wrap gap-4 items-center">
-                    {faviconUrlPreview && <img src={getPreviewUrl(faviconUrlPreview)} className="w-16 h-16 rounded-xl object-contain border border-stone-200 shadow-sm" />}
-                    <button type="button" className={`w-16 h-16 rounded-xl flex items-center justify-center relative overflow-hidden transition-colors border shadow-sm ${faviconProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('faviconUpload')?.click()}>
-                        {faviconProgress > 0 && faviconProgress < 100 && <div className="absolute left-0 bottom-0 right-0 bg-stone-200 transition-all duration-300" style={{ height: `${faviconProgress}%` }}></div>}
-                        <span className="relative z-10 font-bold text-[10px] flex flex-col items-center gap-1"><Upload className="w-5 h-5"/> {faviconProgress > 0 && faviconProgress < 100 ? `${faviconProgress}%` : ''}</span>
-                    </button>
-                    {faviconUrlPreview && <button type="button" onClick={() => { setFaviconUrlPreview(''); setFaviconProgress(0); (document.getElementById('faviconUpload') as HTMLInputElement).value = ''; }} className="w-10 h-10 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-5 h-5"/></button>}
+                  <label className="block text-sm font-bold text-stone-700 mb-2">Favicon (Icon trên trình duyệt)</label>
+                  <div 
+                    className="flex items-center gap-4 p-4 rounded-3xl border-2 border-dashed border-stone-200 bg-stone-50/50 hover:border-stone-300 transition-colors"
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onDrop={async (e) => {
+                        e.preventDefault(); e.stopPropagation();
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) {
+                            try {
+                                const url = await uploadWithProgress(file, setFaviconProgress);
+                                setFaviconUrlPreview(url);
+                            } catch (err) {
+                                alert('Lỗi upload');
+                                setFaviconProgress(0);
+                            }
+                        }
+                    }}
+                  >
+                    {faviconUrlPreview ? (
+                      <img src={getPreviewUrl(faviconUrlPreview)} className="w-20 h-20 rounded-2xl object-cover border border-stone-200 shadow-sm" />
+                    ) : (
+                      <div className="w-20 h-20 rounded-2xl border border-stone-200 bg-stone-100/50 flex items-center justify-center text-stone-400 shadow-inner shrink-0">
+                        <Image className="w-8 h-8" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-[150px]">
+                      <div className="flex items-center gap-2">
+                        <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${faviconProgress === 100 || faviconUrlPreview ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('faviconUpload')?.click()}>
+                            <Upload className="w-4 h-4"/>
+                            <span className="max-w-[150px] truncate">{faviconProgress > 0 && faviconProgress < 100 ? `Đang tải ${faviconProgress}%` : (faviconUrlPreview ? 'Thay đổi' : 'Chọn ảnh')}</span>
+                        </button>
+                        {faviconProgress > 0 && faviconProgress < 100 ? (
+                          <button type="button" onClick={() => setFaviconProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title="Hủy tải lên"><X className="w-4 h-4"/></button>
+                        ) : (faviconUrlPreview ? (
+                          <button type="button" onClick={() => { setFaviconUrlPreview(''); setFaviconProgress(0); (document.getElementById('faviconUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                        ) : null)}
+                      </div>
+                      {faviconProgress > 0 && faviconProgress < 100 && (
+                        <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-2">
+                          <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${faviconProgress}%` }} />
+                        </div>
+                      )}
+                      <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
+                        Kéo thả ảnh trực tiếp vào ô này
+                      </p>
+                    </div>
                     <input type="hidden" name="faviconUrl" value={faviconUrlPreview} />
                     <input type="file" id="faviconUpload" className="hidden" accept="image/*" onChange={async (e) => {
                       if (!e.target.files?.[0]) return;
@@ -6935,16 +7050,56 @@ function AdminDashboard() {
                       }
                     }} />
                   </div>
+                  
                 </div>
+  
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">Thumbnail Website (Ảnh khi share link)</label>
-                  <div className="flex flex-wrap gap-4 items-center">
-                    {ogImageUrlPreview && <img src={getPreviewUrl(ogImageUrlPreview)} className="w-24 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />}
-                    <button type="button" className={`w-16 h-16 rounded-xl flex items-center justify-center relative overflow-hidden transition-colors border shadow-sm ${ogImageProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('ogImageUpload')?.click()}>
-                        {ogImageProgress > 0 && ogImageProgress < 100 && <div className="absolute left-0 bottom-0 right-0 bg-stone-200 transition-all duration-300" style={{ height: `${ogImageProgress}%` }}></div>}
-                        <span className="relative z-10 font-bold text-[10px] flex flex-col items-center gap-1"><Upload className="w-5 h-5"/> {ogImageProgress > 0 && ogImageProgress < 100 ? `${ogImageProgress}%` : ''}</span>
-                    </button>
-                    {ogImageUrlPreview && <button type="button" onClick={() => { setOgImageUrlPreview(''); setOgImageProgress(0); (document.getElementById('ogImageUpload') as HTMLInputElement).value = ''; }} className="w-10 h-10 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-5 h-5"/></button>}
+                  <label className="block text-sm font-bold text-stone-700 mb-2">Thumbnail ( Ảnh minh họa khi chia sẻ Link )</label>
+                  <div 
+                    className="flex items-center gap-4 p-4 rounded-3xl border-2 border-dashed border-stone-200 bg-stone-50/50 hover:border-stone-300 transition-colors"
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onDrop={async (e) => {
+                        e.preventDefault(); e.stopPropagation();
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) {
+                            try {
+                                const url = await uploadWithProgress(file, setOgImageProgress);
+                                setOgImageUrlPreview(url);
+                            } catch (err) {
+                                alert('Lỗi upload');
+                                setOgImageProgress(0);
+                            }
+                        }
+                    }}
+                  >
+                    {ogImageUrlPreview ? (
+                      <img src={getPreviewUrl(ogImageUrlPreview)} className="w-20 h-20 rounded-2xl object-cover border border-stone-200 shadow-sm" />
+                    ) : (
+                      <div className="w-20 h-20 rounded-2xl border border-stone-200 bg-stone-100/50 flex items-center justify-center text-stone-400 shadow-inner shrink-0">
+                        <Image className="w-8 h-8" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-[150px]">
+                      <div className="flex items-center gap-2">
+                        <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${ogImageProgress === 100 || ogImageUrlPreview ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('ogImageUpload')?.click()}>
+                            <Upload className="w-4 h-4"/>
+                            <span className="max-w-[150px] truncate">{ogImageProgress > 0 && ogImageProgress < 100 ? `Đang tải ${ogImageProgress}%` : (ogImageUrlPreview ? 'Thay đổi' : 'Chọn ảnh')}</span>
+                        </button>
+                        {ogImageProgress > 0 && ogImageProgress < 100 ? (
+                          <button type="button" onClick={() => setOgImageProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title="Hủy tải lên"><X className="w-4 h-4"/></button>
+                        ) : (ogImageUrlPreview ? (
+                          <button type="button" onClick={() => { setOgImageUrlPreview(''); setOgImageProgress(0); (document.getElementById('ogImageUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                        ) : null)}
+                      </div>
+                      {ogImageProgress > 0 && ogImageProgress < 100 && (
+                        <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-2">
+                          <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${ogImageProgress}%` }} />
+                        </div>
+                      )}
+                      <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
+                        Kéo thả ảnh trực tiếp vào ô này
+                      </p>
+                    </div>
                     <input type="hidden" name="ogImageUrl" value={ogImageUrlPreview} />
                     <input type="file" id="ogImageUpload" className="hidden" accept="image/*" onChange={async (e) => {
                       if (!e.target.files?.[0]) return;
@@ -6957,9 +7112,16 @@ function AdminDashboard() {
                       }
                     }} />
                   </div>
-                  <p className="text-xs text-stone-500 mt-2">Ảnh dùng làm thumbnail khi share link web lên Facebook, Zalo, Twitter. Thường là ảnh chụp màn hình giao diện PC.</p>
+                  
                 </div>
-                <hr className="border-stone-200" />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-stone-700 mb-2">Tiêu đề Website</label>
+                  <input name="pageTitle" defaultValue={data.pageTitle} placeholder="Để trống sẽ dùng mặc định: Thiên Đường Demo của [Tên nghệ sĩ]" className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
+                </div>
+
+<hr className="border-stone-200" />
                 <div>
                   <label className="block text-sm font-bold text-stone-700 mb-2">Link Playlist YouTube (Nhạc đã phát hành)</label>
                   <input name="youtubePlaylistUrl" defaultValue={data.youtubePlaylistUrl} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" placeholder="https://youtube.com/playlist?list=..." />
@@ -7051,7 +7213,72 @@ function AdminDashboard() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 border-t border-stone-200 pt-6 mt-2">
+<div className="bg-stone-50 border border-stone-200 p-5 rounded-2xl space-y-4">
+                  <h3 className="font-bold text-stone-800 text-sm">Tên tùy chỉnh các Tab Danh Sách Nhạc</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-stone-600 mb-1.5">Tab 1 (Nhạc phát hành)</label>
+                      <input name="tab1Name" defaultValue={data.tab1Name} placeholder="Mặc định: Ra Rồi" className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-600 mb-1.5">Tab 2 (Nhạc đề mô)</label>
+                      <input name="tab2Name" defaultValue={data.tab2Name} placeholder="Mặc định: Đề Mô" className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-600 mb-1.5">Tab 3 (Album/EP)</label>
+                      <input name="tab3Name" defaultValue={data.tab3Name} placeholder="Mặc định: Album/EP" className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-3 bg-stone-50 border border-stone-200 p-4 rounded-xl">
+                    <input 
+                      type="checkbox" 
+                      id="autoSwitchTabs" 
+                      name="autoSwitchTabs" 
+                      defaultChecked={data.autoSwitchTabs} 
+                      value="true" 
+                      className="w-5 h-5 rounded border-stone-300 text-stone-900 focus:ring-stone-900 cursor-pointer" 
+                    />
+                    <label htmlFor="autoSwitchTabs" className="text-sm font-bold text-stone-700 cursor-pointer select-none">
+                      Tự động chuyển tab ở trang chủ (Music / Demo / Playlist)
+                    </label>
+                  </div>
+                  <div className="flex items-center gap-3 bg-stone-50 border border-stone-200 p-4 rounded-xl">
+                    <input 
+                      type="checkbox" 
+                      id="hideFromHomepage" 
+                      name="hideFromHomepage" 
+                      defaultChecked={data.hideFromHomepage} 
+                      value="true" 
+                      className="w-5 h-5 rounded border-stone-300 text-stone-900 focus:ring-stone-900 cursor-pointer" 
+                    />
+                    <label htmlFor="hideFromHomepage" className="text-sm font-bold text-stone-700 cursor-pointer select-none">
+                      Ẩn khỏi danh sách nghệ sĩ trên trang chủ Chorus.vn
+                    </label>
+                  </div>
+                </div>
+
+                <div className="bg-stone-50 border border-stone-200 p-5 rounded-2xl space-y-4">
+                  <h3 className="font-bold text-stone-800 text-sm">Tên tùy chỉnh các Tab Danh Sách Nhạc</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-stone-600 mb-1.5">Tab 1 (Nhạc phát hành)</label>
+                      <input name="tab1Name" defaultValue={data.tab1Name} placeholder="Mặc định: Ra Rồi" className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-600 mb-1.5">Tab 2 (Nhạc đề mô)</label>
+                      <input name="tab2Name" defaultValue={data.tab2Name} placeholder="Mặc định: Đề Mô" className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-600 mb-1.5">Tab 3 (Album/EP)</label>
+                      <input name="tab3Name" defaultValue={data.tab3Name} placeholder="Mặc định: Album/EP" className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
+                    </div>
+                  </div>
+                </div>
+
+<div className="flex items-center gap-4 border-t border-stone-200 pt-6 mt-2">
                     <button type="submit" className="bg-stone-900 text-white px-6 py-3 rounded-xl font-medium hover:bg-stone-800 transition-colors">Lưu thay đổi</button>
                     <button type="button" onClick={async () => {
                       if (!confirm("Bạn có chắc muốn làm mới toàn bộ Secret Link? Các Secret Link cũ sẽ không còn hoạt động, tự động chuyển về đường dẫn gốc yêu cầu mật khẩu.")) return;
@@ -7073,6 +7300,7 @@ function AdminDashboard() {
               </form>
             </div>
           )}
+
 
           {activeTab === 'socials' && (
             <div className="max-w-2xl">
@@ -7163,7 +7391,7 @@ function AdminDashboard() {
               <hr className="border-stone-200" />
 
               <div>
-                <h2 className="text-2xl font-bold mb-2 text-stone-900">Thiết Lập Mật Khẩu Thành Viên (VIP VIP)</h2>
+                <h2 className="text-2xl font-bold mb-2 text-stone-900">Thiết Lập Mật Khẩu Thành Viên</h2>
                 <p className="text-sm text-stone-500 mb-6">Người dùng nhập mật khẩu này tại trang <code className="bg-stone-100 px-1.5 py-0.5 rounded font-mono text-red-600">/mem</code> để nghe tự do mọi album/bài hát có passcode mà không cần nhập code riêng biệt.</p>
                 
                 <form onSubmit={handleMemberPasswordChange} className="space-y-4 max-w-md">
@@ -7196,9 +7424,7 @@ function AdminDashboard() {
             </div>
           )}
 
-          {activeTab === 'database' && (
-            <AdminDatabaseSettings />
-          )}
+
 
           {activeTab === 'reposts' && (
             <div className="space-y-6">
@@ -7365,7 +7591,7 @@ function AdminDashboard() {
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-white border border-stone-150 rounded-2xl overflow-hidden shadow-sm h-[650px]">
                 {/* Tickets Sidebar */}
-                <div className="lg:col-span-4 border-r border-stone-150 flex flex-col h-full bg-stone-50/50">
+                <div className={`lg:col-span-4 border-r border-stone-150 flex-col h-full bg-stone-50/50 ${selectedTicket ? 'hidden lg:flex' : 'flex'}`}>
                   <div className="p-4 border-b border-stone-150 bg-white">
                     <h3 className="font-bold text-stone-800 text-sm">Danh sách cuộc hội thoại ({ticketsList.length})</h3>
                   </div>
@@ -7400,7 +7626,6 @@ function AdminDashboard() {
                             
                             <div className="text-[11px] text-stone-500 flex flex-wrap gap-x-2">
                               <span>Bởi: <strong className="text-stone-700">{ticket.reporter.name}</strong></span>
-                              <span>→ <strong className="text-stone-700">{ticket.sourceArtist}</strong></span>
                             </div>
 
                             {lastMsg && (
@@ -7416,42 +7641,64 @@ function AdminDashboard() {
                 </div>
 
                 {/* Ticket Chat Panel */}
-                <div className="lg:col-span-8 flex flex-col h-full bg-white min-h-0">
+                <div className={`lg:col-span-8 flex-col h-full bg-white min-h-0 ${!selectedTicket ? 'hidden lg:flex' : 'flex'}`}>
                   {selectedTicket ? (
                     <div className="flex flex-col h-full min-h-0">
                       {/* Chat Header */}
                       <div className="p-4 border-b border-stone-150 flex items-center justify-between bg-stone-50/40">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-bold text-stone-900">{selectedTicket.songTitle}</h3>
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${selectedTicket.type === 'remove' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
-                              {selectedTicket.type === 'remove' ? 'Yêu cầu gỡ' : 'Yêu cầu sửa'}
-                            </span>
+                        <div className="flex items-start lg:items-center gap-3">
+                          <button 
+                            onClick={() => setSelectedTicket(null)} 
+                            className="lg:hidden flex items-center gap-1 text-stone-500 hover:text-stone-900 shrink-0 mt-0.5"
+                          >
+                            <ChevronLeft className="w-5 h-5 -ml-2" />
+                            
+                          </button>
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-bold text-stone-900">{selectedTicket.songTitle}</h3>
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${selectedTicket.type === 'remove' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
+                                {selectedTicket.type === 'remove' ? 'Yêu cầu gỡ' : 'Yêu cầu sửa'}
+                              </span>
+                            </div>
+                            <p className="text-xs text-stone-500 mt-1">
+                              <span className="hidden sm:inline">Người yêu cầu: </span><strong>{selectedTicket.reporter.name}</strong> <span className="hidden sm:inline">(u/ {selectedTicket.reporter.username})</span>
+                            </p>
                           </div>
-                          <p className="text-xs text-stone-500 mt-1">
-                            Người yêu cầu: <strong>{selectedTicket.reporter.name}</strong> (u/ {selectedTicket.reporter.username}) | Đối tác uploader: <strong>{selectedTicket.sourceArtist}</strong>
-                          </p>
                         </div>
                         
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
                           {/* Admin Only actions */}
                           {(data?.username === 'acxuantai' || data?.isMasterAdmin) && selectedTicket.status === 'open' && (
                             <>
                               {selectedTicket.type === 'remove' && (
                                 <button
                                   onClick={() => handleAdminRemoveSong(selectedTicket.id)}
-                                  className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition-colors cursor-pointer"
+                                  className="bg-red-600 hover:bg-red-700 text-white p-2 sm:px-3 sm:py-2 rounded-lg shadow transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                                  title="Duyệt Gỡ Bài"
                                 >
-                                  Duyệt Gỡ Bài
+                                  <Check className="w-4 h-4" />
+                                  <span className="hidden sm:inline text-xs font-bold whitespace-nowrap">Đồng Ý</span>
                                 </button>
                               )}
                               <button
                                 onClick={() => handleResolveTicket(selectedTicket.id)}
-                                className="bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition-colors cursor-pointer"
+                                className="bg-stone-900 hover:bg-stone-800 text-white p-2 sm:px-3 sm:py-2 rounded-lg shadow transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                                title="Đóng Ticket"
                               >
-                                Đóng Ticket
+                                <X className="w-4 h-4" />
+                                <span className="hidden sm:inline text-xs font-bold whitespace-nowrap">Từ Chối</span>
                               </button>
                             </>
+                          )}
+                          {(data?.username === 'acxuantai' || data?.isMasterAdmin) && selectedTicket.status !== 'open' && (
+                             <button
+                                onClick={() => handleReopenTicket(selectedTicket.id)}
+                                className="bg-stone-900 hover:bg-stone-800 text-white p-2 sm:px-3 sm:py-2 rounded-lg shadow transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                                title="Mở lại Ticket"
+                              >
+                                <span className="hidden sm:inline text-xs font-bold whitespace-nowrap">Mở Lại</span>
+                              </button>
                           )}
                         </div>
                       </div>
@@ -7466,61 +7713,84 @@ function AdminDashboard() {
                         </div>
 
                         {selectedTicket.messages.map((msg: any, idx: number) => {
-                          const isMe = msg.sender === data?.username;
-                          const isAdminRole = msg.role === 'admin';
-                          const isReporterRole = msg.role === 'reporter';
-                          const isTargetRole = msg.role === 'target';
+                          let senderUsername = msg.sender;
+                          if (msg.sender === 'admin' && msg.senderName !== 'Hệ thống' && msg.senderName !== 'Admin hệ thống' && msg.senderName !== 'Admin') {
+                            const found = systemArtists.find(a => a.artistName === msg.senderName);
+                            if (found) senderUsername = found.username;
+                          }
+                          if (msg.sender === 'reporter' || msg.role === 'reporter') senderUsername = selectedTicket.reporter.username;
+                          if (msg.sender === 'source' || msg.role === 'target') senderUsername = selectedTicket.sourceArtist;
                           
-                          const initial = (msg.senderName || msg.sender || '?').charAt(0).toUpperCase();
-                          
+                          const isSystemAdmin = msg.senderName === 'Hệ thống' || msg.senderName === 'Admin hệ thống' || (msg.sender === 'admin' && msg.senderName === 'Admin');
+                          const isMe = !isSystemAdmin && (data?.username === senderUsername || (msg.sender === 'admin' && data?.username === 'acxuantai'));
+                          const isReporterRole = msg.sender === 'reporter' || msg.role === 'reporter' || senderUsername === selectedTicket.reporter.username;
+                          const isTargetRole = msg.sender === 'source' || msg.role === 'target' || senderUsername === selectedTicket.sourceArtist;
+
+                          const initial = (msg.senderName || senderUsername || '?').charAt(0).toUpperCase();
+
                           let avatarBg = 'bg-gradient-to-tr from-stone-400 to-stone-500';
-                          if (isMe) {
-                            avatarBg = 'bg-gradient-to-tr from-blue-500 to-sky-500';
-                          } else if (isAdminRole) {
+                          if (isSystemAdmin) {
                             avatarBg = 'bg-gradient-to-tr from-rose-500 to-amber-500';
+                          } else if (isMe) {
+                            avatarBg = 'bg-gradient-to-tr from-blue-500 to-sky-500';
                           } else if (isReporterRole) {
                             avatarBg = 'bg-gradient-to-tr from-sky-500 to-indigo-600';
                           } else if (isTargetRole) {
                             avatarBg = 'bg-gradient-to-tr from-emerald-500 to-teal-600';
                           }
 
-                          const artistAvatar = msg.sender === 'admin' ? systemFavicon : systemArtists.find(a => a.extension === msg.sender)?.homeCoverUrl;
+                          const artistAvatar = isSystemAdmin ? systemFavicon : systemArtists.find(a => a.extension === senderUsername || a.username === senderUsername)?.homeCoverUrl;
 
                           return (
                             <div 
                               key={msg.id || idx} 
-                              className={`flex gap-3 items-end w-full ${isMe ? 'flex-row-reverse' : 'flex-row'}`}
+                              className={`flex gap-3 items-end w-full ${isMe ? 'flex-row-reverse' : 'flex-row'} mb-4`}
                             >
                               {/* Avatar */}
-                              <div className={`w-8 h-8 rounded-full ${artistAvatar ? 'bg-transparent' : avatarBg} text-white flex items-center justify-center text-xs font-extrabold shadow-sm select-none shrink-0 mb-1 overflow-hidden`}>
-                                {artistAvatar ? (
-                                  <img src={artistAvatar} alt={msg.senderName} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                                ) : (
-                                  initial
-                                )}
-                              </div>
+                              {!isSystemAdmin && (
+                                <Link to={`/${senderUsername}`} target="_blank" className={`w-8 h-8 rounded-full ${artistAvatar ? 'bg-transparent' : avatarBg} text-white flex items-center justify-center text-xs font-extrabold shadow-sm select-none shrink-0 mb-1 overflow-hidden cursor-pointer hover:opacity-80 transition-opacity`}>
+                                  {artistAvatar ? (
+                                    <img src={artistAvatar} alt={msg.senderName} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                  ) : (
+                                    initial
+                                  )}
+                                </Link>
+                              )}
+                              {isSystemAdmin && (
+                                <div className="w-8 h-8 shrink-0 mb-1 flex items-center justify-center">
+                                  <ChorusLogo className="w-8 h-8" />
+                                </div>
+                              )}
 
                               {/* Message bubble & details */}
                               <div className={`flex flex-col max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
                                 {/* Sender name & Role */}
                                 <div className="text-[10px] text-stone-500 mb-1 px-1 flex items-center gap-1.5">
                                   <span className="font-semibold">{msg.senderName}</span>
-                                  <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
-                                    isAdminRole 
-                                      ? 'bg-rose-50 text-rose-600 border border-rose-100' 
-                                      : isReporterRole 
-                                      ? 'bg-sky-50 text-sky-600 border border-sky-100' 
-                                      : 'bg-stone-100 text-stone-600 border border-stone-200'
-                                  }`}>
-                                    {isAdminRole ? 'Admin' : isReporterRole ? 'Reporter' : 'Uploader'}
-                                  </span>
+                                  {isSystemAdmin ? (
+                                    <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-rose-50 text-rose-600 border border-rose-100">
+                                      Admin
+                                    </span>
+                                  ) : isReporterRole ? (
+                                    <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-sky-50 text-sky-600 border border-sky-100">
+                                      Reporter
+                                    </span>
+                                  ) : isTargetRole ? (
+                                    <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-stone-100 text-stone-600 border border-stone-200">
+                                      Uploader
+                                    </span>
+                                  ) : null}
                                 </div>
 
                                 {/* Bubble */}
-                                <div className={`p-3 rounded-2xl text-[13px] leading-relaxed shadow-sm transition-all relative ${
+                                <div 
+                                  title={msg.createdAt ? new Date(msg.createdAt).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }) : ''}
+                                  className={`p-3 rounded-2xl text-[13px] leading-relaxed shadow-sm transition-all relative ${
                                   isMe 
                                     ? 'bg-[#3A7CF7] text-white rounded-br-none font-medium' 
-                                    : 'bg-white border border-stone-200 text-stone-800 rounded-bl-none'
+                                    : isSystemAdmin
+                                      ? 'bg-rose-500 text-white rounded-bl-none font-medium shadow-rose-500/20'
+                                      : 'bg-white border border-stone-200 text-stone-800 rounded-bl-none'
                                 }`}>
                                   <p className="whitespace-pre-wrap break-words">{msg.text}</p>
                                 </div>
@@ -7608,18 +7878,18 @@ function AdminDashboard() {
                       <button
                         type="button"
                         onClick={() => setReportType('edit')}
-                        className={`p-3 rounded-xl border text-left flex flex-col gap-1.5 transition-all ${reportType === 'edit' ? 'border-stone-900 bg-stone-900/5 text-stone-900 ring-2 ring-stone-900/20' : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-50'}`}
+                        className={`p-3 rounded-xl border text-left flex flex-col gap-1.5 transition-all ${reportType === 'edit' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500/20' : 'border-blue-200 bg-blue-50/30 hover:bg-blue-50'}`}
                       >
-                        <span className="font-bold text-xs">Yêu cầu chỉnh sửa</span>
-                        <span className="text-[10px] text-stone-500 leading-tight">Mở hộp thư 3 bên để thảo luận và chỉnh sửa.</span>
+                        <span className={`font-bold text-xs ${reportType === 'edit' ? 'text-blue-700' : 'text-blue-600'}`}>Yêu cầu chỉnh sửa</span>
+                        <span className={`text-[10px] leading-tight ${reportType === 'edit' ? 'text-blue-600' : 'text-stone-500'}`}>Trao đổi với người đăng để cập nhật nội dung</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => setReportType('remove')}
-                        className={`p-3 rounded-xl border text-left flex flex-col gap-1.5 transition-all ${reportType === 'remove' ? 'border-red-600 bg-red-50 text-red-900 ring-2 ring-red-600/10' : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-50'}`}
+                        className={`p-3 rounded-xl border text-left flex flex-col gap-1.5 transition-all ${reportType === 'remove' ? 'border-red-500 bg-red-50 ring-2 ring-red-500/20' : 'border-red-200 bg-red-50/30 hover:bg-red-50'}`}
                       >
-                        <span className="font-bold text-xs text-red-600">Yêu cầu gỡ</span>
-                        <span className="text-[10px] text-stone-500 leading-tight">Yêu cầu Admin xem xét gỡ bỏ do vi phạm bản quyền.</span>
+                        <span className={`font-bold text-xs ${reportType === 'remove' ? 'text-red-700' : 'text-red-600'}`}>Yêu cầu gỡ</span>
+                        <span className={`text-[10px] leading-tight ${reportType === 'remove' ? 'text-red-600' : 'text-stone-500'}`}>Tố cáo bài viết vi phạm.</span>
                       </button>
                     </div>
                   </div>
@@ -7660,6 +7930,28 @@ function AdminDashboard() {
       </div>
 
       {/* Custom Delete Confirmation Modal */}
+      {actionConfirm?.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-fade-in-up">
+            <h3 className="text-xl font-bold mb-2">{actionConfirm.title}</h3>
+            <p className="text-stone-600 mb-6">{actionConfirm.message}</p>
+            <div className="flex gap-3 justify-end">
+              <button 
+                onClick={() => setActionConfirm(null)} 
+                className="px-4 py-2 rounded-xl bg-stone-100 text-stone-700 font-bold hover:bg-stone-200 transition-colors"
+              >
+                Hủy
+              </button>
+              <button 
+                onClick={() => { actionConfirm.onConfirm(); setActionConfirm(null); }} 
+                className="px-4 py-2 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors"
+              >
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {deleteConfirm?.isOpen && (
         <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-stone-150 animate-in fade-in zoom-in duration-200">
@@ -8673,10 +8965,13 @@ function AdminCreateDemo() {
                     <div className="flex flex-wrap gap-1.5 items-center">
                       <span className="hidden sm:inline text-[11px] text-stone-400 font-medium mr-1">Chèn nhanh:</span>
                       {[
+                        { label: 'Intro', value: 'Intro', className: 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200' },
                         { label: 'Verse', value: 'Verse', className: 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200' },
                         { label: 'Chorus', value: 'Chorus', className: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200' },
                         { label: 'Rap', value: 'Rap', className: 'bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200' },
+                        { label: 'Drop', value: 'Drop', className: 'bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border-cyan-200' },
                         { label: 'Bridge', value: 'Bridge', className: 'bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200' },
+                        { label: 'Outro', value: 'Outro', className: 'bg-pink-50 hover:bg-pink-100 text-pink-700 border-pink-200' },
                         { label: 'Ending', value: 'Ending', className: 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200' }
                       ].map((tag) => (
                         <button
@@ -9717,10 +10012,13 @@ function AdminEditDemo() {
                     <div className="flex flex-wrap gap-1.5 items-center">
                       <span className="hidden sm:inline text-[11px] text-stone-400 font-medium mr-1">Chèn nhanh:</span>
                       {[
+                        { label: 'Intro', value: 'Intro', className: 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200' },
                         { label: 'Verse', value: 'Verse', className: 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200' },
                         { label: 'Chorus', value: 'Chorus', className: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200' },
                         { label: 'Rap', value: 'Rap', className: 'bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200' },
+                        { label: 'Drop', value: 'Drop', className: 'bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border-cyan-200' },
                         { label: 'Bridge', value: 'Bridge', className: 'bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200' },
+                        { label: 'Outro', value: 'Outro', className: 'bg-pink-50 hover:bg-pink-100 text-pink-700 border-pink-200' },
                         { label: 'Ending', value: 'Ending', className: 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200' }
                       ].map((tag) => (
                         <button
