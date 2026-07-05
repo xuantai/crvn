@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X,
-  LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home, Upload
+  LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home, Upload,
+  MessageSquare, Send, AlertTriangle, Disc3, Bell
 } from 'lucide-react';
 
 interface Artist {
@@ -27,7 +28,7 @@ export default function ACPControlPanel() {
   const [toast, setToast] = useState('');
 
   // ACP Navigation / Tab system
-  const [activeTab, setActiveTab] = useState<'artists' | 'landing'>('artists');
+  const [activeTab, setActiveTab] = useState<'artists' | 'landing' | 'tickets'>('artists');
 
   // ACP data
   const [artists, setArtists] = useState<Artist[]>([]);
@@ -35,6 +36,12 @@ export default function ACPControlPanel() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingArtist, setEditingArtist] = useState<Artist | null>(null);
+
+  // Tickets states
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
+  const [chatText, setChatText] = useState('');
+  const [isHandlingTicketAction, setIsHandlingTicketAction] = useState(false);
 
   // Form states (Artist)
   const [artistName, setArtistName] = useState('');
@@ -107,6 +114,12 @@ export default function ACPControlPanel() {
       fetchArtists();
       fetchLandingConfig();
       fetchSubscribers();
+      fetchTickets();
+
+      const interval = setInterval(() => {
+        fetchTickets();
+      }, 10000);
+      return () => clearInterval(interval);
     }
   }, [token]);
 
@@ -175,6 +188,107 @@ export default function ACPControlPanel() {
       }
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const fetchTickets = async () => {
+    try {
+      const res = await fetch('/api/acp/tickets', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTickets(data);
+        if (selectedTicket) {
+          const updated = data.find((t: any) => t.id === selectedTicket.id);
+          if (updated) setSelectedTicket(updated);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching tickets:', err);
+    }
+  };
+
+  const handleSendTicketMessage = async () => {
+    if (!selectedTicket || !chatText.trim()) return;
+    setIsHandlingTicketAction(true);
+    try {
+      const res = await fetch(`/api/acp/tickets/${selectedTicket.id}/message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text: chatText })
+      });
+      if (res.ok) {
+        const result = await res.json();
+        setChatText('');
+        setSelectedTicket(result.ticket);
+        fetchTickets();
+      } else {
+        const err = await res.json();
+        alert(`Lỗi: ${err.error || 'Không thể gửi tin nhắn'}`);
+      }
+    } catch (e: any) {
+      alert(`Lỗi: ${e.message}`);
+    } finally {
+      setIsHandlingTicketAction(false);
+    }
+  };
+
+  const handleResolveTicket = async (ticketId: string) => {
+    setIsHandlingTicketAction(true);
+    try {
+      const res = await fetch(`/api/acp/tickets/${ticketId}/resolve`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        const result = await res.json();
+        setSelectedTicket(result.ticket);
+        setToast("Đã đóng ticket thành công!");
+        fetchTickets();
+      } else {
+        const err = await res.json();
+        alert(`Lỗi: ${err.error || 'Không thể đóng ticket'}`);
+      }
+    } catch (e: any) {
+      alert(`Lỗi: ${e.message}`);
+    } finally {
+      setIsHandlingTicketAction(false);
+    }
+  };
+
+  const handleAdminRemoveSong = async (ticketId: string) => {
+    if (!window.confirm("Bạn có chắc chắn muốn GỠ bài hát này khỏi hệ thống? Quyết định này không thể hoàn tác!")) {
+      return;
+    }
+    setIsHandlingTicketAction(true);
+    try {
+      const res = await fetch(`/api/acp/tickets/${ticketId}/remove-song`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        const result = await res.json();
+        setSelectedTicket(result.ticket);
+        setToast("Đã ra quyết định gỡ bài hát và đóng ticket!");
+        fetchTickets();
+      } else {
+        const err = await res.json();
+        alert(`Lỗi: ${err.error || 'Không thể gỡ bài hát'}`);
+      }
+    } catch (e: any) {
+      alert(`Lỗi: ${e.message}`);
+    } finally {
+      setIsHandlingTicketAction(false);
     }
   };
 
@@ -611,6 +725,20 @@ export default function ACPControlPanel() {
             <Layout className="w-4 h-4" />
             <span>Cấu hình trang chủ</span>
           </button>
+          <button
+            onClick={() => setActiveTab('tickets')}
+            className={`py-4 px-6 text-sm font-black border-b-2 transition-all flex items-center gap-2 cursor-pointer relative ${
+              activeTab === 'tickets'
+                ? 'border-purple-500 text-white'
+                : 'border-transparent text-neutral-400 hover:text-white'
+            }`}
+          >
+            <MessageSquare className="w-4 h-4" />
+            <span>Hộp Thư</span>
+            {tickets.filter(t => t.type === 'remove' && t.status === 'open').length > 0 && (
+              <span className="flex h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+            )}
+          </button>
         </div>
 
         {activeTab === 'artists' ? (
@@ -817,7 +945,7 @@ export default function ACPControlPanel() {
               )}
             </div>
           </>
-        ) : (
+        ) : activeTab === 'landing' ? (
           /* Homepage config panel tab */
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 bg-neutral-900/30 border border-white/5 rounded-3xl p-6 sm:p-8 backdrop-blur-md">
@@ -1258,6 +1386,206 @@ export default function ACPControlPanel() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        ) : (
+          /* Tickets (Inbox) Tab */
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-black flex items-center gap-2">
+                <MessageSquare className="w-6 h-6 text-purple-400" />
+                <span>Hộp Thư Yêu Cầu Gỡ Bài</span>
+              </h2>
+              <p className="text-sm text-neutral-400 mt-1">
+                Xem xét, trao đổi và ra quyết định xử lý các tranh chấp bản quyền hoặc yêu cầu gỡ sản phẩm âm nhạc.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[650px]">
+              {/* Tickets List Column */}
+              <div className="bg-neutral-900/30 border border-white/5 rounded-3xl p-6 backdrop-blur-md flex flex-col h-full overflow-hidden">
+                <h3 className="text-sm font-black text-neutral-200 mb-4 pb-2 border-b border-white/5 flex items-center justify-between">
+                  <span>Yêu cầu gỡ bài ({tickets.filter(t => t.type === 'remove').length})</span>
+                  <button 
+                    onClick={fetchTickets}
+                    className="p-1 hover:bg-white/5 rounded-lg text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                    title="Làm mới"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                  </button>
+                </h3>
+
+                {tickets.filter(t => t.type === 'remove').length === 0 ? (
+                  <div className="py-12 text-center text-neutral-500 my-auto flex flex-col items-center justify-center">
+                    <MessageSquare className="w-12 h-12 mb-2 opacity-10" />
+                    <p className="text-xs">Chưa có yêu cầu gỡ bài nào.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-y-auto custom-scrollbar flex-grow space-y-2 pr-1">
+                    {tickets.filter(t => t.type === 'remove').map((ticket: any) => {
+                      const isSelected = selectedTicket?.id === ticket.id;
+                      const lastMsg = ticket.messages[ticket.messages.length - 1];
+                      
+                      return (
+                        <button
+                          key={ticket.id}
+                          onClick={() => setSelectedTicket(ticket)}
+                          className={`w-full text-left p-3.5 rounded-2xl border transition-all flex flex-col gap-2 cursor-pointer ${
+                            isSelected
+                              ? 'bg-purple-600/10 border-purple-500/30 text-white'
+                              : 'bg-black/30 border-white/5 hover:border-white/10 text-neutral-300'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between w-full">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/15">
+                              Yêu cầu gỡ
+                            </span>
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                              ticket.status === 'open' 
+                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/15' 
+                                : ticket.status === 'removed'
+                                ? 'bg-red-500/10 text-red-400 border border-red-500/15'
+                                : 'bg-neutral-800 text-neutral-400'
+                            }`}>
+                              {ticket.status === 'open' ? 'Đang xử lý' : ticket.status === 'removed' ? 'Đã gỡ bài' : 'Đã đóng'}
+                            </span>
+                          </div>
+
+                          <div className="font-bold text-sm text-neutral-100 truncate w-full flex items-center gap-1.5">
+                            <Disc3 className={`w-3.5 h-3.5 shrink-0 ${ticket.status === 'open' ? 'animate-spin' : ''}`} style={{ animationDuration: '4s' }} />
+                            <span className="truncate">{ticket.songTitle}</span>
+                          </div>
+
+                          <div className="text-[11px] text-neutral-400 flex flex-col gap-0.5 w-full">
+                            <div className="truncate">Người yêu cầu: <strong className="text-neutral-200">@{ticket.reporter.username}</strong></div>
+                            <div className="truncate">Kênh đăng tải: <strong className="text-neutral-200">@{ticket.sourceArtist}</strong></div>
+                          </div>
+
+                          {lastMsg && (
+                            <div className="text-[10px] text-neutral-500 border-t border-white/5 pt-1.5 mt-0.5 truncate w-full italic">
+                              {lastMsg.senderName}: {lastMsg.text}
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Chat / Moderation Panel */}
+              <div className="lg:col-span-2 bg-neutral-900/30 border border-white/5 rounded-3xl p-6 backdrop-blur-md flex flex-col h-full overflow-hidden">
+                {selectedTicket ? (
+                  <div className="flex flex-col h-full overflow-hidden">
+                    {/* Header */}
+                    <div className="pb-4 border-b border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-white text-lg">{selectedTicket.songTitle}</h3>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/15">
+                            Yêu cầu gỡ
+                          </span>
+                        </div>
+                        <p className="text-xs text-neutral-400 mt-1">
+                          Người yêu cầu: <strong className="text-neutral-200">{selectedTicket.reporter.name}</strong> (@{selectedTicket.reporter.username}) | Kênh uploader: <strong className="text-neutral-200">{selectedTicket.sourceArtist}</strong>
+                        </p>
+                      </div>
+
+                      {selectedTicket.status === 'open' && (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleAdminRemoveSong(selectedTicket.id)}
+                            disabled={isHandlingTicketAction}
+                            className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold py-2 px-3.5 rounded-xl text-xs flex items-center gap-1.5 cursor-pointer shadow-lg shadow-red-600/10 transition-all active:scale-95"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" /> Gỡ bài hát
+                          </button>
+                          <button
+                            onClick={() => handleResolveTicket(selectedTicket.id)}
+                            disabled={isHandlingTicketAction}
+                            className="bg-neutral-800 hover:bg-neutral-700 disabled:opacity-50 text-neutral-200 hover:text-white font-bold py-2 px-3.5 rounded-xl text-xs flex items-center gap-1.5 cursor-pointer border border-white/5 transition-all active:scale-95"
+                          >
+                            <CheckCircle className="w-3.5 h-3.5" /> Đóng yêu cầu
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Chat Messages Body */}
+                    <div className="flex-grow overflow-y-auto custom-scrollbar my-4 space-y-4 pr-1">
+                      {/* Reason Box */}
+                      <div className="bg-black/40 border border-white/5 p-4 rounded-2xl text-xs leading-relaxed">
+                        <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                          <AlertTriangle className="w-3.5 h-3.5 text-amber-500" /> Lý do yêu cầu gỡ
+                        </div>
+                        <p className="whitespace-pre-wrap italic text-neutral-300">"{selectedTicket.description}"</p>
+                        <p className="text-neutral-500 text-[10px] text-right mt-1.5">{new Date(selectedTicket.createdAt).toLocaleString('vi-VN')}</p>
+                      </div>
+
+                      {/* Messages loop */}
+                      {selectedTicket.messages.map((msg: any, idx: number) => {
+                        const isMe = msg.sender === 'admin';
+                        const isReporter = msg.sender === selectedTicket.reporter.username;
+                        
+                        return (
+                          <div key={idx} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                            <div className="text-[10px] text-neutral-500 mb-1 px-1 flex items-center gap-1">
+                              <span className="font-bold">{msg.senderName}</span>
+                              <span className={`px-1 rounded text-[9px] ${
+                                msg.sender === 'admin' 
+                                  ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20 font-bold' 
+                                  : isReporter 
+                                  ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20 font-semibold' 
+                                  : 'bg-neutral-800 text-neutral-400 border border-white/5'
+                              }`}>
+                                {msg.sender === 'admin' ? 'Admin' : isReporter ? 'Reporter' : 'Uploader'}
+                              </span>
+                            </div>
+                            <div className={`p-3 rounded-2xl max-w-md text-xs leading-relaxed shadow-sm ${
+                              isMe 
+                                ? 'bg-purple-600 text-white rounded-tr-none' 
+                                : 'bg-black/40 border border-white/5 text-neutral-200 rounded-tl-none'
+                            }`}>
+                              {msg.text}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Chat Input */}
+                    {selectedTicket.status === 'open' ? (
+                      <div className="flex gap-2 shrink-0 border-t border-white/5 pt-4">
+                        <input
+                          type="text"
+                          value={chatText}
+                          onChange={(e) => setChatText(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleSendTicketMessage()}
+                          placeholder="Nhập tin nhắn hệ thống gửi đến các bên..."
+                          disabled={isHandlingTicketAction}
+                          className="flex-1 bg-black/40 text-xs text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
+                        />
+                        <button
+                          onClick={handleSendTicketMessage}
+                          disabled={isHandlingTicketAction || !chatText.trim()}
+                          className="p-3 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 rounded-xl text-white transition-all flex items-center justify-center shrink-0 cursor-pointer shadow-lg active:scale-95"
+                        >
+                          <Send className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="text-center py-3 bg-white/5 border border-white/5 rounded-2xl shrink-0">
+                        <p className="text-xs text-neutral-400 italic">Yêu cầu này đã được đóng hoặc xử lý xong. Không thể gửi thêm phản hồi.</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-center text-neutral-500">
+                    <MessageSquare className="w-16 h-16 mb-2 opacity-5" />
+                    <p className="text-xs">Vui lòng chọn một cuộc hội thoại từ danh sách bên trái để bắt đầu trao đổi và xử lý.</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

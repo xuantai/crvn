@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { Settings, Play, Music, Lock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image } from 'lucide-react';
+import { Settings, Play, Music, Lock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { AppData, DemoSong, TemplateConfig, Achievement } from './types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -33,6 +33,110 @@ function formatText(text: string | null | undefined, disableLinks = false) {
                     {segment}
                   </span>
                 );
+              }
+              
+              return <span key={`${lineIdx}-${segIdx}`}>{segment}</span>;
+            })}
+          </React.Fragment>
+        );
+      })}
+    </>
+  );
+}
+
+function renderArtistNameWithLinks(text: string | null | undefined, systemArtists: any[]) {
+  if (!text) return null;
+  const lines = text.replace(/\s+\(/g, '\n(').split('\n');
+  return (
+    <>
+      {lines.map((line, lineIdx) => {
+        const segments = line.split(/(\s*,\s*|\s*&\s*)/g);
+        return (
+          <React.Fragment key={lineIdx}>
+            {lineIdx > 0 && <br />}
+            {segments.map((segment, segIdx) => {
+              const isSeparator = /^(\s*,\s*|\s*&\s*)$/.test(segment);
+              if (isSeparator) {
+                return <span key={`${lineIdx}-${segIdx}`}>{segment}</span>;
+              }
+              
+              const isSecret = segment.toLowerCase().includes("secret");
+              if (isSecret) {
+                return (
+                  <span 
+                    key={`${lineIdx}-${segIdx}`}
+                    className="select-none filter blur-[4.5px] cursor-help inline-block bg-white/5 px-1.5 py-0.5 rounded border border-white/5 mx-0.5" 
+                    title="Nghệ sĩ bí mật"
+                  >
+                    {segment}
+                  </span>
+                );
+              }
+
+              // Match in systemArtists
+              const trimmedName = segment.trim();
+              const matchedArtist = systemArtists.find(
+                a => a.artistName && a.artistName.trim().toLowerCase() === trimmedName.toLowerCase()
+              );
+
+              if (matchedArtist) {
+                // Construct link
+                const isProduction = window.location.hostname.includes('chorus.vn');
+                let href = `/${matchedArtist.extension}`;
+                let isExternal = false;
+
+                if (matchedArtist.hasExternalWebsite && matchedArtist.externalWebsiteUrl) {
+                  const cleanUrl = matchedArtist.externalWebsiteUrl.trim().replace(/^https?:\/\//i, '');
+                  href = `https://${cleanUrl}`;
+                  isExternal = true;
+                } else if (matchedArtist.customDomain) {
+                  const cleanUrl = matchedArtist.customDomain.trim().replace(/^https?:\/\//i, '');
+                  href = `https://${cleanUrl}`;
+                  isExternal = true;
+                } else if (isProduction) {
+                  href = `https://${matchedArtist.extension}.chorus.vn`;
+                  isExternal = true;
+                }
+
+                if (isExternal) {
+                  return (
+                    <a 
+                      key={`${lineIdx}-${segIdx}`}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="artist-link-cool cursor-pointer text-inherit inline-flex items-baseline"
+                    >
+                      {segment}
+                      {matchedArtist.verified && (
+                        <span 
+                          className="relative -top-1 ml-0.5 inline-flex items-center justify-center border border-emerald-400 text-white rounded-full w-3 h-3 shrink-0 bg-transparent cursor-help"
+                          title="Nghệ sĩ đã xác thực"
+                        >
+                          <Check className="w-2 h-2 stroke-[4.5] text-white" />
+                        </span>
+                      )}
+                    </a>
+                  );
+                } else {
+                  return (
+                    <Link 
+                      key={`${lineIdx}-${segIdx}`}
+                      to={href}
+                      className="artist-link-cool cursor-pointer text-inherit inline-flex items-baseline"
+                    >
+                      {segment}
+                      {matchedArtist.verified && (
+                        <span 
+                          className="relative -top-1 ml-0.5 inline-flex items-center justify-center border border-emerald-400 text-white rounded-full w-3 h-3 shrink-0 bg-transparent cursor-help"
+                          title="Nghệ sĩ đã xác thực"
+                        >
+                          <Check className="w-2 h-2 stroke-[4.5] text-white" />
+                        </span>
+                      )}
+                    </Link>
+                  );
+                }
               }
               
               return <span key={`${lineIdx}-${segIdx}`}>{segment}</span>;
@@ -91,6 +195,17 @@ const getAdminLink = (subPath: string = '') => {
   }
   const ext = getArtistExtensionFromUrl();
   return ext ? `/${ext}/admin${subPath}` : `/admin${subPath}`;
+};
+
+const getArtistLink = (subPath: string = '') => {
+  const host = window.location.hostname.replace(/^www\./, '');
+  const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
+  const normalizedPath = subPath.startsWith('/') ? subPath : `/${subPath}`;
+  if (isSubdomain) {
+    return normalizedPath;
+  }
+  const ext = getArtistExtensionFromUrl();
+  return ext ? `/${ext}${normalizedPath}` : normalizedPath;
 };
 
 const getAdminTokenKey = () => getArtistExtensionFromUrl() ? `adminToken_${getArtistExtensionFromUrl()}` : 'adminToken';
@@ -188,6 +303,24 @@ localStorage.removeItem = function(key) {
     return originalRemoveItem.call(this, `${ext}_${key}`);
   }
   return originalRemoveItem.call(this, key);
+};
+
+const formatFileName = (name: string, maxLen = 22) => {
+  if (!name || name.length <= maxLen) return name;
+  const dotIndex = name.lastIndexOf('.');
+  if (dotIndex === -1) {
+    return name.slice(0, maxLen - 3) + '...';
+  }
+  const ext = name.slice(dotIndex);
+  const baseName = name.slice(0, dotIndex);
+  const charsToKeep = maxLen - ext.length - 3;
+  if (charsToKeep <= 4) {
+    return name.slice(0, maxLen - 3) + '...';
+  }
+  const half = Math.floor(charsToKeep / 2);
+  const start = baseName.slice(0, half);
+  const end = baseName.slice(-half);
+  return `${start}...${end}${ext}`;
 };
 
 import ACPControlPanel from './components/ACPControlPanel';
@@ -467,9 +600,11 @@ function AdminFloatingControls({ onLogout }: { onLogout: () => void }) {
   const isAdminPage = location.pathname.startsWith('/admin');
   if (isAdminPage) return null;
 
-  const isListeningPage = location.pathname.startsWith('/demo/') || 
-                          location.pathname.startsWith('/song/') || 
-                          location.pathname.startsWith('/playlist/');
+  const isListeningPage = location.pathname.includes('/demo/') || 
+                          location.pathname.includes('/song/') || 
+                          location.pathname.includes('/playlist/');
+
+  if (isListeningPage) return null;
 
   return (
     <div className={
@@ -488,7 +623,7 @@ function AdminFloatingControls({ onLogout }: { onLogout: () => void }) {
        ) : (
          <a 
            href={getAdminLink()}
-           className="flex items-center justify-center p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/40 shadow-[0_4px_12px_rgba(0,0,0,0.15)] transition-all duration-300 hover:scale-115 cursor-pointer"
+           className="flex items-center justify-center p-3 rounded-full bg-emerald-500/10 hover:bg-emerald-500/25 backdrop-blur-md text-emerald-400 border border-emerald-500/40 shadow-[0_4px_12px_rgba(16,185,129,0.15)] transition-all duration-300 hover:scale-115 cursor-pointer"
            title="Cài đặt (Admin)"
          >
            <Settings className="w-5 h-5 stroke-[1.5]" />
@@ -968,7 +1103,7 @@ function Home() {
   const handleSharePlaylist = async (e: React.MouseEvent, playlistId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    let url = window.location.origin + '/playlist/' + playlistId;
+    let url = window.location.origin + getArtistLink('/playlist/' + playlistId);
     url = formatShareUrl(url);
     await copyToClipboard(url);
     setToast(t.toastCopy || 'Đã copy link!');
@@ -1507,7 +1642,7 @@ function Home() {
                               show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
                             }}
                           >
-                            <Link to={`/playlist/${playlist.id}`} className="group relative bg-neutral-900/50 border border-white/5 hover:border-purple-500/50 rounded-2xl p-3 sm:p-4 transition-all duration-300 hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.3)] overflow-hidden flex items-center gap-3 sm:gap-4 w-full">
+                            <Link to={getArtistLink(`/playlist/${playlist.id}`)} className="group relative bg-neutral-900/50 border border-white/5 hover:border-purple-500/50 rounded-2xl p-3 sm:p-4 transition-all duration-300 hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.3)] overflow-hidden flex items-center gap-3 sm:gap-4 w-full">
                               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/0 group-hover:from-purple-500/10 transition-all duration-500"></div>
                               <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl overflow-hidden relative z-10 border border-white/10 group-hover:border-purple-500/30 transition-colors">
                                 {coverUrl ? (
@@ -1533,7 +1668,7 @@ function Home() {
                                 onClick={async (e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  let url = `${window.location.origin}/playlist/${playlist.id}`;
+                                  let url = window.location.origin + getArtistLink(`/playlist/${playlist.id}`);
                                   url = formatShareUrl(url);
                                   await copyToClipboard(url);
                                   setToast('Đã copy link playlist!');
@@ -1558,7 +1693,7 @@ function Home() {
                           }}
                         >
                           <Link 
-                            to={activeListTab === 'released' ? `/playlist/released?song=${demo.slug || demo.id}` : `/song/${demo.slug || demo.id}`} 
+                            to={activeListTab === 'released' ? getArtistLink(`/playlist/released?song=${demo.slug || demo.id}`) : getArtistLink(`/song/${demo.slug || demo.id}`)} 
                             onClick={(e) => {
                               if (demo.linkType === 'indirect') {
                                 e.preventDefault();
@@ -1629,7 +1764,7 @@ function Home() {
                                   onClick={async (e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    let url = `${window.location.origin}/song/${demo.slug || demo.id}`;
+                                    let url = window.location.origin + getArtistLink(`/song/${demo.slug || demo.id}`);
                                     url = formatShareUrl(url);
                                     await copyToClipboard(url);
                                     setToast('Đã copy link bài hát!');
@@ -3157,7 +3292,7 @@ function PlaylistPlayer() {
      if (id === 'released' && currentSong) {
        const searchParams = new URLSearchParams(window.location.search);
        if (searchParams.get('song') !== (currentSong.slug || currentSong.id)) {
-         window.history.replaceState(null, '', `/playlist/released?song=${currentSong.slug || currentSong.id}`);
+         window.history.replaceState(null, '', getArtistLink(`/playlist/released?song=${currentSong.slug || currentSong.id}`));
        }
      }
   }, [id, currentSong]);
@@ -3331,6 +3466,20 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
   const [triedRelative, setTriedRelative] = useState(false);
   const [triedAbsolute, setTriedAbsolute] = useState(false);
   const [triedRandom, setTriedRandom] = useState(false);
+  const [systemArtists, setSystemArtists] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('/api/public/artists')
+      .then(res => res.json())
+      .then(data => {
+        if (data && Array.isArray(data)) {
+          setSystemArtists(data);
+        } else if (data && Array.isArray(data.artists)) {
+          setSystemArtists(data.artists);
+        }
+      })
+      .catch(err => console.error("Error fetching public artists:", err));
+  }, []);
 
   // Initialize displayCoverUrl whenever song or previewConfig updates
   useEffect(() => {
@@ -3908,8 +4057,8 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
             <HoverTranslate text={demo.title} />
           </h2>
           <p className="text-sm font-medium text-center mb-6 opacity-80">
-             {formatText(demo.singer || demo.author || (demo as any)?.defaultArtistName || 'Nghệ sĩ', !!playlistSongs)}
-             <span className="block text-xs mt-1 opacity-70">Sáng tác: {formatText(demo.composer || (demo as any)?.defaultArtistName || 'Nghệ sĩ', !!playlistSongs)}</span>
+             {renderArtistNameWithLinks(demo.singer || demo.author || (demo as any)?.defaultArtistName || 'Nghệ sĩ', systemArtists)}
+             <span className="block text-xs mt-1 opacity-70">Sáng tác: {renderArtistNameWithLinks(demo.composer || (demo as any)?.defaultArtistName || 'Nghệ sĩ', systemArtists)}</span>
           </p>
           
           <p className="text-center mb-6 text-sm font-semibold opacity-70">
@@ -4026,7 +4175,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
                 if (!demo) return;
                 const baseUrl = '/song/';
                 const dynamicId = demo.slug || demo.id;
-                let url = window.location.origin + baseUrl + dynamicId;
+                let url = window.location.origin + getArtistLink(baseUrl + dynamicId);
                 url = formatShareUrl(url);
                 await copyToClipboard(url);
                 setToast('Đã copy link bài hát!');
@@ -4043,7 +4192,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
                   if (!demo) return;
                   const baseUrl = '/song/';
                   const dynamicId = demo.slug || demo.id;
-                  let url = window.location.origin + baseUrl + dynamicId;
+                  let url = window.location.origin + getArtistLink(baseUrl + dynamicId);
                   url = formatShareUrl(url);
                   url += `?secret=${demo.secretKey}`;
                   await copyToClipboard(url);
@@ -4287,12 +4436,12 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
               textShadow: isLight ? '0 1px 1.5px rgba(255,255,255,0.7)' : '0 1.5px 3px rgba(0,0,0,0.85)',
             }}
           >
-            {formatText(demo.singer || demo.author || (demo as any)?.defaultArtistName || 'Nghệ sĩ', !!playlistSongs)}
+            {renderArtistNameWithLinks(demo.singer || demo.author || (demo as any)?.defaultArtistName || 'Nghệ sĩ', systemArtists)}
           </p>
           <p 
             className={`text-xs md:text-sm text-center mb-1 md:mb-6 ${templateType === '6' ? 'font-semibold text-[#fef08a]' : 'font-medium opacity-60'}`}
           >
-            {t.sAuth} {formatText(demo.composer || (demo as any)?.defaultArtistName || 'Nghệ sĩ', !!playlistSongs)}
+            {t.sAuth} {renderArtistNameWithLinks(demo.composer || (demo as any)?.defaultArtistName || 'Nghệ sĩ', systemArtists)}
           </p>
           </motion.div>
           
@@ -5065,8 +5214,229 @@ function AdminDatabaseSettings() {
 function AdminDashboard() {
   const [data, setData] = useState<AppData | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState<'demos'|'playlists'|'profile'|'socials'|'security'|'templates'|'database'>('demos');
+  const [activeTab, setActiveTab] = useState<'demos'|'playlists'|'profile'|'socials'|'security'|'templates'|'database'|'reposts'|'tickets'>('demos');
   const [demosSubTab, setDemosSubTab] = useState<'released' | 'demos' | 'drafts' | 'playlists' | 'trash' | 'landing_pages'>('released');
+  
+  // Chorus Repost & Ticket States
+  const [otherSongs, setOtherSongs] = useState<any[]>([]);
+  const [ticketsList, setTicketsList] = useState<any[]>([]);
+  const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
+  const [chatMessageText, setChatMessageText] = useState('');
+  
+  // Report Popup State
+  const [reportSong, setReportSong] = useState<any | null>(null);
+  const [reportType, setReportType] = useState<'remove' | 'edit'>('edit');
+  const [reportDesc, setReportDesc] = useState('');
+
+  // Bell/Notification Count State
+  const [bellCount, setBellCount] = useState(0);
+
+  // External URL states
+  const [showExternalUrlInput, setShowExternalUrlInput] = useState(false);
+  const [externalUrl, setExternalUrl] = useState('');
+  const [isCheckingExternalUrl, setIsCheckingExternalUrl] = useState(false);
+  const [externalError, setExternalError] = useState('');
+  const [externalSuccess, setExternalSuccess] = useState('');
+
+  const handleAddExternalSong = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!externalUrl.trim()) return;
+    setIsCheckingExternalUrl(true);
+    setExternalError('');
+    setExternalSuccess('');
+    try {
+      const response = await fetch('/api/admin/add-external-song', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getAdminToken() || ''}`
+        },
+        body: JSON.stringify({ url: externalUrl })
+      });
+      const dataRes = await response.json();
+      if (!response.ok) {
+        setExternalError(dataRes.error || 'Có lỗi xảy ra khi kiểm tra bài hát!');
+      } else {
+        setExternalSuccess('Thêm bài hát đăng lại ngoài thành công!');
+        setExternalUrl('');
+        // Refresh other songs
+        await fetchOtherSongs();
+        setTimeout(() => setShowExternalUrlInput(false), 2000);
+      }
+    } catch (err: any) {
+      setExternalError('Lỗi kết nối: ' + err.message);
+    } finally {
+      setIsCheckingExternalUrl(false);
+    }
+  };
+
+  const handleRemoveExternalRepost = async (id: string) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa bài hát ngoài này khỏi danh sách Đăng lại?')) return;
+    try {
+      const response = await fetch('/api/admin/remove-external-repost', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getAdminToken() || ''}`
+        },
+        body: JSON.stringify({ id })
+      });
+      if (response.ok) {
+        await fetchOtherSongs();
+      } else {
+        const dataRes = await response.json();
+        alert(dataRes.error || 'Lỗi khi xóa bài hát ngoài!');
+      }
+    } catch (err: any) {
+      alert('Lỗi kết nối: ' + err.message);
+    }
+  };
+
+  const fetchOtherSongs = async () => {
+    try {
+      const res = await fetch('/api/admin/other-songs', {
+        headers: {
+          'x-artist-extension': getArtistExtensionFromUrl(),
+          'Authorization': `Bearer ${getAdminToken() || ''}`
+        }
+      });
+      if (res.ok) {
+        const list = await res.json();
+        setOtherSongs(list);
+      }
+    } catch (e) {
+      console.error("Error fetching other songs:", e);
+    }
+  };
+
+  const fetchTickets = async () => {
+    try {
+      const res = await fetch('/api/admin/tickets', {
+        headers: {
+          'x-artist-extension': getArtistExtensionFromUrl(),
+          'Authorization': `Bearer ${getAdminToken() || ''}`
+        }
+      });
+      if (res.ok) {
+        const list = await res.json();
+        setTicketsList(list);
+        
+        // Calculate bell Count: open edit tickets
+        const openEditTickets = list.filter((t: any) => t.status === 'open' && t.type === 'edit');
+        setBellCount(openEditTickets.length);
+
+        if (selectedTicket) {
+          const updatedSelected = list.find((t: any) => t.id === selectedTicket.id);
+          if (updatedSelected) setSelectedTicket(updatedSelected);
+        }
+      }
+    } catch (e) {
+      console.error("Error fetching tickets:", e);
+    }
+  };
+
+  // Poll for tickets and other songs
+  useEffect(() => {
+    fetchOtherSongs();
+    fetchTickets();
+    const interval = setInterval(() => {
+      fetchTickets();
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [activeTab]);
+
+  const handleCreateReport = async () => {
+    if (!reportSong || !reportDesc) return;
+    try {
+      const res = await fetch('/api/admin/tickets/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-artist-extension': getArtistExtensionFromUrl(),
+          'Authorization': `Bearer ${getAdminToken() || ''}`
+        },
+        body: JSON.stringify({
+          songId: reportSong.id,
+          songTitle: reportSong.title,
+          sourceArtist: reportSong.sourceArtist.username,
+          type: reportType,
+          description: reportDesc
+        })
+      });
+      if (res.ok) {
+        setToast("Đã gửi báo cáo thành công!");
+        setReportSong(null);
+        setReportDesc('');
+        fetchTickets();
+      } else {
+        const err = await res.json();
+        setToast(`Lỗi: ${err.error || 'Gửi báo cáo thất bại'}`);
+      }
+    } catch (e: any) {
+      setToast(`Lỗi: ${e.message}`);
+    }
+  };
+
+  const handleSendTicketMessage = async () => {
+    if (!selectedTicket || !chatMessageText.trim()) return;
+    try {
+      const res = await fetch(`/api/admin/tickets/${selectedTicket.id}/message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-artist-extension': getArtistExtensionFromUrl(),
+          'Authorization': `Bearer ${getAdminToken() || ''}`
+        },
+        body: JSON.stringify({ text: chatMessageText })
+      });
+      if (res.ok) {
+        setChatMessageText('');
+        fetchTickets();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleResolveTicket = async (ticketId: string) => {
+    try {
+      const res = await fetch(`/api/admin/tickets/${ticketId}/resolve`, {
+        method: 'POST',
+        headers: {
+          'x-artist-extension': getArtistExtensionFromUrl(),
+          'Authorization': `Bearer ${getAdminToken() || ''}`
+        }
+      });
+      if (res.ok) {
+        setToast("Đã đóng ticket thành công!");
+        fetchTickets();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleAdminRemoveSong = async (ticketId: string) => {
+    if (!window.confirm("Bạn có chắc chắn muốn duyệt GỠ bài hát này khỏi kênh của đối tác không? Hành động này không thể hoàn tác.")) return;
+    try {
+      const res = await fetch(`/api/admin/tickets/${ticketId}/remove-song`, {
+        method: 'POST',
+        headers: {
+          'x-artist-extension': getArtistExtensionFromUrl(),
+          'Authorization': `Bearer ${getAdminToken() || ''}`
+        }
+      });
+      if (res.ok) {
+        setToast("Đã ra quyết định gỡ bài hát và đóng ticket!");
+        fetchTickets();
+      } else {
+        const err = await res.json();
+        setToast(`Lỗi: ${err.error}`);
+      }
+    } catch (e: any) {
+      setToast(`Lỗi: ${e.message}`);
+    }
+  };
   const [draggedItemIdx, setDraggedItemIdx] = useState<number | null>(null);
   const [itemsPerPage, setItemsPerPage] = useState<number>(20);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -5242,7 +5612,7 @@ function AdminDashboard() {
   };
 
   const handleShare = async (slugOrId: string) => {
-    let url = window.location.origin + '/song/' + slugOrId;
+    let url = window.location.origin + getArtistLink('/song/' + slugOrId);
     url = formatShareUrl(url);
     await copyToClipboard(url);
     setToast('Đã copy link!');
@@ -5250,7 +5620,7 @@ function AdminDashboard() {
   };
 
   const handleShareSecret = async (demoItem: any) => {
-    let url = window.location.origin + '/song/' + (demoItem.slug || demoItem.id);
+    let url = window.location.origin + getArtistLink('/song/' + (demoItem.slug || demoItem.id));
     url = formatShareUrl(url);
     url += `?secret=${demoItem.secretKey}`;
     await copyToClipboard(url);
@@ -5390,6 +5760,7 @@ function AdminDashboard() {
           globalBaseUrl: payload.globalBaseUrl,
           customDomain: payload.customDomain,
           autoSwitchTabs: payload.autoSwitchTabs === 'true',
+          hideFromHomepage: payload.hideFromHomepage === 'true',
           slideshowImages: slideshowImages,
           tab1Name: payload.tab1Name,
           tab2Name: payload.tab2Name,
@@ -5596,6 +5967,42 @@ function AdminDashboard() {
               title="Giao Diện"
             >
               <Camera className="w-5 h-5" /> {!effectiveSidebarCollapsed && <span>Giao Diện</span>}
+            </button>
+            <button
+              onClick={() => setActiveTab('reposts')}
+              className={`flex items-center transition-colors relative ${
+                effectiveSidebarCollapsed ? 'justify-center w-10 h-10 rounded-xl mx-auto' : 'justify-start w-full gap-3 px-4 py-3 rounded-xl font-medium'
+              } ${
+                activeTab === 'reposts' ? 'bg-stone-900 text-white' : 'hover:bg-stone-200 text-stone-600'
+              }`}
+              title={`Đăng lại (${otherSongs.length})`}
+            >
+              <div className="relative flex items-center justify-center">
+                <Repeat className="w-5 h-5" />
+                {effectiveSidebarCollapsed && otherSongs.length > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
+                    {otherSongs.length}
+                  </span>
+                )}
+              </div>
+              {!effectiveSidebarCollapsed && <span>Đăng lại ({otherSongs.length})</span>}
+            </button>
+            <button
+              onClick={() => setActiveTab('tickets')}
+              className={`flex items-center transition-colors relative ${
+                effectiveSidebarCollapsed ? 'justify-center w-10 h-10 rounded-xl mx-auto' : 'justify-start w-full gap-3 px-4 py-3 rounded-xl font-medium'
+              } ${
+                activeTab === 'tickets' ? 'bg-stone-900 text-white' : 'hover:bg-stone-200 text-stone-600'
+              }`}
+              title="Hộp Thư"
+            >
+              <MessageSquare className="w-5 h-5" /> 
+              {!effectiveSidebarCollapsed && <span className="flex items-center gap-2">Hộp Thư {bellCount > 0 && <Bell className="w-3.5 h-3.5 text-red-400 animate-bounce" />}</span>}
+              {bellCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-md animate-pulse">
+                  {bellCount}
+                </span>
+              )}
             </button>
           </div>
           
@@ -5857,7 +6264,7 @@ function AdminDashboard() {
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
                             <div className="flex flex-col gap-1 flex-1 min-w-0">
-                              <Link to={`/song/${demo.slug || demo.id}`} state={{ fromAdmin: true }} className="hover:text-pink-600 font-bold text-stone-850 text-sm md:text-base block truncate">
+                              <Link to={`/song/${demo.slug || demo.id}`} state={{ fromAdmin: true }} className="hover:text-pink-600 font-bold text-stone-850 text-sm md:text-base block truncate max-w-[150px] xs:max-w-[240px] sm:max-w-[320px] md:max-w-[280px] lg:max-w-[420px] xl:max-w-[580px]">
                                 {demo.title}
                               </Link>
                               <div className="flex items-center flex-wrap gap-2 text-[10px] md:text-xs">
@@ -5939,7 +6346,7 @@ function AdminDashboard() {
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
                             <div className="flex flex-col gap-1 flex-1 min-w-0">
-                              <Link to={`/song/${demo.slug || demo.id}`} state={{ fromAdmin: true }} className="hover:text-blue-600 font-bold text-stone-850 text-sm md:text-base block truncate">
+                              <Link to={`/song/${demo.slug || demo.id}`} state={{ fromAdmin: true }} className="hover:text-blue-600 font-bold text-stone-850 text-sm md:text-base block truncate max-w-[150px] xs:max-w-[240px] sm:max-w-[320px] md:max-w-[280px] lg:max-w-[420px] xl:max-w-[580px]">
                                 {demo.title}
                               </Link>
                               <div className="flex items-center flex-wrap gap-2 text-[10px] md:text-xs">
@@ -6031,7 +6438,7 @@ function AdminDashboard() {
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
                             <div className="flex flex-col gap-1 flex-1 min-w-0">
-                              <Link to={`/song/${demo.slug || demo.id}`} state={{ fromAdmin: true }} className="hover:text-blue-600 font-bold text-stone-850 text-sm md:text-base block truncate">
+                              <Link to={`/song/${demo.slug || demo.id}`} state={{ fromAdmin: true }} className="hover:text-blue-600 font-bold text-stone-850 text-sm md:text-base block truncate max-w-[150px] xs:max-w-[240px] sm:max-w-[320px] md:max-w-[280px] lg:max-w-[420px] xl:max-w-[580px]">
                                 {demo.title}
                               </Link>
                               <div className="flex items-center flex-wrap gap-2 text-[10px] md:text-xs">
@@ -6127,7 +6534,7 @@ function AdminDashboard() {
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
                             <div className="flex flex-col gap-1 flex-1 min-w-0">
-                              <Link to={getAdminLink(`/edit/${demo.id}`)} className="hover:text-amber-600 font-bold text-stone-850 text-sm md:text-base block truncate">
+                              <Link to={getAdminLink(`/edit/${demo.id}`)} className="hover:text-amber-600 font-bold text-stone-850 text-sm md:text-base block truncate max-w-[150px] xs:max-w-[240px] sm:max-w-[320px] md:max-w-[280px] lg:max-w-[420px] xl:max-w-[580px]">
                                 {demo.title || '(Chưa đặt tiêu đề)'}
                               </Link>
                               <div className="flex items-center flex-wrap gap-2 text-[10px] md:text-xs">
@@ -6350,18 +6757,34 @@ function AdminDashboard() {
                   <label className="block text-sm font-bold text-stone-700 mb-2">Giới thiệu ngắn</label>
                   <input name="artistBio" defaultValue={data.artistBio} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
                 </div>
-                <div className="flex items-center gap-3 bg-stone-50 border border-stone-200 p-4 rounded-xl">
-                  <input 
-                    type="checkbox" 
-                    id="autoSwitchTabs" 
-                    name="autoSwitchTabs" 
-                    defaultChecked={data.autoSwitchTabs} 
-                    value="true" 
-                    className="w-5 h-5 rounded border-stone-300 text-stone-900 focus:ring-stone-900 cursor-pointer" 
-                  />
-                  <label htmlFor="autoSwitchTabs" className="text-sm font-bold text-stone-700 cursor-pointer select-none">
-                    Tự động chuyển tab ở trang chủ (Music / Demo / Playlist)
-                  </label>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-3 bg-stone-50 border border-stone-200 p-4 rounded-xl">
+                    <input 
+                      type="checkbox" 
+                      id="autoSwitchTabs" 
+                      name="autoSwitchTabs" 
+                      defaultChecked={data.autoSwitchTabs} 
+                      value="true" 
+                      className="w-5 h-5 rounded border-stone-300 text-stone-900 focus:ring-stone-900 cursor-pointer" 
+                    />
+                    <label htmlFor="autoSwitchTabs" className="text-sm font-bold text-stone-700 cursor-pointer select-none">
+                      Tự động chuyển tab ở trang chủ (Music / Demo / Playlist)
+                    </label>
+                  </div>
+
+                  <div className="flex items-center gap-3 bg-stone-50 border border-stone-200 p-4 rounded-xl">
+                    <input 
+                      type="checkbox" 
+                      id="hideFromHomepage" 
+                      name="hideFromHomepage" 
+                      defaultChecked={data.hideFromHomepage} 
+                      value="true" 
+                      className="w-5 h-5 rounded border-stone-300 text-stone-900 focus:ring-stone-900 cursor-pointer" 
+                    />
+                    <label htmlFor="hideFromHomepage" className="text-sm font-bold text-stone-700 cursor-pointer select-none">
+                      Ẩn kho nhạc khỏi trang chủ Chorus.vn (tick vào thì sẽ ẩn khỏi danh sách các nghệ sĩ công khai trên chorus.vn)
+                    </label>
+                  </div>
                 </div>
 
                 <div className="bg-stone-50 border border-stone-200 p-5 rounded-2xl space-y-4">
@@ -6738,6 +7161,405 @@ function AdminDashboard() {
           {activeTab === 'database' && (
             <AdminDatabaseSettings />
           )}
+
+          {activeTab === 'reposts' && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-stone-900">Đăng lại (Repost) ({otherSongs.length})</h2>
+                  <p className="text-sm text-stone-500 mt-1">Danh sách các bài hát của bạn đang được các nghệ sĩ khác đăng tải lên kênh của họ hoặc liên kết từ URL ngoài.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowExternalUrlInput(!showExternalUrlInput)}
+                  className="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 hover:text-stone-900 rounded-xl font-bold text-sm inline-flex items-center gap-1.5 border border-stone-200 transition-all shadow-sm shrink-0 self-start sm:self-auto cursor-pointer active:scale-95"
+                >
+                  <Globe className="w-4 h-4 text-stone-500" />
+                  URL Ngoài
+                </button>
+              </div>
+
+              {showExternalUrlInput && (
+                <div className="bg-stone-50 border border-stone-200 p-4 rounded-2xl shadow-sm space-y-3">
+                  <h3 className="font-bold text-stone-850 text-sm">Nhập link bài hát ngoài hệ thống</h3>
+                  <form onSubmit={handleAddExternalSong} className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      required
+                      placeholder="Hỗ trợ các link bài hát chung cấu trúc với chorus.vn (ví dụ: https://tai.com/song/ten-bai-hat)"
+                      value={externalUrl}
+                      onChange={(e) => setExternalUrl(e.target.value)}
+                      className="flex-1 px-4 py-2.5 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-stone-500 text-sm"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isCheckingExternalUrl}
+                      className="px-5 py-2.5 bg-stone-900 hover:bg-stone-850 disabled:bg-stone-400 text-white font-bold rounded-xl text-sm transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5 shrink-0"
+                    >
+                      {isCheckingExternalUrl ? (
+                        <>
+                          <Disc3 className="w-4 h-4 animate-spin" /> Đang kiểm tra...
+                        </>
+                      ) : (
+                        'Kiểm tra & Thêm'
+                      )}
+                    </button>
+                  </form>
+                  {externalError && <p className="text-xs font-semibold text-red-500">{externalError}</p>}
+                  {externalSuccess && <p className="text-xs font-semibold text-emerald-600">{externalSuccess}</p>}
+                  <p className="text-[11px] text-stone-400">
+                    * Hệ thống sẽ tự động quét qua credit bài hát bên URL ngoài để xác thực tên nghệ sĩ của bạn trước khi đưa vào danh sách đăng lại này.
+                  </p>
+                </div>
+              )}
+
+              {otherSongs.length === 0 ? (
+                <div className="bg-white border border-stone-150 rounded-2xl p-12 text-center shadow-sm">
+                  <div className="w-16 h-16 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-stone-100">
+                    <Music className="w-8 h-8 text-stone-400" />
+                  </div>
+                  <h3 className="font-bold text-stone-850 mb-1">Không tìm thấy bài hát nào</h3>
+                  <p className="text-stone-500 text-sm max-w-sm mx-auto">Hiện tại không có bài hát nào của bạn do nghệ sĩ khác đăng tải hoặc liên kết ngoài.</p>
+                </div>
+              ) : (
+                <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-sm">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-stone-50/70 border-b border-stone-150 text-xs font-bold text-stone-500 uppercase tracking-wider">
+                          <th className="px-6 py-4">Bài hát</th>
+                          <th className="px-6 py-4">Vai trò của bạn</th>
+                          <th className="px-6 py-4">Người đăng tải</th>
+                          <th className="px-6 py-4 text-right">Hành động</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-stone-150 text-sm text-stone-700">
+                        {otherSongs.map((song) => {
+                          const isSinger = song.singer?.toLowerCase().includes(data?.artistName?.toLowerCase() || '');
+                          const isComposer = song.composer?.toLowerCase().includes(data?.artistName?.toLowerCase() || '');
+                          
+                          return (
+                            <tr key={song.id} className="hover:bg-stone-50/40 transition-colors">
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-lg overflow-hidden border border-stone-200 shrink-0 bg-stone-100 flex items-center justify-center">
+                                    {song.coverUrl ? (
+                                      <img src={song.coverUrl} className="w-full h-full object-cover" alt={song.title} />
+                                    ) : (
+                                      <Disc3 className="w-5 h-5 text-stone-400" />
+                                    )}
+                                  </div>
+                                  <div>
+                                    <div className="font-bold text-stone-900 flex items-center gap-1.5">
+                                      {song.title}
+                                      {song.isExternal && (
+                                        <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5" title="Bài hát ngoài hệ thống">
+                                          <Globe className="w-2.5 h-2.5" /> Ngoài
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="text-xs text-stone-500 mt-0.5">Ca sĩ: {song.singer || 'Chưa rõ'} | Sáng tác: {song.composer || 'Chưa rõ'}</div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex flex-wrap gap-1.5">
+                                  {isSinger && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-100">Ca sĩ</span>}
+                                  {isComposer && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100">Nhạc sĩ</span>}
+                                  {!isSinger && !isComposer && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-stone-100 text-stone-600 border border-stone-200">Nghệ sĩ liên quan</span>}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="font-semibold text-stone-850">{song.sourceArtist.artistName || song.sourceArtist.name}</div>
+                                {song.isExternal ? (
+                                  <div className="text-xs text-stone-400 font-mono flex items-center gap-1 mt-0.5">
+                                    <Globe className="w-3 h-3 text-emerald-500" /> Ngoại tuyến
+                                  </div>
+                                ) : (
+                                  <div className="text-xs text-stone-400 font-mono">@{song.sourceArtist.username}</div>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <button
+                                    onClick={() => navigate(getAdminLink('/new'), { state: { repostFrom: song } })}
+                                    className="p-2 rounded-xl border border-stone-200 hover:border-stone-900 bg-white hover:bg-stone-50 text-stone-600 hover:text-stone-900 transition-all shadow-sm active:scale-95 cursor-pointer"
+                                    title="Đăng lại bài hát này lên kênh của bạn"
+                                  >
+                                    <Repeat className="w-4 h-4" />
+                                  </button>
+                                  {song.isExternal ? (
+                                    <button
+                                      onClick={() => handleRemoveExternalRepost(song.id)}
+                                      className="p-2 rounded-xl border border-red-100 hover:border-red-500 bg-red-50 hover:bg-red-100 text-red-600 transition-all shadow-sm active:scale-95 cursor-pointer"
+                                      title="Xóa khỏi danh sách đăng lại"
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </button>
+                                  ) : (
+                                    <button
+                                      onClick={() => setReportSong(song)}
+                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-red-100 hover:border-red-300 bg-red-50 hover:bg-red-100/60 text-red-600 text-xs font-bold transition-all active:scale-95 cursor-pointer"
+                                      title="Gửi báo cáo / yêu cầu gỡ hoặc chỉnh sửa"
+                                    >
+                                      Report
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'tickets' && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold text-stone-900">Hộp thư Ticket</h2>
+                <p className="text-sm text-stone-500 mt-1">Nơi trao đổi và giải quyết các vấn đề bản quyền, yêu cầu gỡ hoặc chỉnh sửa thông tin bài hát.</p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-white border border-stone-150 rounded-2xl overflow-hidden shadow-sm h-[650px]">
+                {/* Tickets Sidebar */}
+                <div className="lg:col-span-4 border-r border-stone-150 flex flex-col h-full bg-stone-50/50">
+                  <div className="p-4 border-b border-stone-150 bg-white">
+                    <h3 className="font-bold text-stone-800 text-sm">Danh sách cuộc hội thoại ({ticketsList.length})</h3>
+                  </div>
+                  <div className="flex-1 overflow-y-auto divide-y divide-stone-150">
+                    {ticketsList.length === 0 ? (
+                      <div className="p-6 text-center text-stone-500 text-sm">
+                        Không có ticket nào hiện tại.
+                      </div>
+                    ) : (
+                      ticketsList.map((ticket) => {
+                        const isSelected = selectedTicket?.id === ticket.id;
+                        const lastMsg = ticket.messages[ticket.messages.length - 1];
+                        
+                        return (
+                          <button
+                            key={ticket.id}
+                            onClick={() => setSelectedTicket(ticket)}
+                            className={`w-full p-4 text-left transition-all flex flex-col gap-2 hover:bg-stone-100/50 ${isSelected ? 'bg-white border-l-4 border-stone-900' : ''}`}
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${ticket.type === 'remove' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>
+                                {ticket.type === 'remove' ? 'Yêu cầu gỡ' : 'Yêu cầu sửa'}
+                              </span>
+                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${ticket.status === 'open' ? 'bg-emerald-50 text-emerald-600' : 'bg-stone-200 text-stone-600'}`}>
+                                {ticket.status === 'open' ? 'Đang xử lý' : 'Đã đóng'}
+                              </span>
+                            </div>
+                            
+                            <div className="font-bold text-stone-850 text-sm truncate w-full">
+                              {ticket.songTitle}
+                            </div>
+                            
+                            <div className="text-[11px] text-stone-500 flex flex-wrap gap-x-2">
+                              <span>Bởi: <strong className="text-stone-700">{ticket.reporter.name}</strong></span>
+                              <span>→ <strong className="text-stone-700">{ticket.sourceArtist}</strong></span>
+                            </div>
+
+                            {lastMsg && (
+                              <p className="text-xs text-stone-500 truncate w-full mt-1 bg-stone-100/80 rounded px-2 py-1 italic">
+                                "{lastMsg.senderName}": {lastMsg.text}
+                              </p>
+                            )}
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+
+                {/* Ticket Chat Panel */}
+                <div className="lg:col-span-8 flex flex-col h-full bg-white">
+                  {selectedTicket ? (
+                    <div className="flex flex-col h-full">
+                      {/* Chat Header */}
+                      <div className="p-4 border-b border-stone-150 flex items-center justify-between bg-stone-50/40">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-bold text-stone-900">{selectedTicket.songTitle}</h3>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${selectedTicket.type === 'remove' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
+                              {selectedTicket.type === 'remove' ? 'Yêu cầu gỡ' : 'Yêu cầu sửa'}
+                            </span>
+                          </div>
+                          <p className="text-xs text-stone-500 mt-1">
+                            Người yêu cầu: <strong>{selectedTicket.reporter.name}</strong> (u/ {selectedTicket.reporter.username}) | Đối tác uploader: <strong>{selectedTicket.sourceArtist}</strong>
+                          </p>
+                        </div>
+                        
+                        <div className="flex items-center gap-1.5">
+                          {/* Admin Only actions */}
+                          {(data?.username === 'acxuantai' || data?.isMasterAdmin) && selectedTicket.status === 'open' && (
+                            <>
+                              {selectedTicket.type === 'remove' && (
+                                <button
+                                  onClick={() => handleAdminRemoveSong(selectedTicket.id)}
+                                  className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition-colors cursor-pointer"
+                                >
+                                  Duyệt Gỡ Bài
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleResolveTicket(selectedTicket.id)}
+                                className="bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition-colors cursor-pointer"
+                              >
+                                Đóng Ticket
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Chat Messages */}
+                      <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-stone-50/20">
+                        {/* Initial system/description card */}
+                        <div className="bg-stone-100/80 border border-stone-200 rounded-xl p-3 text-stone-700 text-xs space-y-1 max-w-2xl">
+                          <p className="font-bold text-stone-800 uppercase tracking-wider text-[10px]">Yêu cầu ban đầu:</p>
+                          <p className="whitespace-pre-wrap italic">"{selectedTicket.description}"</p>
+                          <p className="text-stone-400 text-[10px] text-right">{new Date(selectedTicket.createdAt).toLocaleString('vi-VN')}</p>
+                        </div>
+
+                        {selectedTicket.messages.map((msg: any) => {
+                          const isMe = msg.sender === data?.username;
+                          const isAdminRole = msg.role === 'admin';
+                          const isReporterRole = msg.role === 'reporter';
+                          const isTargetRole = msg.role === 'target';
+                          
+                          return (
+                            <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                              <div className="text-[10px] text-stone-500 mb-0.5 px-1.5 flex items-center gap-1">
+                                <span className="font-bold">{msg.senderName}</span>
+                                <span className={`px-1 rounded-full text-[9px] scale-90 ${isAdminRole ? 'bg-red-100 text-red-700' : isReporterRole ? 'bg-blue-100 text-blue-700' : 'bg-stone-200 text-stone-700'}`}>
+                                  {isAdminRole ? 'Admin' : isReporterRole ? 'Reporter' : 'Uploader'}
+                                </span>
+                              </div>
+                              <div className={`p-3 rounded-2xl max-w-md text-sm shadow-sm leading-relaxed ${isMe ? 'bg-stone-900 text-white rounded-tr-none' : 'bg-white border border-stone-150 text-stone-850 rounded-tl-none'}`}>
+                                {msg.text}
+                              </div>
+                              <span className="text-[9px] text-stone-400 mt-0.5 px-1.5">{new Date(msg.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Chat Input */}
+                      {selectedTicket.status === 'open' ? (
+                        <div className="p-3 border-t border-stone-150 bg-white flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={chatMessageText}
+                            onChange={(e) => setChatMessageText(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSendTicketMessage()}
+                            placeholder="Nhập tin nhắn trao đổi..."
+                            className="flex-1 border border-stone-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900"
+                          />
+                          <button
+                            onClick={handleSendTicketMessage}
+                            className="bg-stone-900 hover:bg-stone-800 text-white p-2.5 rounded-xl transition-all active:scale-95 cursor-pointer shrink-0"
+                          >
+                            <Send className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="p-4 border-t border-stone-150 bg-stone-50 text-center text-xs text-stone-500 font-semibold select-none">
+                          Ticket này đã được giải quyết và đóng. Không thể gửi thêm tin nhắn.
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center p-12 text-center text-stone-500">
+                      <MessageSquare className="w-12 h-12 text-stone-300 mb-3" />
+                      <h4 className="font-bold text-stone-800 mb-1">Hộp hội thoại trống</h4>
+                      <p className="text-sm max-w-xs">Vui lòng chọn một cuộc hội thoại ticket từ danh sách bên trái để bắt đầu trao đổi.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Report Song Modal */}
+          {reportSong && (
+            <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-150 animate-in fade-in zoom-in duration-200">
+                <div className="flex items-center gap-3 text-stone-900 mb-4">
+                  <div className="p-2.5 bg-stone-100 rounded-xl">
+                    <Bell className="w-6 h-6 text-stone-700 animate-bounce" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-stone-900">Báo cáo & Yêu cầu bài hát</h3>
+                    <p className="text-xs text-stone-500">Gửi yêu cầu gỡ hoặc chỉnh sửa cho bài hát này</p>
+                  </div>
+                </div>
+
+                <div className="bg-stone-50 border border-stone-150 rounded-xl p-3 mb-4 text-xs">
+                  <div className="font-bold text-stone-800 truncate">Bài: {reportSong.title}</div>
+                  <div className="text-stone-500 mt-0.5">Uploader: <strong>{reportSong.sourceArtist.name}</strong> (@{reportSong.sourceArtist.username})</div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">Loại yêu cầu</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setReportType('edit')}
+                        className={`p-3 rounded-xl border text-left flex flex-col gap-1.5 transition-all ${reportType === 'edit' ? 'border-stone-900 bg-stone-900/5 text-stone-900 ring-2 ring-stone-900/20' : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-50'}`}
+                      >
+                        <span className="font-bold text-xs">Yêu cầu chỉnh sửa</span>
+                        <span className="text-[10px] text-stone-500 leading-tight">Mở hộp thư 3 bên để thảo luận và chỉnh sửa.</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setReportType('remove')}
+                        className={`p-3 rounded-xl border text-left flex flex-col gap-1.5 transition-all ${reportType === 'remove' ? 'border-red-600 bg-red-50 text-red-900 ring-2 ring-red-600/10' : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-50'}`}
+                      >
+                        <span className="font-bold text-xs text-red-600">Yêu cầu gỡ</span>
+                        <span className="text-[10px] text-stone-500 leading-tight">Yêu cầu Admin xem xét gỡ bỏ do vi phạm bản quyền.</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">Mô tả lý do / Nội dung chi tiết</label>
+                    <textarea
+                      value={reportDesc}
+                      onChange={(e) => setReportDesc(e.target.value)}
+                      placeholder="Mô tả cụ thể lý do yêu cầu (ví dụ: Vi phạm bản quyền, sai thông tin ca sĩ, nhạc sĩ...)"
+                      rows={4}
+                      className="w-full text-sm border border-stone-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2 justify-end mt-6 pt-4 border-t border-stone-150">
+                  <button
+                    type="button"
+                    onClick={() => { setReportSong(null); setReportDesc(''); }}
+                    className="px-4 py-2 border rounded-xl font-bold bg-white text-stone-600 hover:bg-stone-50 text-sm transition-all"
+                  >
+                    Hủy bỏ
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCreateReport}
+                    disabled={!reportDesc.trim()}
+                    className="px-4 py-2 rounded-xl font-bold bg-stone-900 text-white hover:bg-stone-800 disabled:opacity-50 disabled:pointer-events-none active:scale-95 text-sm transition-all"
+                  >
+                    Gửi báo cáo
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
 
@@ -7034,8 +7856,52 @@ function AchievementEditor({ achievements, onChange }: { achievements: Achieveme
 // ---- ADMIN CREATE DEMO ----
 function AdminCreateDemo() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
+  const [loadingText, setLoadingText] = useState('Đang xử lý...');
   const [appData, setAppData] = useState<AppData | null>(null);
+  const [notification, setNotification] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'warning' | 'info';
+    title?: string;
+    onClose?: () => void;
+  } | null>(null);
+
+  const triggerNotification = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info', title?: string, onClose?: () => void) => {
+    setNotification({ message, type, title, onClose });
+  };
+
+  const handleCloseNotification = () => {
+    if (notification?.onClose) {
+      notification.onClose();
+    }
+    setNotification(null);
+  };
+
+  useEffect(() => {
+    if (location.state?.repostFrom) {
+      const sf = location.state.repostFrom;
+      setTitle(sf.title || '');
+      setSinger(sf.singer || '');
+      setComposer(sf.composer || '');
+      setLyrics(sf.lyrics || '');
+      setReleaseYear(sf.releaseYear || '');
+      setIsReleased(sf.isReleased !== false);
+      
+      if (sf.audioUrl) {
+        setUploadedAudioUrl(sf.audioUrl);
+        setUploadedAudioName(getFileNameFromUrl(sf.audioUrl) || 'audio.mp3');
+      }
+      if (sf.coverUrl) {
+        setUploadedCoverUrl(sf.coverUrl);
+        setUploadedCoverName(getFileNameFromUrl(sf.coverUrl) || 'cover.jpg');
+      }
+      if (sf.backgroundUrl) {
+        setUploadedBgUrl(sf.backgroundUrl);
+        setUploadedBgName(getFileNameFromUrl(sf.backgroundUrl) || 'background.jpg');
+      }
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -7218,24 +8084,95 @@ function AdminCreateDemo() {
   const [isDraggingAudio, setIsDraggingAudio] = useState(false);
   const [isDraggingBg, setIsDraggingBg] = useState(false);
 
-  const uploadFileDirectly = (file: File, type: 'audio' | 'cover' | 'background') => {
-    if (file.size > 100 * 1024 * 1024) { // 100MB limit check client-side
-        alert('File quá nặng. Vui lòng chọn file dưới 100MB (Hệ thống hỗ trợ tự động convert nhạc WAV sang MP3 và tối ưu hóa ảnh).');
-        return;
-    }
+  const audioXhrRef = useRef<XMLHttpRequest | null>(null);
+  const coverXhrRef = useRef<XMLHttpRequest | null>(null);
+  const bgXhrRef = useRef<XMLHttpRequest | null>(null);
 
+  useEffect(() => {
+    return () => {
+      if (audioXhrRef.current) audioXhrRef.current.abort();
+      if (coverXhrRef.current) coverXhrRef.current.abort();
+      if (bgXhrRef.current) bgXhrRef.current.abort();
+    };
+  }, []);
+
+  const cancelUpload = (type: 'audio' | 'cover' | 'background') => {
     if (type === 'audio') {
-      setUploadedAudioName(file.name);
+      if (audioXhrRef.current) {
+        audioXhrRef.current.abort();
+        audioXhrRef.current = null;
+      }
+      setAudioUploadProgress(0);
+      setUploadedAudioUrl('');
+      setUploadedAudioName('');
+      const input = document.getElementById('audioCreateUpload') as HTMLInputElement;
+      if (input) input.value = '';
     } else if (type === 'cover') {
-      setUploadedCoverName(file.name);
+      if (coverXhrRef.current) {
+        coverXhrRef.current.abort();
+        coverXhrRef.current = null;
+      }
+      setCoverUploadProgress(0);
+      setUploadedCoverUrl('');
+      setUploadedCoverName('');
+      const input = document.getElementById('coverCreateUpload') as HTMLInputElement;
+      if (input) input.value = '';
     } else if (type === 'background') {
-      setUploadedBgName(file.name);
+      if (bgXhrRef.current) {
+        bgXhrRef.current.abort();
+        bgXhrRef.current = null;
+      }
+      setBgUploadProgress(0);
+      setUploadedBgUrl('');
+      setUploadedBgName('');
+      const input = document.getElementById('bgCreateUpload') as HTMLInputElement;
+      if (input) input.value = '';
+    }
+  };
+
+  const uploadFileDirectly = (file: File, type: 'audio' | 'cover' | 'background') => {
+    if (type === 'audio') {
+      if (file.size > 10 * 1024 * 1024) {
+        triggerNotification('Dung lượng file nhạc quá lớn (' + (file.size / (1024 * 1024)).toFixed(1) + 'MB). Vui lòng nén file nhạc về định dạng MP3 (320kbps, dưới 10MB) trước khi tải lên để đảm bảo dung lượng và tốc độ của server.', 'warning', 'Tệp quá lớn');
+        const input = document.getElementById('audioCreateUpload') as HTMLInputElement;
+        if (input) input.value = '';
+        return;
+      }
+      setUploadedAudioName(file.name);
+    } else {
+      if (file.size > 50 * 1024 * 1024) {
+        triggerNotification('Dung lượng file ảnh quá lớn. Vui lòng chọn file dưới 50MB.', 'warning', 'Ảnh quá lớn');
+        if (type === 'cover') {
+          const input = document.getElementById('coverCreateUpload') as HTMLInputElement;
+          if (input) input.value = '';
+        } else {
+          const input = document.getElementById('bgCreateUpload') as HTMLInputElement;
+          if (input) input.value = '';
+        }
+        return;
+      }
+      if (type === 'cover') {
+        setUploadedCoverName(file.name);
+      } else if (type === 'background') {
+        setUploadedBgName(file.name);
+      }
     }
 
     const formData = new FormData();
     formData.append('file', file);
 
     const xhr = new XMLHttpRequest();
+    if (type === 'audio') {
+      if (audioXhrRef.current) audioXhrRef.current.abort();
+      audioXhrRef.current = xhr;
+    } else if (type === 'cover') {
+      if (coverXhrRef.current) coverXhrRef.current.abort();
+      coverXhrRef.current = xhr;
+    } else if (type === 'background') {
+      if (bgXhrRef.current) bgXhrRef.current.abort();
+      bgXhrRef.current = xhr;
+    }
+
     xhr.open('POST', '/api/upload', true);
     xhr.setRequestHeader('Authorization', `Bearer ${getAdminToken() || ''}`);
     xhr.setRequestHeader('x-artist-extension', getArtistExtensionFromUrl());
@@ -7251,6 +8188,10 @@ function AdminCreateDemo() {
     };
 
     xhr.onload = () => {
+        if (type === 'audio') audioXhrRef.current = null;
+        else if (type === 'cover') coverXhrRef.current = null;
+        else if (type === 'background') bgXhrRef.current = null;
+
         if (xhr.status >= 200 && xhr.status < 300) {
             const res = JSON.parse(xhr.responseText);
             if (type === 'audio') {
@@ -7264,18 +8205,54 @@ function AdminCreateDemo() {
                 setBgUploadProgress(100);
             }
         } else {
-            alert(xhr.status === 413 ? 'Hệ thống báo lỗi file quá lớn (Tối đa 100MB).' : 'Lỗi tải file. Vui lòng thử lại.');
-            if (type === 'audio') setAudioUploadProgress(0);
-            else if (type === 'cover') setCoverUploadProgress(0);
-            else setBgUploadProgress(0);
+            triggerNotification(xhr.status === 413 ? 'Hệ thống báo lỗi file quá lớn.' : 'Lỗi tải file. Vui lòng thử lại.', 'error', 'Tải tệp thất bại');
+            if (type === 'audio') {
+                setUploadedAudioName('');
+                setUploadedAudioUrl('');
+                setAudioUploadProgress(0);
+                const input = document.getElementById('audioCreateUpload') as HTMLInputElement;
+                if (input) input.value = '';
+            } else if (type === 'cover') {
+                setUploadedCoverName('');
+                setUploadedCoverUrl('');
+                setCoverUploadProgress(0);
+                const input = document.getElementById('coverCreateUpload') as HTMLInputElement;
+                if (input) input.value = '';
+            } else {
+                setUploadedBgName('');
+                setUploadedBgUrl('');
+                setBgUploadProgress(0);
+                const input = document.getElementById('bgCreateUpload') as HTMLInputElement;
+                if (input) input.value = '';
+            }
         }
     };
     
     xhr.onerror = () => {
-        alert('Lỗi kết nối. Có thể mạng yếu hoặc file quá khổng lồ.');
-        if (type === 'audio') setAudioUploadProgress(0);
-        else if (type === 'cover') setCoverUploadProgress(0);
-        else setBgUploadProgress(0);
+        if (type === 'audio') audioXhrRef.current = null;
+        else if (type === 'cover') coverXhrRef.current = null;
+        else if (type === 'background') bgXhrRef.current = null;
+
+        triggerNotification('Lỗi kết nối. Có thể mạng yếu hoặc file quá khổng lồ.', 'error', 'Lỗi kết nối');
+        if (type === 'audio') {
+            setUploadedAudioName('');
+            setUploadedAudioUrl('');
+            setAudioUploadProgress(0);
+            const input = document.getElementById('audioCreateUpload') as HTMLInputElement;
+            if (input) input.value = '';
+        } else if (type === 'cover') {
+            setUploadedCoverName('');
+            setUploadedCoverUrl('');
+            setCoverUploadProgress(0);
+            const input = document.getElementById('coverCreateUpload') as HTMLInputElement;
+            if (input) input.value = '';
+        } else {
+            setUploadedBgName('');
+            setUploadedBgUrl('');
+            setBgUploadProgress(0);
+            const input = document.getElementById('bgCreateUpload') as HTMLInputElement;
+            if (input) input.value = '';
+        }
     };
 
     xhr.send(formData);
@@ -7288,13 +8265,30 @@ function AdminCreateDemo() {
   };
 
   const saveDemo = async (isDraft: boolean) => {
-    if (linkType === 'direct') {
-      if (!isDraft && !uploadedAudioUrl) return alert("Vui lòng tải lên file nhạc!");
-      if (audioUploadProgress > 0 && audioUploadProgress < 100) return alert("Vui lòng đợi file nhạc tải lên xong!");
-      if (bgUploadProgress > 0 && bgUploadProgress < 100) return alert("Vui lòng đợi ảnh nền tải lên xong!");
+    if (!title.trim()) {
+      triggerNotification("Vui lòng nhập tên bài hát!", "warning", "Thiếu thông tin");
+      return;
     }
-    if (coverUploadProgress > 0 && coverUploadProgress < 100) return alert("Vui lòng đợi ảnh bìa tải lên xong!");
+    if (linkType === 'direct') {
+      if (!isDraft && !uploadedAudioUrl) {
+        triggerNotification("Vui lòng tải lên file nhạc!", "warning", "Chưa tải nhạc");
+        return;
+      }
+      if (audioUploadProgress > 0 && audioUploadProgress < 100) {
+        triggerNotification("Vui lòng đợi file nhạc tải lên xong!", "info", "Đang tải lên");
+        return;
+      }
+      if (bgUploadProgress > 0 && bgUploadProgress < 100) {
+        triggerNotification("Vui lòng đợi ảnh nền tải lên xong!", "info", "Đang tải lên");
+        return;
+      }
+    }
+    if (coverUploadProgress > 0 && coverUploadProgress < 100) {
+      triggerNotification("Vui lòng đợi ảnh bìa tải lên xong!", "info", "Đang tải lên");
+      return;
+    }
 
+    setLoadingText(isDraft ? 'Đang lưu bản nháp...' : 'Đang xuất bản bài hát...');
     setLoading(true);
     const formData = new FormData();
     formData.set('title', title);
@@ -7329,8 +8323,7 @@ function AdminCreateDemo() {
         const res = await fetch('/api/demos', {
             method: 'POST',
             headers: {
-        'x-artist-extension': getArtistExtensionFromUrl(),
-
+              'x-artist-extension': getArtistExtensionFromUrl(),
               'Authorization': `Bearer ${getAdminToken() || ''}`
             },
             body: formData
@@ -7338,15 +8331,19 @@ function AdminCreateDemo() {
         if (res.ok) {
             const newDemo = await res.json();
             if (isDraft) {
-               alert('Đã lưu bản nháp thành công!');
-               navigate(getAdminLink(`/edit/${newDemo.id}`));
+               triggerNotification('Đã lưu bản nháp thành công!', 'success', 'Thành công', () => {
+                 navigate(getAdminLink(`/edit/${newDemo.id}`));
+               });
             } else {
-               alert('Đăng bài hát thành công!');
-               navigate(getAdminLink());
+               triggerNotification('Đăng bài hát thành công!', 'success', 'Thành công', () => {
+                 navigate(getAdminLink());
+               });
             }
-        } else alert('Lỗi tải lên bài hát!');
+        } else {
+            triggerNotification('Lỗi tải lên bài hát!', 'error', 'Thất bại');
+        }
     } catch (err) {
-        alert('Lỗi mạng!');
+        triggerNotification('Lỗi mạng!', 'error', 'Lỗi mạng');
     }
     setLoading(false);
   };
@@ -7442,23 +8439,30 @@ function AdminCreateDemo() {
                   )}
                   <div className="flex-1 min-w-[150px]">
                     <div className="flex items-center gap-2">
-                      <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${coverUploadProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('coverCreateUpload')?.click()}>
+                      <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${coverUploadProgress === 100 || uploadedCoverUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('coverCreateUpload')?.click()}>
                           <Upload className="w-4 h-4"/>
-                          <span className="max-w-[150px] truncate">{coverUploadProgress > 0 && coverUploadProgress < 100 ? `Đang tải ${coverUploadProgress}%` : (uploadedCoverName || 'Chọn bìa đĩa')}</span>
+                          <span className="max-w-[150px] truncate">{coverUploadProgress > 0 && coverUploadProgress < 100 ? `Đang tải ${coverUploadProgress}%` : (uploadedCoverName ? formatFileName(uploadedCoverName) : 'Chọn bìa đĩa')}</span>
                       </button>
-                      {uploadedCoverUrl && (
-                        <button type="button" onClick={() => { setUploadedCoverUrl(''); setCoverUploadProgress(0); setUploadedCoverName(''); (document.getElementById('coverCreateUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-4 h-4"/></button>
-                      )}
+                      {coverUploadProgress > 0 && coverUploadProgress < 100 ? (
+                        <button type="button" onClick={() => cancelUpload('cover')} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title="Hủy tải lên"><X className="w-4 h-4"/></button>
+                      ) : (uploadedCoverUrl ? (
+                        <button type="button" onClick={() => { setUploadedCoverUrl(''); setCoverUploadProgress(0); setUploadedCoverName(''); (document.getElementById('coverCreateUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                      ) : null)}
                     </div>
+                    {coverUploadProgress > 0 && coverUploadProgress < 100 && (
+                      <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-2">
+                        <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${coverUploadProgress}%` }} />
+                      </div>
+                    )}
                     <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
-                      {uploadedCoverName ? `Tệp đã chọn: ${uploadedCoverName}` : 'Kéo thả bìa đĩa trực tiếp vào ô này'}
+                      {uploadedCoverName ? `Tệp đã chọn: ${formatFileName(uploadedCoverName, 30)}` : 'Kéo thả bìa đĩa trực tiếp vào ô này'}
                     </p>
                   </div>
                   <input type="hidden" name="coverUrl" value={uploadedCoverUrl} />
                   <input type="file" id="coverCreateUpload" name="cover" accept="image/*" onChange={e => handleFileUpload(e, 'cover')} className="hidden" />
                 </div>
               </div>
-
+ 
               {linkType === 'direct' && (
                 <div>
                   <label className="block text-sm font-bold text-stone-700 mb-2">Ảnh Nền (Nếu có)</label>
@@ -7486,16 +8490,23 @@ function AdminCreateDemo() {
                     )}
                     <div className="flex-1 min-w-[150px]">
                       <div className="flex items-center gap-2">
-                        <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${bgUploadProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('bgCreateUpload')?.click()}>
+                        <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${bgUploadProgress === 100 || uploadedBgUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('bgCreateUpload')?.click()}>
                             <Upload className="w-4 h-4"/>
-                            <span className="max-w-[150px] truncate">{bgUploadProgress > 0 && bgUploadProgress < 100 ? `Đang tải ${bgUploadProgress}%` : (uploadedBgName || 'Chọn ảnh nền')}</span>
+                            <span className="max-w-[150px] truncate">{bgUploadProgress > 0 && bgUploadProgress < 100 ? `Đang tải ${bgUploadProgress}%` : (uploadedBgName ? formatFileName(uploadedBgName) : 'Chọn ảnh nền')}</span>
                         </button>
-                        {uploadedBgUrl && (
-                          <button type="button" onClick={() => { setUploadedBgUrl(''); setBgUploadProgress(0); setUploadedBgName(''); (document.getElementById('bgCreateUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-4 h-4"/></button>
-                        )}
+                        {bgUploadProgress > 0 && bgUploadProgress < 100 ? (
+                          <button type="button" onClick={() => cancelUpload('background')} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title="Hủy tải lên"><X className="w-4 h-4"/></button>
+                        ) : (uploadedBgUrl ? (
+                          <button type="button" onClick={() => { setUploadedBgUrl(''); setBgUploadProgress(0); setUploadedBgName(''); (document.getElementById('bgCreateUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                        ) : null)}
                       </div>
+                      {bgUploadProgress > 0 && bgUploadProgress < 100 && (
+                        <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-2">
+                          <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${bgUploadProgress}%` }} />
+                        </div>
+                      )}
                       <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
-                        {uploadedBgName ? `Tệp đã chọn: ${uploadedBgName}` : 'Kéo thả ảnh nền trực tiếp vào ô này'}
+                        {uploadedBgName ? `Tệp đã chọn: ${formatFileName(uploadedBgName, 30)}` : 'Kéo thả ảnh nền trực tiếp vào ô này'}
                       </p>
                     </div>
                     <input type="hidden" name="backgroundUrl" value={uploadedBgUrl} />
@@ -7535,16 +8546,23 @@ function AdminCreateDemo() {
                       )}
                       <div className="flex-1 min-w-[150px]">
                         <div className="flex items-center gap-2">
-                          <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${audioUploadProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('audioCreateUpload')?.click()}>
+                          <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${audioUploadProgress === 100 || (uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com')) ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('audioCreateUpload')?.click()}>
                               <Upload className="w-4 h-4"/>
-                              <span className="max-w-[200px] truncate">{audioUploadProgress > 0 && audioUploadProgress < 100 ? `Đang tải ${audioUploadProgress}%` : (uploadedAudioName || 'Chọn file nhạc')}</span>
+                              <span className="max-w-[200px] truncate">{audioUploadProgress > 0 && audioUploadProgress < 100 ? `Đang tải ${audioUploadProgress}%` : (uploadedAudioName ? formatFileName(uploadedAudioName) : 'Chọn file nhạc')}</span>
                           </button>
-                          {(uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com') || audioUploadProgress === 100) && (
-                            <button type="button" onClick={() => { setUploadedAudioUrl(''); setAudioUploadProgress(0); setUploadedAudioName(''); (document.getElementById('audioCreateUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-4 h-4"/></button>
-                          )}
+                          {audioUploadProgress > 0 && audioUploadProgress < 100 ? (
+                            <button type="button" onClick={() => cancelUpload('audio')} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title="Hủy tải lên"><X className="w-4 h-4"/></button>
+                          ) : ((uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com') || audioUploadProgress === 100) ? (
+                            <button type="button" onClick={() => { setUploadedAudioUrl(''); setAudioUploadProgress(0); setUploadedAudioName(''); (document.getElementById('audioCreateUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                          ) : null)}
                         </div>
+                        {audioUploadProgress > 0 && audioUploadProgress < 100 && (
+                          <div className="w-full bg-stone-150 h-1.5 rounded-full overflow-hidden mt-2">
+                            <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${audioUploadProgress}%` }} />
+                          </div>
+                        )}
                         <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
-                          {uploadedAudioName ? `Tệp đã chọn: ${uploadedAudioName}` : 'Kéo thả file nhạc (.mp3, .wav) trực tiếp vào ô này'}
+                          {uploadedAudioName ? `Tệp đã chọn: ${formatFileName(uploadedAudioName, 30)}` : 'Kéo thả file nhạc (.mp3, .wav, .m4a) trực tiếp vào ô này'}
                         </p>
                       </div>
                       <input type="file" id="audioCreateUpload" name="audio" accept="audio/mp3,audio/wav,audio/*" onChange={e => handleFileUpload(e, 'audio')} className="hidden" />
@@ -7557,7 +8575,7 @@ function AdminCreateDemo() {
                   <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
                     <label className="block text-sm font-bold text-stone-700">Lời bài hát</label>
                     <div className="flex flex-wrap gap-1.5 items-center">
-                      <span className="text-[11px] text-stone-400 font-medium mr-1">Chèn nhanh:</span>
+                      <span className="hidden sm:inline text-[11px] text-stone-400 font-medium mr-1">Chèn nhanh:</span>
                       {[
                         { label: 'Verse', value: 'Verse', className: 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200' },
                         { label: 'Chorus', value: 'Chorus', className: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200' },
@@ -7737,6 +8755,46 @@ function AdminCreateDemo() {
             onClose={() => setShowTemplatePicker(false)}
          />
       )}
+
+      {loading && (
+        <div className="fixed inset-0 bg-stone-900/80 backdrop-blur-sm z-[9999] flex flex-col items-center justify-center text-white">
+          <div className="bg-stone-950/95 border border-stone-800 p-8 rounded-[2rem] shadow-2xl flex flex-col items-center max-w-sm mx-4 text-center">
+            <div className="relative w-20 h-20 mb-6 flex items-center justify-center">
+              <div className="absolute inset-0 border-4 border-amber-500/20 rounded-full animate-ping"></div>
+              <div className="absolute inset-0 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+              <Disc3 className="w-8 h-8 text-amber-500 animate-[spin_4s_linear_infinite]" />
+            </div>
+            <h3 className="text-xl font-black mb-2 tracking-tight">{loadingText}</h3>
+            <p className="text-stone-400 text-xs leading-relaxed">Vui lòng đợi trong giây lát. Hệ thống đang tối ưu hóa dữ liệu và lưu trữ an toàn trên cloud.</p>
+          </div>
+        </div>
+      )}
+
+      {notification && (
+        <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-[99999] flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-stone-950 border border-stone-800 p-8 rounded-[2rem] shadow-2xl max-w-sm w-full text-center flex flex-col items-center animate-[fade-in_0.2s_ease-out]"
+          >
+            <div className="mb-4">
+              {notification.type === 'error' && <AlertCircle className="w-12 h-12 text-rose-500 animate-[bounce_1.5s_infinite]" />}
+              {notification.type === 'warning' && <AlertTriangle className="w-12 h-12 text-amber-500 animate-[bounce_1.5s_infinite]" />}
+              {notification.type === 'success' && <CheckCircle className="w-12 h-12 text-emerald-500" />}
+              {notification.type === 'info' && <Info className="w-12 h-12 text-blue-500" />}
+            </div>
+            <h4 className="text-white font-black text-xl mb-2 tracking-tight">{notification.title || (notification.type === 'error' ? 'Lỗi xảy ra' : 'Thông báo')}</h4>
+            <p className="text-stone-400 text-xs leading-relaxed mb-6">{notification.message}</p>
+            <button 
+              type="button" 
+              onClick={handleCloseNotification}
+              className="w-full bg-amber-500 hover:bg-amber-400 active:scale-95 text-stone-950 font-black py-3 px-6 rounded-xl transition-all shadow-md tracking-tight text-sm"
+            >
+              Đồng ý
+            </button>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
@@ -7746,10 +8804,28 @@ function AdminEditDemo() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
+  const [loadingText, setLoadingText] = useState('Đang xử lý...');
   const [demo, setDemo] = useState<DemoSong | null>(null);
   const [appData, setAppData] = useState<AppData | null>(null);
   const [toast, setToast] = useState('');
   const [linkDrive, setLinkDrive] = useState('');
+  const [notification, setNotification] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'warning' | 'info';
+    title?: string;
+    onClose?: () => void;
+  } | null>(null);
+
+  const triggerNotification = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info', title?: string, onClose?: () => void) => {
+    setNotification({ message, type, title, onClose });
+  };
+
+  const handleCloseNotification = () => {
+    if (notification?.onClose) {
+      notification.onClose();
+    }
+    setNotification(null);
+  };
 
   const [title, setTitle] = useState('');
   const [achievements, setAchievements] = useState<Achievement[]>([]);
@@ -7915,8 +8991,7 @@ function AdminEditDemo() {
       const res = await fetch(`/api/demos/${id}/revert`, {
         method: 'POST',
         headers: {
-        'x-artist-extension': getArtistExtensionFromUrl(),
-
+          'x-artist-extension': getArtistExtensionFromUrl(),
           'Authorization': `Bearer ${getAdminToken() || ''}`
         }
       });
@@ -7925,14 +9000,14 @@ function AdminEditDemo() {
         setDemo(updatedDemo);
         setUploadedAudioUrl(updatedDemo.audioUrl || '');
         setUploadedAudioName(''); // reset to show original/reverted filename
-        alert("Khôi phục phiên bản nhạc thành công!");
+        triggerNotification("Khôi phục phiên bản nhạc thành công!", "success", "Thành công");
       } else {
         const errData = await res.json();
-        alert(errData.error || "Có lỗi xảy ra khi khôi phục.");
+        triggerNotification(errData.error || "Có lỗi xảy ra khi khôi phục.", "error", "Thất bại");
       }
     } catch (err) {
       console.error(err);
-      alert("Lỗi kết nối.");
+      triggerNotification("Lỗi kết nối.", "error", "Lỗi kết nối");
     } finally {
       setIsReverting(false);
     }
@@ -7958,24 +9033,95 @@ function AdminEditDemo() {
   const [isDraggingAudio, setIsDraggingAudio] = useState(false);
   const [isDraggingBg, setIsDraggingBg] = useState(false);
 
-  const uploadFileDirectly = (file: File, type: 'audio' | 'cover' | 'background') => {
-    if (file.size > 100 * 1024 * 1024) { // 100MB limit check client-side
-        alert('File quá nặng. Vui lòng chọn file dưới 100MB (Hệ thống hỗ trợ tự động convert nhạc WAV sang MP3 và tối ưu hóa ảnh).');
-        return;
-    }
+  const audioXhrRef = useRef<XMLHttpRequest | null>(null);
+  const coverXhrRef = useRef<XMLHttpRequest | null>(null);
+  const bgXhrRef = useRef<XMLHttpRequest | null>(null);
 
+  useEffect(() => {
+    return () => {
+      if (audioXhrRef.current) audioXhrRef.current.abort();
+      if (coverXhrRef.current) coverXhrRef.current.abort();
+      if (bgXhrRef.current) bgXhrRef.current.abort();
+    };
+  }, []);
+
+  const cancelUpload = (type: 'audio' | 'cover' | 'background') => {
     if (type === 'audio') {
-      setUploadedAudioName(file.name);
+      if (audioXhrRef.current) {
+        audioXhrRef.current.abort();
+        audioXhrRef.current = null;
+      }
+      setAudioUploadProgress(0);
+      setUploadedAudioUrl('');
+      setUploadedAudioName('');
+      const input = document.getElementById('audioEditUpload') as HTMLInputElement;
+      if (input) input.value = '';
     } else if (type === 'cover') {
-      setUploadedCoverName(file.name);
+      if (coverXhrRef.current) {
+        coverXhrRef.current.abort();
+        coverXhrRef.current = null;
+      }
+      setCoverUploadProgress(0);
+      setUploadedCoverUrl('');
+      setUploadedCoverName('');
+      const input = document.getElementById('coverEditUpload') as HTMLInputElement;
+      if (input) input.value = '';
     } else if (type === 'background') {
-      setUploadedBgName(file.name);
+      if (bgXhrRef.current) {
+        bgXhrRef.current.abort();
+        bgXhrRef.current = null;
+      }
+      setBgUploadProgress(0);
+      setUploadedBgUrl('');
+      setUploadedBgName('');
+      const input = document.getElementById('bgEditUpload') as HTMLInputElement;
+      if (input) input.value = '';
+    }
+  };
+
+  const uploadFileDirectly = (file: File, type: 'audio' | 'cover' | 'background') => {
+    if (type === 'audio') {
+      if (file.size > 10 * 1024 * 1024) {
+        triggerNotification('Dung lượng file nhạc quá lớn (' + (file.size / (1024 * 1024)).toFixed(1) + 'MB). Vui lòng nén file nhạc về định dạng MP3 (320kbps, dưới 10MB) trước khi tải lên để đảm bảo dung lượng và tốc độ của server.', 'warning', 'Tệp quá lớn');
+        const input = document.getElementById('audioEditUpload') as HTMLInputElement;
+        if (input) input.value = '';
+        return;
+      }
+      setUploadedAudioName(file.name);
+    } else {
+      if (file.size > 50 * 1024 * 1024) {
+        triggerNotification('Dung lượng file ảnh quá lớn. Vui lòng chọn file dưới 50MB.', 'warning', 'Ảnh quá lớn');
+        if (type === 'cover') {
+          const input = document.getElementById('coverEditUpload') as HTMLInputElement;
+          if (input) input.value = '';
+        } else {
+          const input = document.getElementById('bgEditUpload') as HTMLInputElement;
+          if (input) input.value = '';
+        }
+        return;
+      }
+      if (type === 'cover') {
+        setUploadedCoverName(file.name);
+      } else if (type === 'background') {
+        setUploadedBgName(file.name);
+      }
     }
 
     const formData = new FormData();
     formData.append('file', file);
 
     const xhr = new XMLHttpRequest();
+    if (type === 'audio') {
+      if (audioXhrRef.current) audioXhrRef.current.abort();
+      audioXhrRef.current = xhr;
+    } else if (type === 'cover') {
+      if (coverXhrRef.current) coverXhrRef.current.abort();
+      coverXhrRef.current = xhr;
+    } else if (type === 'background') {
+      if (bgXhrRef.current) bgXhrRef.current.abort();
+      bgXhrRef.current = xhr;
+    }
+
     xhr.open('POST', '/api/upload', true);
     xhr.setRequestHeader('Authorization', `Bearer ${getAdminToken() || ''}`);
     xhr.setRequestHeader('x-artist-extension', getArtistExtensionFromUrl());
@@ -7991,6 +9137,10 @@ function AdminEditDemo() {
     };
 
     xhr.onload = () => {
+        if (type === 'audio') audioXhrRef.current = null;
+        else if (type === 'cover') coverXhrRef.current = null;
+        else if (type === 'background') bgXhrRef.current = null;
+
         if (xhr.status >= 200 && xhr.status < 300) {
             const res = JSON.parse(xhr.responseText);
             if (type === 'audio') {
@@ -8004,18 +9154,54 @@ function AdminEditDemo() {
                 setBgUploadProgress(100);
             }
         } else {
-            alert(xhr.status === 413 ? 'Hệ thống báo lỗi file quá lớn (Tối đa 100MB).' : 'Lỗi tải file. Vui lòng thử lại.');
-            if (type === 'audio') setAudioUploadProgress(0);
-            else if (type === 'cover') setCoverUploadProgress(0);
-            else setBgUploadProgress(0);
+            triggerNotification(xhr.status === 413 ? 'Hệ thống báo lỗi file quá lớn.' : 'Lỗi tải file. Vui lòng thử lại.', 'error', 'Tải tệp thất bại');
+            if (type === 'audio') {
+                setUploadedAudioName('');
+                setUploadedAudioUrl('');
+                setAudioUploadProgress(0);
+                const input = document.getElementById('audioEditUpload') as HTMLInputElement;
+                if (input) input.value = '';
+            } else if (type === 'cover') {
+                setUploadedCoverName('');
+                setUploadedCoverUrl('');
+                setCoverUploadProgress(0);
+                const input = document.getElementById('coverEditUpload') as HTMLInputElement;
+                if (input) input.value = '';
+            } else {
+                setUploadedBgName('');
+                setUploadedBgUrl('');
+                setBgUploadProgress(0);
+                const input = document.getElementById('bgEditUpload') as HTMLInputElement;
+                if (input) input.value = '';
+            }
         }
     };
     
     xhr.onerror = () => {
-        alert('Lỗi kết nối. Có thể mạng yếu hoặc file quá khổng lồ.');
-        if (type === 'audio') setAudioUploadProgress(0);
-        else if (type === 'cover') setCoverUploadProgress(0);
-        else setBgUploadProgress(0);
+        if (type === 'audio') audioXhrRef.current = null;
+        else if (type === 'cover') coverXhrRef.current = null;
+        else if (type === 'background') bgXhrRef.current = null;
+
+        triggerNotification('Lỗi kết nối. Có thể mạng yếu hoặc file quá khổng lồ.', 'error', 'Lỗi kết nối');
+        if (type === 'audio') {
+            setUploadedAudioName('');
+            setUploadedAudioUrl('');
+            setAudioUploadProgress(0);
+            const input = document.getElementById('audioEditUpload') as HTMLInputElement;
+            if (input) input.value = '';
+        } else if (type === 'cover') {
+            setUploadedCoverName('');
+            setUploadedCoverUrl('');
+            setCoverUploadProgress(0);
+            const input = document.getElementById('coverEditUpload') as HTMLInputElement;
+            if (input) input.value = '';
+        } else {
+            setUploadedBgName('');
+            setUploadedBgUrl('');
+            setBgUploadProgress(0);
+            const input = document.getElementById('bgEditUpload') as HTMLInputElement;
+            if (input) input.value = '';
+        }
     };
 
     xhr.send(formData);
@@ -8028,10 +9214,31 @@ function AdminEditDemo() {
   };
 
   const saveDemo = async (isDraft: boolean) => {
-    if (audioUploadProgress > 0 && audioUploadProgress < 100) return alert("Vui lòng đợi file nhạc tải lên xong!");
-    if (coverUploadProgress > 0 && coverUploadProgress < 100) return alert("Vui lòng đợi ảnh bìa tải lên xong!");
-    if (bgUploadProgress > 0 && bgUploadProgress < 100) return alert("Vui lòng đợi ảnh nền tải lên xong!");
+    if (!title.trim()) {
+      triggerNotification("Vui lòng nhập tên bài hát!", "warning", "Thiếu thông tin");
+      return;
+    }
+    if (linkType === 'direct') {
+      const currentAudio = uploadedAudioUrl || demo?.audioUrl || '';
+      if (!isDraft && !currentAudio) {
+        triggerNotification("Vui lòng tải lên file nhạc!", "warning", "Chưa tải nhạc");
+        return;
+      }
+    }
+    if (audioUploadProgress > 0 && audioUploadProgress < 100) {
+      triggerNotification("Vui lòng đợi file nhạc tải lên xong!", "info", "Đang tải lên");
+      return;
+    }
+    if (coverUploadProgress > 0 && coverUploadProgress < 100) {
+      triggerNotification("Vui lòng đợi ảnh bìa tải lên xong!", "info", "Đang tải lên");
+      return;
+    }
+    if (bgUploadProgress > 0 && bgUploadProgress < 100) {
+      triggerNotification("Vui lòng đợi ảnh nền tải lên xong!", "info", "Đang tải lên");
+      return;
+    }
 
+    setLoadingText(isDraft ? 'Đang lưu bản nháp...' : 'Đang xuất bản bài hát...');
     setLoading(true);
     const formData = new FormData();
     formData.set('title', title);
@@ -8071,18 +9278,20 @@ function AdminEditDemo() {
         const res = await fetch(`/api/demos/${id}/update`, {
             method: 'POST',
             headers: {
-        'x-artist-extension': getArtistExtensionFromUrl(),
-
+              'x-artist-extension': getArtistExtensionFromUrl(),
               'Authorization': `Bearer ${getAdminToken() || ''}`
             },
             body: formData
         });
         if (res.ok) {
-            alert(isDraft ? 'Cập nhật bản nháp thành công!' : 'Cập nhật thành công!');
-            navigate(getAdminLink());
-        } else alert('Lỗi cập nhật. Thử tải lại trang và làm lại!');
+            triggerNotification(isDraft ? 'Cập nhật bản nháp thành công!' : 'Cập nhật thành công!', 'success', 'Thành công', () => {
+              navigate(getAdminLink());
+            });
+        } else {
+            triggerNotification('Lỗi cập nhật. Thử tải lại trang và làm lại!', 'error', 'Thất bại');
+        }
     } catch(err) {
-        alert('Lỗi mạng!');
+        triggerNotification('Lỗi mạng!', 'error', 'Lỗi mạng');
     }
     setLoading(false);
   };
@@ -8212,23 +9421,30 @@ function AdminEditDemo() {
                   )}
                   <div className="flex-1 min-w-[150px]">
                     <div className="flex items-center gap-2">
-                      <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${coverUploadProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('coverEditUpload')?.click()}>
+                      <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${coverUploadProgress === 100 || uploadedCoverUrl || demo?.coverUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('coverEditUpload')?.click()}>
                           <Upload className="w-4 h-4"/>
                           <span className="max-w-[150px] truncate">
                             {coverUploadProgress > 0 && coverUploadProgress < 100 
                               ? `Đang tải ${coverUploadProgress}%` 
-                              : (uploadedCoverName || getFileNameFromUrl(uploadedCoverUrl || demo?.coverUrl) || 'Chọn bìa đĩa')}
+                              : (uploadedCoverName ? formatFileName(uploadedCoverName) : (getFileNameFromUrl(uploadedCoverUrl || demo?.coverUrl) ? formatFileName(getFileNameFromUrl(uploadedCoverUrl || demo?.coverUrl)) : 'Chọn bìa đĩa'))}
                           </span>
                       </button>
-                      {uploadedCoverUrl && (
-                        <button type="button" onClick={() => { setUploadedCoverUrl(''); setCoverUploadProgress(0); setUploadedCoverName(''); (document.getElementById('coverEditUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-4 h-4"/></button>
-                      )}
+                      {coverUploadProgress > 0 && coverUploadProgress < 100 ? (
+                        <button type="button" onClick={() => cancelUpload('cover')} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title="Hủy tải lên"><X className="w-4 h-4"/></button>
+                      ) : ((uploadedCoverUrl || demo?.coverUrl) ? (
+                        <button type="button" onClick={() => { setUploadedCoverUrl(''); setCoverUploadProgress(0); setUploadedCoverName(''); (document.getElementById('coverEditUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                      ) : null)}
                     </div>
+                    {coverUploadProgress > 0 && coverUploadProgress < 100 && (
+                      <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-2">
+                        <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${coverUploadProgress}%` }} />
+                      </div>
+                    )}
                     <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
                       {uploadedCoverName 
-                        ? `Tệp đã chọn: ${uploadedCoverName}` 
+                        ? `Tệp đã chọn: ${formatFileName(uploadedCoverName, 30)}` 
                         : (demo?.coverUrl 
-                          ? `Tệp hiện tại: ${getFileNameFromUrl(uploadedCoverUrl || demo?.coverUrl)}` 
+                          ? `Tệp hiện tại: ${formatFileName(getFileNameFromUrl(uploadedCoverUrl || demo?.coverUrl), 30)}` 
                           : 'Kéo thả bìa đĩa trực tiếp vào ô này')}
                     </p>
                   </div>
@@ -8236,7 +9452,7 @@ function AdminEditDemo() {
                   <input type="file" id="coverEditUpload" name="cover" accept="image/*" onChange={e => handleFileUpload(e, 'cover')} className="hidden" />
                 </div>
               </div>
-
+ 
               {linkType === 'direct' && (
                 <div>
                   <label className="block text-sm font-bold text-stone-700 mb-2">Ảnh Nền (Nếu có)</label>
@@ -8264,23 +9480,30 @@ function AdminEditDemo() {
                     )}
                     <div className="flex-1 min-w-[150px]">
                       <div className="flex items-center gap-2">
-                        <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${bgUploadProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('bgEditUpload')?.click()}>
+                        <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${bgUploadProgress === 100 || uploadedBgUrl || demo?.backgroundUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('bgEditUpload')?.click()}>
                             <Upload className="w-4 h-4"/>
                             <span className="max-w-[150px] truncate">
                               {bgUploadProgress > 0 && bgUploadProgress < 100 
                                 ? `Đang tải ${bgUploadProgress}%` 
-                                : (uploadedBgName || getFileNameFromUrl(uploadedBgUrl || demo?.backgroundUrl) || 'Chọn ảnh nền')}
+                                : (uploadedBgName ? formatFileName(uploadedBgName) : (getFileNameFromUrl(uploadedBgUrl || demo?.backgroundUrl) ? formatFileName(getFileNameFromUrl(uploadedBgUrl || demo?.backgroundUrl)) : 'Chọn ảnh nền'))}
                             </span>
                         </button>
-                        {uploadedBgUrl && (
-                          <button type="button" onClick={() => { setUploadedBgUrl(''); setBgUploadProgress(0); setUploadedBgName(''); (document.getElementById('bgEditUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-4 h-4"/></button>
-                        )}
+                        {bgUploadProgress > 0 && bgUploadProgress < 100 ? (
+                          <button type="button" onClick={() => cancelUpload('background')} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title="Hủy tải lên"><X className="w-4 h-4"/></button>
+                        ) : ((uploadedBgUrl || demo?.backgroundUrl) ? (
+                          <button type="button" onClick={() => { setUploadedBgUrl(''); setBgUploadProgress(0); setUploadedBgName(''); (document.getElementById('bgEditUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                        ) : null)}
                       </div>
+                      {bgUploadProgress > 0 && bgUploadProgress < 100 && (
+                        <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-2">
+                          <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${bgUploadProgress}%` }} />
+                        </div>
+                      )}
                       <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
                         {uploadedBgName 
-                          ? `Tệp đã chọn: ${uploadedBgName}` 
+                          ? `Tệp đã chọn: ${formatFileName(uploadedBgName, 30)}` 
                           : (demo?.backgroundUrl 
-                            ? `Tệp hiện tại: ${getFileNameFromUrl(uploadedBgUrl || demo?.backgroundUrl)}` 
+                            ? `Tệp hiện tại: ${formatFileName(getFileNameFromUrl(uploadedBgUrl || demo?.backgroundUrl), 30)}` 
                             : 'Kéo thả ảnh nền trực tiếp vào ô này')}
                       </p>
                     </div>
@@ -8359,24 +9582,31 @@ function AdminEditDemo() {
                       )}
                       <div className="flex-1 min-w-[150px]">
                         <div className="flex items-center gap-2">
-                          <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${audioUploadProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('audioEditUpload')?.click()}>
+                          <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${audioUploadProgress === 100 || (uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com')) || (demo?.audioUrl && !uploadedAudioUrl) ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('audioEditUpload')?.click()}>
                               <Upload className="w-4 h-4"/>
                               <span className="max-w-[200px] truncate">
                                 {audioUploadProgress > 0 && audioUploadProgress < 100 
                                   ? `Đang tải ${audioUploadProgress}%` 
-                                  : (uploadedAudioName || getFileNameFromUrl(uploadedAudioUrl || demo?.audioUrl) || 'Chọn file nhạc')}
+                                  : (uploadedAudioName ? formatFileName(uploadedAudioName) : (getFileNameFromUrl(uploadedAudioUrl || demo?.audioUrl) ? formatFileName(getFileNameFromUrl(uploadedAudioUrl || demo?.audioUrl)) : 'Chọn file nhạc'))}
                               </span>
                           </button>
-                          {(uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com') || audioUploadProgress === 100) && (
-                            <button type="button" onClick={() => { setUploadedAudioUrl(''); setAudioUploadProgress(0); setUploadedAudioName(''); (document.getElementById('audioEditUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"><X className="w-4 h-4"/></button>
-                          )}
+                          {audioUploadProgress > 0 && audioUploadProgress < 100 ? (
+                            <button type="button" onClick={() => cancelUpload('audio')} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title="Hủy tải lên"><X className="w-4 h-4"/></button>
+                          ) : ((uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com') || audioUploadProgress === 100) ? (
+                            <button type="button" onClick={() => { setUploadedAudioUrl(''); setAudioUploadProgress(0); setUploadedAudioName(''); (document.getElementById('audioEditUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                          ) : null)}
                         </div>
+                        {audioUploadProgress > 0 && audioUploadProgress < 100 && (
+                          <div className="w-full bg-stone-150 h-1.5 rounded-full overflow-hidden mt-2">
+                            <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${audioUploadProgress}%` }} />
+                          </div>
+                        )}
                         <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
                           {uploadedAudioName 
-                            ? `Tệp đã chọn: ${uploadedAudioName}` 
+                            ? `Tệp đã chọn: ${formatFileName(uploadedAudioName, 30)}` 
                             : (demo?.audioUrl 
-                              ? `Tệp hiện tại: ${getFileNameFromUrl(uploadedAudioUrl || demo?.audioUrl)}` 
-                              : 'Kéo thả file nhạc (.mp3, .wav) trực tiếp vào ô này')}
+                              ? `Tệp hiện tại: ${formatFileName(getFileNameFromUrl(uploadedAudioUrl || demo?.audioUrl), 30)}` 
+                              : 'Kéo thả file nhạc (.mp3, .wav, .m4a) trực tiếp vào ô này')}
                         </p>
                       </div>
                       <input type="file" id="audioEditUpload" name="audio" accept="audio/mp3,audio/wav,audio/*" onChange={e => handleFileUpload(e, 'audio')} className="hidden" />
@@ -8389,7 +9619,7 @@ function AdminEditDemo() {
                   <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
                     <label className="block text-sm font-bold text-stone-700">Lời bài hát</label>
                     <div className="flex flex-wrap gap-1.5 items-center">
-                      <span className="text-[11px] text-stone-400 font-medium mr-1">Chèn nhanh:</span>
+                      <span className="hidden sm:inline text-[11px] text-stone-400 font-medium mr-1">Chèn nhanh:</span>
                       {[
                         { label: 'Verse', value: 'Verse', className: 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200' },
                         { label: 'Chorus', value: 'Chorus', className: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200' },
@@ -8525,7 +9755,7 @@ function AdminEditDemo() {
                       <div className="min-w-0 flex-1 text-center sm:text-left flex flex-col items-center sm:items-start">
                         <div className="font-bold text-stone-800 text-sm tracking-tight">Secret Link (Chia sẻ trực tiếp xem không hỏi mật khẩu)</div>
                         <div className="text-xs text-amber-800 font-mono select-all truncate w-full max-w-full mt-1.5 px-3 py-1.5 bg-amber-150/40 rounded-lg border border-amber-200/50">
-                          {formatShareUrl(window.location.origin + '/song/' + (demo.slug || demo.id) + '?secret=' + demo.secretKey)}
+                          {formatShareUrl(window.location.origin + getArtistLink('/song/' + (demo.slug || demo.id)) + '?secret=' + demo.secretKey)}
                         </div>
                       </div>
                     </div>
@@ -8534,7 +9764,7 @@ function AdminEditDemo() {
                       onClick={async () => {
                         const baseUrl = '/song/';
                         const dynamicId = demo.slug || demo.id;
-                        let url = window.location.origin + baseUrl + dynamicId;
+                        let url = window.location.origin + getArtistLink(baseUrl + dynamicId);
                         url = formatShareUrl(url);
                         url += `?secret=${demo.secretKey}`;
                         await copyToClipboard(url);
@@ -8645,6 +9875,46 @@ function AdminEditDemo() {
             }} 
             onClose={() => setShowTemplatePicker(false)}
          />
+      )}
+
+      {loading && (
+        <div className="fixed inset-0 bg-stone-900/80 backdrop-blur-sm z-[9999] flex flex-col items-center justify-center text-white">
+          <div className="bg-stone-950/95 border border-stone-800 p-8 rounded-[2rem] shadow-2xl flex flex-col items-center max-w-sm mx-4 text-center">
+            <div className="relative w-20 h-20 mb-6 flex items-center justify-center">
+              <div className="absolute inset-0 border-4 border-amber-500/20 rounded-full animate-ping"></div>
+              <div className="absolute inset-0 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+              <Disc3 className="w-8 h-8 text-amber-500 animate-[spin_4s_linear_infinite]" />
+            </div>
+            <h3 className="text-xl font-black mb-2 tracking-tight">{loadingText}</h3>
+            <p className="text-stone-400 text-xs leading-relaxed">Vui lòng đợi trong giây lát. Hệ thống đang tối ưu hóa dữ liệu và lưu trữ an toàn trên cloud.</p>
+          </div>
+        </div>
+      )}
+
+      {notification && (
+        <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-[99999] flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-stone-950 border border-stone-800 p-8 rounded-[2rem] shadow-2xl max-w-sm w-full text-center flex flex-col items-center animate-[fade-in_0.2s_ease-out]"
+          >
+            <div className="mb-4">
+              {notification.type === 'error' && <AlertCircle className="w-12 h-12 text-rose-500 animate-[bounce_1.5s_infinite]" />}
+              {notification.type === 'warning' && <AlertTriangle className="w-12 h-12 text-amber-500 animate-[bounce_1.5s_infinite]" />}
+              {notification.type === 'success' && <CheckCircle className="w-12 h-12 text-emerald-500" />}
+              {notification.type === 'info' && <Info className="w-12 h-12 text-blue-500" />}
+            </div>
+            <h4 className="text-white font-black text-xl mb-2 tracking-tight">{notification.title || (notification.type === 'error' ? 'Lỗi xảy ra' : 'Thông báo')}</h4>
+            <p className="text-stone-400 text-xs leading-relaxed mb-6">{notification.message}</p>
+            <button 
+              type="button" 
+              onClick={handleCloseNotification}
+              className="w-full bg-amber-500 hover:bg-amber-400 active:scale-95 text-stone-950 font-black py-3 px-6 rounded-xl transition-all shadow-md tracking-tight text-sm"
+            >
+              Đồng ý
+            </button>
+          </motion.div>
+        </div>
       )}
     </div>
   );

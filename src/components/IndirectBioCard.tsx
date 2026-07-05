@@ -61,24 +61,112 @@ const ZingIcon = ({ className }: { className?: string }) => (
   </motion.div>
 );
 
+const getArtistExtensionFromUrl = () => {
+  const host = window.location.hostname.replace(/^www\./, '');
+  if (host.endsWith('.chorus.vn') && host !== 'chorus.vn') {
+    const sub = host.replace('.chorus.vn', '');
+    if (sub) return sub;
+  }
+  const match = window.location.pathname.match(/^\/([^\/]+)/);
+  if (match && !['admin', 'api', 'upload', 'demo', 'song', 'playlist', 'assets'].includes(match[1])) {
+    return match[1];
+  }
+  return '';
+};
+
+const getArtistLink = (subPath: string = '') => {
+  const host = window.location.hostname.replace(/^www\./, '');
+  const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
+  const normalizedPath = subPath.startsWith('/') ? subPath : `/${subPath}`;
+  if (isSubdomain) {
+    return normalizedPath;
+  }
+  const ext = getArtistExtensionFromUrl();
+  return ext ? `/${ext}${normalizedPath}` : normalizedPath;
+};
+
+const getAdminLink = (subPath: string = '') => {
+  const host = window.location.hostname.replace(/^www\./, '');
+  const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
+  if (isSubdomain) {
+    return `/admin${subPath}`;
+  }
+  const ext = getArtistExtensionFromUrl();
+  return ext ? `/${ext}/admin${subPath}` : `/admin${subPath}`;
+};
+
 export function IndirectBioCard({ demo, onClose, isStandalone = false }: IndirectBioCardProps) {
   const [copied, setCopied] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [publicArtists, setPublicArtists] = useState<any[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const getArtistExtensionFromUrl = () => {
-      const match = window.location.pathname.match(/^\/([^\/]+)/);
-      if (match && !['admin', 'api', 'upload', 'demo', 'song', 'playlist', 'assets'].includes(match[1])) {
-        return match[1];
-      }
-      return '';
-    };
     const getAdminTokenKey = () => getArtistExtensionFromUrl() ? `adminToken_${getArtistExtensionFromUrl()}` : 'adminToken';
-    
     setIsAdmin(!!localStorage.getItem(getAdminTokenKey()));
+
+    fetch('/api/public/artists')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setPublicArtists(data);
+        }
+      })
+      .catch(err => console.error("Error fetching artists:", err));
   }, []);
 
-  const shareUrl = `${window.location.origin}/song/${demo.slug || demo.id}`;
+  const splitArtists = (singerStr: string) => {
+    if (!singerStr) return [];
+    let normalized = singerStr
+      .replace(/\s+ft\.?\s+/gi, ', ')
+      .replace(/\s+feat\.?\s+/gi, ', ')
+      .replace(/\s+x\s+/gi, ', ')
+      .replace(/\s+&\s+/gi, ', ')
+      .replace(/\s+và\s+/gi, ', ');
+    
+    normalized = normalized.replace(/\((?:feat|ft)\.?\s*([^)]+)\)/gi, ', $1');
+    return normalized.split(',').map(s => s.trim()).filter(Boolean);
+  };
+
+  const renderArtistLinks = (textVal: string, defaultVal: string = '') => {
+    const rawStr = textVal || defaultVal;
+    if (!rawStr) return null;
+    const parts = splitArtists(rawStr);
+    
+    if (parts.length === 0) return <span>{rawStr}</span>;
+    
+    return (
+      <span className="flex flex-wrap items-center justify-center gap-1">
+        {parts.map((name, index) => {
+          const matched = publicArtists.find(
+            a => a.artistName.trim().toLowerCase() === name.trim().toLowerCase()
+          );
+          
+          return (
+            <React.Fragment key={name + index}>
+              {index > 0 && <span className="text-white/60 mx-1">x</span>}
+              {matched ? (
+                <a 
+                  href={`/${matched.extension}`}
+                  className="hover:underline hover:text-white transition duration-200 cursor-pointer text-rose-400 hover:text-rose-300 font-bold"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.location.href = `/${matched.extension}`;
+                  }}
+                >
+                  {name}
+                </a>
+              ) : (
+                <span>{name}</span>
+              )}
+            </React.Fragment>
+          );
+        })}
+      </span>
+    );
+  };
+
+  const shareUrl = window.location.origin + getArtistLink(`/song/${demo.slug || demo.id}`);
 
   const handleCopyLink = async () => {
     try {
@@ -183,8 +271,6 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false }: Indirec
     visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 15 } }
   };
 
-  const navigate = useNavigate();
-
   const content = (
     <div 
        className="relative min-h-[100dvh] text-white flex flex-col items-center p-4 sm:p-8 pt-24 pb-12 select-none overflow-x-hidden"
@@ -193,7 +279,7 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false }: Indirec
             if (onClose) {
               onClose();
             } else if (isStandalone) {
-              navigate('/');
+              navigate(getArtistLink('/'));
             }
          }
        }}
@@ -210,7 +296,7 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false }: Indirec
            if (onClose) {
              onClose();
            } else if (isStandalone) {
-             navigate('/');
+             navigate(getArtistLink('/'));
            }
         }} 
       />
@@ -227,7 +313,7 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false }: Indirec
           </button>
         ) : isStandalone ? (
           <Link 
-            to="/"
+            to={getArtistLink('/')}
             className="flex items-center justify-center gap-2 p-2.5 sm:px-4 sm:py-2 rounded-full bg-black/40 hover:bg-black/60 border border-white/10 text-white/90 hover:text-white transition-all text-sm font-semibold backdrop-blur-xl cursor-pointer hover:scale-105 active:scale-95 shadow-[0_4px_12px_rgba(0,0,0,0.15)]"
           >
             <ArrowLeft className="w-5 h-5 sm:w-4.5 sm:h-4.5" /> <span className="hidden sm:inline">Trang chủ</span>
@@ -276,11 +362,11 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false }: Indirec
             {demo.title}
           </h1>
           <p className="text-[16px] font-bold text-rose-400 mt-3 flex items-center justify-center gap-2 drop-shadow-md">
-            {demo.singer || 'A.C Xuân Tài'}
+            {renderArtistLinks(demo.singer, 'A.C Xuân Tài')}
           </p>
           {demo.composer && demo.composer !== (demo.singer || 'A.C Xuân Tài') && (
-            <p className="text-[12px] text-white/80 mt-2 tracking-widest font-mono uppercase drop-shadow-md">
-               Sáng tác: {demo.composer}
+            <p className="text-[12px] text-white/80 mt-2 tracking-widest font-mono uppercase drop-shadow-md flex items-center justify-center gap-1">
+               Sáng tác: {renderArtistLinks(demo.composer)}
             </p>
           )}
         </motion.div>
@@ -332,7 +418,7 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false }: Indirec
            className="fixed bottom-6 right-6 z-50"
         >
            <Link 
-             to={`/admin/edit/${demo.id}`}
+             to={getAdminLink(`/edit/${demo.id}`)}
              className="flex items-center justify-center p-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white/70 hover:text-white transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.3)] backdrop-blur-md"
              title="Chỉnh sửa bài hát (Admin)"
            >

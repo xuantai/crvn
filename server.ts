@@ -229,6 +229,64 @@ async function addSubscriber(email: string) {
   }
 }
 
+const TICKETS_FILE = path.join(process.cwd(), 'tickets.json');
+let tickets: any[] = [];
+
+async function loadTickets() {
+  if (!isFirestoreDisabled && landingConfig.cloudSyncEnabled !== false) {
+    try {
+      const ticketsDoc = doc(db, 'app_data', 'tickets');
+      const snap = await getDoc(ticketsDoc);
+      if (snap.exists() && snap.data().tickets) {
+        tickets = snap.data().tickets;
+        await fs.writeFile(TICKETS_FILE, JSON.stringify(tickets, null, 2), 'utf-8');
+        return tickets;
+      }
+    } catch (e) {
+      console.error("Firebase error loading tickets:", e);
+    }
+  }
+
+  try {
+    if (fsSync.existsSync(TICKETS_FILE)) {
+      const content = await fs.readFile(TICKETS_FILE, 'utf-8');
+      tickets = JSON.parse(content);
+    } else {
+      tickets = [];
+      await fs.writeFile(TICKETS_FILE, JSON.stringify(tickets, null, 2), 'utf-8');
+    }
+  } catch (e) {
+    console.error("Error loading tickets local:", e);
+    tickets = [];
+  }
+  return tickets;
+}
+
+async function saveTickets(list: any[]) {
+  tickets = list;
+  try {
+    await fs.writeFile(TICKETS_FILE, JSON.stringify(tickets, null, 2), 'utf-8');
+    if (!isFirestoreDisabled && landingConfig.cloudSyncEnabled !== false) {
+      const ticketsDoc = doc(db, 'app_data', 'tickets');
+      await setDoc(ticketsDoc, { tickets });
+    }
+  } catch (e) {
+    console.error("Error saving tickets:", e);
+  }
+}
+
+function mapTicket(t: any) {
+  if (!t) return t;
+  const repArtist = (artists || []).find(a => a.username === t.reporterArtist);
+  return {
+    ...t,
+    reporter: {
+      username: t.reporterArtist,
+      name: repArtist ? repArtist.artistName : t.reporterArtist
+    }
+  };
+}
+
 async function loadLandingConfig() {
   try {
     if (fsSync.existsSync(LANDING_FILE)) {
@@ -375,6 +433,42 @@ async function uploadLocalToCloud(localPath: string, filename: string, mimetype:
 
 async function deleteFileByUrl(url: string) {
   if (!url) return;
+
+  // Check if any other song uses this URL
+  try {
+    let usageCount = 0;
+    for (const a of artists) {
+      const data = await loadData(a.username).catch(() => null);
+      if (!data) continue;
+      
+      const demos = data.demos || [];
+      for (const d of demos) {
+        if (d.audioUrl === url || d.coverUrl === url || d.backgroundUrl === url) {
+          usageCount++;
+        }
+      }
+      const playlists = data.playlists || [];
+      for (const p of playlists) {
+        if (p.coverUrl === url) {
+          usageCount++;
+        }
+      }
+      if (data.homeCoverUrl === url || data.faviconUrl === url || data.ogImageUrl === url) {
+        usageCount++;
+      }
+      if (data.slideshowImages && data.slideshowImages.includes(url)) {
+        usageCount++;
+      }
+    }
+
+    if (usageCount > 1) {
+      console.log(`[Revert/Cleanup] File ${url} đang được sử dụng ở ${usageCount} vị trí khác. Không xóa khỏi server.`);
+      return;
+    }
+  } catch (err) {
+    console.error("Error checking file usage in deleteFileByUrl:", err);
+  }
+
   // If local file path: /uploads/xxx or uploads/xxx
   if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
     const relativePath = url.startsWith('/') ? url.substring(1) : url;
@@ -1164,24 +1258,29 @@ async function startServer() {
   };
 
   app.get('/api/data', async (req, res) => {
-    let data = await loadData((req as any).artist?.username);
-    data = applyBaseUrl(data);
-    
-    if (data.demos) {
-       data.demos = data.demos.filter((d: any) => !d.deleted);
-    }
-    if (data.playlists) {
-       data.playlists = data.playlists.filter((p: any) => !p.deleted);
-    }
+    try {
+      let data = await loadData((req as any).artist?.username);
+      data = applyBaseUrl(data);
+      
+      if (data.demos) {
+         data.demos = data.demos.filter((d: any) => !d.deleted);
+      }
+      if (data.playlists) {
+         data.playlists = data.playlists.filter((p: any) => !p.deleted);
+      }
 
-    // Do not leak passwords
-    let publicDemos = data.demos.map((d: any) => ({ ...d, password: !!(d.password || data.globalPassword) })); 
-    let publicPlaylists = data.playlists
-        ?.filter((p: any) => !p.isDraft)
-        .map((p: any) => ({ ...p, password: !!p.password, hasSecretLink: !!p.secretLink, secretLink: undefined })) || [];
-    publicDemos = injectCoverUrl(publicDemos, data.slideshowImages);
-    // We send back both for simplicity, but let's just make it simple
-    res.json({ ...data, demos: publicDemos, playlists: publicPlaylists });
+      // Do not leak passwords
+      let publicDemos = data.demos.map((d: any) => ({ ...d, password: !!(d.password || data.globalPassword) })); 
+      let publicPlaylists = data.playlists
+          ?.filter((p: any) => !p.isDraft)
+          .map((p: any) => ({ ...p, password: !!p.password, hasSecretLink: !!p.secretLink, secretLink: undefined })) || [];
+      publicDemos = injectCoverUrl(publicDemos, data.slideshowImages);
+      // We send back both for simplicity, but let's just make it simple
+      res.json({ ...data, demos: publicDemos, playlists: publicPlaylists });
+    } catch (err: any) {
+      console.error("Error in /api/data:", err);
+      res.status(500).json({ error: err.message || 'Internal Server Error' });
+    }
   });
 
   app.get('/api/public/landing-config', async (req, res) => {
@@ -1203,7 +1302,7 @@ async function startServer() {
 
   app.get('/api/public/artists', async (req, res) => {
     const list = [];
-    const publicArtists = artists.filter(a => a.isPublic !== false && a.isPublic !== 'false');
+    const publicArtists = artists.filter(a => a.isPublic !== false && a.isPublic !== 'false' && a.hideFromHomepage !== true && a.hideFromHomepage !== 'true');
     for (const artist of publicArtists) {
       try {
         let pageTitle = `Kho nhạc của ${artist.artistName}`;
@@ -1553,6 +1652,111 @@ async function startServer() {
     res.json({ success: true });
   });
 
+  app.get('/api/acp/tickets', async (req, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    await loadTickets();
+    if (artists.length === 0) {
+      await loadArtists();
+    }
+    res.json(tickets.map(mapTicket));
+  });
+
+  app.post('/api/acp/tickets/:id/message', async (req, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const { text } = req.body;
+    if (!text) {
+      return res.status(400).json({ error: 'Nội dung tin nhắn không được để trống!' });
+    }
+    await loadTickets();
+    const ticketIdx = tickets.findIndex(t => t.id === req.params.id);
+    if (ticketIdx === -1) {
+      return res.status(404).json({ error: 'Không tìm thấy ticket!' });
+    }
+
+    const ticket = tickets[ticketIdx];
+    ticket.messages.push({
+      sender: 'admin',
+      senderName: 'Admin hệ thống',
+      text,
+      createdAt: new Date().toISOString()
+    });
+
+    await saveTickets(tickets);
+    if (artists.length === 0) {
+      await loadArtists();
+    }
+    res.json({ success: true, ticket: mapTicket(ticket) });
+  });
+
+  app.post('/api/acp/tickets/:id/resolve', async (req, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    await loadTickets();
+    const ticketIdx = tickets.findIndex(t => t.id === req.params.id);
+    if (ticketIdx === -1) {
+      return res.status(404).json({ error: 'Không tìm thấy ticket!' });
+    }
+
+    const ticket = tickets[ticketIdx];
+    ticket.status = 'resolved';
+    ticket.messages.push({
+      sender: 'admin',
+      senderName: 'Hệ thống',
+      text: 'Yêu cầu đã được đóng và giải quyết bởi Admin hệ thống.',
+      createdAt: new Date().toISOString()
+    });
+
+    await saveTickets(tickets);
+    if (artists.length === 0) {
+      await loadArtists();
+    }
+    res.json({ success: true, ticket: mapTicket(ticket) });
+  });
+
+  app.post('/api/acp/tickets/:id/remove-song', async (req, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    await loadTickets();
+    const ticketIdx = tickets.findIndex(t => t.id === req.params.id);
+    if (ticketIdx === -1) {
+      return res.status(404).json({ error: 'Không tìm thấy ticket!' });
+    }
+
+    const ticket = tickets[ticketIdx];
+    
+    try {
+      const sourceData = await loadData(ticket.sourceArtist);
+      const songIdx = sourceData.demos.findIndex((d: any) => d.id === ticket.songId || d.slug === ticket.songId);
+      if (songIdx !== -1) {
+        sourceData.demos[songIdx].deleted = true;
+        sourceData.demos[songIdx].deletedAt = Date.now();
+        await saveData(ticket.sourceArtist, sourceData);
+      }
+      
+      ticket.status = 'removed';
+      ticket.messages.push({
+        sender: 'admin',
+        senderName: 'Hệ thống',
+        text: `Admin hệ thống đã ra quyết định GỠ BÀI HÁT này khỏi kênh của ${ticket.sourceArtist}.`,
+        createdAt: new Date().toISOString()
+      });
+
+      await saveTickets(tickets);
+      if (artists.length === 0) {
+        await loadArtists();
+      }
+      res.json({ success: true, ticket: mapTicket(ticket) });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // Dynamic Multi-Artist Admin/Member authentication endpoints
   app.post('/api/admin/login', (req: any, res) => {
     const { username, password } = req.body;
@@ -1859,6 +2063,15 @@ async function startServer() {
     data.tab1Name = req.body.tab1Name !== undefined ? req.body.tab1Name : data.tab1Name;
     data.tab2Name = req.body.tab2Name !== undefined ? req.body.tab2Name : data.tab2Name;
     data.tab3Name = req.body.tab3Name !== undefined ? req.body.tab3Name : data.tab3Name;
+    if (req.body.hideFromHomepage !== undefined) {
+      const hideVal = req.body.hideFromHomepage === 'true' || req.body.hideFromHomepage === true;
+      data.hideFromHomepage = hideVal;
+      const artist = req.artist;
+      if (artist) {
+        artist.hideFromHomepage = hideVal;
+        await saveArtists(artists);
+      }
+    }
     if (req.body.slideshowImages) data.slideshowImages = req.body.slideshowImages;
     await saveData(data);
     res.json({ ...data, pendingNameChangeNotice: nameChangeNotice });
@@ -2152,6 +2365,373 @@ async function startServer() {
   }
   return cleanedLines.join('\n');
 };
+
+// --- CHORUS TICKET & REPOST ENDPOINTS ---
+
+app.get('/api/admin/other-songs', async (req: any, res) => {
+  if (!isRequestAdmin(req)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const currentArtist = req.artist;
+  if (!currentArtist) {
+    return res.status(404).json({ error: 'Không tìm thấy nghệ sĩ!' });
+  }
+
+  const currentName = currentArtist.artistName.toLowerCase().trim();
+  const results: any[] = [];
+
+  // Ensure we have loaded artists
+  if (artists.length === 0) {
+    await loadArtists();
+  }
+
+  for (const a of artists) {
+    if (a.username === currentArtist.username) continue;
+    try {
+      const otherData = await loadData(a.username);
+      const demos = otherData.demos || [];
+      for (const d of demos) {
+        if (d.deleted) continue;
+        const singer = (d.singer || '').toLowerCase();
+        const composer = (d.composer || '').toLowerCase();
+        if (singer.includes(currentName) || composer.includes(currentName)) {
+          results.push({
+            id: d.id,
+            slug: d.slug,
+            title: d.title,
+            singer: d.singer,
+            composer: d.composer,
+            coverUrl: d.coverUrl,
+            audioUrl: d.audioUrl,
+            backgroundUrl: d.backgroundUrl,
+            lyrics: d.lyrics,
+            isReleased: d.isReleased,
+            releaseYear: d.releaseYear,
+            sourceArtist: {
+              username: a.username,
+              artistName: a.artistName,
+              extension: a.extension
+            }
+          });
+        }
+      }
+    } catch (err) {
+      console.error(`Error loading data for artist ${a.username}:`, err);
+    }
+  }
+
+  // Load external reposts
+  try {
+    const currentData = await loadData(currentArtist.username);
+    const externalReposts = currentData.externalReposts || [];
+    results.push(...externalReposts);
+  } catch (err) {
+    console.error(`Error loading external reposts for ${currentArtist.username}:`, err);
+  }
+
+  res.json(results);
+});
+
+app.post('/api/admin/add-external-song', async (req: any, res) => {
+  if (!isRequestAdmin(req)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const currentArtist = req.artist;
+  if (!currentArtist) {
+    return res.status(404).json({ error: 'Không tìm thấy nghệ sĩ!' });
+  }
+
+  const { url } = req.body;
+  if (!url) {
+    return res.status(400).json({ error: 'Vui lòng cung cấp URL bài hát!' });
+  }
+
+  try {
+    let cleanUrl = url.trim();
+    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+      cleanUrl = 'https://' + cleanUrl;
+    }
+    const parsed = new URL(cleanUrl);
+    const host = parsed.host;
+    const pathname = parsed.pathname;
+    
+    const match = pathname.match(/\/song\/([^\/]+)/);
+    if (!match) {
+      return res.status(400).json({ error: 'Định dạng URL không hợp lệ! URL phải có cấu trúc dạng /song/slug-bai-hat' });
+    }
+    const songIdOrSlug = match[1];
+    
+    const apiEndpoint = `${parsed.protocol}//${host}/api/demos/${songIdOrSlug}`;
+    
+    const fetchRes = await fetch(apiEndpoint).catch(() => null);
+    if (!fetchRes || !fetchRes.ok) {
+      return res.status(404).json({ error: 'Không thể kết nối hoặc không tìm thấy bài hát trên hệ thống được chỉ định!' });
+    }
+
+    const song = await fetchRes.json();
+    if (!song || !song.title) {
+      return res.status(400).json({ error: 'Dữ liệu phản hồi từ hệ thống ngoài không đúng định dạng!' });
+    }
+
+    const currentName = currentArtist.artistName.toLowerCase().trim();
+    const singer = (song.singer || '').toLowerCase();
+    const composer = (song.composer || '').toLowerCase();
+    const author = (song.author || '').toLowerCase();
+    
+    if (!singer.includes(currentName) && !composer.includes(currentName) && !author.includes(currentName)) {
+      return res.status(400).json({ error: `Tên nghệ sĩ "${currentArtist.artistName}" không nằm trong Credit (Ca sĩ/Sáng tác) của bài hát này!` });
+    }
+
+    const currentData = await loadData(currentArtist.username);
+    currentData.externalReposts = currentData.externalReposts || [];
+    
+    if (currentData.externalReposts.some((x: any) => x.sourceUrl === cleanUrl || x.id === song.id)) {
+      return res.status(400).json({ error: 'Bài hát này đã tồn tại trong danh sách Đăng lại của bạn!' });
+    }
+
+    const newExternal = {
+      id: song.id || 'ext_' + Date.now(),
+      slug: song.slug || song.id,
+      title: song.title,
+      singer: song.singer,
+      composer: song.composer,
+      coverUrl: song.coverUrl,
+      audioUrl: song.audioUrl,
+      backgroundUrl: song.backgroundUrl,
+      lyrics: song.lyrics,
+      isReleased: song.isReleased,
+      releaseYear: song.releaseYear,
+      isExternal: true,
+      sourceUrl: cleanUrl,
+      sourceArtist: {
+        username: 'external',
+        artistName: host,
+        extension: host
+      }
+    };
+
+    currentData.externalReposts.push(newExternal);
+    await saveData(currentArtist.username, currentData);
+
+    res.json({ success: true, song: newExternal });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Đã xảy ra lỗi khi xử lý bài hát ngoài: ' + err.message });
+  }
+});
+
+app.post('/api/admin/remove-external-repost', async (req: any, res) => {
+  if (!isRequestAdmin(req)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const currentArtist = req.artist;
+  if (!currentArtist) {
+    return res.status(404).json({ error: 'Không tìm thấy nghệ sĩ!' });
+  }
+
+  const { id } = req.body;
+  if (!id) {
+    return res.status(400).json({ error: 'Thiếu ID bài hát!' });
+  }
+
+  try {
+    const currentData = await loadData(currentArtist.username);
+    currentData.externalReposts = currentData.externalReposts || [];
+    const originalLen = currentData.externalReposts.length;
+    currentData.externalReposts = currentData.externalReposts.filter((x: any) => x.id !== id);
+    
+    if (currentData.externalReposts.length === originalLen) {
+      return res.status(404).json({ error: 'Không tìm thấy bài hát ngoài này!' });
+    }
+
+    await saveData(currentArtist.username, currentData);
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/admin/tickets', async (req: any, res) => {
+  if (!isRequestAdmin(req)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  await loadTickets();
+  if (artists.length === 0) {
+    await loadArtists();
+  }
+  
+  const mappedTickets = tickets.map(mapTicket);
+
+  if (req.artist?.username === 'acxuantai') {
+    return res.json(mappedTickets);
+  }
+  
+  const filtered = mappedTickets.filter(
+    t => t.reporterArtist === req.artist?.username || t.sourceArtist === req.artist?.username
+  );
+  res.json(filtered);
+});
+
+app.post('/api/admin/tickets/create', async (req: any, res) => {
+  if (!isRequestAdmin(req)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const { songId, songTitle, sourceArtist, type, description } = req.body;
+  if (!songId || !songTitle || !sourceArtist || !type || !description) {
+    return res.status(400).json({ error: 'Thiếu thông tin yêu cầu!' });
+  }
+
+  await loadTickets();
+  
+  const newTicket = {
+    id: crypto.randomBytes(8).toString('hex'),
+    type,
+    songId,
+    songTitle,
+    sourceArtist,
+    reporterArtist: req.artist.username,
+    description,
+    status: 'open',
+    createdAt: new Date().toISOString(),
+    messages: [
+      {
+        sender: 'reporter',
+        senderName: req.artist.artistName,
+        text: description,
+        createdAt: new Date().toISOString()
+      }
+    ]
+  };
+
+  tickets.push(newTicket);
+  await saveTickets(tickets);
+
+  if (artists.length === 0) {
+    await loadArtists();
+  }
+  res.json({ success: true, ticket: mapTicket(newTicket) });
+});
+
+app.post('/api/admin/tickets/:id/message', async (req: any, res) => {
+  if (!isRequestAdmin(req)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const { text } = req.body;
+  if (!text) {
+    return res.status(400).json({ error: 'Nội dung tin nhắn không được để trống!' });
+  }
+
+  await loadTickets();
+  const ticketIdx = tickets.findIndex(t => t.id === req.params.id);
+  if (ticketIdx === -1) {
+    return res.status(404).json({ error: 'Không tìm thấy ticket!' });
+  }
+
+  const ticket = tickets[ticketIdx];
+  
+  const isReporter = req.artist.username === ticket.reporterArtist;
+  const isSource = req.artist.username === ticket.sourceArtist;
+  const isAdmin = req.artist.username === 'acxuantai';
+
+  if (!isReporter && !isSource && !isAdmin) {
+    return res.status(403).json({ error: 'Bạn không có quyền truy cập ticket này!' });
+  }
+
+  let sender: 'reporter' | 'source' | 'admin' = 'reporter';
+  if (isAdmin) sender = 'admin';
+  else if (isSource) sender = 'source';
+
+  ticket.messages.push({
+    sender,
+    senderName: req.artist.artistName,
+    text,
+    createdAt: new Date().toISOString()
+  });
+
+  await saveTickets(tickets);
+  if (artists.length === 0) {
+    await loadArtists();
+  }
+  res.json({ success: true, ticket: mapTicket(ticket) });
+});
+
+app.post('/api/admin/tickets/:id/resolve', async (req: any, res) => {
+  if (!isRequestAdmin(req)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  await loadTickets();
+  const ticketIdx = tickets.findIndex(t => t.id === req.params.id);
+  if (ticketIdx === -1) {
+    return res.status(404).json({ error: 'Không tìm thấy ticket!' });
+  }
+
+  const ticket = tickets[ticketIdx];
+  const isReporter = req.artist.username === ticket.reporterArtist;
+  const isSource = req.artist.username === ticket.sourceArtist;
+  const isAdmin = req.artist.username === 'acxuantai';
+
+  if (!isReporter && !isSource && !isAdmin) {
+    return res.status(403).json({ error: 'Bạn không có quyền cập nhật ticket này!' });
+  }
+
+  ticket.status = 'resolved';
+  ticket.messages.push({
+    sender: 'admin',
+    senderName: 'Hệ thống',
+    text: `Ticket đã được đánh dấu là Đã giải quyết bởi ${req.artist.artistName}.`,
+    createdAt: new Date().toISOString()
+  });
+
+  await saveTickets(tickets);
+  if (artists.length === 0) {
+    await loadArtists();
+  }
+  res.json({ success: true, ticket: mapTicket(ticket) });
+});
+
+app.post('/api/admin/tickets/:id/remove-song', async (req: any, res) => {
+  if (!isRequestAdmin(req)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (req.artist.username !== 'acxuantai') {
+    return res.status(403).json({ error: 'Chỉ Admin hệ thống mới có quyền gỡ bài hát!' });
+  }
+
+  await loadTickets();
+  const ticketIdx = tickets.findIndex(t => t.id === req.params.id);
+  if (ticketIdx === -1) {
+    return res.status(404).json({ error: 'Không tìm thấy ticket!' });
+  }
+
+  const ticket = tickets[ticketIdx];
+  
+  try {
+    const sourceData = await loadData(ticket.sourceArtist);
+    const songIdx = sourceData.demos.findIndex((d: any) => d.id === ticket.songId || d.slug === ticket.songId);
+    if (songIdx !== -1) {
+      sourceData.demos[songIdx].deleted = true;
+      sourceData.demos[songIdx].deletedAt = Date.now();
+      await saveData(ticket.sourceArtist, sourceData);
+    }
+    
+    ticket.status = 'removed';
+    ticket.messages.push({
+      sender: 'admin',
+      senderName: 'Hệ thống',
+      text: `Admin hệ thống đã ra quyết định GỠ BÀI HÁT này khỏi kênh của ${ticket.sourceArtist}.`,
+      createdAt: new Date().toISOString()
+    });
+
+    await saveTickets(tickets);
+    if (artists.length === 0) {
+      await loadArtists();
+    }
+    res.json({ success: true, ticket: mapTicket(ticket) });
+  } catch (err: any) {
+    res.status(500).json({ error: `Lỗi gỡ bài hát: ${err.message}` });
+  }
+});
 
 app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'cover', maxCount: 1 }]), async (req: any, res) => {
     if (!isRequestAdmin(req)) {
@@ -2869,21 +3449,26 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
                       req.file.mimetype.includes('wav') || 
                       req.file.mimetype.includes('wave') ||
                       req.file.mimetype.includes('x-wav');
+        const isM4a = req.file.originalname.toLowerCase().endsWith('.m4a') || 
+                      req.file.mimetype.includes('m4a') || 
+                      req.file.mimetype.includes('x-m4a') ||
+                      req.file.mimetype.includes('audio/mp4');
 
-        if (isWav) {
+        if (isWav || isM4a) {
           try {
-            console.log(`Đang chạy cơ chế tự chuyển đổi: File WAV được phát hiện (${req.file.originalname}). Khởi động FFmpeg để convert thành MP3.`);
-            const wavPath = req.file.path;
+            const isWavFile = isWav;
+            console.log(`Đang chạy cơ chế tự chuyển đổi: File ${isWavFile ? 'WAV' : 'M4A'} được phát hiện (${req.file.originalname}). Khởi động FFmpeg để convert thành MP3.`);
+            const srcPath = req.file.path;
             const mp3Filename = `${req.file.filename.split('.')[0]}-${Date.now()}.mp3`;
             const mp3Path = path.join(process.cwd(), 'public', 'uploads', artistId, mp3Filename);
 
-            // Chuyển đổi WAV sang MP3 bằng ffmpeg
+            // Chuyển đổi sang MP3 bằng ffmpeg
             await new Promise<void>((resolve, reject) => {
-              ffmpeg(wavPath)
+              ffmpeg(srcPath)
                 .toFormat('mp3')
                 .audioBitrate(192) // 192kbps chất lượng rất tốt & dung lượng siêu nhẹ
                 .on('end', () => {
-                  console.log(`Đã chuyển đổi thành công WAV sang MP3 cục bộ: ${mp3Path}`);
+                  console.log(`Đã chuyển đổi thành công ${isWavFile ? 'WAV' : 'M4A'} sang MP3 cục bộ: ${mp3Path}`);
                   resolve();
                 })
                 .on('error', (err) => {
@@ -2893,17 +3478,17 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
                 .save(mp3Path);
             });
 
-            // Xóa file WAV gốc cục bộ để tránh rác server
+            // Xóa file gốc cục bộ để tránh rác server
             try {
-              await fs.unlink(wavPath);
+              await fs.unlink(srcPath);
             } catch (unlinkErr) {
-              console.error("Không thể xóa file WAV tạm:", unlinkErr);
+              console.error(`Không thể xóa file ${isWavFile ? 'WAV' : 'M4A'} tạm:`, unlinkErr);
             }
 
             // Theo thông số mới: file nhạc chỉ lưu lên server, không lưu lên firebase
             res.json({ url: `/uploads/${artistId}/${mp3Filename}` });
           } catch (convertErr: any) {
-            console.error("Lỗi chuyển đổi (.wav -> .mp3): Khôi phục cơ chế mặc định.", convertErr);
+            console.error(`Lỗi chuyển đổi (${isWav ? '.wav' : '.m4a'} -> .mp3): Khôi phục cơ chế mặc định.`, convertErr);
             res.json({ url: `/uploads/${artistId}/${req.file.filename}` });
           }
         } else {
@@ -3049,6 +3634,9 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
   });
 
   app.get('*', async (req, res, next) => {
+    if (req.path.startsWith('/api/')) {
+      return res.status(404).json({ error: 'API route not found' });
+    }
     try {
       const url = req.originalUrl;
       const data = await loadData((req as any).artist?.username);
