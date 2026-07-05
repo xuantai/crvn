@@ -137,17 +137,6 @@
 .animate-float-shape {
   animation: float-shape infinite ease-in-out;
 }
-
-@keyframes artist-shimmer-glow {
-  0%, 100% {
-    text-shadow: 0 0 2px rgba(16, 185, 129, 0.1);
-  }
-  50% {
-    text-shadow: 0 0 8px rgba(16, 185, 129, 0.6), 0 0 16px rgba(16, 185, 129, 0.3);
-    color: #10b981;
-  }
-}
-
 .artist-link-cool {
   position: relative;
   transition: all 0.2s ease-in-out;
@@ -156,7 +145,7 @@
 
 .artist-link-cool:hover {
   text-decoration: none !important;
-  animation: artist-shimmer-glow 1.2s infinite ease-in-out;
+  color: #10b981;
 }
 
 @keyframes flicker {

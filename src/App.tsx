@@ -108,14 +108,6 @@ function renderArtistNameWithLinks(text: string | null | undefined, systemArtist
                       className="artist-link-cool cursor-pointer text-inherit inline-flex items-baseline"
                     >
                       {segment}
-                      {matchedArtist.verified && (
-                        <span 
-                          className="relative -top-1 ml-0.5 inline-flex items-center justify-center border border-emerald-400 text-white rounded-full w-3 h-3 shrink-0 bg-transparent cursor-help"
-                          title="Nghệ sĩ đã xác thực"
-                        >
-                          <Check className="w-2 h-2 stroke-[4.5] text-white" />
-                        </span>
-                      )}
                     </a>
                   );
                 } else {
@@ -126,14 +118,6 @@ function renderArtistNameWithLinks(text: string | null | undefined, systemArtist
                       className="artist-link-cool cursor-pointer text-inherit inline-flex items-baseline"
                     >
                       {segment}
-                      {matchedArtist.verified && (
-                        <span 
-                          className="relative -top-1 ml-0.5 inline-flex items-center justify-center border border-emerald-400 text-white rounded-full w-3 h-3 shrink-0 bg-transparent cursor-help"
-                          title="Nghệ sĩ đã xác thực"
-                        >
-                          <Check className="w-2 h-2 stroke-[4.5] text-white" />
-                        </span>
-                      )}
                     </Link>
                   );
                 }
@@ -1626,7 +1610,7 @@ function Home() {
                     {activeListTab === 'albums' ? (
                       paginatedItems.map((playlist: any) => {
                         const songsInPlaylist = data.demos.filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id));
-                        if (songsInPlaylist.length === 0) return null;
+                        if (songsInPlaylist.length === 0) return <React.Fragment key={playlist.id} />;
                         
                         let coverUrl = playlist.coverUrl || '';
                         if (!coverUrl && data.slideshowImages && data.slideshowImages.length > 0) {
@@ -1761,6 +1745,7 @@ function Home() {
                                   {t.lReleasedMark || 'RELEASED'}
                                 </span>
                                 <button
+                                  key="share-btn"
                                   onClick={async (e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
@@ -2030,8 +2015,10 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
         playPromise.then(() => {
           setIsPlaying(true);
         }).catch(error => {
-          console.warn("Autoplay was prevented by browser", error);
-          setIsPlaying(false);
+          if (error.name !== 'AbortError') {
+            console.warn("Autoplay was prevented or playback was interrupted", error);
+            setIsPlaying(false);
+          }
         });
       }
     } else if (isPreview) {
@@ -2041,9 +2028,22 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
 
   const togglePlay = () => {
     if (audioRef.current) {
-      if (isPlaying) audioRef.current.pause();
-      else audioRef.current.play();
-      setIsPlaying(!isPlaying);
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            setIsPlaying(true);
+          }).catch(error => {
+            console.warn("Play interrupted or prevented", error);
+            setIsPlaying(false);
+          });
+        } else {
+          setIsPlaying(true);
+        }
+      }
     }
   };
 
@@ -5237,6 +5237,31 @@ function AdminDashboard() {
   const [isCheckingExternalUrl, setIsCheckingExternalUrl] = useState(false);
   const [externalError, setExternalError] = useState('');
   const [externalSuccess, setExternalSuccess] = useState('');
+  
+  const [systemArtists, setSystemArtists] = useState<any[]>([]);
+  const [systemFavicon, setSystemFavicon] = useState<string>('');
+
+  useEffect(() => {
+    fetch('/api/public/artists')
+      .then(res => res.json())
+      .then(data => {
+        if (data && Array.isArray(data)) {
+          setSystemArtists(data);
+        } else if (data && Array.isArray(data.artists)) {
+          setSystemArtists(data.artists);
+        }
+      })
+      .catch(err => console.error("Error fetching public artists:", err));
+
+    fetch('/api/public/landing-config')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.faviconUrl) {
+          setSystemFavicon(data.faviconUrl);
+        }
+      })
+      .catch(err => console.error("Error fetching landing config:", err));
+  }, []);
 
   const handleAddExternalSong = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -5377,6 +5402,14 @@ function AdminDashboard() {
     }
   };
 
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [selectedTicket?.messages]);
+
   const handleSendTicketMessage = async () => {
     if (!selectedTicket || !chatMessageText.trim()) return;
     try {
@@ -5392,9 +5425,14 @@ function AdminDashboard() {
       if (res.ok) {
         setChatMessageText('');
         fetchTickets();
+      } else {
+        const errorData = await res.json();
+        console.error("Failed to send message:", errorData);
+        setToast(`Không thể gửi tin nhắn: ${errorData.error || 'Lỗi không xác định'}`);
       }
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      console.error("Exception sending message:", e);
+      setToast(`Đã xảy ra lỗi: ${e.message}`);
     }
   };
 
@@ -7331,7 +7369,7 @@ function AdminDashboard() {
                   <div className="p-4 border-b border-stone-150 bg-white">
                     <h3 className="font-bold text-stone-800 text-sm">Danh sách cuộc hội thoại ({ticketsList.length})</h3>
                   </div>
-                  <div className="flex-1 overflow-y-auto divide-y divide-stone-150">
+                  <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-stone-150">
                     {ticketsList.length === 0 ? (
                       <div className="p-6 text-center text-stone-500 text-sm">
                         Không có ticket nào hiện tại.
@@ -7378,9 +7416,9 @@ function AdminDashboard() {
                 </div>
 
                 {/* Ticket Chat Panel */}
-                <div className="lg:col-span-8 flex flex-col h-full bg-white">
+                <div className="lg:col-span-8 flex flex-col h-full bg-white min-h-0">
                   {selectedTicket ? (
-                    <div className="flex flex-col h-full">
+                    <div className="flex flex-col h-full min-h-0">
                       {/* Chat Header */}
                       <div className="p-4 border-b border-stone-150 flex items-center justify-between bg-stone-50/40">
                         <div>
@@ -7419,7 +7457,7 @@ function AdminDashboard() {
                       </div>
 
                       {/* Chat Messages */}
-                      <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-stone-50/20">
+                      <div className="flex-1 min-h-0 p-4 overflow-y-auto space-y-3 bg-stone-50/20">
                         {/* Initial system/description card */}
                         <div className="bg-stone-100/80 border border-stone-200 rounded-xl p-3 text-stone-700 text-xs space-y-1 max-w-2xl">
                           <p className="font-bold text-stone-800 uppercase tracking-wider text-[10px]">Yêu cầu ban đầu:</p>
@@ -7427,50 +7465,108 @@ function AdminDashboard() {
                           <p className="text-stone-400 text-[10px] text-right">{new Date(selectedTicket.createdAt).toLocaleString('vi-VN')}</p>
                         </div>
 
-                        {selectedTicket.messages.map((msg: any) => {
+                        {selectedTicket.messages.map((msg: any, idx: number) => {
                           const isMe = msg.sender === data?.username;
                           const isAdminRole = msg.role === 'admin';
                           const isReporterRole = msg.role === 'reporter';
                           const isTargetRole = msg.role === 'target';
                           
+                          const initial = (msg.senderName || msg.sender || '?').charAt(0).toUpperCase();
+                          
+                          let avatarBg = 'bg-gradient-to-tr from-stone-400 to-stone-500';
+                          if (isMe) {
+                            avatarBg = 'bg-gradient-to-tr from-blue-500 to-sky-500';
+                          } else if (isAdminRole) {
+                            avatarBg = 'bg-gradient-to-tr from-rose-500 to-amber-500';
+                          } else if (isReporterRole) {
+                            avatarBg = 'bg-gradient-to-tr from-sky-500 to-indigo-600';
+                          } else if (isTargetRole) {
+                            avatarBg = 'bg-gradient-to-tr from-emerald-500 to-teal-600';
+                          }
+
+                          const artistAvatar = msg.sender === 'admin' ? systemFavicon : systemArtists.find(a => a.extension === msg.sender)?.homeCoverUrl;
+
                           return (
-                            <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                              <div className="text-[10px] text-stone-500 mb-0.5 px-1.5 flex items-center gap-1">
-                                <span className="font-bold">{msg.senderName}</span>
-                                <span className={`px-1 rounded-full text-[9px] scale-90 ${isAdminRole ? 'bg-red-100 text-red-700' : isReporterRole ? 'bg-blue-100 text-blue-700' : 'bg-stone-200 text-stone-700'}`}>
-                                  {isAdminRole ? 'Admin' : isReporterRole ? 'Reporter' : 'Uploader'}
+                            <div 
+                              key={msg.id || idx} 
+                              className={`flex gap-3 items-end w-full ${isMe ? 'flex-row-reverse' : 'flex-row'}`}
+                            >
+                              {/* Avatar */}
+                              <div className={`w-8 h-8 rounded-full ${artistAvatar ? 'bg-transparent' : avatarBg} text-white flex items-center justify-center text-xs font-extrabold shadow-sm select-none shrink-0 mb-1 overflow-hidden`}>
+                                {artistAvatar ? (
+                                  <img src={artistAvatar} alt={msg.senderName} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                ) : (
+                                  initial
+                                )}
+                              </div>
+
+                              {/* Message bubble & details */}
+                              <div className={`flex flex-col max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
+                                {/* Sender name & Role */}
+                                <div className="text-[10px] text-stone-500 mb-1 px-1 flex items-center gap-1.5">
+                                  <span className="font-semibold">{msg.senderName}</span>
+                                  <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
+                                    isAdminRole 
+                                      ? 'bg-rose-50 text-rose-600 border border-rose-100' 
+                                      : isReporterRole 
+                                      ? 'bg-sky-50 text-sky-600 border border-sky-100' 
+                                      : 'bg-stone-100 text-stone-600 border border-stone-200'
+                                  }`}>
+                                    {isAdminRole ? 'Admin' : isReporterRole ? 'Reporter' : 'Uploader'}
+                                  </span>
+                                </div>
+
+                                {/* Bubble */}
+                                <div className={`p-3 rounded-2xl text-[13px] leading-relaxed shadow-sm transition-all relative ${
+                                  isMe 
+                                    ? 'bg-[#3A7CF7] text-white rounded-br-none font-medium' 
+                                    : 'bg-white border border-stone-200 text-stone-800 rounded-bl-none'
+                                }`}>
+                                  <p className="whitespace-pre-wrap break-words">{msg.text}</p>
+                                </div>
+
+                                {/* Timestamp */}
+                                <span className="text-[9px] text-stone-400 mt-1 px-1">
+                                  {new Date(msg.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
                                 </span>
                               </div>
-                              <div className={`p-3 rounded-2xl max-w-md text-sm shadow-sm leading-relaxed ${isMe ? 'bg-stone-900 text-white rounded-tr-none' : 'bg-white border border-stone-150 text-stone-850 rounded-tl-none'}`}>
-                                {msg.text}
-                              </div>
-                              <span className="text-[9px] text-stone-400 mt-0.5 px-1.5">{new Date(msg.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                           );
                         })}
+                        <div ref={chatEndRef} />
                       </div>
 
                       {/* Chat Input */}
-                      {selectedTicket.status === 'open' ? (
-                        <div className="p-3 border-t border-stone-150 bg-white flex items-center gap-2">
-                          <input
-                            type="text"
-                            value={chatMessageText}
-                            onChange={(e) => setChatMessageText(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSendTicketMessage()}
-                            placeholder="Nhập tin nhắn trao đổi..."
-                            className="flex-1 border border-stone-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900"
-                          />
-                          <button
-                            onClick={handleSendTicketMessage}
-                            className="bg-stone-900 hover:bg-stone-800 text-white p-2.5 rounded-xl transition-all active:scale-95 cursor-pointer shrink-0"
-                          >
-                            <Send className="w-4 h-4" />
-                          </button>
+                      {((data?.username === 'acxuantai' || data?.isMasterAdmin) && 
+                        data?.username !== selectedTicket.sourceArtist && 
+                        data?.username !== selectedTicket.reporter.username && 
+                        selectedTicket.type === 'edit') ? (
+                        <div className="p-4 border-t border-stone-150 bg-stone-50 text-center text-xs text-stone-500 font-semibold select-none">
+                          Admin không tham gia vào yêu cầu chỉnh sửa (chỉ 2 bên trao đổi).
                         </div>
                       ) : (
-                        <div className="p-4 border-t border-stone-150 bg-stone-50 text-center text-xs text-stone-500 font-semibold select-none">
-                          Ticket này đã được giải quyết và đóng. Không thể gửi thêm tin nhắn.
+                        <div className="flex flex-col gap-2 p-3 border-t border-stone-150 bg-white shrink-0">
+                          {selectedTicket.status !== 'open' && (
+                            <p className="text-[11px] text-stone-500 italic text-center mb-1 bg-stone-50 py-1.5 rounded-lg border border-stone-100">
+                              Ticket này đã đóng/giải quyết xong nhưng bạn vẫn có thể tiếp tục nhắn tin trao đổi.
+                            </p>
+                          )}
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={chatMessageText}
+                              onChange={(e) => setChatMessageText(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && handleSendTicketMessage()}
+                              placeholder="Nhập tin nhắn trao đổi..."
+                              className="flex-1 border border-stone-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900"
+                            />
+                            <button
+                              onClick={handleSendTicketMessage}
+                              className="bg-stone-900 hover:bg-stone-800 text-white p-2.5 rounded-xl transition-all active:scale-95 cursor-pointer shrink-0"
+                            >
+                              <Send className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -8132,16 +8228,16 @@ function AdminCreateDemo() {
 
   const uploadFileDirectly = (file: File, type: 'audio' | 'cover' | 'background') => {
     if (type === 'audio') {
-      if (file.size > 10 * 1024 * 1024) {
-        triggerNotification('Dung lượng file nhạc quá lớn (' + (file.size / (1024 * 1024)).toFixed(1) + 'MB). Vui lòng nén file nhạc về định dạng MP3 (320kbps, dưới 10MB) trước khi tải lên để đảm bảo dung lượng và tốc độ của server.', 'warning', 'Tệp quá lớn');
+      if (file.size > 100 * 1024 * 1024) {
+        triggerNotification('Dung lượng file nhạc quá lớn (' + (file.size / (1024 * 1024)).toFixed(1) + 'MB). Vui lòng tải lên file nhạc dưới 100MB để đảm bảo tốc độ xử lý của server.', 'warning', 'Tệp quá lớn');
         const input = document.getElementById('audioCreateUpload') as HTMLInputElement;
         if (input) input.value = '';
         return;
       }
       setUploadedAudioName(file.name);
     } else {
-      if (file.size > 50 * 1024 * 1024) {
-        triggerNotification('Dung lượng file ảnh quá lớn. Vui lòng chọn file dưới 50MB.', 'warning', 'Ảnh quá lớn');
+      if (file.size > 100 * 1024 * 1024) {
+        triggerNotification('Dung lượng file ảnh quá lớn. Vui lòng chọn file dưới 100MB.', 'warning', 'Ảnh quá lớn');
         if (type === 'cover') {
           const input = document.getElementById('coverCreateUpload') as HTMLInputElement;
           if (input) input.value = '';
@@ -9081,16 +9177,16 @@ function AdminEditDemo() {
 
   const uploadFileDirectly = (file: File, type: 'audio' | 'cover' | 'background') => {
     if (type === 'audio') {
-      if (file.size > 10 * 1024 * 1024) {
-        triggerNotification('Dung lượng file nhạc quá lớn (' + (file.size / (1024 * 1024)).toFixed(1) + 'MB). Vui lòng nén file nhạc về định dạng MP3 (320kbps, dưới 10MB) trước khi tải lên để đảm bảo dung lượng và tốc độ của server.', 'warning', 'Tệp quá lớn');
+      if (file.size > 100 * 1024 * 1024) {
+        triggerNotification('Dung lượng file nhạc quá lớn (' + (file.size / (1024 * 1024)).toFixed(1) + 'MB). Vui lòng tải lên file nhạc dưới 100MB để đảm bảo tốc độ xử lý của server.', 'warning', 'Tệp quá lớn');
         const input = document.getElementById('audioEditUpload') as HTMLInputElement;
         if (input) input.value = '';
         return;
       }
       setUploadedAudioName(file.name);
     } else {
-      if (file.size > 50 * 1024 * 1024) {
-        triggerNotification('Dung lượng file ảnh quá lớn. Vui lòng chọn file dưới 50MB.', 'warning', 'Ảnh quá lớn');
+      if (file.size > 100 * 1024 * 1024) {
+        triggerNotification('Dung lượng file ảnh quá lớn. Vui lòng chọn file dưới 100MB.', 'warning', 'Ảnh quá lớn');
         if (type === 'cover') {
           const input = document.getElementById('coverEditUpload') as HTMLInputElement;
           if (input) input.value = '';

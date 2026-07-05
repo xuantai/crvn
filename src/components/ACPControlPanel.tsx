@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X,
   LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home, Upload,
@@ -42,6 +42,13 @@ export default function ACPControlPanel() {
   const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
   const [chatText, setChatText] = useState('');
   const [isHandlingTicketAction, setIsHandlingTicketAction] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [selectedTicket?.messages]);
 
   // Form states (Artist)
   const [artistName, setArtistName] = useState('');
@@ -62,6 +69,8 @@ export default function ACPControlPanel() {
   const [landingHeroDesc, setLandingHeroDesc] = useState('');
   const [landingFooterText, setLandingFooterText] = useState('');
   const [systemIp, setSystemIp] = useState('');
+  const [adminUsername, setAdminUsername] = useState('acxuantai');
+  const [adminPassword, setAdminPassword] = useState('MatKhauDay123');
   const [cloudSyncEnabled, setCloudSyncEnabled] = useState(true);
 
   // Metadata & Custom sharing states
@@ -173,6 +182,8 @@ export default function ACPControlPanel() {
         setLandingHeroDesc(data.heroDescription || '');
         setLandingFooterText(data.footerText || '');
         setSystemIp(data.systemIp || '');
+        setAdminUsername(data.adminUsername || 'acxuantai');
+        setAdminPassword(data.adminPassword || 'MatKhauDay123');
         setCloudSyncEnabled(data.cloudSyncEnabled !== false);
         setLandingPageTitle(data.pageTitle || '');
         setLandingOgImageUrl(data.ogImageUrl || '');
@@ -548,6 +559,8 @@ export default function ACPControlPanel() {
           heroDescription: landingHeroDesc,
           footerText: landingFooterText,
           systemIp,
+          adminUsername,
+          adminPassword,
           pageTitle: landingPageTitle,
           ogImageUrl: landingOgImageUrl,
           faviconUrl: landingFaviconUrl,
@@ -1048,6 +1061,40 @@ export default function ACPControlPanel() {
                 </div>
 
                 <div className="border-t border-white/10 pt-6 mt-6 space-y-6">
+                  <h3 className="text-sm font-extrabold text-rose-400 uppercase tracking-widest mb-4">
+                    Tài khoản Quản trị (ACP Login)
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400 mb-1.5">
+                        Tên đăng nhập
+                      </label>
+                      <input 
+                        type="text" 
+                        value={adminUsername}
+                        onChange={(e) => setAdminUsername(e.target.value)}
+                        className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-rose-500 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400 mb-1.5">
+                        Mật khẩu
+                      </label>
+                      <input 
+                        type="password" 
+                        value={adminPassword}
+                        onChange={(e) => setAdminPassword(e.target.value)}
+                        className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-rose-500 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-rose-300/70 text-[11px] mt-1.5 leading-relaxed bg-rose-500/10 p-2 rounded-lg">
+                    Tài khoản và mật khẩu này dùng để đăng nhập vào trang quản trị ACP (đường dẫn /acp). Hãy đổi mật khẩu thường xuyên để bảo vệ hệ thống.
+                  </p>
+                </div>
+
+                <div className="border-t border-white/10 pt-6 mt-6 space-y-6">
                   <h3 className="text-sm font-extrabold text-purple-400 uppercase tracking-widest mb-4">
                     Cấu hình chia sẻ & Metadata (SEO)
                   </h3>
@@ -1405,7 +1452,7 @@ export default function ACPControlPanel() {
               {/* Tickets List Column */}
               <div className="bg-neutral-900/30 border border-white/5 rounded-3xl p-6 backdrop-blur-md flex flex-col h-full overflow-hidden">
                 <h3 className="text-sm font-black text-neutral-200 mb-4 pb-2 border-b border-white/5 flex items-center justify-between">
-                  <span>Yêu cầu gỡ bài ({tickets.filter(t => t.type === 'remove').length})</span>
+                  <span>Danh sách yêu cầu ({tickets.length})</span>
                   <button 
                     onClick={fetchTickets}
                     className="p-1 hover:bg-white/5 rounded-lg text-neutral-400 hover:text-white transition-colors cursor-pointer"
@@ -1415,14 +1462,14 @@ export default function ACPControlPanel() {
                   </button>
                 </h3>
 
-                {tickets.filter(t => t.type === 'remove').length === 0 ? (
+                {tickets.length === 0 ? (
                   <div className="py-12 text-center text-neutral-500 my-auto flex flex-col items-center justify-center">
                     <MessageSquare className="w-12 h-12 mb-2 opacity-10" />
-                    <p className="text-xs">Chưa có yêu cầu gỡ bài nào.</p>
+                    <p className="text-xs">Chưa có yêu cầu nào.</p>
                   </div>
                 ) : (
                   <div className="overflow-y-auto custom-scrollbar flex-grow space-y-2 pr-1">
-                    {tickets.filter(t => t.type === 'remove').map((ticket: any) => {
+                    {tickets.map((ticket: any) => {
                       const isSelected = selectedTicket?.id === ticket.id;
                       const lastMsg = ticket.messages[ticket.messages.length - 1];
                       
@@ -1437,9 +1484,15 @@ export default function ACPControlPanel() {
                           }`}
                         >
                           <div className="flex items-center justify-between w-full">
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/15">
-                              Yêu cầu gỡ
-                            </span>
+                            {ticket.type === 'remove' ? (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/15">
+                                Yêu cầu gỡ
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/15">
+                                Yêu cầu sửa
+                              </span>
+                            )}
                             <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
                               ticket.status === 'open' 
                                 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/15' 
@@ -1474,17 +1527,23 @@ export default function ACPControlPanel() {
               </div>
 
               {/* Chat / Moderation Panel */}
-              <div className="lg:col-span-2 bg-neutral-900/30 border border-white/5 rounded-3xl p-6 backdrop-blur-md flex flex-col h-full overflow-hidden">
+              <div className="lg:col-span-2 bg-gradient-to-br from-neutral-900/50 to-neutral-800/30 border border-white/5 rounded-3xl p-6 backdrop-blur-md flex flex-col h-full overflow-hidden min-h-0">
                 {selectedTicket ? (
-                  <div className="flex flex-col h-full overflow-hidden">
+                  <div className="flex flex-col h-full overflow-hidden min-h-0">
                     {/* Header */}
                     <div className="pb-4 border-b border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="font-bold text-white text-lg">{selectedTicket.songTitle}</h3>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/15">
-                            Yêu cầu gỡ
-                          </span>
+                          {selectedTicket.type === 'remove' ? (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/15">
+                              Yêu cầu gỡ
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/15">
+                              Yêu cầu sửa
+                            </span>
+                          )}
                         </div>
                         <p className="text-xs text-neutral-400 mt-1">
                           Người yêu cầu: <strong className="text-neutral-200">{selectedTicket.reporter.name}</strong> (@{selectedTicket.reporter.username}) | Kênh uploader: <strong className="text-neutral-200">{selectedTicket.sourceArtist}</strong>
@@ -1516,7 +1575,7 @@ export default function ACPControlPanel() {
                       {/* Reason Box */}
                       <div className="bg-black/40 border border-white/5 p-4 rounded-2xl text-xs leading-relaxed">
                         <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-                          <AlertTriangle className="w-3.5 h-3.5 text-amber-500" /> Lý do yêu cầu gỡ
+                          <AlertTriangle className="w-3.5 h-3.5 text-amber-500" /> {selectedTicket.type === 'remove' ? 'Lý do yêu cầu gỡ' : 'Lý do yêu cầu sửa'}
                         </div>
                         <p className="whitespace-pre-wrap italic text-neutral-300">"{selectedTicket.description}"</p>
                         <p className="text-neutral-500 text-[10px] text-right mt-1.5">{new Date(selectedTicket.createdAt).toLocaleString('vi-VN')}</p>
@@ -1527,55 +1586,99 @@ export default function ACPControlPanel() {
                         const isMe = msg.sender === 'admin';
                         const isReporter = msg.sender === selectedTicket.reporter.username;
                         
+                        const initial = (msg.senderName || msg.sender || '?').charAt(0).toUpperCase();
+                        
+                        let avatarBg = 'bg-gradient-to-tr from-neutral-600 to-neutral-700';
+                        if (isMe) {
+                          avatarBg = 'bg-gradient-to-tr from-purple-500 to-indigo-600';
+                        } else if (isReporter) {
+                          avatarBg = 'bg-gradient-to-tr from-sky-500 to-blue-600';
+                        } else {
+                          avatarBg = 'bg-gradient-to-tr from-emerald-500 to-teal-600';
+                        }
+                        
+                        const artistAvatar = msg.sender === 'admin' ? landingFaviconUrl : artists.find(a => a.extension === msg.sender)?.homeCoverUrl;
+
                         return (
-                          <div key={idx} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                            <div className="text-[10px] text-neutral-500 mb-1 px-1 flex items-center gap-1">
-                              <span className="font-bold">{msg.senderName}</span>
-                              <span className={`px-1 rounded text-[9px] ${
-                                msg.sender === 'admin' 
-                                  ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20 font-bold' 
-                                  : isReporter 
-                                  ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20 font-semibold' 
-                                  : 'bg-neutral-800 text-neutral-400 border border-white/5'
-                              }`}>
-                                {msg.sender === 'admin' ? 'Admin' : isReporter ? 'Reporter' : 'Uploader'}
-                              </span>
+                          <div 
+                            key={msg.id || idx} 
+                            className={`flex gap-3 items-end w-full ${isMe ? 'flex-row-reverse' : 'flex-row'} mb-4`}
+                          >
+                            {/* Avatar */}
+                            <div className={`w-8 h-8 rounded-full ${artistAvatar ? 'bg-transparent' : avatarBg} text-white flex items-center justify-center text-xs font-extrabold shadow-md shrink-0 mb-1 overflow-hidden`}>
+                              {artistAvatar ? (
+                                <img src={artistAvatar} alt={msg.senderName} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                              ) : (
+                                initial
+                              )}
                             </div>
-                            <div className={`p-3 rounded-2xl max-w-md text-xs leading-relaxed shadow-sm ${
-                              isMe 
-                                ? 'bg-purple-600 text-white rounded-tr-none' 
-                                : 'bg-black/40 border border-white/5 text-neutral-200 rounded-tl-none'
-                            }`}>
-                              {msg.text}
+
+                            {/* Message bubble & details */}
+                            <div className={`flex flex-col max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
+                              {/* Sender Name & Role Badge */}
+                              <div className="text-[10px] text-neutral-400 mb-1 px-1 flex items-center gap-1.5">
+                                <span className="font-semibold">{msg.senderName}</span>
+                                <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                                  msg.sender === 'admin' 
+                                    ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' 
+                                    : isReporter 
+                                    ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' 
+                                    : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                }`}>
+                                  {msg.sender === 'admin' ? 'Admin' : isReporter ? 'Reporter' : 'Uploader'}
+                                </span>
+                              </div>
+
+                              {/* Bubble Box */}
+                              <div className={`p-3 rounded-2xl text-xs leading-relaxed shadow-md transition-all relative ${
+                                isMe 
+                                  ? 'bg-blue-600 text-white rounded-br-none font-medium' 
+                                  : 'bg-neutral-800 border border-white/10 text-neutral-100 rounded-bl-none'
+                              }`}>
+                                <p className="whitespace-pre-wrap break-words">{msg.text}</p>
+                              </div>
+
+                              {/* Timestamp */}
+                              <span className="text-[9px] text-neutral-500 mt-1 px-1">
+                                {new Date(msg.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                              </span>
                             </div>
                           </div>
                         );
                       })}
+                      <div ref={chatEndRef} />
                     </div>
 
                     {/* Chat Input */}
-                    {selectedTicket.status === 'open' ? (
-                      <div className="flex gap-2 shrink-0 border-t border-white/5 pt-4">
-                        <input
-                          type="text"
-                          value={chatText}
-                          onChange={(e) => setChatText(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && handleSendTicketMessage()}
-                          placeholder="Nhập tin nhắn hệ thống gửi đến các bên..."
-                          disabled={isHandlingTicketAction}
-                          className="flex-1 bg-black/40 text-xs text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
-                        />
-                        <button
-                          onClick={handleSendTicketMessage}
-                          disabled={isHandlingTicketAction || !chatText.trim()}
-                          className="p-3 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 rounded-xl text-white transition-all flex items-center justify-center shrink-0 cursor-pointer shadow-lg active:scale-95"
-                        >
-                          <Send className="w-4 h-4" />
-                        </button>
+                    {selectedTicket.type === 'edit' ? (
+                      <div className="text-center py-4 border-t border-white/5 bg-white/5 rounded-xl shrink-0 mt-2">
+                        <p className="text-xs text-neutral-400 font-semibold italic">Admin không tham gia vào yêu cầu chỉnh sửa (chỉ 2 bên trao đổi).</p>
                       </div>
                     ) : (
-                      <div className="text-center py-3 bg-white/5 border border-white/5 rounded-2xl shrink-0">
-                        <p className="text-xs text-neutral-400 italic">Yêu cầu này đã được đóng hoặc xử lý xong. Không thể gửi thêm phản hồi.</p>
+                      <div className="flex flex-col gap-2 shrink-0 border-t border-white/5 pt-4">
+                        {selectedTicket.status !== 'open' && (
+                          <p className="text-[11px] text-neutral-400 italic text-center mb-1 bg-white/5 py-1 rounded-lg">
+                            Yêu cầu này đã đóng/giải quyết xong nhưng bạn vẫn có thể tiếp tục nhắn tin trao đổi.
+                          </p>
+                        )}
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={chatText}
+                            onChange={(e) => setChatText(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSendTicketMessage()}
+                            placeholder="Nhập tin nhắn hệ thống gửi đến các bên..."
+                            disabled={isHandlingTicketAction}
+                            className="flex-1 bg-black/40 text-xs text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
+                          />
+                          <button
+                            onClick={handleSendTicketMessage}
+                            disabled={isHandlingTicketAction || !chatText.trim()}
+                            className="p-3 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 rounded-xl text-white transition-all flex items-center justify-center shrink-0 cursor-pointer shadow-lg active:scale-95"
+                          >
+                            <Send className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>

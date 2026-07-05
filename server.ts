@@ -287,6 +287,21 @@ function mapTicket(t: any) {
   };
 }
 
+async function convertAudioToMp3(inputPath: string): Promise<string> {
+  const outputPath = inputPath.replace(/\.[^/.]+$/, "") + "_converted.mp3";
+  return new Promise((resolve, reject) => {
+    ffmpeg(inputPath)
+      .toFormat('mp3')
+      .audioBitrate('320k')
+      .on('end', () => resolve(outputPath))
+      .on('error', (err) => {
+        fs.unlink(outputPath).catch(() => {});
+        reject(err);
+      })
+      .save(outputPath);
+  });
+}
+
 async function loadLandingConfig() {
   try {
     if (fsSync.existsSync(LANDING_FILE)) {
@@ -973,7 +988,8 @@ async function startServer() {
         token = cookies['masterToken'] || '';
       }
     }
-    return token === 'master_token_MatKhauDay123' || token === 'MatKhauDay123';
+    const expectedPass = (landingConfig as any).adminPassword || 'MatKhauDay123';
+    return token === `master_token_${expectedPass}` || token === expectedPass || token === 'master_token_MatKhauDay123';
   };
 
   const isRequestAdmin = (req: express.Request): boolean => {
@@ -1503,9 +1519,11 @@ async function startServer() {
 
   app.post('/api/acp/login', (req, res) => {
     const { username, password } = req.body;
-    if (username === 'acxuantai' && password === 'MatKhauDay123') {
-      res.setHeader('Set-Cookie', `masterToken=master_token_MatKhauDay123; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`);
-      res.json({ success: true, token: 'master_token_MatKhauDay123' });
+    const expectedUser = (landingConfig as any).adminUsername || 'acxuantai';
+    const expectedPass = (landingConfig as any).adminPassword || 'MatKhauDay123';
+    if (username === expectedUser && password === expectedPass) {
+      res.setHeader('Set-Cookie', `masterToken=master_token_${expectedPass}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`);
+      res.json({ success: true, token: `master_token_${expectedPass}` });
     } else {
       res.status(401).json({ error: 'ID hoặc mật khẩu ACP không chính xác!' });
     }
@@ -1679,6 +1697,7 @@ async function startServer() {
 
     const ticket = tickets[ticketIdx];
     ticket.messages.push({
+      id: crypto.randomBytes(8).toString('hex'),
       sender: 'admin',
       senderName: 'Admin hệ thống',
       text,
@@ -1705,6 +1724,7 @@ async function startServer() {
     const ticket = tickets[ticketIdx];
     ticket.status = 'resolved';
     ticket.messages.push({
+      id: crypto.randomBytes(8).toString('hex'),
       sender: 'admin',
       senderName: 'Hệ thống',
       text: 'Yêu cầu đã được đóng và giải quyết bởi Admin hệ thống.',
@@ -1741,6 +1761,7 @@ async function startServer() {
       
       ticket.status = 'removed';
       ticket.messages.push({
+        id: crypto.randomBytes(8).toString('hex'),
         sender: 'admin',
         senderName: 'Hệ thống',
         text: `Admin hệ thống đã ra quyết định GỠ BÀI HÁT này khỏi kênh của ${ticket.sourceArtist}.`,
@@ -2594,6 +2615,7 @@ app.post('/api/admin/tickets/create', async (req: any, res) => {
     createdAt: new Date().toISOString(),
     messages: [
       {
+        id: crypto.randomBytes(8).toString('hex'),
         sender: 'reporter',
         senderName: req.artist.artistName,
         text: description,
@@ -2641,6 +2663,7 @@ app.post('/api/admin/tickets/:id/message', async (req: any, res) => {
   else if (isSource) sender = 'source';
 
   ticket.messages.push({
+    id: crypto.randomBytes(8).toString('hex'),
     sender,
     senderName: req.artist.artistName,
     text,
@@ -2769,7 +2792,16 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
 
     let audioUrl = '';
     if (audioFile) {
-      audioUrl = await uploadLocalToCloud(audioFile.path, audioFile.filename, audioFile.mimetype, artistId);
+      try {
+        const convertedPath = await convertAudioToMp3(audioFile.path);
+        audioUrl = await uploadLocalToCloud(convertedPath, audioFile.filename.replace(/\.[^/.]+$/, "") + ".mp3", 'audio/mpeg', artistId);
+        await fs.unlink(convertedPath).catch(() => {});
+        await fs.unlink(audioFile.path).catch(() => {});
+      } catch (err) {
+        console.error("Audio conversion failed, falling back to original:", err);
+        audioUrl = await uploadLocalToCloud(audioFile.path, audioFile.filename, audioFile.mimetype, artistId);
+        await fs.unlink(audioFile.path).catch(() => {});
+      }
     } else {
       audioUrl = req.body.audioUrl || '';
     }
@@ -2827,7 +2859,16 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         let newAudioUrl = '';
         const artistId = req.artist?.id || 'common';
         if (audioFile) {
-           newAudioUrl = await uploadLocalToCloud(audioFile.path, audioFile.filename, audioFile.mimetype, artistId);
+           try {
+             const convertedPath = await convertAudioToMp3(audioFile.path);
+             newAudioUrl = await uploadLocalToCloud(convertedPath, audioFile.filename.replace(/\.[^/.]+$/, "") + ".mp3", 'audio/mpeg', artistId);
+             await fs.unlink(convertedPath).catch(() => {});
+             await fs.unlink(audioFile.path).catch(() => {});
+           } catch (err) {
+             console.error("Audio conversion failed, falling back to original:", err);
+             newAudioUrl = await uploadLocalToCloud(audioFile.path, audioFile.filename, audioFile.mimetype, artistId);
+             await fs.unlink(audioFile.path).catch(() => {});
+           }
         } else if (req.body.audioUrl !== undefined && req.body.audioUrl !== data.demos[idx].audioUrl) {
            newAudioUrl = req.body.audioUrl;
         }
@@ -3386,7 +3427,15 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
   // Serve static files from public/uploads
   app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 
-  app.post('/api/upload', upload.single('file'), async (req: any, res) => {
+  app.post('/api/upload', (req, res, next) => {
+    upload.single('file')(req, res, (err) => {
+      if (err) {
+        console.error("Multer error during upload:", err);
+        return res.status(413).json({ error: err.message });
+      }
+      next();
+    });
+  }, async (req: any, res) => {
     if (!isRequestAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -3501,7 +3550,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     }
   });
 
-  app.post('/api/upload-base64', express.json({limit: '50mb'}), async (req: any, res) => {
+  app.post('/api/upload-base64', express.json({limit: '100mb'}), async (req: any, res) => {
     if (!isRequestAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
