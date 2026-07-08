@@ -463,7 +463,7 @@ export default function ChorusVNLanding() {
   const [artists, setArtists] = useState<LandingArtist[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
-  const PAGE_SIZE = 9;
+  const PAGE_SIZE = 6;
 
   const [showBetaModal, setShowBetaModal] = useState(false);
   const [subscriberEmail, setSubscriberEmail] = useState('');
@@ -649,7 +649,7 @@ export default function ChorusVNLanding() {
               
               <div className="flex items-center gap-2 text-neutral-500 text-xs font-serif italic">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-450 animate-ping" />
-                <span>Đang tải không gian âm nhạc...</span>
+                <span>Đang tải trang...</span>
               </div>
             </div>
           </motion.div>

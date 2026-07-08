@@ -6,7 +6,7 @@ interface LoadingScreenProps {
   text?: string;
 }
 
-export function LoadingScreen({ text = 'Đang tải không gian âm nhạc...' }: LoadingScreenProps) {
+export function LoadingScreen({ text = 'Đang tải trang...' }: LoadingScreenProps) {
   return (
     <div className="min-h-screen bg-[#faf9f6] text-neutral-900 font-sans flex flex-col items-center justify-center relative overflow-hidden">
       {/* Subtle dot background */}
