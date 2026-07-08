@@ -1,0 +1,65 @@
+                      <div>
+                        <label className="block text-sm font-bold text-stone-700 mb-2">Logo đối tác (Upload)</label>
+                        <div 
+                          onDragOver={(e) => { e.preventDefault(); setIsDraggingBrandLogo(true); }}
+                          onDragLeave={() => setIsDraggingBrandLogo(false)}
+                          onDrop={(e) => { 
+                            e.preventDefault(); 
+                            setIsDraggingBrandLogo(false); 
+                            const file = e.dataTransfer.files?.[0]; 
+                            if (file && file.type.startsWith('image/')) {
+                               const fd = new FormData(); fd.append("file", file); fd.append("type", "image");
+                               setBrandLogoUploadProgress(10);
+                               fetch("/api/upload", { method: "POST", body: fd, headers: { "Authorization": `Bearer ${getAdminToken() || ""}`, "x-artist-extension": getArtistExtensionFromUrl() }})
+                               .then(res => res.json()).then(data => {
+                                 setUploadedBrandLogoUrl(data.url); setUploadedBrandLogoName(file.name); setBrandLogoUploadProgress(100);
+                               });
+                            }
+                          }}
+                          className={`flex flex-wrap gap-4 items-center p-3 rounded-2xl border-2 transition-all duration-200 ${
+                            isDraggingBrandLogo 
+                              ? 'border-indigo-500 bg-indigo-50/50 border-dashed scale-[1.01]' 
+                              : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
+                          }`}
+                        >
+                          {uploadedBrandLogoUrl ? (
+                            <img src={uploadedBrandLogoUrl} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />
+                          ) : (
+                            <div className="w-16 h-16 rounded-xl border border-dashed border-stone-300 flex items-center justify-center bg-stone-100 text-stone-400">
+                              <Image className="w-6 h-6" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-[150px]">
+                             <div className="flex items-center gap-2">
+                               <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${brandLogoUploadProgress === 100 || uploadedBrandLogoUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('brandLogoCreateUpload')?.click()}>
+                                   <Upload className="w-4 h-4"/>
+                                   <span className="max-w-[150px] truncate">{brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? `Đang tải ${brandLogoUploadProgress}%` : (uploadedBrandLogoName ? formatFileName(uploadedBrandLogoName) : 'Chọn logo')}</span>
+                               </button>
+                               {brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? (
+                                 <button type="button" onClick={() => setBrandLogoUploadProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title="Hủy tải lên"><X className="w-4 h-4"/></button>
+                               ) : (uploadedBrandLogoUrl ? (
+                                 <button type="button" onClick={() => { setUploadedBrandLogoUrl(''); setBrandLogoUploadProgress(0); setUploadedBrandLogoName(''); (document.getElementById('brandLogoCreateUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                               ) : null)}
+                             </div>
+                             {brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 && (
+                               <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-2">
+                                 <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${brandLogoUploadProgress}%` }} />
+                               </div>
+                             )}
+                             <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
+                               {uploadedBrandLogoName ? `Tệp đã chọn: ${formatFileName(uploadedBrandLogoName, 30)}` : 'Kéo thả logo trực tiếp vào ô này'}
+                             </p>
+                          </div>
+                          <input type="file" id="brandLogoCreateUpload" name="brandLogo" accept="image/*" onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setBrandLogoUploadProgress(10);
+                              const fd = new FormData(); fd.append("file", file); fd.append("type", "image");
+                              fetch("/api/upload", { method: "POST", body: fd, headers: { "Authorization": `Bearer ${getAdminToken() || ""}`, "x-artist-extension": getArtistExtensionFromUrl() }})
+                              .then(res => res.json()).then(data => {
+                                setUploadedBrandLogoUrl(data.url); setUploadedBrandLogoName(file.name); setBrandLogoUploadProgress(100);
+                              });
+                            }
+                          }} className="hidden" />
+                        </div>
+                      </div>

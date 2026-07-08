@@ -1,0 +1,1 @@
+sed -i -e '1659s/.*/    } else if (!approveNameChange \&\& !rejectNameChange \&\& !approveUsernameChange \&\& !rejectUsernameChange \&\& !approveExtensionChange \&\& !rejectExtensionChange) {/g' server.ts

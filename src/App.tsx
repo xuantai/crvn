@@ -7,6 +7,175 @@ import { AppData, DemoSong, TemplateConfig, Achievement } from './types';
 import { motion, AnimatePresence } from 'motion/react';
 import { IndirectBioCard } from './components/IndirectBioCard';
 
+const brandColorCache: Record<string, { primary: string; secondary: string }> = {};
+
+function useBrandColors(logoUrl: string | null | undefined, defaultColor: string | null | undefined) {
+  const [colors, setColors] = useState<{ primary: string; secondary: string }>(() => {
+    if (logoUrl && brandColorCache[logoUrl]) {
+      return brandColorCache[logoUrl];
+    }
+    const pri = defaultColor || '#6366f1';
+    return { primary: pri, secondary: '#a3a3a3' };
+  });
+
+  useEffect(() => {
+    if (logoUrl && brandColorCache[logoUrl]) {
+      setColors(brandColorCache[logoUrl]);
+      return;
+    }
+    if (defaultColor) {
+      setColors({ primary: defaultColor, secondary: '#a3a3a3' });
+    }
+  }, [defaultColor, logoUrl]);
+
+  useEffect(() => {
+    if (!logoUrl) return;
+    if (brandColorCache[logoUrl]) return;
+    
+    const img = new window.Image();
+    img.crossOrigin = "Anonymous";
+    img.src = logoUrl;
+    img.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        const size = 16;
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        ctx.drawImage(img, 0, 0, size, size);
+        const imgData = ctx.getImageData(0, 0, size, size).data;
+        
+        const counts: Record<string, { r: number; g: number; b: number; count: number }> = {};
+        
+        for (let i = 0; i < imgData.length; i += 4) {
+          const r = imgData[i];
+          const g = imgData[i+1];
+          const b = imgData[i+2];
+          const a = imgData[i+3];
+          
+          if (a < 50) continue;
+          
+          const isWhite = r > 240 && g > 240 && b > 240;
+          const isBlack = r < 20 && g < 20 && b < 20;
+          if (isWhite || isBlack) continue;
+          
+          const qr = Math.round(r / 15) * 15;
+          const qg = Math.round(g / 15) * 15;
+          const qb = Math.round(b / 15) * 15;
+          const key = `${qr},${qg},${qb}`;
+          
+          if (!counts[key]) {
+            counts[key] = { r, g, b, count: 0 };
+          }
+          counts[key].count++;
+        }
+        
+        const sorted = Object.values(counts).sort((a, b) => b.count - a.count);
+        
+        if (sorted.length > 0) {
+          const primaryRGB = sorted[0];
+          const formatHex = (r: number, g: number, b: number) => {
+            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+          };
+          
+          const adjustBrightness = (r: number, g: number, b: number) => {
+            let rNorm = r / 255, gNorm = g / 255, bNorm = b / 255;
+            let max = Math.max(rNorm, gNorm, bNorm), min = Math.min(rNorm, gNorm, bNorm);
+            let l = (max + min) / 2;
+            if (l < 0.45) {
+              const scale = 0.55 / l;
+              r = Math.min(255, Math.round(r * scale));
+              g = Math.min(255, Math.round(g * scale));
+              b = Math.min(255, Math.round(b * scale));
+            }
+            return { r, g, b };
+          };
+          
+          const adjPrimary = adjustBrightness(primaryRGB.r, primaryRGB.g, primaryRGB.b);
+          const primaryHex = formatHex(adjPrimary.r, adjPrimary.g, adjPrimary.b);
+          
+          let secondaryHex = defaultColor || '#a3a3a3';
+          
+          for (let i = 1; i < sorted.length; i++) {
+            const sec = sorted[i];
+            const dist = Math.sqrt(
+              Math.pow(primaryRGB.r - sec.r, 2) +
+              Math.pow(primaryRGB.g - sec.g, 2) +
+              Math.pow(primaryRGB.b - sec.b, 2)
+            );
+            
+            if (dist > 80) {
+              const adjSec = adjustBrightness(sec.r, sec.g, sec.b);
+              secondaryHex = formatHex(adjSec.r, adjSec.g, adjSec.b);
+              break;
+            }
+          }
+          
+          if (secondaryHex === (defaultColor || '#a3a3a3') && defaultColor) {
+            secondaryHex = defaultColor;
+          } else if (secondaryHex === '#a3a3a3') {
+            let rNorm = adjPrimary.r / 255, gNorm = adjPrimary.g / 255, bNorm = adjPrimary.b / 255;
+            let max = Math.max(rNorm, gNorm, bNorm), min = Math.min(rNorm, gNorm, bNorm);
+            let h = 0, s = 0, l = (max + min) / 2;
+            if (max !== min) {
+              const d = max - min;
+              s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+              switch (max) {
+                case rNorm: h = (gNorm - bNorm) / d + (gNorm < bNorm ? 6 : 0); break;
+                case gNorm: h = (bNorm - rNorm) / d + 2; break;
+                case bNorm: h = (rNorm - gNorm) / d + 4; break;
+              }
+              h /= 6;
+            }
+            
+            h = (h + 0.166) % 1;
+            if (l < 0.6) l = 0.65;
+            if (s < 0.4) s = 0.7;
+            
+            const hue2rgb = (p: number, q: number, t: number) => {
+              if (t < 0) t += 1;
+              if (t > 1) t -= 1;
+              if (t < 1/6) return p + (q - p) * 6 * t;
+              if (t < 1/2) return q;
+              if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+              return p;
+            };
+            
+            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            const p = 2 * l - q;
+            const rFinal = Math.round(hue2rgb(p, q, h + 1/3) * 255);
+            const gFinal = Math.round(hue2rgb(p, q, h) * 255);
+            const bFinal = Math.round(hue2rgb(p, q, h - 1/3) * 255);
+            
+            secondaryHex = formatHex(rFinal, gFinal, bFinal);
+          }
+          
+          const result = { primary: primaryHex, secondary: secondaryHex };
+          brandColorCache[logoUrl] = result;
+          setColors(result);
+        }
+      } catch (e) {
+        console.error("Error extracting brand colors", e);
+      }
+    };
+  }, [logoUrl, defaultColor]);
+
+  return colors;
+}
+
+interface BrandLogoColorExtractorProps {
+  key?: React.Key;
+  logoUrl: string | null | undefined;
+  defaultColor: string | null | undefined;
+  children: (colors: { primary: string; secondary: string }) => React.ReactNode;
+}
+
+function BrandLogoColorExtractor({ logoUrl, defaultColor, children }: BrandLogoColorExtractorProps) {
+  const brandColors = useBrandColors(logoUrl, defaultColor);
+  return <>{children(brandColors)}</>;
+}
+
 function formatText(text: string | null | undefined, disableLinks = false) {
   if (!text) return null;
   const lines = text.replace(/\s+\(/g, '\n(').split('\n');
@@ -123,7 +292,7 @@ function renderArtistNameWithLinks(text: string | null | undefined, systemArtist
                   );
                 }
               }
-              
+
               return <span key={`${lineIdx}-${segIdx}`}>{segment}</span>;
             })}
           </React.Fragment>
@@ -132,7 +301,6 @@ function renderArtistNameWithLinks(text: string | null | undefined, systemArtist
     </>
   );
 }
-
 
 // Global styles added in index.css
 
@@ -185,7 +353,7 @@ const getAdminLink = (subPath: string = '') => {
     return `/admin${subPath}`;
   }
   const ext = getArtistExtensionFromUrl();
-  return ext ? `/${ext}/admin${subPath}` : `/admin${subPath}`;
+  return ext ? `/${ext}/admin${subPath}` : `/acp${subPath}`;
 };
 
 const getArtistLink = (subPath: string = '') => {
@@ -722,7 +890,7 @@ const AutoTranslate = ({ text, className = "" }: { text: string; className?: str
   return <span className={className}>{translated}</span>;
 };
 
-const HoverTranslate = ({ text, className = "", format = false }: { text: string; className?: string, format?: boolean }) => {
+const HoverTranslate = ({ text, className = "", format = false, style }: { text: string; className?: string, format?: boolean, style?: React.CSSProperties }) => {
   const { lang } = useContext(LanguageContext);
   const [translated, setTranslated] = useState(text);
   const [hasFetched, setHasFetched] = useState(false);
@@ -752,6 +920,7 @@ const HoverTranslate = ({ text, className = "", format = false }: { text: string
   return (
     <span 
       className={className} 
+      style={style}
       onMouseEnter={() => setIsHovered(true)} 
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -837,14 +1006,14 @@ function AchievementBadge({ achievement, align = 'right' }: { achievement: Achie
         <div className={`flex flex-col gap-0.5 ${isLeft ? 'items-start' : 'items-end'} justify-center`}>
            <div className="border border-red-500 bg-red-500/10 px-1.5 py-0.5 rounded-md flex items-center justify-center shadow-[0_0_4px_rgba(239,68,68,0.15)] animate-flicker-yt">
              <span className="text-[7.5px] sm:text-[8px] font-black text-red-500 tracking-widest uppercase text-center block" style={{ marginRight: '-0.1em' }}>
-               YOUTUBE
-             </span>
+               YOUTUBE</span>
+             
            </div>
            <h4 className={`text-[9.5px] sm:text-[10px] font-black text-white whitespace-nowrap mt-0.5 ${isTop1Trending ? 'animate-yt-top1' : 'animate-slow-glow-yt'}`}>
              {isTrending ? (
-                 <><span className="text-amber-400 drop-shadow-[0_0_4px_rgba(251,191,36,0.5)]">TOP {achievement.value}</span> <span className="text-stone-200">Trending</span></>
+                 <><span className="text-amber-400 drop-shadow-[0_0_4px_rgba(251,191,36,0.5)]">TOP {achievement.value} <span className="text-stone-200">Trending</span></span></>
              ) : (
-                 <><span className="text-red-400 drop-shadow-[0_0_4px_rgba(248,113,113,0.3)]">&gt; {achievement.value}</span> <span className="text-stone-200">Views</span></>
+                 <><span className="text-red-400 drop-shadow-[0_0_4px_rgba(248,113,113,0.3)]">&gt; {achievement.value} <span className="text-stone-200">Views</span></span></>
              )}
            </h4>
         </div>
@@ -863,8 +1032,8 @@ function AchievementBadge({ achievement, align = 'right' }: { achievement: Achie
         <div className={`flex flex-col gap-0.5 ${isLeft ? 'items-start' : 'items-end'} justify-center`}>
            <div className="border border-teal-400 bg-teal-400/10 px-1.5 py-0.5 rounded-md flex items-center justify-center shadow-[0_0_4px_rgba(20,184,166,0.15)] animate-flicker-tt">
              <span className="text-[7.5px] sm:text-[8px] font-black text-teal-400 tracking-widest uppercase text-center block" style={{ marginRight: '-0.1em' }}>
-               TIKTOK
-             </span>
+               TIKTOK</span>
+             
            </div>
            <h4 className="text-[9.5px] sm:text-[10px] font-black text-white whitespace-nowrap mt-0.5 animate-slow-glow-tt">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00f2fe] via-white to-[#fe0979] drop-shadow-[0_0_4px_rgba(255,255,255,0.3)]">✨ VIRAL ✨</span>
@@ -885,11 +1054,11 @@ function AchievementBadge({ achievement, align = 'right' }: { achievement: Achie
         <div className={`flex flex-col gap-0.5 ${isLeft ? 'items-start' : 'items-end'} justify-center`}>
            <div className="border border-[#1DB954] bg-[#1DB954]/10 px-1.5 py-0.5 rounded-md flex items-center justify-center shadow-[0_0_4px_rgba(29,185,84,0.15)] animate-flicker-sp">
              <span className="text-[7.5px] sm:text-[8px] font-black text-[#1DB954] tracking-widest uppercase text-center block" style={{ marginRight: '-0.1em' }}>
-               SPOTIFY
-             </span>
+               SPOTIFY</span>
+             
            </div>
            <h4 className="text-[9.5px] sm:text-[10px] font-black text-white whitespace-nowrap mt-0.5 animate-slow-glow-sp">
-             <span className="text-[#1DB954] drop-shadow-[0_0_4px_rgba(29,185,84,0.5)]">&gt; {achievement.value}</span> <span className="text-stone-200">Streams</span>
+             <span className="text-[#1DB954] drop-shadow-[0_0_4px_rgba(29,185,84,0.5)]">&gt; {achievement.value} <span className="text-stone-200">Streams</span></span>
            </h4>
         </div>
       </div>
@@ -907,11 +1076,11 @@ function AchievementBadge({ achievement, align = 'right' }: { achievement: Achie
         <div className={`flex flex-col gap-0.5 ${isLeft ? 'items-start' : 'items-end'} justify-center`}>
            <div className="border border-[#a855f7] bg-[#a855f7]/10 px-1.5 py-0.5 rounded-md flex items-center justify-center shadow-[0_0_4px_rgba(168,85,247,0.15)] animate-flicker-zg">
              <span className="text-[7.5px] sm:text-[8px] font-black text-[#bc56fd] tracking-widest uppercase text-center block" style={{ marginRight: '-0.1em' }}>
-               ZING MP3
-             </span>
+               ZING MP3</span>
+             
            </div>
            <h4 className="text-[9.5px] sm:text-[10px] font-black text-white whitespace-nowrap mt-0.5 animate-slow-glow-zg">
-             <span className="text-[#c084fc] drop-shadow-[0_0_4px_rgba(168,85,247,0.5)]">&gt; {achievement.value}</span> <span className="text-stone-200">Streams</span>
+             <span className="text-[#c084fc] drop-shadow-[0_0_4px_rgba(168,85,247,0.5)]">&gt; {achievement.value} <span className="text-stone-200">Streams</span></span>
            </h4>
         </div>
       </div>
@@ -974,6 +1143,19 @@ function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isHomeSearchExpanded, setIsHomeSearchExpanded] = useState(false);
   const observer = useRef<IntersectionObserver>();
+  const [showBrandState, setShowBrandState] = useState(false);
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    const cycle = () => {
+      setShowBrandState(false);
+      timeoutId = setTimeout(() => {
+        setShowBrandState(true);
+        timeoutId = setTimeout(cycle, 2500);
+      }, 3500);
+    };
+    cycle();
+    return () => clearTimeout(timeoutId);
+  }, []);
 
   useEffect(() => {
     if (data && data.demos && !hasInitializedTab) {
@@ -1225,7 +1407,7 @@ function Home() {
                   <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse shrink-0"></span>
                   <span className="font-bold text-white text-[11px] sm:text-sm tracking-tight break-words line-clamp-2 sm:line-clamp-none leading-normal">
                     {activeTitle}
-                  </span>
+                    </span>
                 </div>
                 <div className="flex items-center gap-3 justify-end shrink-0">
                   <button 
@@ -1302,16 +1484,25 @@ function Home() {
                       initial={{ scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
                       animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
                       transition={{ duration: 1.5, ease: "easeOut" }}
-                      className="relative inline-flex items-start justify-center gap-1 sm:gap-1.5 md:gap-2 text-4xl sm:text-6xl md:text-[6rem] lg:text-[7rem] font-black mb-4 tracking-tighter text-white drop-shadow-2xl whitespace-nowrap"
+                      className="text-4xl sm:text-6xl md:text-[6rem] lg:text-[7rem] font-black mb-4 tracking-tighter text-white drop-shadow-2xl leading-[1.1] text-center max-w-full"
                     >
-                      <span>{formatText(data.artistName)}</span>
-                      <div className="relative group inline-flex items-center justify-center -top-2 sm:-top-4 md:-top-6 lg:-top-8">
-                        <BadgeCheck className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 text-blue-500 fill-blue-500/20 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)] shrink-0 cursor-pointer" />
-                        <div className="absolute bottom-full mb-2 hidden group-hover:block bg-neutral-900 border border-white/10 text-white text-[11px] sm:text-xs font-bold py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none z-50 tracking-normal normal-case leading-none">
-                          Nghệ sĩ đã xác thực
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-neutral-900" />
-                        </div>
-                      </div>
+                      {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
+                        if (index === array.length - 1) {
+                          return (
+                            <span key={index} className="whitespace-nowrap">
+                              {word}
+                              <div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
+                                <BadgeCheck className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 text-blue-500 fill-blue-500/20 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)] shrink-0 cursor-pointer" />
+                                <div className="absolute bottom-full mb-2 hidden group-hover:block bg-neutral-900 border border-white/10 text-white text-[11px] sm:text-xs font-bold py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none z-50 tracking-normal normal-case leading-none">
+                                  Nghệ sĩ đã xác thực
+                                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-neutral-900" />
+                                </div>
+                              </div>
+                            </span>
+                          );
+                        }
+                        return word + ' ';
+                      })}
                     </motion.h1>
                   )}
                 </AnimatePresence>
@@ -1335,18 +1526,25 @@ function Home() {
                       initial={{ scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
                       animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
                       transition={{ duration: 1.5, ease: "easeOut" }}
-                      className="relative inline-flex items-start justify-center gap-1 sm:gap-1.5 text-3xl sm:text-5xl md:text-6xl font-black mb-0 tracking-tight whitespace-nowrap"
+                      className="text-3xl sm:text-5xl md:text-6xl font-black mb-0 tracking-tight leading-[1.1] text-center max-w-full"
                     >
-                      <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-rose-300">
-                        {formatText(data.artistName)}
-                      </span>
-                      <div className="relative group inline-flex items-center justify-center -top-1.5 sm:-top-3 md:-top-4">
-                        <BadgeCheck className="w-3 h-3 sm:w-5 sm:h-5 md:w-6 md:h-6 text-blue-500 fill-blue-500/20 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)] shrink-0 cursor-pointer" />
-                        <div className="absolute bottom-full mb-2 hidden group-hover:block bg-neutral-900 border border-white/10 text-white text-[11px] sm:text-xs font-bold py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none z-50 tracking-normal normal-case leading-none">
-                          Nghệ sĩ đã xác thực
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-neutral-900" />
-                        </div>
-                      </div>
+                      {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
+                        if (index === array.length - 1) {
+                          return (
+                            <span key={index} className="whitespace-nowrap">
+                              <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-rose-300">{word}
+                              <div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 -mt-0 sm:-mt-1 md:-mt-1">
+                                <BadgeCheck className="w-3 h-3 sm:w-5 sm:h-5 md:w-6 md:h-6 text-blue-500 fill-blue-500/20 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)] shrink-0 cursor-pointer" />
+                                <div className="absolute bottom-full mb-2 hidden group-hover:block bg-neutral-900 border border-white/10 text-white text-[11px] sm:text-xs font-bold py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none z-50 tracking-normal normal-case leading-none">
+                                  Nghệ sĩ đã xác thực
+                                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-neutral-900" />
+                                </div>
+                              </div>
+                              </span></span>
+                          );
+                        }
+                        return <span key={index} className="bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-rose-300">{word + ' '}</span>;
+                      })}
                     </motion.h1>
                   )}
                 </AnimatePresence>
@@ -1377,9 +1575,9 @@ function Home() {
                                   <svg className="w-2.5 h-2.5 text-black" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
                                 </div>
                               </div>
-                              <span className="text-sm font-medium text-stone-300">
+                              <span className="text-sm font-medium text-stone-300"></span>
                                 {spotifyInfo.description.replace('người nghe hàng tháng', 'monthly listeners')}
-                              </span>
+                              
                            </div>
                            <a href={data.spotifyUrl} target="_blank" rel="noreferrer" className="hidden sm:flex ml-auto items-center gap-2 bg-[#1DB954] text-white px-4 py-2 rounded-full hover:scale-105 transition-transform font-bold text-sm">
                              <SpotifyIcon className="w-4 h-4" /> Open Spotify
@@ -1410,9 +1608,9 @@ function Home() {
                 return (
                  <div className="flex justify-center mt-6">
                    <a href={data.spotifyUrl} target="_blank" rel="noreferrer" className="inline-flex transition-transform hover:scale-105">
-                     <span className="flex items-center gap-2 bg-[#1DB954] text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-[#1DB954]/20 text-lg">
+                     <span className="flex items-center gap-2 bg-[#1DB954] text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-[#1DB954]/20 text-lg"></span>
                        <SpotifyIcon className="w-5 h-5" /> {t.btnSpot}
-                     </span>
+                     
                    </a>
                  </div>
                 );
@@ -1453,9 +1651,9 @@ function Home() {
                       className="w-full bg-neutral-900/60 border border-white/10 rounded-xl pl-9 pr-8 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 placeholder:text-stone-500 font-medium"
                       autoFocus
                     />
-                    <span className="absolute left-3 text-stone-400">
+                    <span className="absolute left-3 text-stone-400"></span>
                       <Search className="w-3.5 h-3.5" />
-                    </span>
+                    
                     {searchQuery && (
                       <button
                         onClick={() => {
@@ -1676,118 +1874,221 @@ function Home() {
                       })
                     ) : (
                       paginatedItems.map((demo: any) => (
-                        <motion.div
-                          key={demo.id}
-                          variants={{
-                            hidden: { opacity: 0, y: 15 },
-                            show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
-                          }}
+                        <BrandLogoColorExtractor 
+                          key={demo.id} 
+                          logoUrl={demo.isBrand ? demo.brandLogoUrl : undefined} 
+                          defaultColor={demo.brandColor}
                         >
-                          <Link 
-                            to={activeListTab === 'released' ? getArtistLink(`/playlist/released?song=${demo.slug || demo.id}`) : getArtistLink(`/song/${demo.slug || demo.id}`)} 
-                            onClick={(e) => {
-                              if (demo.linkType === 'indirect') {
-                                e.preventDefault();
-                                const indirectLinks = [
-                                  demo.linkSpotify, 
-                                  demo.linkApple, 
-                                  demo.linkZing, 
-                                  demo.linkYoutubeMusic, 
-                                  demo.linkYoutube
-                                ].filter(l => !!l);
-                                
-                                if (indirectLinks.length === 1 && indirectLinks[0]) {
-                                   window.open(indirectLinks[0], '_blank');
-                                } else {
-                                   setActiveBioSong(demo);
-                                }
-                              }
-                            }}
-                            className={`group relative rounded-2xl p-3 sm:p-4 transition-all duration-300 flex items-center gap-3 w-full ${demo.achievements?.length ? 'hover:shadow-[0_0_20px_rgba(251,191,36,0.25)]' : 'hover:shadow-[0_0_30px_-5px_rgba(244,63,94,0.3)]'}`}
-                          >
-                            {demo.achievements && demo.achievements.length > 0 ? (
-                              <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0">
-                                <div className="absolute inset-[-50%] bg-[conic-gradient(from_0deg,transparent_0_280deg,theme(colors.amber.500)_360deg)] animate-rotate-border z-0 opacity-80" />
-                                <div className="absolute inset-[1px] rounded-[15px] bg-neutral-900/80 backdrop-blur-md z-0" />
-                                <div className="absolute inset-[1px] rounded-[15px] bg-gradient-to-br from-amber-950/30 to-transparent z-0" />
-                                <div className="absolute inset-[1px] rounded-[15px] bg-gradient-to-r from-transparent via-amber-500/10 to-transparent -translate-x-full animate-shimmer-sweep z-0 pointer-events-none skew-x-[-20deg]" />
-                              </div>
-                            ) : (
-                              <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0 bg-neutral-900/50 border border-white/5 group-hover:border-rose-500/50 transition-all duration-300">
-                                <div className="absolute inset-0 bg-gradient-to-br from-rose-500/0 to-rose-500/0 group-hover:from-rose-500/10 transition-all duration-500 z-0"></div>
-                              </div>
-                            )}
-                            <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 relative z-10 select-none">
-                              <div className="w-full h-full rounded-xl overflow-hidden relative border border-white/10 group-hover:border-rose-500/30 transition-colors">
-                                {demo.coverUrl ? (
-                                   <img src={demo.coverUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={demo.title} />
+                          {(activeBrandColors) => (
+                            <motion.div
+                              variants={{
+                                hidden: { opacity: 0, y: 15 },
+                                show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
+                              }}
+                            >
+                              <Link 
+                                to={activeListTab === 'released' ? getArtistLink(`/playlist/released?song=${demo.slug || demo.id}`) : getArtistLink(`/song/${demo.slug || demo.id}`)} 
+                                onClick={(e) => {
+                                  if (demo.linkType === 'indirect') {
+                                    e.preventDefault();
+                                    const indirectLinks = [
+                                      demo.linkSpotify, 
+                                      demo.linkApple, 
+                                      demo.linkZing, 
+                                      demo.linkYoutubeMusic, 
+                                      demo.linkYoutube
+                                    ].filter(l => !!l);
+                                    
+                                    if (indirectLinks.length === 1 && indirectLinks[0]) {
+                                       window.open(indirectLinks[0], '_blank');
+                                    } else {
+                                       setActiveBioSong(demo);
+                                    }
+                                  }
+                                }}
+                                className={`group relative rounded-2xl p-3 sm:p-4 transition-all duration-500 flex items-center gap-3 w-full ${
+                                  demo.isBrand 
+                                    ? 'hover:border-white/10' 
+                                    : demo.achievements?.length 
+                                      ? 'hover:shadow-[0_0_20px_rgba(251,191,36,0.25)]' 
+                                      : 'hover:shadow-[0_0_30px_-5px_rgba(244,63,94,0.3)]'
+                                }`}
+                                style={demo.isBrand ? {
+                                  boxShadow: `0 10px 30px -10px ${activeBrandColors.primary}30`
+                                } as React.CSSProperties : undefined}
+                              >
+                                {demo.isBrand ? (
+                                  <div 
+                                    className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0 bg-neutral-950/65 border transition-all duration-500"
+                                    style={{
+                                      borderColor: `${activeBrandColors.primary}20`,
+                                    }}
+                                  >
+                                    {demo.brandLogoUrl && (
+                                      <>
+                                        <img 
+                                          src={demo.brandLogoUrl} 
+                                          className="absolute inset-0 w-full h-full object-cover opacity-[0.10] blur-2xl scale-150 transition-transform duration-1000 ease-out group-hover:scale-[1.75]" 
+                                          alt="" 
+                                          referrerPolicy="no-referrer"
+                                        />
+                                        <img 
+                                          src={demo.brandLogoUrl} 
+                                          className="absolute -right-4 -bottom-4 w-28 h-28 opacity-[0.06] blur-[2px] rotate-12 scale-100 transition-all duration-1000 ease-out group-hover:scale-110 group-hover:opacity-12 group-hover:rotate-6" 
+                                          alt="" 
+                                          referrerPolicy="no-referrer"
+                                        />
+                                      </>
+                                    )}
+                                    <div 
+                                      className="absolute inset-0 transition-opacity duration-700 opacity-40 group-hover:opacity-80"
+                                      style={{
+                                        background: `radial-gradient(circle at bottom right, ${activeBrandColors.primary}20, transparent 65%)`
+                                      }}
+                                    />
+                                  </div>
+                                ) : demo.achievements && demo.achievements.length > 0 ? (
+                                  <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0">
+                                    <div className="absolute inset-[-50%] bg-[conic-gradient(from_0deg,transparent_0_280deg,theme(colors.amber.500)_360deg)] animate-rotate-border z-0 opacity-80" />
+                                    <div className="absolute inset-[1px] rounded-[15px] bg-neutral-900/80 backdrop-blur-md z-0" />
+                                    <div className="absolute inset-[1px] rounded-[15px] bg-gradient-to-br from-amber-950/30 to-transparent z-0" />
+                                    <div className="absolute inset-[1px] rounded-[15px] bg-gradient-to-r from-transparent via-amber-500/10 to-transparent -translate-x-full animate-shimmer-sweep z-0 pointer-events-none skew-x-[-20deg]" />
+                                  </div>
                                 ) : (
-                                   <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-neutral-600 group-hover:text-rose-500 transition-colors">
-                                      <Disc3 className="w-6 h-6 sm:w-8 sm:h-8" />
-                                   </div>
+                                  <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0 bg-neutral-900/50 border border-white/5 group-hover:border-rose-500/50 transition-all duration-300">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-rose-500/0 to-rose-500/0 group-hover:from-rose-500/10 transition-all duration-500 z-0"></div>
+                                  </div>
                                 )}
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                  <div className="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center scale-75 group-hover:scale-100 transition-transform shadow-lg">
-                                    <Play className="w-3 h-3 text-white ml-0.5" fill="currentColor" />
+                                <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 relative z-10 select-none">
+                                  <div className="w-full h-full rounded-xl overflow-hidden relative border border-white/10 group-hover:border-rose-500/30 transition-colors">
+                                    <AnimatePresence mode="wait">
+                                      {demo.isBrand && showBrandState && demo.brandLogoUrl ? (
+                                        <motion.div
+                                          key="brand-logo"
+                                          initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
+                                          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                                          exit={{ opacity: 0, scale: 0.8, rotate: 5 }}
+                                          transition={{ duration: 0.45, ease: "easeOut" }}
+                                          className="absolute inset-0 w-full h-full flex items-center justify-center p-2 bg-neutral-900/40 backdrop-blur-[2px]"
+                                        >
+                                          <img src={demo.brandLogoUrl} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" alt={demo.brandName} referrerPolicy="no-referrer" />
+                                        </motion.div>
+                                      ) : (
+                                        <motion.div
+                                          key="normal-cover"
+                                          initial={{ opacity: 0, scale: 0.95 }}
+                                          animate={{ opacity: 1, scale: 1 }}
+                                          exit={{ opacity: 0, scale: 0.95 }}
+                                          transition={{ duration: 0.45, ease: "easeOut" }}
+                                          className="absolute inset-0 w-full h-full"
+                                        >
+                                          {demo.coverUrl ? (
+                                             <img src={demo.coverUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={demo.title} />
+                                          ) : (
+                                             <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-neutral-600 group-hover:text-rose-500 transition-colors">
+                                                <Disc3 className="w-6 h-6 sm:w-8 sm:h-8" />
+                                             </div>
+                                          )}
+                                        </motion.div>
+                                      )}
+                                    </AnimatePresence>
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
+                                      <div className="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center scale-75 group-hover:scale-100 transition-transform shadow-lg">
+                                        <Play className="w-3 h-3 text-white ml-0.5" fill="currentColor" />
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div className={`flex-1 min-w-0 relative z-10 flex flex-col justify-center ${demo.achievements?.length ? 'pr-1.5' : (demo.isReleased ? 'pr-12' : 'pr-4')}`}>
-                              <h3 className={`font-bold transition-colors ${demo.achievements?.length ? 'text-[11px] sm:text-[13px] group-hover:text-amber-400 leading-tight whitespace-normal break-words' : 'text-base sm:text-lg group-hover:text-rose-400 truncate'}`}>
-                                <HoverTranslate text={demo.title} format={true} />
-                              </h3>
-                              <p className={`text-neutral-400 mt-1 ${demo.achievements?.length ? 'text-[9px] leading-tight whitespace-normal break-words' : 'text-xs truncate'}`}>
-                                {formatText(demo.singer || demo.author || data?.artistName || 'Nghệ sĩ', true)}
-                              </p>
-                            </div>
-                            {demo.achievements && demo.achievements.length > 0 && (
-                              <div className="relative z-10 shrink-0 w-[120px] sm:w-[150px] pr-2 sm:pr-3">
-                                 <AchievementCycle achievements={demo.achievements} />
-                              </div>
-                            )}
-                            {demo.isReleased ? (
-                              <>
-                                <span className="absolute top-0 right-0 translate-x-[20%] -translate-y-[10%] rotate-[15deg] bg-emerald-600 text-[7px] font-black text-white px-1.5 py-0.5 rounded shadow-[0_0_10px_rgba(5,150,105,0.6)] tracking-widest border border-emerald-400/50 select-none flex-shrink-0 z-20 animate-released-wiggle">
-                                  {t.lReleasedMark || 'RELEASED'}
-                                </span>
-                                <button
-                                  key="share-btn"
-                                  onClick={async (e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    let url = window.location.origin + getArtistLink(`/song/${demo.slug || demo.id}`);
-                                    url = formatShareUrl(url);
-                                    await copyToClipboard(url);
-                                    setToast('Đã copy link bài hát!');
-                                    setTimeout(() => setToast(''), 3000);
-                                  }}
-                                  className="absolute bottom-3 right-3 z-20 bg-black/40 hover:bg-black/70 text-white/80 hover:text-white p-2 rounded-full border border-white/10 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-95 group-hover:scale-100 active:scale-90"
-                                  title="Chia sẻ bài hát"
-                                >
-                                  <Share2 className="w-3.5 h-3.5 stroke-[1.5]" />
-                                </button>
-                              </>
-                            ) : (
-                              <>
-                                <span className={`absolute top-2 right-2 rotate-[15deg] ${demo.linkType === 'indirect' ? 'bg-indigo-600 shadow-[0_0_10px_rgba(79,70,229,0.8)]' : 'bg-rose-600 shadow-[0_0_10px_rgba(225,29,72,0.8)]'} text-[8px] font-black text-white px-1.5 py-0.5 rounded animate-[pulse_2s_ease-in-out_infinite] tracking-widest border border-white/20 select-none flex-shrink-0 z-20`}>
-                                  {demo.linkType === 'indirect' ? 'Landing Page' : (t.lDemoMark || 'DEMO')}
-                                </span>
-                              </>
-                            )}
-                            {(demo.password || data?.globalPassword) && !demo.isReleased && demo.linkType !== 'indirect' && (
-                              <div className="absolute bottom-3 right-3 z-20 bg-black/60 p-1.5 rounded-full border border-white/10 shadow-md">
-                                 <Lock className="w-3.5 h-3.5 text-yellow-500" />
-                              </div>
-                            )}
-                            {demo.releaseYear && (
-                              <div className="absolute bottom-0 left-0 bg-gradient-to-tr from-rose-950/90 via-stone-900/90 to-amber-950/85 backdrop-blur-[4px] text-[8px] sm:text-[9.5px] font-mono font-black text-rose-200 px-3 py-0.5 rounded-tr-xl rounded-bl-[15px] border-t border-r border-rose-500/30 z-20 transition-all duration-300 group-hover:from-rose-600 group-hover:to-pink-600 group-hover:text-white group-hover:border-rose-400/50 shadow-[0_2px_12px_rgba(244,63,94,0.15)] group-hover:shadow-[0_4px_20px_rgba(244,63,94,0.4)] pointer-events-none select-none tracking-widest flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse group-hover:bg-white shrink-0"></span>
-                                {demo.releaseYear}
-                              </div>
-                            )}
-                          </Link>
-                        </motion.div>
+                                <div className={`flex-1 min-w-0 relative z-10 flex flex-col justify-center h-full overflow-hidden ${demo.achievements?.length ? 'pr-1.5' : (demo.isReleased ? 'pr-12' : 'pr-4')}`}>
+                                  <AnimatePresence mode="wait">
+                                    {demo.isBrand && showBrandState && demo.brandName ? (
+                                      <motion.div
+                                        key="brand-text"
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: 10 }}
+                                        transition={{ duration: 0.4, ease: "easeOut" }}
+                                        className="flex flex-col justify-center w-full"
+                                      >
+                                        <h3 
+                                          className="font-bold text-base sm:text-lg truncate filter drop-shadow-[0_0_8px_rgba(255,255,255,0.05)]"
+                                        >
+                                          <HoverTranslate text="Đối Tác: " style={{ color: activeBrandColors.secondary }} />
+                                          <HoverTranslate text={demo.brandName} style={{ color: activeBrandColors.primary }} />
+                                        </h3>
+                                        <p className="text-neutral-400 font-medium text-xs mt-1 truncate tracking-wider flex items-center gap-1.5">
+                                          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: activeBrandColors.secondary }}></span>
+                                          Nhạc Thương Hiệu
+                                        </p>
+                                      </motion.div>
+                                    ) : (
+                                      <motion.div
+                                        key="normal-text"
+                                        initial={{ opacity: 0, x: 10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -10 }}
+                                        transition={{ duration: 0.4, ease: "easeOut" }}
+                                        className="flex flex-col justify-center w-full"
+                                      >
+                                        <h3 className={`font-bold transition-colors ${demo.achievements?.length ? 'text-[11px] sm:text-[13px] group-hover:text-amber-400 leading-tight whitespace-normal break-words' : 'text-base sm:text-lg group-hover:text-rose-400 truncate'}`}>
+                                          <HoverTranslate text={demo.title} format={true} />
+                                        </h3>
+                                        <p className={`text-neutral-400 mt-1 ${demo.achievements?.length ? 'text-[9px] leading-tight whitespace-normal break-words' : 'text-xs truncate'}`}>
+                                          {formatText(demo.singer || demo.author || data?.artistName || 'Nghệ sĩ', true)}
+                                        </p>
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
+                                {demo.achievements && demo.achievements.length > 0 && (
+                                  <div className="relative z-10 shrink-0 w-[120px] sm:w-[150px] pr-2 sm:pr-3">
+                                     <AchievementCycle achievements={demo.achievements} />
+                                  </div>
+                                )}
+                                {demo.isReleased ? (
+                                  <>
+                                    <span className="absolute top-0 right-0 translate-x-[20%] -translate-y-[10%] rotate-[15deg] bg-emerald-600 text-[7px] font-black text-white px-1.5 py-0.5 rounded shadow-[0_0_10px_rgba(5,150,105,0.6)] tracking-widest border border-emerald-400/50 select-none flex-shrink-0 z-20 animate-released-wiggle">
+                                      {t.lReleasedMark || 'RELEASED'}
+                                      </span>
+                                    <button
+                                      key="share-btn"
+                                      onClick={async (e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        let url = window.location.origin + getArtistLink(`/song/${demo.slug || demo.id}`);
+                                        url = formatShareUrl(url);
+                                        await copyToClipboard(url);
+                                        setToast('Đã copy link bài hát!');
+                                        setTimeout(() => setToast(''), 3000);
+                                      }}
+                                      className="absolute bottom-3 right-3 z-20 bg-black/40 hover:bg-black/70 text-white/80 hover:text-white p-2 rounded-full border border-white/10 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-95 group-hover:scale-100 active:scale-90"
+                                      title="Chia sẻ bài hát"
+                                    >
+                                      <Share2 className="w-3.5 h-3.5 stroke-[1.5]" />
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <span className={`absolute top-2 right-2 rotate-[15deg] ${demo.linkType === 'indirect' ? 'bg-indigo-600 shadow-[0_0_10px_rgba(79,70,229,0.8)]' : 'bg-rose-600 shadow-[0_0_10px_rgba(225,29,72,0.8)]'} text-[8px] font-black text-white px-1.5 py-0.5 rounded animate-[pulse_2s_ease-in-out_infinite] tracking-widest border border-white/20 select-none flex-shrink-0 z-20`}>
+                                      {demo.linkType === 'indirect' ? 'Landing Page' : (t.lDemoMark || 'DEMO')}
+                                      </span>
+                                  </>
+                                )}
+                                {(demo.password || data?.globalPassword) && !demo.isReleased && demo.linkType !== 'indirect' && (
+                                  <div className="absolute bottom-3 right-3 z-20 bg-black/60 p-1.5 rounded-full border border-white/10 shadow-md">
+                                     <Lock className="w-3.5 h-3.5 text-yellow-500" />
+                                  </div>
+                                )}
+                                {demo.releaseYear && (
+                                  <div className="absolute bottom-0 left-0 bg-gradient-to-tr from-rose-950/90 via-stone-900/90 to-amber-950/85 backdrop-blur-[4px] text-[8px] sm:text-[9.5px] font-mono font-black text-rose-200 px-3 py-0.5 rounded-tr-xl rounded-bl-[15px] border-t border-r border-rose-500/30 z-20 transition-all duration-300 group-hover:from-rose-600 group-hover:to-pink-600 group-hover:text-white group-hover:border-rose-400/50 shadow-[0_2px_12px_rgba(244,63,94,0.15)] group-hover:shadow-[0_4px_20px_rgba(244,63,94,0.4)] pointer-events-none select-none tracking-widest flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse group-hover:bg-white shrink-0"></span>
+                                    {demo.releaseYear}
+                                  </div>
+                                )}
+                              </Link>
+                            </motion.div>
+                          )}
+                        </BrandLogoColorExtractor>
                       ))
                     )}
                   </motion.div>
@@ -3474,6 +3775,8 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
   const [triedAbsolute, setTriedAbsolute] = useState(false);
   const [triedRandom, setTriedRandom] = useState(false);
   const [systemArtists, setSystemArtists] = useState<any[]>([]);
+  const [showBrandBrief, setShowBrandBrief] = useState(false);
+  const [showBrandVideos, setShowBrandVideos] = useState(false);
 
   useEffect(() => {
     fetch('/api/public/artists')
@@ -3591,7 +3894,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
                     lower.includes("drop") ||
                     lower.includes("ending") ||
                     lower.includes("coda") ||
-                    lower.includes("rap");
+                    lower.includes("rap") || lower.includes("intro") || lower.includes("outro");
 
       if (isAnn) {
         let annotation = trimmed;
@@ -3605,6 +3908,8 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
         else if (lower.includes("ending")) annotation = "Ending";
         else if (lower.includes("coda")) annotation = "Coda";
         else if (lower.includes("rap")) annotation = "Rap";
+        else if (lower.includes("intro")) annotation = "Intro";
+        else if (lower.includes("outro")) annotation = "Outro";
         
         cleanedLines.push(`[${annotation}]`);
         skipBlank = true;
@@ -3661,7 +3966,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
                     lower.includes("drop") ||
                     lower.includes("ending") ||
                     lower.includes("coda") ||
-                    lower.includes("rap");
+                    lower.includes("rap") || lower.includes("intro") || lower.includes("outro");
                     
       if (isAnn) {
         cleanedLines.push({ text: textLine, origIdx: i });
@@ -3730,6 +4035,16 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
             badgeClass = isLight 
               ? "bg-teal-50 text-teal-900 border border-teal-300 font-bold" 
               : "bg-white/10 text-white border border-white/65 font-black backdrop-blur-sm shadow-sm";
+          } else if (lower.includes("intro")) {
+            annotation = "Intro";
+            badgeClass = isLight 
+               ? "bg-slate-50 text-slate-900 border border-slate-300 font-bold" 
+               : "bg-white/10 text-white border border-white/65 font-black backdrop-blur-sm shadow-sm";
+          } else if (lower.includes("outro")) {
+            annotation = "Outro";
+            badgeClass = isLight 
+               ? "bg-stone-50 text-stone-900 border border-stone-300 font-bold" 
+               : "bg-white/10 text-white border border-white/65 font-black backdrop-blur-sm shadow-sm";
           } else if (lower.includes("rap")) {
             annotation = "Rap";
             badgeClass = isLight 
@@ -3743,6 +4058,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
                 <span className={`text-[10px] md:text-sm font-black tracking-widest uppercase px-3 py-1 rounded-full ${badgeClass}`}>
                   {annotation}
                 </span>
+                
                 <div className={`flex-1 border-t border-dashed ${isLight ? 'border-neutral-400/20' : 'border-neutral-500/25'} ml-3 opacity-30`} />
               </div>
             );
@@ -4419,7 +4735,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
             className="text-xl md:text-2xl font-black text-center mb-1 drop-shadow-sm flex items-center justify-center relative z-30"
             style={{ color: customConfig?.titleColor || undefined }}
           >
-            <span className="relative inline-block pr-10 z-40">
+            <span className="relative inline-block pr-10 z-40"></span>
               <HoverTranslate text={demo.title} format={true} />
               {demo.linkType === 'indirect' ? (
                <div className="absolute top-0 right-0 translate-x-[15%] -translate-y-[10%] rotate-[12deg] bg-indigo-600 text-[9px] font-black text-white px-1.5 py-0.5 rounded shadow-[0_0_15px_rgba(79,70,229,0.8)] animate-[pulse_2s_ease-in-out_infinite] tracking-widest border border-white/20 select-none z-50 whitespace-nowrap">
@@ -4434,7 +4750,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
                  {t.lDemoMark || 'DEMO'}
                </div>
               )}
-            </span>
+            
           </h1>
           <p 
             className="text-lg md:text-xl font-medium text-center mb-0"
@@ -4482,6 +4798,28 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
           transition={{ duration: 0.8, delay: 0.2 }}
           className={`flex-1 w-full relative z-[150] ${forceMobile ? 'pb-32 mt-8' : forcePC ? 'pb-0 mt-0' : 'pb-32 md:pb-0 mt-8 md:mt-0'}`}
         >
+          {demo?.isBrand && (demo?.brandBrief || (demo?.brandReferenceVideos && demo.brandReferenceVideos.length > 0)) && (
+            <div className="flex flex-wrap items-center gap-2 mb-4 ml-4 pr-4">
+              {demo?.brandBrief && (
+                <button 
+                  onClick={() => setShowBrandBrief(true)} 
+                  className="px-3.5 py-1.5 rounded-full bg-indigo-500/80 text-white hover:bg-indigo-600 flex items-center justify-center transition-all drop-shadow-md cursor-pointer text-xs font-bold whitespace-nowrap shadow-sm hover:scale-105 active:scale-95" 
+                  title="Brief khách hàng"
+                >
+                  <FileText className="w-3.5 h-3.5 mr-1.5" /> Brief
+                </button>
+              )}
+              {demo?.brandReferenceVideos && demo.brandReferenceVideos.length > 0 && (
+                <button 
+                  onClick={() => setShowBrandVideos(true)} 
+                  className="px-3.5 py-1.5 rounded-full bg-rose-500/80 text-white hover:bg-rose-600 flex items-center justify-center transition-all drop-shadow-md cursor-pointer text-xs font-bold whitespace-nowrap shadow-sm hover:scale-105 active:scale-95" 
+                  title="Video Tham Khảo"
+                >
+                  <Youtube className="w-3.5 h-3.5 mr-1.5" /> Tham Khảo
+                </button>
+              )}
+            </div>
+          )}
           <div className={`flex items-center justify-between mb-4 ml-4 pr-4 ${forceMobile ? 'mt-0' : 'mt-0 md:mt-0'} ${templateType === '6' ? '' : 'opacity-50'}`}>
             <h3 
               className={`text-[11px] md:text-sm uppercase tracking-widest ${templateType === '6' ? 'font-black text-[#fef08a]' : 'font-bold'}`}
@@ -4537,6 +4875,39 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-neutral-900/90 backdrop-blur-md text-white border border-white/20 px-5 py-3 rounded-2xl shadow-2xl z-[500] flex items-center gap-2 font-mono text-xs animate-bounce">
            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
            {toast}
+        </div>
+      )}
+
+      {/* Brand Popups */}
+      {showBrandBrief && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[1000] flex items-center justify-center p-4" onClick={() => setShowBrandBrief(false)}>
+          <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl max-w-lg w-full text-white shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-lg flex items-center gap-2"><FileText className="w-5 h-5 text-indigo-400" /> Brief khách hàng</h3>
+              <button onClick={() => setShowBrandBrief(false)} className="p-1 hover:bg-white/10 rounded-lg"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="text-sm text-stone-200 whitespace-pre-wrap leading-relaxed max-h-[60vh] overflow-y-auto custom-scrollbar">{demo?.brandBrief}</div>
+          </div>
+        </div>
+      )}
+      {showBrandVideos && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[1000] flex items-center justify-center p-4" onClick={() => setShowBrandVideos(false)}>
+          <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl max-w-2xl w-full text-white shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-lg flex items-center gap-2"><Youtube className="w-5 h-5 text-rose-400" /> Video Tham Khảo</h3>
+              <button onClick={() => setShowBrandVideos(false)} className="p-1 hover:bg-white/10 rounded-lg"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="grid grid-cols-1 gap-4 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">
+              {demo?.brandReferenceVideos?.map((vid, idx) => {
+                const embedUrl = vid.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/");
+                return (
+                  <div key={idx} className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 border border-white/10">
+                    <iframe src={embedUrl} className="w-full h-full" allowFullScreen></iframe>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -4858,7 +5229,7 @@ function AdminTemplatesSettings({ isPCPreviewMode, setIsPCPreviewMode }: { isPCP
             </div>
           )}
           </div>
-        )})}
+        ); })}
       </div>
     </div>
   );
@@ -5222,13 +5593,37 @@ function AdminDashboard() {
   const [data, setData] = useState<AppData | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState<'demos'|'playlists'|'profile'|'socials'|'security'|'templates'|'database'|'reposts'|'tickets'>('demos');
-  const [demosSubTab, setDemosSubTab] = useState<'released' | 'demos' | 'drafts' | 'playlists' | 'trash' | 'landing_pages'>('released');
+  const [demosSubTab, setDemosSubTab] = useState<'released' | 'demos' | 'drafts' | 'playlists' | 'trash' | 'landing_pages' | 'brands'>('released');
   
   // Chorus Repost & Ticket States
   const [otherSongs, setOtherSongs] = useState<any[]>([]);
   const [ticketsList, setTicketsList] = useState<any[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
   const [chatMessageText, setChatMessageText] = useState('');
+  
+  // General Feedback Popup State
+  const [showCreateFeedbackModal, setShowCreateFeedbackModal] = useState(false);
+  const [feedbackTitle, setFeedbackTitle] = useState('');
+  const [feedbackDesc, setFeedbackDesc] = useState('');
+  const [feedbackType, setFeedbackType] = useState<'bug' | 'feature' | 'account'>('bug');
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+
+  const getTicketTypeStyle = (type: string) => {
+    switch (type) {
+      case 'remove':
+        return { label: 'Yêu cầu gỡ', className: 'bg-red-50 text-red-600 border border-red-100' };
+      case 'edit':
+        return { label: 'Yêu cầu sửa', className: 'bg-amber-50 text-amber-600 border border-amber-100' };
+      case 'bug':
+        return { label: 'Báo Lỗi', className: 'bg-rose-50 text-rose-600 border border-rose-100' };
+      case 'feature':
+        return { label: 'Góp ý tính năng', className: 'bg-purple-50 text-purple-650 border border-purple-100' };
+      case 'account':
+        return { label: 'Báo cáo tài khoản', className: 'bg-slate-100 text-slate-700 border border-slate-200' };
+      default:
+        return { label: type || 'Khác', className: 'bg-stone-50 text-stone-600 border border-stone-150' };
+    }
+  };
   
   // Report Popup State
   const [reportSong, setReportSong] = useState<any | null>(null);
@@ -5246,6 +5641,8 @@ function AdminDashboard() {
   const [externalSuccess, setExternalSuccess] = useState('');
   
   const [systemArtists, setSystemArtists] = useState<any[]>([]);
+  const [showBrandBrief, setShowBrandBrief] = useState(false);
+  const [showBrandVideos, setShowBrandVideos] = useState(false);
   const [systemFavicon, setSystemFavicon] = useState<string>('');
 
   useEffect(() => {
@@ -5406,6 +5803,47 @@ function AdminDashboard() {
       }
     } catch (e: any) {
       setToast(`Lỗi: ${e.message}`);
+    }
+  };
+
+  const handleCreateFeedback = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feedbackTitle.trim() || !feedbackDesc.trim()) {
+      setToast('Vui lòng điền đầy đủ tiêu đề và mô tả!');
+      return;
+    }
+    setIsSubmittingFeedback(true);
+    try {
+      const res = await fetch('/api/admin/tickets/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-artist-extension': getArtistExtensionFromUrl(),
+          'Authorization': `Bearer ${getAdminToken() || ''}`
+        },
+        body: JSON.stringify({
+          songId: 'feedback',
+          songTitle: feedbackTitle.trim(),
+          sourceArtist: 'system',
+          type: feedbackType,
+          description: feedbackDesc.trim()
+        })
+      });
+      if (res.ok) {
+        setToast("Đã gửi feedback thành công!");
+        setShowCreateFeedbackModal(false);
+        setFeedbackTitle('');
+        setFeedbackDesc('');
+        setFeedbackType('bug');
+        fetchTickets();
+      } else {
+        const err = await res.json();
+        setToast(`Lỗi: ${err.error || 'Gửi feedback thất bại'}`);
+      }
+    } catch (e: any) {
+      setToast(`Lỗi: ${e.message}`);
+    } finally {
+      setIsSubmittingFeedback(false);
     }
   };
 
@@ -5823,7 +6261,7 @@ function AdminDashboard() {
     loadData();
   };
 
-  const handleCancelRequest = async (type: 'name' | 'username') => {
+  const handleCancelRequest = async (type: 'name' | 'username' | 'extension') => {
     if (!window.confirm('Bạn có chắc muốn hủy yêu cầu này?')) return;
     try {
       // Optimistically clear the pending status so the inputs unlock immediately
@@ -5832,7 +6270,8 @@ function AdminDashboard() {
         return {
           ...prev,
           pendingNameChange: type === 'name' ? undefined : prev.pendingNameChange,
-          pendingUsernameChange: type === 'username' ? undefined : prev.pendingUsernameChange
+          pendingUsernameChange: type === 'username' ? undefined : prev.pendingUsernameChange,
+          pendingExtensionChange: type === 'extension' ? undefined : prev.pendingExtensionChange
         };
       });
 
@@ -6110,9 +6549,7 @@ function AdminDashboard() {
               <div className="relative flex items-center justify-center">
                 <Repeat className="w-5 h-5" />
                 {effectiveSidebarCollapsed && otherSongs.length > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
-                    {otherSongs.length}
-                  </span>
+                  <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">{otherSongs.length}</span>
                 )}
               </div>
               {!effectiveSidebarCollapsed && <span>Đăng lại ({otherSongs.length})</span>}
@@ -6129,9 +6566,7 @@ function AdminDashboard() {
               <MessageSquare className="w-5 h-5" /> 
               {!effectiveSidebarCollapsed && <span className="flex items-center gap-2">Hộp Thư {bellCount > 0 && <Bell className="w-3.5 h-3.5 text-red-400 animate-bounce" />}</span>}
               {bellCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-md animate-pulse">
-                  {bellCount}
-                </span>
+                <span className="absolute top-1.5 right-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-md animate-pulse">{bellCount}</span>
               )}
             </button>
           </div>
@@ -6176,8 +6611,8 @@ function AdminDashboard() {
                     <span>Ra rồi</span>
                     <span className="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded text-xs">
                       {data.demos?.filter(d => d.isReleased && !d.deleted && !d.isDraft && d.linkType !== 'indirect')
-                        .filter(d => !adminSearchQuery.trim() || d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}
-                    </span>
+                        .filter(d => !adminSearchQuery.trim() || d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}</span>
+                    
                   </button>
                   <button
                     type="button"
@@ -6192,8 +6627,8 @@ function AdminDashboard() {
                     <span>Đề Mô</span>
                     <span className="bg-rose-50 text-rose-700 px-1.5 py-0.5 rounded text-xs">
                       {data.demos?.filter(d => !d.isReleased && !d.deleted && !d.isDraft && d.linkType !== 'indirect')
-                        .filter(d => !adminSearchQuery.trim() || d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}
-                    </span>
+                        .filter(d => !adminSearchQuery.trim() || d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}</span>
+                    
                   </button>
                   <button
                     type="button"
@@ -6208,8 +6643,8 @@ function AdminDashboard() {
                     <span>Nháp</span>
                     <span className="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded text-xs">
                       {data.demos?.filter(d => d.isDraft && !d.deleted && d.linkType !== 'indirect')
-                        .filter(d => !adminSearchQuery.trim() || d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}
-                    </span>
+                        .filter(d => !adminSearchQuery.trim() || d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}</span>
+                    
                   </button>
                   <button
                     type="button"
@@ -6224,8 +6659,24 @@ function AdminDashboard() {
                     <span>Landing Page</span>
                     <span className="bg-pink-50 text-pink-700 px-1.5 py-0.5 rounded text-xs">
                       {data.demos?.filter(d => d.linkType === 'indirect' && !d.deleted)
-                        .filter(d => !adminSearchQuery.trim() || d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}
-                    </span>
+                        .filter(d => !adminSearchQuery.trim() || d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}</span>
+                    
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDemosSubTab('brands')}
+                    className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all relative ${
+                      demosSubTab === 'brands'
+                        ? 'bg-white text-stone-900 shadow-sm'
+                        : 'text-stone-500 hover:text-stone-900'
+                    }`}
+                  >
+                    <BadgeCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-500" />
+                    <span>Nhạc Thương Hiệu</span>
+                    <span className="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-xs">
+                      {data.demos?.filter(d => d.isBrand && !d.deleted)
+                        .filter(d => !adminSearchQuery.trim() || d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}</span>
+                    
                   </button>
                   <button
                     type="button"
@@ -6240,8 +6691,8 @@ function AdminDashboard() {
                     <span>Playlist</span>
                     <span className="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded text-xs">
                       {(data.playlists || []).filter(p => !p.deleted)
-                        .filter(p => !adminSearchQuery.trim() || p.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}
-                    </span>
+                        .filter(p => !adminSearchQuery.trim() || p.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}</span>
+                    
                   </button>
                   <button
                     type="button"
@@ -6256,8 +6707,8 @@ function AdminDashboard() {
                     <span>Thùng rác</span>
                     <span className="bg-stone-200 text-stone-700 px-1.5 py-0.5 rounded text-xs">
                       {((data.demos?.filter(d => d.deleted).filter(d => !adminSearchQuery.trim() || d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0) + 
-                       ((data.playlists || []).filter(p => p.deleted).filter(p => !adminSearchQuery.trim() || p.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0))}
-                    </span>
+                       ((data.playlists || []).filter(p => p.deleted).filter(p => !adminSearchQuery.trim() || p.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0))}</span>
+                    
                   </button>
                 </div>
 
@@ -6282,9 +6733,9 @@ function AdminDashboard() {
                             className="w-full bg-stone-50 border border-stone-200 rounded-xl pl-9 pr-8 py-2 text-xs text-stone-800 focus:outline-none focus:ring-1 focus:ring-stone-400 placeholder:text-stone-400 font-medium"
                             autoFocus
                           />
-                          <span className="absolute left-3 text-stone-400">
+                          <span className="absolute left-3 text-stone-400"></span>
                             <Search className="w-3.5 h-3.5" />
-                          </span>
+                          
                           {adminSearchQuery && (
                             <button
                               onClick={() => setAdminSearchQuery('')}
@@ -6568,13 +7019,13 @@ function AdminDashboard() {
                               <div className="flex items-center flex-wrap gap-2 text-[10px] md:text-xs">
                                 {demo.status !== 'public' && (
                                   <span className="px-1.5 py-0.5 rounded font-semibold bg-stone-200 text-stone-600 text-[10px] flex items-center gap-1">
-                                    <EyeOff className="w-3 h-3" /> Ẩn
-                                  </span>
+                                    <EyeOff className="w-3 h-3" /> Ẩn</span>
+                                  
                                 )}
                                 {(demo.linkType === 'indirect' ? demo.password : (demo.password || (data?.globalPassword && !demo.isReleased))) ? (
                                   <span className="bg-stone-100 text-stone-700 px-1.5 py-0.5 border border-stone-200 rounded flex items-center gap-1 text-[10px] md:text-xs">
-                                    <Lock className="w-3 h-3 text-stone-500" /> <span className="font-mono">{demo.password || `Mật khẩu chung: ${data?.globalPassword}`}</span>
-                                  </span>
+                                    <Lock className="w-3 h-3 text-stone-500" /> <span className="font-mono">{demo.password || `Mật khẩu chung: ${data?.globalPassword}`}</span></span>
+                                  
                                 ) : null}
                               </div>
                             </div>
@@ -6606,6 +7057,105 @@ function AdminDashboard() {
                   );
                 })()}
 
+                {demosSubTab === 'brands' && (() => {
+                  let brandList = data.demos?.filter(d => d.isBrand && !d.deleted) || [];
+                  if (adminSearchQuery.trim()) {
+                    brandList = brandList.filter(d => d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase()));
+                  }
+                  if (brandList.length === 0) {
+                    return <div className="py-12 text-center text-stone-500 italic border border-stone-200 rounded-xl bg-stone-50">Chưa có bài hát thương hiệu nào. Hãy tạo mới và đánh dấu "Nhạc Thương Hiệu"!</div>;
+                  }
+                  return (
+                    <div className="flex flex-col gap-2">
+                      <div className="text-xs text-stone-400 mb-2 italic px-1 flex items-center gap-1">
+                        <GripVertical className="w-3.5 h-3.5 shrink-0" /> Kéo thả các dòng bài hát để sắp xếp thứ tự hiển thị ưu tiên ngoài trang chủ
+                      </div>
+                      {brandList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((demo, localIdx) => {
+                        const idx = (currentPage - 1) * itemsPerPage + localIdx;
+                        return (
+                        <div
+                          key={demo.id}
+                          draggable
+                          onDragStart={() => setDraggedItemIdx(idx)}
+                          onDragOver={(e) => e.preventDefault()}
+                          onDragEnd={() => setDraggedItemIdx(null)}
+                          onDragEnter={(e) => {
+                            e.preventDefault();
+                            if (draggedItemIdx === null || draggedItemIdx === idx) return;
+                            const items = [...brandList];
+                            const draggedItem = items.splice(draggedItemIdx, 1)[0];
+                            items.splice(idx, 0, draggedItem);
+                            setDraggedItemIdx(idx);
+
+                            const remaining = (data.demos || []).filter(d => !d.isBrand || d.deleted);
+                            const merged = [...items, ...remaining];
+                            setData({ ...data, demos: merged });
+
+                            fetch('/api/admin/reorder-demos', {
+                              method: 'POST',
+                              headers: {
+                                'x-artist-extension': getArtistExtensionFromUrl(),
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${getAdminToken() || ''}`
+                              },
+                              body: JSON.stringify({ demos: merged })
+                            }).catch(() => {});
+                          }}
+                          className="bg-white rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-stone-200 hover:border-stone-900 transition-colors shadow-sm group cursor-move"
+                        >
+                          <div className="flex items-center gap-4 min-w-0">
+                            <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-stone-100 shrink-0 overflow-hidden relative shadow-sm border border-stone-200 group-hover:shadow-md transition-shadow">
+                              {demo.brandLogoUrl ? (
+                                <img src={demo.brandLogoUrl} alt="" className="w-full h-full object-cover" />
+                              ) : demo.coverUrl ? (
+                                <img src={demo.coverUrl} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-stone-300">
+                                  <Music className="w-6 h-6" />
+                                </div>
+                              )}
+                              {demo.isDraft && (
+                                <div className="absolute inset-0 bg-stone-900/60 flex items-center justify-center">
+                                  <span className="text-[10px] font-bold text-white bg-black/50 px-1.5 py-0.5 rounded">NHÁP</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="font-bold text-stone-900 truncate md:text-lg flex items-center gap-1.5">
+                                {demo.title} {demo.password && !demo.isReleased && <Lock className="w-3 h-3 inline text-amber-500 mb-0.5" />}
+                              </h4>
+                              <p className="text-xs md:text-sm text-stone-500 truncate flex items-center gap-2">
+                                <span className="text-indigo-600 font-bold bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">Đối Tác: {demo.brandName || '---'}</span>
+                                {demo.singer}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0 self-end md:self-auto">
+                            <button type="button" onClick={() => handleShare(demo.slug || demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title="Chia sẻ Link">
+                               <Globe className="w-4 h-4" />
+                            </button>
+                            {demo.secretKey && (demo.linkType === 'indirect' ? demo.password : (demo.password || (data?.globalPassword && !demo.isReleased))) && (
+                              <button type="button" onClick={() => handleShareSecret(demo)} className="text-amber-600 hover:bg-amber-50 p-2 rounded-lg transition-colors animate-[fade-in_0.3s_ease-out]" title="Copy Secret Link">
+                                 <Lock className="w-4 h-4 text-amber-500" />
+                              </button>
+                            )}
+                            <button type="button" onClick={() => handleDuplicate(demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title="Nhân bản">
+                               <Copy className="w-4 h-4" />
+                            </button>
+                            <Link to={getAdminLink(`/edit/${demo.id}`)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title="Chỉnh sửa">
+                               <Edit3 className="w-4 h-4" />
+                            </Link>
+                            <button type="button" onClick={() => handleDeleteClick('song', demo.id, demo.title)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold text-lg" title="Xóa">
+                              <X className="w-4 h-4 text-red-500 stroke-[3]" />
+                            </button>
+                          </div>
+                        </div>
+                        );
+                      })}
+                      {renderPagination(brandList.length)}
+                    </div>
+                  );
+                })()}
                 {demosSubTab === 'drafts' && (() => {
                   let draftList = data.demos?.filter(d => d.isDraft && !d.deleted && d.linkType !== 'indirect') || [];
                   if (adminSearchQuery.trim()) {
@@ -7157,9 +7707,9 @@ function AdminDashboard() {
                       <label className="block text-sm font-extrabold text-stone-800 uppercase tracking-wider">
                         Cấu hình tên miền riêng (Custom Domain)
                       </label>
-                      <span className="flex items-center gap-1 bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest shadow-sm animate-pulse">
-                        <span className="text-xs">✨</span> VIP
-                      </span>
+                      <span className="flex items-center gap-1 bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest shadow-sm animate-pulse"></span>
+                        <span className="text-xs">✨ VIP</span>
+                      
                     </div>
                   </div>
                   
@@ -7582,9 +8132,17 @@ function AdminDashboard() {
 
           {activeTab === 'tickets' && (
             <div className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold text-stone-900">Hộp thư Ticket</h2>
-                <p className="text-sm text-stone-500 mt-1">Nơi trao đổi và giải quyết các vấn đề bản quyền, yêu cầu gỡ hoặc chỉnh sửa thông tin bài hát.</p>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-stone-900">Hộp thư Ticket</h2>
+                  <p className="text-sm text-stone-500 mt-1">Nơi trao đổi và giải quyết các vấn đề bản quyền, yêu cầu gỡ hoặc chỉnh sửa thông tin bài hát.</p>
+                </div>
+                <button
+                  onClick={() => setShowCreateFeedbackModal(true)}
+                  className="flex items-center gap-2 bg-stone-900 hover:bg-stone-800 text-white font-bold py-2.5 px-4 rounded-xl shadow-sm transition-all text-sm cursor-pointer self-start sm:self-auto hover:scale-105 active:scale-95"
+                >
+                  <Plus className="w-4 h-4" /> Tạo Feedback / Báo lỗi
+                </button>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-white border border-stone-150 rounded-2xl overflow-hidden shadow-sm h-[650px]">
@@ -7610,8 +8168,8 @@ function AdminDashboard() {
                             className={`w-full p-4 text-left transition-all flex flex-col gap-2 hover:bg-stone-100/50 ${isSelected ? 'bg-white border-l-4 border-stone-900' : ''}`}
                           >
                             <div className="flex items-center justify-between w-full">
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${ticket.type === 'remove' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>
-                                {ticket.type === 'remove' ? 'Yêu cầu gỡ' : 'Yêu cầu sửa'}
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${getTicketTypeStyle(ticket.type).className}`}>
+                                {getTicketTypeStyle(ticket.type).label}
                               </span>
                               <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${ticket.status === 'open' ? 'bg-emerald-50 text-emerald-600' : 'bg-stone-200 text-stone-600'}`}>
                                 {ticket.status === 'open' ? 'Đang xử lý' : 'Đã đóng'}
@@ -7655,12 +8213,12 @@ function AdminDashboard() {
                           <div>
                             <div className="flex items-center gap-2 flex-wrap">
                               <h3 className="font-bold text-stone-900">{selectedTicket.songTitle}</h3>
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${selectedTicket.type === 'remove' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
-                                {selectedTicket.type === 'remove' ? 'Yêu cầu gỡ' : 'Yêu cầu sửa'}
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${getTicketTypeStyle(selectedTicket.type).className}`}>
+                                {getTicketTypeStyle(selectedTicket.type).label}
                               </span>
                             </div>
                             <p className="text-xs text-stone-500 mt-1">
-                              <span className="hidden sm:inline">Người yêu cầu: </span><strong>{selectedTicket.reporter.name}</strong> <span className="hidden sm:inline">(u/ {selectedTicket.reporter.username})</span>
+                              <span className="hidden sm:inline">Người yêu cầu: <strong>{selectedTicket.reporter.name}</strong> <span className="hidden sm:inline">(u/ {selectedTicket.reporter.username})</span></span>
                             </p>
                           </div>
                         </div>
@@ -7685,7 +8243,7 @@ function AdminDashboard() {
                                 title="Đóng Ticket"
                               >
                                 <X className="w-4 h-4" />
-                                <span className="hidden sm:inline text-xs font-bold whitespace-nowrap">Từ Chối</span>
+                                <span className="hidden sm:inline text-xs font-bold whitespace-nowrap">Đóng Ticket</span>
                               </button>
                             </>
                           )}
@@ -7924,6 +8482,79 @@ function AdminDashboard() {
               </div>
             </div>
           )}
+
+          {/* Create Feedback Modal */}
+          {showCreateFeedbackModal && (
+            <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <form onSubmit={handleCreateFeedback} className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-150 animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+                <div className="flex items-center gap-3 text-stone-900 mb-4">
+                  <div className="p-2.5 bg-stone-100 rounded-xl">
+                    <MessageSquare className="w-6 h-6 text-stone-700" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-stone-900">Gửi Feedback / Báo lỗi</h3>
+                    <p className="text-xs text-stone-500">Chúng tôi luôn lắng nghe ý kiến đóng góp từ bạn</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">Loại feedback</label>
+                    <select
+                      value={feedbackType}
+                      onChange={(e: any) => setFeedbackType(e.target.value)}
+                      className="w-full text-sm border border-stone-300 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-transparent cursor-pointer"
+                    >
+                      <option value="bug">Báo Lỗi</option>
+                      <option value="feature">Góp ý tính năng</option>
+                      <option value="account">Báo Cáo Tài Khoản</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">Tiêu đề</label>
+                    <input
+                      type="text"
+                      value={feedbackTitle}
+                      onChange={(e) => setFeedbackTitle(e.target.value)}
+                      placeholder="Nhập tiêu đề ngắn gọn (ví dụ: Lỗi không phát được nhạc...)"
+                      required
+                      className="w-full text-sm border border-stone-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">Nội dung mô tả</label>
+                    <textarea
+                      value={feedbackDesc}
+                      onChange={(e) => setFeedbackDesc(e.target.value)}
+                      placeholder="Mô tả cụ thể và chi tiết ý kiến hoặc lỗi bạn gặp phải..."
+                      required
+                      rows={4}
+                      className="w-full text-sm border border-stone-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2 justify-end mt-6 pt-4 border-t border-stone-150">
+                  <button
+                    type="button"
+                    onClick={() => { setShowCreateFeedbackModal(false); setFeedbackTitle(''); setFeedbackDesc(''); setFeedbackType('bug'); }}
+                    className="px-4 py-2 border rounded-xl font-bold bg-white text-stone-600 hover:bg-stone-50 text-sm transition-all cursor-pointer"
+                  >
+                    Hủy bỏ
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingFeedback || !feedbackTitle.trim() || !feedbackDesc.trim()}
+                    className="px-4 py-2 rounded-xl font-bold bg-stone-900 text-white hover:bg-stone-800 disabled:opacity-50 disabled:pointer-events-none active:scale-95 text-sm transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    {isSubmittingFeedback ? 'Đang gửi...' : 'Gửi phản hồi'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
         </main>
       </div>
 
@@ -7965,7 +8596,7 @@ function AdminDashboard() {
               <span className="font-bold my-1.5 block px-3 py-2 bg-stone-50 border border-stone-100 rounded-xl text-stone-900 truncate">
                 "{deleteConfirm.name}"
               </span>
-              Mục này sẽ được chuyển vào <span className="font-bold text-stone-800">Thùng rác</span> tạm thời và tự động xóa vĩnh viễn sau 30 ngày.
+              Mục này sẽ được chuyển vào <span className="font-bold text-stone-800">Thùng rác tạm thời</span> và tự động xóa vĩnh viễn sau 30 ngày.
             </div>
             
             <div className="flex gap-2 justify-end">
@@ -8265,6 +8896,9 @@ function AdminCreateDemo() {
   };
 
   useEffect(() => {
+    if (location.state?.isBrand) {
+      setIsBrand(true);
+    }
     if (location.state?.repostFrom) {
       const sf = location.state.repostFrom;
       setTitle(sf.title || '');
@@ -8345,6 +8979,15 @@ function AdminCreateDemo() {
   const [bgUploadProgress, setBgUploadProgress] = useState(0);
   const [uploadedBgUrl, setUploadedBgUrl] = useState('');
   const [uploadedBgName, setUploadedBgName] = useState('');
+  const [isBrand, setIsBrand] = useState(false);
+  const [brandName, setBrandName] = useState("");
+  const [brandBrief, setBrandBrief] = useState("");
+  const [brandColor, setBrandColor] = useState("");
+  const [brandReferenceVideos, setBrandReferenceVideos] = useState<string[]>([]);
+  const [brandLogoUploadProgress, setBrandLogoUploadProgress] = useState(0);
+  const [uploadedBrandLogoUrl, setUploadedBrandLogoUrl] = useState("");
+  const [uploadedBrandLogoName, setUploadedBrandLogoName] = useState("");
+
 
   const getFileNameFromUrl = (url: string | undefined) => {
     if (!url) return '';
@@ -8469,6 +9112,7 @@ function AdminCreateDemo() {
   const [isDraggingCover, setIsDraggingCover] = useState(false);
   const [isDraggingAudio, setIsDraggingAudio] = useState(false);
   const [isDraggingBg, setIsDraggingBg] = useState(false);
+  const [isDraggingBrandLogo, setIsDraggingBrandLogo] = useState(false);
 
   const audioXhrRef = useRef<XMLHttpRequest | null>(null);
   const coverXhrRef = useRef<XMLHttpRequest | null>(null);
@@ -8482,7 +9126,7 @@ function AdminCreateDemo() {
     };
   }, []);
 
-  const cancelUpload = (type: 'audio' | 'cover' | 'background') => {
+  const cancelUpload = (type: 'audio' | 'cover' | 'background' | 'brandLogo') => {
     if (type === 'audio') {
       if (audioXhrRef.current) {
         audioXhrRef.current.abort();
@@ -8516,7 +9160,7 @@ function AdminCreateDemo() {
     }
   };
 
-  const uploadFileDirectly = (file: File, type: 'audio' | 'cover' | 'background') => {
+  const uploadFileDirectly = (file: File, type: 'audio' | 'cover' | 'background' | 'brandLogo') => {
     if (type === 'audio') {
       if (file.size > 100 * 1024 * 1024) {
         triggerNotification('Dung lượng file nhạc quá lớn (' + (file.size / (1024 * 1024)).toFixed(1) + 'MB). Vui lòng tải lên file nhạc dưới 100MB để đảm bảo tốc độ xử lý của server.', 'warning', 'Tệp quá lớn');
@@ -8644,7 +9288,7 @@ function AdminCreateDemo() {
     xhr.send(formData);
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'audio' | 'cover' | 'background') => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'audio' | 'cover' | 'background' | 'brandLogo') => {
     const file = e.target.files?.[0];
     if (!file) return;
     uploadFileDirectly(file, type);
@@ -8704,6 +9348,18 @@ function AdminCreateDemo() {
     formData.set('status', statusEl?.value || 'public');
     formData.set('isReleased', isReleased ? 'true' : 'false');
     formData.set('isDraft', isDraft ? 'true' : 'false');
+    formData.set('isBrand', isBrand ? 'true' : 'false');
+    formData.set('brandName', brandName);
+    formData.set('brandBrief', brandBrief);
+    formData.set('brandColor', brandColor);
+    formData.set('brandLogoUrl', uploadedBrandLogoUrl);
+    formData.set('brandReferenceVideos', JSON.stringify(brandReferenceVideos));
+    formData.set('isBrand', isBrand ? 'true' : 'false');
+    formData.set('brandName', brandName);
+    formData.set('brandBrief', brandBrief);
+    formData.set('brandColor', brandColor);
+    formData.set('brandLogoUrl', uploadedBrandLogoUrl);
+    formData.set('brandReferenceVideos', JSON.stringify(brandReferenceVideos));
     
     try {
         const res = await fetch('/api/demos', {
@@ -8753,10 +9409,10 @@ function AdminCreateDemo() {
             <button type="button" onClick={() => setLinkType('indirect')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${linkType === 'indirect' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}>Landing Page</button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6 create-demo-form">
             <div>
               <label className="block text-sm font-bold text-stone-700 mb-2">Tên bài hát <span className="text-red-500">*</span></label>
-              <input name="title" required value={title} onChange={e => setTitle(e.target.value)} placeholder="Nhập tên bài hát..." className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+              <input name="title" required value={title} onChange={e => setTitle(e.target.value)} placeholder="Nhập tên bài hát mới..." className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
             </div>
 
             <div>
@@ -8957,14 +9613,113 @@ function AdminCreateDemo() {
                 </div>
               </div>
 
+                <div className="bg-stone-50 p-6 rounded-2xl border border-stone-200 mt-4 mb-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <input type="checkbox" id="isBrandCreateDirect" checked={isBrand} onChange={e => setIsBrand(e.target.checked)} className="w-5 h-5 accent-indigo-500 rounded border-stone-300" />
+                    <label htmlFor="isBrandCreateDirect" className="font-bold text-stone-700 text-sm cursor-pointer">Là nhạc thương hiệu (Brand Music)</label>
+                  </div>
+                  {isBrand && (
+                    <div className="grid grid-cols-1 gap-4 pt-2">
+                      <div>
+                        <label className="block text-sm font-bold text-stone-700 mb-2">Tên đối tác <span className="text-red-500">*</span></label>
+                        <input type="text" value={brandName} onChange={e => setBrandName(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder="VD: Vingroup" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-stone-700 mb-2">Brief khách hàng (nếu có)</label>
+                        <textarea rows={3} value={brandBrief} onChange={e => setBrandBrief(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder="Nhập brief khách hàng..." />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-stone-700 mb-2 flex justify-between items-center">
+                          <span>Video Tham Khảo (Tối đa 5 video)</span>
+                          {brandReferenceVideos.length < 5 && (
+                            <button type="button" onClick={() => setBrandReferenceVideos([...brandReferenceVideos, ""])} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-indigo-200"><Plus className="w-3 h-3"/> Thêm video</button>
+                          )}
+                        </label>
+                        {brandReferenceVideos.map((vid, idx) => (
+                          <div key={idx} className="flex gap-2 mb-2">
+                            <input type="text" value={vid} onChange={e => { const newVids = [...brandReferenceVideos]; newVids[idx] = e.target.value; setBrandReferenceVideos(newVids); }} className="flex-1 border border-stone-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm text-sm" placeholder="Link video Youtube..." />
+                            <button type="button" onClick={() => { const newVids = brandReferenceVideos.filter((_, i) => i !== idx); setBrandReferenceVideos(newVids); }} className="px-3 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100"><Trash2 className="w-4 h-4"/></button>
+                          </div>
+                        ))}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-stone-700 mb-2">Logo đối tác (Upload)</label>
+                        <div 
+                          onDragOver={(e) => { e.preventDefault(); setIsDraggingBrandLogo(true); }}
+                          onDragLeave={() => setIsDraggingBrandLogo(false)}
+                          onDrop={(e) => { 
+                            e.preventDefault(); 
+                            setIsDraggingBrandLogo(false); 
+                            const file = e.dataTransfer.files?.[0]; 
+                            if (file && file.type.startsWith('image/')) {
+                               const fd = new FormData(); fd.append("file", file); fd.append("type", "image");
+                               setBrandLogoUploadProgress(10);
+                               fetch("/api/upload", { method: "POST", body: fd, headers: { "Authorization": `Bearer ${getAdminToken() || ""}`, "x-artist-extension": getArtistExtensionFromUrl() }})
+                               .then(res => res.json()).then(data => {
+                                 setUploadedBrandLogoUrl(data.url); setUploadedBrandLogoName(file.name); setBrandLogoUploadProgress(100);
+                               });
+                            }
+                          }}
+                          className={`flex flex-wrap gap-4 items-center p-3 rounded-2xl border-2 transition-all duration-200 ${
+                            isDraggingBrandLogo 
+                              ? 'border-indigo-500 bg-indigo-50/50 border-dashed scale-[1.01]' 
+                              : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
+                          }`}
+                        >
+                          {uploadedBrandLogoUrl ? (
+                            <img src={uploadedBrandLogoUrl} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />
+                          ) : (
+                            <div className="w-16 h-16 rounded-xl border border-dashed border-stone-300 flex items-center justify-center bg-stone-100 text-stone-400">
+                              <Image className="w-6 h-6" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-[150px]">
+                             <div className="flex items-center gap-2">
+                               <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${brandLogoUploadProgress === 100 || uploadedBrandLogoUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('brandLogoCreateDirectUpload')?.click()}>
+                                   <Upload className="w-4 h-4"/>
+                                   <span className="max-w-[150px] truncate">{brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? `Đang tải ${brandLogoUploadProgress}%` : (uploadedBrandLogoName ? formatFileName(uploadedBrandLogoName) : 'Chọn logo')}</span>
+                               </button>
+                               {brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? (
+                                 <button type="button" onClick={() => setBrandLogoUploadProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title="Hủy tải lên"><X className="w-4 h-4"/></button>
+                               ) : (uploadedBrandLogoUrl ? (
+                                 <button type="button" onClick={() => { setUploadedBrandLogoUrl(''); setBrandLogoUploadProgress(0); setUploadedBrandLogoName(''); (document.getElementById('brandLogoCreateDirectUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                               ) : null)}
+                             </div>
+                             {brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 && (
+                               <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-2">
+                                 <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${brandLogoUploadProgress}%` }} />
+                               </div>
+                             )}
+                             <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
+                               {uploadedBrandLogoName ? `Tệp đã chọn: ${formatFileName(uploadedBrandLogoName, 30)}` : 'Kéo thả logo trực tiếp vào ô này'}
+                             </p>
+                          </div>
+                          <input type="file" id="brandLogoCreateDirectUpload" name="brandLogo" accept="image/*" onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setBrandLogoUploadProgress(10);
+                              const fd = new FormData(); fd.append("file", file); fd.append("type", "image");
+                              fetch("/api/upload", { method: "POST", body: fd, headers: { "Authorization": `Bearer ${getAdminToken() || ""}`, "x-artist-extension": getArtistExtensionFromUrl() }})
+                              .then(res => res.json()).then(data => {
+                                setUploadedBrandLogoUrl(data.url); setUploadedBrandLogoName(file.name); setBrandLogoUploadProgress(100);
+                              });
+                            }
+                          }} className="hidden" />
+                        </div>
+                      </div>
+
+                    </div>
+                  )}
+                </div>
+
                 <div>
                   <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
                     <label className="block text-sm font-bold text-stone-700">Lời bài hát</label>
                     <div className="flex flex-wrap gap-1.5 items-center">
-                      <span className="hidden sm:inline text-[11px] text-stone-400 font-medium mr-1">Chèn nhanh:</span>
                       {[
                         { label: 'Intro', value: 'Intro', className: 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200' },
                         { label: 'Verse', value: 'Verse', className: 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200' },
+                        { label: 'Pre-Chorus', value: 'Pre-Chorus', className: 'bg-teal-50 hover:bg-teal-100 text-teal-700 border-teal-200' },
                         { label: 'Chorus', value: 'Chorus', className: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200' },
                         { label: 'Rap', value: 'Rap', className: 'bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200' },
                         { label: 'Drop', value: 'Drop', className: 'bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border-cyan-200' },
@@ -8989,16 +9744,16 @@ function AdminCreateDemo() {
                     rows={6} 
                     value={lyrics} 
                     onChange={e => setLyrics(e.target.value)} 
-                    placeholder="Nhập lời bài hát (nếu có)..." 
+                    placeholder="Nhập lời bài hát mới (nếu có)..." 
                     className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow leading-relaxed"
                   ></textarea>
                 </div>
 
-                <div className="grid grid-cols-1 gap-6 pt-4 border-t border-stone-100">
+              <div className="grid grid-cols-1 gap-6 pt-4 border-t border-stone-100">
                   <div className="w-full">
                     <label className="block text-sm font-bold text-stone-700 mb-2">Template Giao Diện</label>
                     <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 min-w-0">
-                      <select name="template" value={template} onChange={(e) => setTemplate(e.target.value)} className="w-full min-w-0 border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white shadow-sm">
+                      <select name="templateCreate" value={template} onChange={(e) => setTemplate(e.target.value)} className="w-full min-w-0 border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white shadow-sm">
                         {templateConfigs.map((tc: any) => (
                           <option key={tc.id} value={tc.id}>{tc.name}</option>
                         ))}
@@ -9017,7 +9772,106 @@ function AdminCreateDemo() {
               </>
             )}
 
-            {linkType === 'indirect' && (
+            {linkType === 'indirect' && (<>
+                <div className="bg-stone-50 p-6 rounded-2xl border border-stone-200 mt-4 mb-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <input type="checkbox" id="isBrandCreateIndirect" checked={isBrand} onChange={e => setIsBrand(e.target.checked)} className="w-5 h-5 accent-indigo-500 rounded border-stone-300" />
+                    <label htmlFor="isBrandCreateIndirect" className="font-bold text-stone-700 text-sm cursor-pointer">Là nhạc thương hiệu (Brand Music)</label>
+                  </div>
+                  {isBrand && (
+                    <div className="grid grid-cols-1 gap-4 pt-2">
+                      <div>
+                        <label className="block text-sm font-bold text-stone-700 mb-2">Tên đối tác <span className="text-red-500">*</span></label>
+                        <input type="text" value={brandName} onChange={e => setBrandName(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder="VD: Vingroup" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-stone-700 mb-2">Brief khách hàng (nếu có)</label>
+                        <textarea rows={3} value={brandBrief} onChange={e => setBrandBrief(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder="Nhập brief khách hàng..." />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-stone-700 mb-2 flex justify-between items-center">
+                          <span>Video Tham Khảo (Tối đa 5 video)</span>
+                          {brandReferenceVideos.length < 5 && (
+                            <button type="button" onClick={() => setBrandReferenceVideos([...brandReferenceVideos, ""])} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-indigo-200"><Plus className="w-3 h-3"/> Thêm video</button>
+                          )}
+                        </label>
+                        {brandReferenceVideos.map((vid, idx) => (
+                          <div key={idx} className="flex gap-2 mb-2">
+                            <input type="text" value={vid} onChange={e => { const newVids = [...brandReferenceVideos]; newVids[idx] = e.target.value; setBrandReferenceVideos(newVids); }} className="flex-1 border border-stone-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm text-sm" placeholder="Link video Youtube..." />
+                            <button type="button" onClick={() => { const newVids = brandReferenceVideos.filter((_, i) => i !== idx); setBrandReferenceVideos(newVids); }} className="px-3 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100"><Trash2 className="w-4 h-4"/></button>
+                          </div>
+                        ))}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-stone-700 mb-2">Logo đối tác (Upload)</label>
+                        <div 
+                          onDragOver={(e) => { e.preventDefault(); setIsDraggingBrandLogo(true); }}
+                          onDragLeave={() => setIsDraggingBrandLogo(false)}
+                          onDrop={(e) => { 
+                            e.preventDefault(); 
+                            setIsDraggingBrandLogo(false); 
+                            const file = e.dataTransfer.files?.[0]; 
+                            if (file && file.type.startsWith('image/')) {
+                               const fd = new FormData(); fd.append("file", file); fd.append("type", "image");
+                               setBrandLogoUploadProgress(10);
+                               fetch("/api/upload", { method: "POST", body: fd, headers: { "Authorization": `Bearer ${getAdminToken() || ""}`, "x-artist-extension": getArtistExtensionFromUrl() }})
+                               .then(res => res.json()).then(data => {
+                                 setUploadedBrandLogoUrl(data.url); setUploadedBrandLogoName(file.name); setBrandLogoUploadProgress(100);
+                               });
+                            }
+                          }}
+                          className={`flex flex-wrap gap-4 items-center p-3 rounded-2xl border-2 transition-all duration-200 ${
+                            isDraggingBrandLogo 
+                              ? 'border-indigo-500 bg-indigo-50/50 border-dashed scale-[1.01]' 
+                              : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
+                          }`}
+                        >
+                          {uploadedBrandLogoUrl ? (
+                            <img src={uploadedBrandLogoUrl} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />
+                          ) : (
+                            <div className="w-16 h-16 rounded-xl border border-dashed border-stone-300 flex items-center justify-center bg-stone-100 text-stone-400">
+                              <Image className="w-6 h-6" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-[150px]">
+                             <div className="flex items-center gap-2">
+                               <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${brandLogoUploadProgress === 100 || uploadedBrandLogoUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('brandLogoCreateIndirectUpload')?.click()}>
+                                   <Upload className="w-4 h-4"/>
+                                   <span className="max-w-[150px] truncate">{brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? `Đang tải ${brandLogoUploadProgress}%` : (uploadedBrandLogoName ? formatFileName(uploadedBrandLogoName) : 'Chọn logo')}</span>
+                               </button>
+                               {brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? (
+                                 <button type="button" onClick={() => setBrandLogoUploadProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title="Hủy tải lên"><X className="w-4 h-4"/></button>
+                               ) : (uploadedBrandLogoUrl ? (
+                                 <button type="button" onClick={() => { setUploadedBrandLogoUrl(''); setBrandLogoUploadProgress(0); setUploadedBrandLogoName(''); (document.getElementById('brandLogoCreateIndirectUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                               ) : null)}
+                             </div>
+                             {brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 && (
+                               <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-2">
+                                 <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${brandLogoUploadProgress}%` }} />
+                               </div>
+                             )}
+                             <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
+                               {uploadedBrandLogoName ? `Tệp đã chọn: ${formatFileName(uploadedBrandLogoName, 30)}` : 'Kéo thả logo trực tiếp vào ô này'}
+                             </p>
+                          </div>
+                          <input type="file" id="brandLogoCreateIndirectUpload" name="brandLogo" accept="image/*" onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setBrandLogoUploadProgress(10);
+                              const fd = new FormData(); fd.append("file", file); fd.append("type", "image");
+                              fetch("/api/upload", { method: "POST", body: fd, headers: { "Authorization": `Bearer ${getAdminToken() || ""}`, "x-artist-extension": getArtistExtensionFromUrl() }})
+                              .then(res => res.json()).then(data => {
+                                setUploadedBrandLogoUrl(data.url); setUploadedBrandLogoName(file.name); setBrandLogoUploadProgress(100);
+                              });
+                            }
+                          }} className="hidden" />
+                        </div>
+                      </div>
+
+                    </div>
+                  )}
+                </div>
+
               <div className="grid grid-cols-1 gap-6 pt-4 border-t border-stone-100">
                 <h3 className="font-bold text-stone-800 text-lg">Liên kết phát nhạc</h3>
                 <div className="grid grid-cols-1 gap-4">
@@ -9043,6 +9897,7 @@ function AdminCreateDemo() {
                   </div>
                 </div>
               </div>
+              </>
             )}
 
             {linkType !== 'indirect' && (
@@ -9232,6 +10087,15 @@ function AdminEditDemo() {
   const [bgUploadProgress, setBgUploadProgress] = useState(0);
   const [uploadedBgUrl, setUploadedBgUrl] = useState('');
   const [uploadedBgName, setUploadedBgName] = useState('');
+  const [isBrand, setIsBrand] = useState(false);
+  const [brandName, setBrandName] = useState("");
+  const [brandBrief, setBrandBrief] = useState("");
+  const [brandColor, setBrandColor] = useState("");
+  const [brandReferenceVideos, setBrandReferenceVideos] = useState<string[]>([]);
+  const [brandLogoUploadProgress, setBrandLogoUploadProgress] = useState(0);
+  const [uploadedBrandLogoUrl, setUploadedBrandLogoUrl] = useState("");
+  const [uploadedBrandLogoName, setUploadedBrandLogoName] = useState("");
+
 
   const getFileNameFromUrl = (url: string | undefined) => {
     if (!url) return '';
@@ -9355,6 +10219,12 @@ function AdminEditDemo() {
           setAchievements(found.achievements || []);
           setLinkType(found.linkType || 'direct');
           setIsReleased(found.isReleased || false);
+          setIsBrand(found.isBrand || false);
+          setBrandName(found.brandName || '');
+          setBrandBrief(found.brandBrief || '');
+          setBrandColor(found.brandColor || '');
+          setBrandReferenceVideos(found.brandReferenceVideos || []);
+          setUploadedBrandLogoUrl(found.brandLogoUrl || '');
           setPassword(found.passwordValue || found.password || '');
           setUploadedAudioUrl(found.audioUrl || '');
           setLinkZing(found.linkZing || '');
@@ -9421,6 +10291,7 @@ function AdminEditDemo() {
   const [isDraggingCover, setIsDraggingCover] = useState(false);
   const [isDraggingAudio, setIsDraggingAudio] = useState(false);
   const [isDraggingBg, setIsDraggingBg] = useState(false);
+  const [isDraggingBrandLogo, setIsDraggingBrandLogo] = useState(false);
 
   const audioXhrRef = useRef<XMLHttpRequest | null>(null);
   const coverXhrRef = useRef<XMLHttpRequest | null>(null);
@@ -9434,7 +10305,7 @@ function AdminEditDemo() {
     };
   }, []);
 
-  const cancelUpload = (type: 'audio' | 'cover' | 'background') => {
+  const cancelUpload = (type: 'audio' | 'cover' | 'background' | 'brandLogo') => {
     if (type === 'audio') {
       if (audioXhrRef.current) {
         audioXhrRef.current.abort();
@@ -9468,7 +10339,7 @@ function AdminEditDemo() {
     }
   };
 
-  const uploadFileDirectly = (file: File, type: 'audio' | 'cover' | 'background') => {
+  const uploadFileDirectly = (file: File, type: 'audio' | 'cover' | 'background' | 'brandLogo') => {
     if (type === 'audio') {
       if (file.size > 100 * 1024 * 1024) {
         triggerNotification('Dung lượng file nhạc quá lớn (' + (file.size / (1024 * 1024)).toFixed(1) + 'MB). Vui lòng tải lên file nhạc dưới 100MB để đảm bảo tốc độ xử lý của server.', 'warning', 'Tệp quá lớn');
@@ -9596,7 +10467,7 @@ function AdminEditDemo() {
     xhr.send(formData);
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'audio' | 'cover' | 'background') => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'audio' | 'cover' | 'background' | 'brandLogo') => {
     const file = e.target.files?.[0];
     if (!file) return;
     uploadFileDirectly(file, type);
@@ -9662,6 +10533,18 @@ function AdminEditDemo() {
     formData.set('status', statusEl?.value || 'public');
     formData.set('isReleased', isReleased ? 'true' : 'false');
     formData.set('isDraft', isDraft ? 'true' : 'false');
+    formData.set('isBrand', isBrand ? 'true' : 'false');
+    formData.set('brandName', brandName);
+    formData.set('brandBrief', brandBrief);
+    formData.set('brandColor', brandColor);
+    formData.set('brandLogoUrl', uploadedBrandLogoUrl);
+    formData.set('brandReferenceVideos', JSON.stringify(brandReferenceVideos));
+    formData.set('isBrand', isBrand ? 'true' : 'false');
+    formData.set('brandName', brandName);
+    formData.set('brandBrief', brandBrief);
+    formData.set('brandColor', brandColor);
+    formData.set('brandLogoUrl', uploadedBrandLogoUrl);
+    formData.set('brandReferenceVideos', JSON.stringify(brandReferenceVideos));
     
     try {
         const res = await fetch(`/api/demos/${id}/update`, {
@@ -9739,7 +10622,7 @@ function AdminEditDemo() {
             <button type="button" onClick={() => setLinkType('indirect')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${linkType === 'indirect' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}>Landing Page</button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6 edit-demo-form">
             <div>
               <label className="block text-sm font-bold text-stone-700 mb-2">Tên bài hát <span className="text-red-500">*</span></label>
               <input name="title" required value={title} onChange={e => setTitle(e.target.value)} placeholder="Nhập tên bài hát..." className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
@@ -9785,7 +10668,7 @@ function AdminEditDemo() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
               <div>
-                <label className="block text-sm font-bold text-stone-700 mb-2">Bìa Đĩa (Dùng làm thumbnail)</label>
+                <label className="block text-sm font-bold text-stone-700 mb-2">Bìa Đĩa Chỉnh Sửa (Dùng làm thumbnail)</label>
                 <div 
                   onDragOver={(e) => { e.preventDefault(); setIsDraggingCover(true); }}
                   onDragLeave={() => setIsDraggingCover(false)}
@@ -9812,11 +10695,11 @@ function AdminEditDemo() {
                     <div className="flex items-center gap-2">
                       <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${coverUploadProgress === 100 || uploadedCoverUrl || demo?.coverUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('coverEditUpload')?.click()}>
                           <Upload className="w-4 h-4"/>
-                          <span className="max-w-[150px] truncate">
+                          <span className="max-w-[150px] truncate"></span>
                             {coverUploadProgress > 0 && coverUploadProgress < 100 
                               ? `Đang tải ${coverUploadProgress}%` 
                               : (uploadedCoverName ? formatFileName(uploadedCoverName) : (getFileNameFromUrl(uploadedCoverUrl || demo?.coverUrl) ? formatFileName(getFileNameFromUrl(uploadedCoverUrl || demo?.coverUrl)) : 'Chọn bìa đĩa'))}
-                          </span>
+                          
                       </button>
                       {coverUploadProgress > 0 && coverUploadProgress < 100 ? (
                         <button type="button" onClick={() => cancelUpload('cover')} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title="Hủy tải lên"><X className="w-4 h-4"/></button>
@@ -9871,11 +10754,11 @@ function AdminEditDemo() {
                       <div className="flex items-center gap-2">
                         <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${bgUploadProgress === 100 || uploadedBgUrl || demo?.backgroundUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('bgEditUpload')?.click()}>
                             <Upload className="w-4 h-4"/>
-                            <span className="max-w-[150px] truncate">
+                            <span className="max-w-[150px] truncate"></span>
                               {bgUploadProgress > 0 && bgUploadProgress < 100 
                                 ? `Đang tải ${bgUploadProgress}%` 
                                 : (uploadedBgName ? formatFileName(uploadedBgName) : (getFileNameFromUrl(uploadedBgUrl || demo?.backgroundUrl) ? formatFileName(getFileNameFromUrl(uploadedBgUrl || demo?.backgroundUrl)) : 'Chọn ảnh nền'))}
-                            </span>
+                            
                         </button>
                         {bgUploadProgress > 0 && bgUploadProgress < 100 ? (
                           <button type="button" onClick={() => cancelUpload('background')} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title="Hủy tải lên"><X className="w-4 h-4"/></button>
@@ -9929,27 +10812,23 @@ function AdminEditDemo() {
                     {(demo?.audioUrl || uploadedAudioUrl) && (
                       <div className="text-xs text-stone-500 border-b border-stone-200 pb-3 mb-1 flex justify-between items-center flex-wrap gap-2">
                         <div className="min-w-0 flex-1">
-                          <span className="font-bold block sm:inline font-sans text-stone-700">File hiện tại:</span>{' '}
+                          <span className="font-bold block sm:inline font-sans text-stone-700">File hiện tại:{' '}</span>
                           <div className="mt-1">
                             {(() => {
-                              const currentAudioUrl = uploadedAudioUrl || demo?.audioUrl || '';
-                              if (currentAudioUrl.includes('drive.google.com') || currentAudioUrl.includes('docs.google.com')) {
+                              const currentAudioUrl = uploadedAudioUrl || demo?.audioUrl || "";
+                              if (currentAudioUrl.includes("drive.google.com") || currentAudioUrl.includes("docs.google.com")) {
                                   return (
                                     <span className="text-amber-600 font-bold bg-amber-50 border border-amber-200 px-2.5 py-1.5 rounded-xl text-[11px] inline-block leading-normal">
                                       ⚠️ Link Google Drive cũ (Hệ thống đã tắt tính năng chạy link trực tiếp, vui lòng tải file nhạc lên để phát ổn định)
                                     </span>
                                   );
-                              } else {
-                                  return (
-                                    <span className="font-sans text-emerald-600 font-bold bg-emerald-50 border border-emerald-200 px-2.5 py-1.5 rounded-xl text-[11px] inline-block leading-normal">
-                                      🎵 Tệp nhạc đã được tải lên trực tiếp thành công
-                                    </span>
-                                  );
                               }
+                              return null;
                             })()}
                           </div>
                         </div>
-                        {demo?.backupAudioUrl && demo.backupAudioUrl !== (uploadedAudioUrl || demo?.audioUrl) && (
+
+                        {demo?.audioUrl && (
                           <button
                             type="button"
                             disabled={isReverting}
@@ -9973,11 +10852,11 @@ function AdminEditDemo() {
                         <div className="flex items-center gap-2">
                           <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${audioUploadProgress === 100 || (uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com')) || (demo?.audioUrl && !uploadedAudioUrl) ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('audioEditUpload')?.click()}>
                               <Upload className="w-4 h-4"/>
-                              <span className="max-w-[200px] truncate">
+                              <span className="max-w-[200px] truncate"></span>
                                 {audioUploadProgress > 0 && audioUploadProgress < 100 
                                   ? `Đang tải ${audioUploadProgress}%` 
                                   : (uploadedAudioName ? formatFileName(uploadedAudioName) : (getFileNameFromUrl(uploadedAudioUrl || demo?.audioUrl) ? formatFileName(getFileNameFromUrl(uploadedAudioUrl || demo?.audioUrl)) : 'Chọn file nhạc'))}
-                              </span>
+                              
                           </button>
                           {audioUploadProgress > 0 && audioUploadProgress < 100 ? (
                             <button type="button" onClick={() => cancelUpload('audio')} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title="Hủy tải lên"><X className="w-4 h-4"/></button>
@@ -10004,14 +10883,113 @@ function AdminEditDemo() {
                 </div>
               </div>
 
+                <div className="bg-stone-50 p-6 rounded-2xl border border-stone-200 mt-4 mb-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <input type="checkbox" id="isBrandEditDirect" checked={isBrand} onChange={e => setIsBrand(e.target.checked)} className="w-5 h-5 accent-indigo-500 rounded border-stone-300" />
+                    <label htmlFor="isBrandEditDirect" className="font-bold text-stone-700 text-sm cursor-pointer">Là nhạc thương hiệu (Brand Music)</label>
+                  </div>
+                  {isBrand && (
+                    <div className="grid grid-cols-1 gap-4 pt-2">
+                      <div>
+                        <label className="block text-sm font-bold text-stone-700 mb-2">Tên đối tác <span className="text-red-500">*</span></label>
+                        <input type="text" value={brandName} onChange={e => setBrandName(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder="VD: Vingroup" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-stone-700 mb-2">Brief khách hàng (nếu có)</label>
+                        <textarea rows={3} value={brandBrief} onChange={e => setBrandBrief(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder="Nhập brief khách hàng..." />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-stone-700 mb-2 flex justify-between items-center">
+                          <span>Video Tham Khảo (Tối đa 5 video)</span>
+                          {brandReferenceVideos.length < 5 && (
+                            <button type="button" onClick={() => setBrandReferenceVideos([...brandReferenceVideos, ""])} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-indigo-200"><Plus className="w-3 h-3"/> Thêm video</button>
+                          )}
+                        </label>
+                        {brandReferenceVideos.map((vid, idx) => (
+                          <div key={idx} className="flex gap-2 mb-2">
+                            <input type="text" value={vid} onChange={e => { const newVids = [...brandReferenceVideos]; newVids[idx] = e.target.value; setBrandReferenceVideos(newVids); }} className="flex-1 border border-stone-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm text-sm" placeholder="Link video Youtube..." />
+                            <button type="button" onClick={() => { const newVids = brandReferenceVideos.filter((_, i) => i !== idx); setBrandReferenceVideos(newVids); }} className="px-3 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100"><Trash2 className="w-4 h-4"/></button>
+                          </div>
+                        ))}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-stone-700 mb-2">Logo đối tác (Upload)</label>
+                        <div 
+                          onDragOver={(e) => { e.preventDefault(); setIsDraggingBrandLogo(true); }}
+                          onDragLeave={() => setIsDraggingBrandLogo(false)}
+                          onDrop={(e) => { 
+                            e.preventDefault(); 
+                            setIsDraggingBrandLogo(false); 
+                            const file = e.dataTransfer.files?.[0]; 
+                            if (file && file.type.startsWith('image/')) {
+                               const fd = new FormData(); fd.append("file", file); fd.append("type", "image");
+                               setBrandLogoUploadProgress(10);
+                               fetch("/api/upload", { method: "POST", body: fd, headers: { "Authorization": `Bearer ${getAdminToken() || ""}`, "x-artist-extension": getArtistExtensionFromUrl() }})
+                               .then(res => res.json()).then(data => {
+                                 setUploadedBrandLogoUrl(data.url); setUploadedBrandLogoName(file.name); setBrandLogoUploadProgress(100);
+                               });
+                            }
+                          }}
+                          className={`flex flex-wrap gap-4 items-center p-3 rounded-2xl border-2 transition-all duration-200 ${
+                            isDraggingBrandLogo 
+                              ? 'border-indigo-500 bg-indigo-50/50 border-dashed scale-[1.01]' 
+                              : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
+                          }`}
+                        >
+                          {uploadedBrandLogoUrl ? (
+                            <img src={uploadedBrandLogoUrl} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />
+                          ) : (
+                            <div className="w-16 h-16 rounded-xl border border-dashed border-stone-300 flex items-center justify-center bg-stone-100 text-stone-400">
+                              <Image className="w-6 h-6" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-[150px]">
+                             <div className="flex items-center gap-2">
+                               <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${brandLogoUploadProgress === 100 || uploadedBrandLogoUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('brandLogoEditUpload')?.click()}>
+                                   <Upload className="w-4 h-4"/>
+                                   <span className="max-w-[150px] truncate">{brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? `Đang tải ${brandLogoUploadProgress}%` : (uploadedBrandLogoName ? formatFileName(uploadedBrandLogoName) : 'Chọn logo')}</span>
+                               </button>
+                               {brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? (
+                                 <button type="button" onClick={() => setBrandLogoUploadProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title="Hủy tải lên"><X className="w-4 h-4"/></button>
+                               ) : (uploadedBrandLogoUrl ? (
+                                 <button type="button" onClick={() => { setUploadedBrandLogoUrl(''); setBrandLogoUploadProgress(0); setUploadedBrandLogoName(''); (document.getElementById('brandLogoEditUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                               ) : null)}
+                             </div>
+                             {brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 && (
+                               <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-2">
+                                 <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${brandLogoUploadProgress}%` }} />
+                               </div>
+                             )}
+                             <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
+                               {uploadedBrandLogoName ? `Tệp đã chọn: ${formatFileName(uploadedBrandLogoName, 30)}` : 'Kéo thả logo trực tiếp vào ô này'}
+                             </p>
+                          </div>
+                          <input type="file" id="brandLogoEditUpload" name="brandLogo" accept="image/*" onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setBrandLogoUploadProgress(10);
+                              const fd = new FormData(); fd.append("file", file); fd.append("type", "image");
+                              fetch("/api/upload", { method: "POST", body: fd, headers: { "Authorization": `Bearer ${getAdminToken() || ""}`, "x-artist-extension": getArtistExtensionFromUrl() }})
+                              .then(res => res.json()).then(data => {
+                                setUploadedBrandLogoUrl(data.url); setUploadedBrandLogoName(file.name); setBrandLogoUploadProgress(100);
+                              });
+                            }
+                          }} className="hidden" />
+                        </div>
+                      </div>
+
+                    </div>
+                  )}
+                </div>
+
                 <div>
                   <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
                     <label className="block text-sm font-bold text-stone-700">Lời bài hát</label>
                     <div className="flex flex-wrap gap-1.5 items-center">
-                      <span className="hidden sm:inline text-[11px] text-stone-400 font-medium mr-1">Chèn nhanh:</span>
                       {[
                         { label: 'Intro', value: 'Intro', className: 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200' },
                         { label: 'Verse', value: 'Verse', className: 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200' },
+                        { label: 'Pre-Chorus', value: 'Pre-Chorus', className: 'bg-teal-50 hover:bg-teal-100 text-teal-700 border-teal-200' },
                         { label: 'Chorus', value: 'Chorus', className: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200' },
                         { label: 'Rap', value: 'Rap', className: 'bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200' },
                         { label: 'Drop', value: 'Drop', className: 'bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border-cyan-200' },
@@ -10036,12 +11014,12 @@ function AdminEditDemo() {
                     rows={6} 
                     value={lyrics} 
                     onChange={e => setLyrics(e.target.value)} 
-                    placeholder="Nhập lời bài hát (nếu có)..." 
+                    placeholder="Nhập lời bài hát chỉnh sửa (nếu có)..." 
                     className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow leading-relaxed"
                   ></textarea>
                 </div>
 
-                <div className="grid grid-cols-1 gap-6 pt-4 border-t border-stone-100">
+              <div className="grid grid-cols-1 gap-6 pt-4 border-t border-stone-100">
                   <div className="w-full">
                     <label className="block text-sm font-bold text-stone-700 mb-2">Template Giao Diện</label>
                     <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 min-w-0">
@@ -10064,7 +11042,107 @@ function AdminEditDemo() {
               </>
             )}
 
-            {linkType === 'indirect' && (
+            {linkType === 'indirect' && (<>
+                
+                <div className="bg-stone-50 p-6 rounded-2xl border border-stone-200 mt-4 mb-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <input type="checkbox" id="isBrandCreate" checked={isBrand} onChange={e => setIsBrand(e.target.checked)} className="w-5 h-5 accent-indigo-500 rounded border-stone-300" />
+                    <label htmlFor="isBrandCreate" className="font-bold text-stone-700 text-sm cursor-pointer">Là nhạc thương hiệu (Brand Music)</label>
+                  </div>
+                  {isBrand && (
+                    <div className="grid grid-cols-1 gap-4 pt-2">
+                      <div>
+                        <label className="block text-sm font-bold text-stone-700 mb-2">Tên đối tác <span className="text-red-500">*</span></label>
+                        <input type="text" value={brandName} onChange={e => setBrandName(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder="VD: Vingroup" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-stone-700 mb-2">Brief khách hàng (nếu có)</label>
+                        <textarea rows={3} value={brandBrief} onChange={e => setBrandBrief(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder="Nhập brief khách hàng..." />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-stone-700 mb-2 flex justify-between items-center">
+                          <span>Video Tham Khảo (Tối đa 5 video)</span>
+                          {brandReferenceVideos.length < 5 && (
+                            <button type="button" onClick={() => setBrandReferenceVideos([...brandReferenceVideos, ""])} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-indigo-200"><Plus className="w-3 h-3"/> Thêm video</button>
+                          )}
+                        </label>
+                        {brandReferenceVideos.map((vid, idx) => (
+                          <div key={idx} className="flex gap-2 mb-2">
+                            <input type="text" value={vid} onChange={e => { const newVids = [...brandReferenceVideos]; newVids[idx] = e.target.value; setBrandReferenceVideos(newVids); }} className="flex-1 border border-stone-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm text-sm" placeholder="Link video Youtube..." />
+                            <button type="button" onClick={() => { const newVids = brandReferenceVideos.filter((_, i) => i !== idx); setBrandReferenceVideos(newVids); }} className="px-3 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100"><Trash2 className="w-4 h-4"/></button>
+                          </div>
+                        ))}
+                      </div>
+                                            <div>
+                        <label className="block text-sm font-bold text-stone-700 mb-2">Logo đối tác (Upload)</label>
+                        <div 
+                          onDragOver={(e) => { e.preventDefault(); setIsDraggingBrandLogo(true); }}
+                          onDragLeave={() => setIsDraggingBrandLogo(false)}
+                          onDrop={(e) => { 
+                            e.preventDefault(); 
+                            setIsDraggingBrandLogo(false); 
+                            const file = e.dataTransfer.files?.[0]; 
+                            if (file && file.type.startsWith('image/')) {
+                               const fd = new FormData(); fd.append("file", file); fd.append("type", "image");
+                               setBrandLogoUploadProgress(10);
+                               fetch("/api/upload", { method: "POST", body: fd, headers: { "Authorization": `Bearer ${getAdminToken() || ""}`, "x-artist-extension": getArtistExtensionFromUrl() }})
+                               .then(res => res.json()).then(data => {
+                                 setUploadedBrandLogoUrl(data.url); setUploadedBrandLogoName(file.name); setBrandLogoUploadProgress(100);
+                               });
+                            }
+                          }}
+                          className={`flex flex-wrap gap-4 items-center p-3 rounded-2xl border-2 transition-all duration-200 ${
+                            isDraggingBrandLogo 
+                              ? 'border-indigo-500 bg-indigo-50/50 border-dashed scale-[1.01]' 
+                              : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
+                          }`}
+                        >
+                          {uploadedBrandLogoUrl ? (
+                            <img src={uploadedBrandLogoUrl} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />
+                          ) : (
+                            <div className="w-16 h-16 rounded-xl border border-dashed border-stone-300 flex items-center justify-center bg-stone-100 text-stone-400">
+                              <Image className="w-6 h-6" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-[150px]">
+                             <div className="flex items-center gap-2">
+                               <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${brandLogoUploadProgress === 100 || uploadedBrandLogoUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('brandLogoCreateUpload')?.click()}>
+                                   <Upload className="w-4 h-4"/>
+                                   <span className="max-w-[150px] truncate">{brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? `Đang tải ${brandLogoUploadProgress}%` : (uploadedBrandLogoName ? formatFileName(uploadedBrandLogoName) : 'Chọn logo')}</span>
+                               </button>
+                               {brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? (
+                                 <button type="button" onClick={() => setBrandLogoUploadProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title="Hủy tải lên"><X className="w-4 h-4"/></button>
+                               ) : (uploadedBrandLogoUrl ? (
+                                 <button type="button" onClick={() => { setUploadedBrandLogoUrl(''); setBrandLogoUploadProgress(0); setUploadedBrandLogoName(''); (document.getElementById('brandLogoCreateUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                               ) : null)}
+                             </div>
+                             {brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 && (
+                               <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-2">
+                                 <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${brandLogoUploadProgress}%` }} />
+                               </div>
+                             )}
+                             <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
+                               {uploadedBrandLogoName ? `Tệp đã chọn: ${formatFileName(uploadedBrandLogoName, 30)}` : 'Kéo thả logo trực tiếp vào ô này'}
+                             </p>
+                          </div>
+                          <input type="file" id="brandLogoCreateUpload" name="brandLogo" accept="image/*" onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setBrandLogoUploadProgress(10);
+                              const fd = new FormData(); fd.append("file", file); fd.append("type", "image");
+                              fetch("/api/upload", { method: "POST", body: fd, headers: { "Authorization": `Bearer ${getAdminToken() || ""}`, "x-artist-extension": getArtistExtensionFromUrl() }})
+                              .then(res => res.json()).then(data => {
+                                setUploadedBrandLogoUrl(data.url); setUploadedBrandLogoName(file.name); setBrandLogoUploadProgress(100);
+                              });
+                            }
+                          }} className="hidden" />
+                        </div>
+                      </div>
+
+                    </div>
+                  )}
+                </div>
+
               <div className="grid grid-cols-1 gap-6 pt-4 border-t border-stone-100">
                 <h3 className="font-bold text-stone-800 text-lg">Liên kết phát nhạc</h3>
                 <div className="grid grid-cols-1 gap-4">
@@ -10090,6 +11168,7 @@ function AdminEditDemo() {
                   </div>
                 </div>
               </div>
+              </>
             )}
 
             {linkType !== 'indirect' && (
@@ -10505,9 +11584,9 @@ function AdminPlaylistEdit() {
                   {coverProgress > 0 && coverProgress < 100 && (
                     <div className="absolute left-0 bottom-0 right-0 bg-stone-200 transition-all duration-300" style={{ height: `${coverProgress}%` }}></div>
                   )}
-                  <span className="relative z-10 font-bold text-[10px] flex flex-col items-center gap-1">
+                  <span className="relative z-10 font-bold text-[10px] flex flex-col items-center gap-1"></span>
                     <Upload className="w-5 h-5"/> {coverProgress > 0 && coverProgress < 100 ? `${coverProgress}%` : ''}
-                  </span>
+                  
               </button>
               {coverUrlPreview && (
                 <button 

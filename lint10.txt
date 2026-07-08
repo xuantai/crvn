@@ -1,0 +1,1249 @@
+
+> react-example@0.0.0 lint
+> tsc --noEmit
+
+src/App.tsx(1353,18): error TS17008: JSX element 'AnimatePresence' has no corresponding closing tag.
+src/App.tsx(1376,153): error TS1002: Unterminated string literal.
+src/App.tsx(1377,25): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(1378,23): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(1379,19): error TS1128: Declaration or statement expected.
+src/App.tsx(1380,19): error TS17002: Expected corresponding JSX closing tag for 'motion.h1'.
+src/App.tsx(1381,15): error TS1005: ')' expected.
+src/App.tsx(1850,24): error TS17008: JSX element 'span' has no corresponding closing tag.
+src/App.tsx(2229,10): error TS17008: JSX element 'span' has no corresponding closing tag.
+src/App.tsx(2244,12): error TS17008: JSX element 'span' has no corresponding closing tag.
+src/App.tsx(4123,12): error TS17008: JSX element 'p' has no corresponding closing tag.
+src/App.tsx(4125,32): error TS2657: JSX expressions must have one parent element.
+src/App.tsx(4125,121): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(4126,13): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(4145,9): error TS1005: '}' expected.
+src/App.tsx(4905,6): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(4908,19): error TS2657: JSX expressions must have one parent element.
+src/App.tsx(4908,129): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(4909,9): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(4931,17): error TS17008: JSX element 'span' has no corresponding closing tag.
+src/App.tsx(4945,21): error TS17008: JSX element 'span' has no corresponding closing tag.
+src/App.tsx(4958,5): error TS1005: '}' expected.
+src/App.tsx(4960,1): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(4963,5): error TS1109: Expression expected.
+src/App.tsx(4975,30): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(4977,8): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(4978,7): error TS1109: Expression expected.
+src/App.tsx(5003,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5069,1): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5072,3): error TS1109: Expression expected.
+src/App.tsx(5072,50): error TS17008: JSX element 'any' has no corresponding closing tag.
+src/App.tsx(5076,65): error TS1003: Identifier expected.
+src/App.tsx(5076,71): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5077,44): error TS17008: JSX element 'any' has no corresponding closing tag.
+src/App.tsx(5079,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5080,19): error TS1005: '}' expected.
+src/App.tsx(5081,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5083,34): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5084,5): error TS1109: Expression expected.
+src/App.tsx(5085,7): error TS1109: Expression expected.
+src/App.tsx(5086,16): error TS1005: '}' expected.
+src/App.tsx(5087,29): error TS1005: '}' expected.
+src/App.tsx(5088,47): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5089,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5091,9): error TS1109: Expression expected.
+src/App.tsx(5093,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5094,62): error TS1005: '}' expected.
+src/App.tsx(5095,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5096,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5097,38): error TS1005: '}' expected.
+src/App.tsx(5098,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5099,24): error TS1005: '}' expected.
+src/App.tsx(5100,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5101,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5103,44): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5104,5): error TS1109: Expression expected.
+src/App.tsx(5109,7): error TS1109: Expression expected.
+src/App.tsx(5109,56): error TS1005: '}' expected.
+src/App.tsx(5109,61): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5111,15): error TS1005: '}' expected.
+src/App.tsx(5113,29): error TS1005: '}' expected.
+src/App.tsx(5117,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5119,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5122,39): error TS1005: '}' expected.
+src/App.tsx(5124,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5125,52): error TS1005: '}' expected.
+src/App.tsx(5126,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5127,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5128,38): error TS1005: '}' expected.
+src/App.tsx(5129,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5130,24): error TS1005: '}' expected.
+src/App.tsx(5131,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5132,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5134,36): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5135,5): error TS1109: Expression expected.
+src/App.tsx(5140,11): error TS1005: '}' expected.
+src/App.tsx(5142,72): error TS1005: '}' expected.
+src/App.tsx(5143,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5144,9): error TS1109: Expression expected.
+src/App.tsx(5144,49): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5145,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5146,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5147,55): error TS1005: '}' expected.
+src/App.tsx(5147,72): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5150,15): error TS1005: '}' expected.
+src/App.tsx(5152,29): error TS1005: '}' expected.
+src/App.tsx(5156,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5158,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5160,39): error TS1005: '}' expected.
+src/App.tsx(5164,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5165,9): error TS1109: Expression expected.
+src/App.tsx(5167,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5168,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5169,38): error TS1005: '}' expected.
+src/App.tsx(5170,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5171,24): error TS1005: '}' expected.
+src/App.tsx(5172,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5173,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5178,5): error TS1109: Expression expected.
+src/App.tsx(5240,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5293,20): error TS17008: JSX element 'h3' has no corresponding closing tag.
+src/App.tsx(5294,43): error TS2657: JSX expressions must have one parent element.
+src/App.tsx(5294,161): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5295,21): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(5297,17): error TS1005: '}' expected.
+src/App.tsx(5314,1): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5317,3): error TS1109: Expression expected.
+src/App.tsx(5317,44): error TS1003: Identifier expected.
+src/App.tsx(5317,50): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5319,46): error TS1003: Identifier expected.
+src/App.tsx(5319,139): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5320,50): error TS1003: Identifier expected.
+src/App.tsx(5320,134): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5323,51): error TS1003: Identifier expected.
+src/App.tsx(5323,53): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5324,53): error TS1003: Identifier expected.
+src/App.tsx(5324,55): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5325,60): error TS1003: Identifier expected.
+src/App.tsx(5325,66): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5329,52): error TS1003: Identifier expected.
+src/App.tsx(5329,58): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5330,48): error TS1003: Identifier expected.
+src/App.tsx(5330,65): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5343,57): error TS1003: Identifier expected.
+src/App.tsx(5343,59): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5346,54): error TS17008: JSX element 'string' has no corresponding closing tag.
+src/App.tsx(5348,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5358,74): error TS1005: '}' expected.
+src/App.tsx(5361,18): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5362,19): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5363,9): error TS1109: Expression expected.
+src/App.tsx(5364,44): error TS1005: '}' expected.
+src/App.tsx(5365,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5366,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5367,19): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5368,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5370,61): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5371,23): error TS1005: '}' expected.
+src/App.tsx(5377,7): error TS1109: Expression expected.
+src/App.tsx(5378,15): error TS1005: '}' expected.
+src/App.tsx(5380,25): error TS1005: '}' expected.
+src/App.tsx(5382,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5383,35): error TS1005: '}' expected.
+src/App.tsx(5383,49): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5384,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5387,81): error TS1005: '}' expected.
+src/App.tsx(5388,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5389,70): error TS1005: '}' expected.
+src/App.tsx(5393,24): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5394,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5395,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5396,54): error TS1005: '}' expected.
+src/App.tsx(5397,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5398,38): error TS1005: '}' expected.
+src/App.tsx(5399,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5400,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5402,58): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5403,5): error TS1109: Expression expected.
+src/App.tsx(5405,7): error TS1109: Expression expected.
+src/App.tsx(5406,15): error TS1005: '}' expected.
+src/App.tsx(5408,25): error TS1005: '}' expected.
+src/App.tsx(5410,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5412,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5414,32): error TS1005: '}' expected.
+src/App.tsx(5415,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5416,9): error TS1109: Expression expected.
+src/App.tsx(5418,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5419,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5420,43): error TS1005: '}' expected.
+src/App.tsx(5421,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5422,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5424,37): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5425,5): error TS1109: Expression expected.
+src/App.tsx(5426,7): error TS1109: Expression expected.
+src/App.tsx(5427,16): error TS1005: '}' expected.
+src/App.tsx(5428,31): error TS1005: '}' expected.
+src/App.tsx(5430,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5431,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5433,9): error TS1109: Expression expected.
+src/App.tsx(5435,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5436,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5437,54): error TS1005: '}' expected.
+src/App.tsx(5438,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5439,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5441,34): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5442,5): error TS1109: Expression expected.
+src/App.tsx(5443,7): error TS1109: Expression expected.
+src/App.tsx(5444,16): error TS1005: '}' expected.
+src/App.tsx(5445,31): error TS1005: '}' expected.
+src/App.tsx(5447,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5448,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5450,9): error TS1109: Expression expected.
+src/App.tsx(5454,55): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5458,11): error TS1109: Expression expected.
+src/App.tsx(5458,55): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5460,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5461,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5462,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5463,50): error TS1005: '}' expected.
+src/App.tsx(5464,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5465,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5468,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5469,22): error TS1005: '}' expected.
+src/App.tsx(5471,38): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5472,21): error TS1005: '}' expected.
+src/App.tsx(5473,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5474,16): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5475,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5477,40): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5478,5): error TS1109: Expression expected.
+src/App.tsx(5480,7): error TS1109: Expression expected.
+src/App.tsx(5481,15): error TS1005: '}' expected.
+src/App.tsx(5483,25): error TS1005: '}' expected.
+src/App.tsx(5486,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5488,17): error TS1005: '}' expected.
+src/App.tsx(5493,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5494,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5496,47): error TS1005: '}' expected.
+src/App.tsx(5500,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5501,9): error TS1109: Expression expected.
+src/App.tsx(5503,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5504,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5505,36): error TS1005: '}' expected.
+src/App.tsx(5506,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5507,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5509,29): error TS17008: JSX element 'HTMLDivElement' has no corresponding closing tag.
+src/App.tsx(5511,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5512,5): error TS1109: Expression expected.
+src/App.tsx(5513,64): error TS1005: '}' expected.
+src/App.tsx(5514,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5515,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5517,45): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5518,5): error TS1109: Expression expected.
+src/App.tsx(5520,7): error TS1109: Expression expected.
+src/App.tsx(5521,15): error TS1005: '}' expected.
+src/App.tsx(5523,25): error TS1005: '}' expected.
+src/App.tsx(5526,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5527,36): error TS1005: '}' expected.
+src/App.tsx(5527,54): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5528,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5530,31): error TS1005: '}' expected.
+src/App.tsx(5532,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5533,9): error TS1109: Expression expected.
+src/App.tsx(5536,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5537,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5538,53): error TS1005: '}' expected.
+src/App.tsx(5540,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5541,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5543,56): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5568,7): error TS1005: '}' expected.
+src/App.tsx(5569,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5571,57): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5593,7): error TS1005: '}' expected.
+src/App.tsx(5594,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5595,65): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5596,5): error TS1109: Expression expected.
+src/App.tsx(5597,7): error TS1109: Expression expected.
+src/App.tsx(5598,15): error TS1005: '}' expected.
+src/App.tsx(5600,31): error TS1005: '}' expected.
+src/App.tsx(5602,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5603,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5605,47): error TS1005: '}' expected.
+src/App.tsx(5607,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5608,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5609,23): error TS1005: '}' expected.
+src/App.tsx(5610,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5611,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5613,59): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5638,7): error TS1005: '}' expected.
+src/App.tsx(5639,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5640,67): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5641,5): error TS1109: Expression expected.
+src/App.tsx(5642,7): error TS1109: Expression expected.
+src/App.tsx(5643,15): error TS1005: '}' expected.
+src/App.tsx(5645,31): error TS1005: '}' expected.
+src/App.tsx(5647,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5648,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5650,64): error TS1005: '}' expected.
+src/App.tsx(5652,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5653,9): error TS1109: Expression expected.
+src/App.tsx(5655,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5656,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5657,36): error TS1005: '}' expected.
+src/App.tsx(5658,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5659,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5660,63): error TS1003: Identifier expected.
+src/App.tsx(5660,69): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5661,52): error TS17008: JSX element 'number' has no corresponding closing tag.
+src/App.tsx(5662,50): error TS17008: JSX element 'number' has no corresponding closing tag.
+src/App.tsx(5663,54): error TS1003: Identifier expected.
+src/App.tsx(5664,5): error TS1005: '...' expected.
+src/App.tsx(5664,11): error TS1005: '}' expected.
+src/App.tsx(5667,20): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5668,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5668,11): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5669,54): error TS1003: Identifier expected.
+src/App.tsx(5670,5): error TS1005: '...' expected.
+src/App.tsx(5670,11): error TS1005: '}' expected.
+src/App.tsx(5674,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5674,11): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5676,64): error TS1003: Identifier expected.
+src/App.tsx(5676,66): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5681,50): error TS1003: Identifier expected.
+src/App.tsx(5681,52): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5684,67): error TS1003: Identifier expected.
+src/App.tsx(5684,73): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5692,57): error TS17008: JSX element 'HTMLInputElement' has no corresponding closing tag.
+src/App.tsx(5692,77): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5693,5): error TS1109: Expression expected.
+src/App.tsx(5701,7): error TS1109: Expression expected.
+src/App.tsx(5701,58): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5702,18): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5704,55): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5705,18): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5707,56): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5708,18): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5710,57): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5711,18): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5713,68): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5714,18): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5717,35): error TS1005: '}' expected.
+src/App.tsx(5718,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5719,32): error TS1005: '}' expected.
+src/App.tsx(5720,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5721,33): error TS1005: '}' expected.
+src/App.tsx(5722,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5723,40): error TS1005: '}' expected.
+src/App.tsx(5724,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5725,36): error TS1005: '}' expected.
+src/App.tsx(5726,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5727,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5728,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5730,39): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5731,23): error TS1005: '}' expected.
+src/App.tsx(5733,59): error TS1005: '}' expected.
+src/App.tsx(5734,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5737,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5739,50): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5740,6): error TS1109: Expression expected.
+src/App.tsx(5741,22): error TS1003: Identifier expected.
+src/App.tsx(5749,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5767,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5768,22): error TS1005: '}' expected.
+src/App.tsx(5769,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5771,24): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5804,9): error TS1005: '}' expected.
+src/App.tsx(5805,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5807,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5807,31): error TS1005: '}' expected.
+src/App.tsx(5807,33): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5809,52): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5810,5): error TS1109: Expression expected.
+src/App.tsx(5813,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5815,69): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5815,86): error TS17008: JSX element 'string' has no corresponding closing tag.
+src/App.tsx(5815,95): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5816,5): error TS1109: Expression expected.
+src/App.tsx(5816,43): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5817,7): error TS1109: Expression expected.
+src/App.tsx(5823,36): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5824,9): error TS1109: Expression expected.
+src/App.tsx(5825,62): error TS1005: '}' expected.
+src/App.tsx(5826,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5827,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5828,24): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5829,9): error TS1109: Expression expected.
+src/App.tsx(5830,27): error TS1005: '}' expected.
+src/App.tsx(5833,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5834,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5835,25): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5837,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5838,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5840,49): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5841,9): error TS1005: '}' expected.
+src/App.tsx(5845,20): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5846,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5848,52): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5849,9): error TS1005: '}' expected.
+src/App.tsx(5854,20): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5855,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5857,84): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5858,55): error TS1005: '}' expected.
+src/App.tsx(5859,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5861,41): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5862,5): error TS1109: Expression expected.
+src/App.tsx(5867,13): error TS1005: '}' expected.
+src/App.tsx(5869,29): error TS1005: '}' expected.
+src/App.tsx(5872,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5873,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5877,20): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5879,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5881,47): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5882,5): error TS1109: Expression expected.
+src/App.tsx(5883,8): error TS1109: Expression expected.
+src/App.tsx(5884,16): error TS1005: '}' expected.
+src/App.tsx(5886,29): error TS1005: '}' expected.
+src/App.tsx(5889,10): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5890,8): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5892,11): error TS1109: Expression expected.
+src/App.tsx(5894,26): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5895,25): error TS1005: '}' expected.
+src/App.tsx(5897,11): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5898,8): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5899,46): error TS1005: '}' expected.
+src/App.tsx(5900,8): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5901,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5902,26): error TS1005: '}' expected.
+src/App.tsx(5903,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5904,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5906,72): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5907,5): error TS1109: Expression expected.
+src/App.tsx(5910,13): error TS1005: '}' expected.
+src/App.tsx(5912,29): error TS1005: '}' expected.
+src/App.tsx(5915,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5916,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5919,20): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5921,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5923,80): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5924,5): error TS1109: Expression expected.
+src/App.tsx(5935,9): error TS1005: '}' expected.
+src/App.tsx(5938,15): error TS1005: '}' expected.
+src/App.tsx(5940,31): error TS1005: '}' expected.
+src/App.tsx(5943,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5945,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5947,36): error TS1005: '}' expected.
+src/App.tsx(5948,24): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5950,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5952,19): error TS1005: '}' expected.
+src/App.tsx(5953,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5954,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5955,17): error TS1005: '}' expected.
+src/App.tsx(5956,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5957,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5959,55): error TS17008: JSX element 'HTMLFormElement' has no corresponding closing tag.
+src/App.tsx(5959,74): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(5960,23): error TS1005: '}' expected.
+src/App.tsx(5965,7): error TS1109: Expression expected.
+src/App.tsx(5966,15): error TS1005: '}' expected.
+src/App.tsx(5968,31): error TS1005: '}' expected.
+src/App.tsx(5971,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5973,20): error TS1005: '}' expected.
+src/App.tsx(5995,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5996,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(5999,9): error TS1109: Expression expected.
+src/App.tsx(6002,24): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(6003,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6004,43): error TS1005: '}' expected.
+src/App.tsx(6005,24): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(6006,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6007,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6008,39): error TS1005: '}' expected.
+src/App.tsx(6009,22): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(6010,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6011,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6013,65): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(6014,23): error TS1005: '}' expected.
+src/App.tsx(6019,60): error TS1005: '}' expected.
+src/App.tsx(6021,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6023,61): error TS1005: '}' expected.
+src/App.tsx(6025,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6026,31): error TS1003: Identifier expected.
+src/App.tsx(6027,65): error TS1005: '}' expected.
+src/App.tsx(6029,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6032,7): error TS1109: Expression expected.
+src/App.tsx(6033,15): error TS1005: '}' expected.
+src/App.tsx(6035,29): error TS1005: '}' expected.
+src/App.tsx(6039,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6041,22): error TS1005: '}' expected.
+src/App.tsx(6044,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6045,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6049,37): error TS1005: '}' expected.
+src/App.tsx(6055,24): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(6056,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6057,64): error TS1005: '}' expected.
+src/App.tsx(6058,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6059,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6060,48): error TS1005: '}' expected.
+src/App.tsx(6061,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6062,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6064,66): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(6065,23): error TS1005: '}' expected.
+src/App.tsx(6069,54): error TS1003: Identifier expected.
+src/App.tsx(6070,75): error TS1005: '}' expected.
+src/App.tsx(6072,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6075,7): error TS1109: Expression expected.
+src/App.tsx(6076,15): error TS1005: '}' expected.
+src/App.tsx(6078,29): error TS1005: '}' expected.
+src/App.tsx(6082,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6083,46): error TS1005: '}' expected.
+src/App.tsx(6083,64): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6084,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6088,73): error TS1005: '}' expected.
+src/App.tsx(6090,24): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(6092,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6093,65): error TS1005: '}' expected.
+src/App.tsx(6094,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6095,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6096,49): error TS1005: '}' expected.
+src/App.tsx(6097,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6098,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6103,6): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(6137,8): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(6138,10): error TS17008: JSX element 'aside' has no corresponding closing tag.
+src/App.tsx(6154,12): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(6155,14): error TS17008: JSX element 'button' has no corresponding closing tag.
+src/App.tsx(6164,76): error TS2657: JSX expressions must have one parent element.
+src/App.tsx(6164,89): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6165,15): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(6166,14): error TS17008: JSX element 'button' has no corresponding closing tag.
+src/App.tsx(6175,79): error TS2657: JSX expressions must have one parent element.
+src/App.tsx(6175,89): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6176,15): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(6177,14): error TS17008: JSX element 'button' has no corresponding closing tag.
+src/App.tsx(6186,80): error TS2657: JSX expressions must have one parent element.
+src/App.tsx(6186,94): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6187,15): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(6188,14): error TS17008: JSX element 'button' has no corresponding closing tag.
+src/App.tsx(6197,77): error TS2657: JSX expressions must have one parent element.
+src/App.tsx(6197,92): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6198,15): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(6199,14): error TS17008: JSX element 'button' has no corresponding closing tag.
+src/App.tsx(6208,16): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(6214,18): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6215,17): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(6216,15): error TS1005: ')' expected.
+src/App.tsx(6216,46): error TS2657: JSX expressions must have one parent element.
+src/App.tsx(6216,82): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6217,15): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(6218,14): error TS17008: JSX element 'button' has no corresponding closing tag.
+src/App.tsx(6228,46): error TS2657: JSX expressions must have one parent element.
+src/App.tsx(6228,175): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6233,16): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6234,15): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(6235,11): error TS1005: ')' expected.
+src/App.tsx(6235,13): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(6237,12): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(6239,14): error TS17008: JSX element 'button' has no corresponding closing tag.
+src/App.tsx(6242,79): error TS2657: JSX expressions must have one parent element.
+src/App.tsx(6242,92): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6243,15): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(6247,76): error TS2657: JSX expressions must have one parent element.
+src/App.tsx(6247,93): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6248,15): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(6252,88): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6253,15): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(6255,11): error TS1005: '}' expected.
+src/App.tsx(6255,13): error TS17002: Expected corresponding JSX closing tag for 'button'.
+src/App.tsx(6256,9): error TS1005: '}' expected.
+src/App.tsx(6256,11): error TS17002: Expected corresponding JSX closing tag for 'button'.
+src/App.tsx(6258,10): error TS17008: JSX element 'main' has no corresponding closing tag.
+src/App.tsx(6260,14): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(6262,16): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(6275,22): error TS17008: JSX element 'span' has no corresponding closing tag.
+src/App.tsx(6291,22): error TS17008: JSX element 'span' has no corresponding closing tag.
+src/App.tsx(6307,22): error TS17008: JSX element 'span' has no corresponding closing tag.
+src/App.tsx(6323,22): error TS17008: JSX element 'span' has no corresponding closing tag.
+src/App.tsx(6339,22): error TS17008: JSX element 'span' has no corresponding closing tag.
+src/App.tsx(6355,22): error TS17008: JSX element 'span' has no corresponding closing tag.
+src/App.tsx(6360,20): error TS17008: JSX element 'button' has no corresponding closing tag.
+src/App.tsx(6375,21): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(6376,19): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(6481,16): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(6544,22): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(6551,26): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(6595,34): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6596,114): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6597,33): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(6598,29): error TS1005: '}' expected.
+src/App.tsx(6598,31): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(6599,27): error TS1005: ')' expected.
+src/App.tsx(6621,23): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6621,25): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6625,17): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6625,21): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6636,22): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(6643,26): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(6676,28): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(6684,35): error TS2657: JSX expressions must have one parent element.
+src/App.tsx(6687,34): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6692,41): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6693,33): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(6694,31): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(6695,27): error TS1005: ')' expected.
+src/App.tsx(6695,29): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(6715,25): error TS1005: ')' expected.
+src/App.tsx(6717,23): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6717,25): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6721,17): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6721,21): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6879,114): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6880,33): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(6881,29): error TS1005: '}' expected.
+src/App.tsx(6896,23): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(6896,25): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(7031,36): error TS17008: JSX element 'span' has no corresponding closing tag.
+src/App.tsx(7033,35): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(7043,29): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(7045,25): error TS1005: ')' expected.
+src/App.tsx(7045,53): error TS1005: ',' expected.
+src/App.tsx(7045,60): error TS1005: ',' expected.
+src/App.tsx(7049,17): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(7049,21): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(7051,13): error TS1005: ')' expected.
+src/App.tsx(7054,11): error TS1005: ')' expected.
+src/App.tsx(7374,26): error TS17008: JSX element 'span' has no corresponding closing tag.
+src/App.tsx(7641,14): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(7700,18): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(7702,22): error TS17008: JSX element 'table' has no corresponding closing tag.
+src/App.tsx(7719,34): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(7731,41): error TS2657: JSX expressions must have one parent element.
+src/App.tsx(7734,40): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(7735,39): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(7737,35): error TS1005: ')' expected.
+src/App.tsx(7742,166): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(7743,50): error TS2657: JSX expressions must have one parent element.
+src/App.tsx(7743,170): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(7744,198): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(7745,35): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(7746,31): error TS1005: '}' expected.
+src/App.tsx(7746,33): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(7785,29): error TS1005: '}' expected.
+src/App.tsx(7785,31): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(7786,27): error TS1005: '}' expected.
+src/App.tsx(7787,25): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(7787,27): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(7788,25): error TS17002: Expected corresponding JSX closing tag for 'div'.
+src/App.tsx(7789,23): error TS17002: Expected corresponding JSX closing tag for 'td'.
+src/App.tsx(7790,21): error TS17002: Expected corresponding JSX closing tag for 'tr'.
+src/App.tsx(7791,17): error TS1005: ')' expected.
+src/App.tsx(7791,19): error TS17002: Expected corresponding JSX closing tag for 'tbody'.
+src/App.tsx(7792,16): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(7794,12): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(7797,14): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(7803,16): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(7805,18): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(7809,20): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(7832,31): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(7847,29): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(7849,23): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(7850,22): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(7852,19): error TS17002: Expected corresponding JSX closing tag for 'button'.
+src/App.tsx(7854,17): error TS1005: ')' expected.
+src/App.tsx(7855,18): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(7857,22): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(7859,24): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/App.tsx(7875,30): error TS17008: JSX element 'p' has no corresponding closing tag.
+src/App.tsx(7877,31): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(7878,29): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(7993,43): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(7994,35): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(8013,33): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(8014,31): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(8016,25): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8016,27): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8018,25): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(8020,23): error TS1005: ')' expected.
+src/App.tsx(8060,20): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8063,13): error TS1005: ')' expected.
+src/App.tsx(8064,12): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8089,24): error TS17008: JSX element 'button' has no corresponding closing tag.
+src/App.tsx(8096,25): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(8104,25): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(8105,23): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(8106,21): error TS17002: Expected corresponding JSX closing tag for 'button'.
+src/App.tsx(8118,19): error TS17002: Expected corresponding JSX closing tag for 'span'.
+src/App.tsx(8139,12): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8140,11): error TS17002: Expected corresponding JSX closing tag for 'div'.
+src/App.tsx(8181,43): error TS17008: JSX element 'span' has no corresponding closing tag.
+src/App.tsx(8204,4): error TS1005: '}' expected.
+src/App.tsx(8205,1): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8207,65): error TS1005: '}' expected.
+src/App.tsx(8207,104): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8207,111): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8208,3): error TS1109: Expression expected.
+src/App.tsx(8208,49): error TS1003: Identifier expected.
+src/App.tsx(8208,51): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8211,30): error TS17008: JSX element 'HTMLDivElement' has no corresponding closing tag.
+src/App.tsx(8213,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8222,7): error TS1005: '}' expected.
+src/App.tsx(8223,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8225,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8226,5): error TS1109: Expression expected.
+src/App.tsx(8226,53): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8227,7): error TS1109: Expression expected.
+src/App.tsx(8228,25): error TS1005: '}' expected.
+src/App.tsx(8229,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8230,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8232,16): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8233,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8235,34): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8236,5): error TS1109: Expression expected.
+src/App.tsx(8238,13): error TS1005: '}' expected.
+src/App.tsx(8240,29): error TS1005: '}' expected.
+src/App.tsx(8244,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8245,35): error TS1005: '}' expected.
+src/App.tsx(8245,53): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8246,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8248,7): error TS1109: Expression expected.
+src/App.tsx(8252,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8253,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8255,54): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8256,24): error TS1005: '}' expected.
+src/App.tsx(8258,50): error TS1005: '}' expected.
+src/App.tsx(8259,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8260,37): error TS1005: '}' expected.
+src/App.tsx(8261,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8262,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8292,1): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8302,10): error TS1005: '}' expected.
+src/App.tsx(8303,27): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8304,16): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8308,1): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8309,3): error TS1109: Expression expected.
+src/App.tsx(8312,42): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8367,1): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8370,19): error TS1005: '}' expected.
+src/App.tsx(8375,1): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8377,70): error TS1005: '}' expected.
+src/App.tsx(8377,117): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8377,124): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8378,3): error TS1109: Expression expected.
+src/App.tsx(8378,25): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8379,73): error TS1005: '}' expected.
+src/App.tsx(8380,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8382,82): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8383,5): error TS1109: Expression expected.
+src/App.tsx(8384,66): error TS1005: '}' expected.
+src/App.tsx(8384,74): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8386,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8388,41): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8389,5): error TS1109: Expression expected.
+src/App.tsx(8392,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8453,1): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8457,3): error TS1109: Expression expected.
+src/App.tsx(8461,50): error TS1003: Identifier expected.
+src/App.tsx(8461,56): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8462,52): error TS1003: Identifier expected.
+src/App.tsx(8463,5): error TS1005: '...' expected.
+src/App.tsx(8463,12): error TS1005: '}' expected.
+src/App.tsx(8466,19): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8467,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8467,11): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8469,136): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8469,145): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8470,55): error TS1005: '}' expected.
+src/App.tsx(8471,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8473,39): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8474,5): error TS1109: Expression expected.
+src/App.tsx(8475,29): error TS1005: '}' expected.
+src/App.tsx(8476,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8478,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8480,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8481,5): error TS1109: Expression expected.
+src/App.tsx(8482,23): error TS1005: '}' expected.
+src/App.tsx(8483,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8485,7): error TS1109: Expression expected.
+src/App.tsx(8494,41): error TS1005: '}' expected.
+src/App.tsx(8496,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8498,41): error TS1005: '}' expected.
+src/App.tsx(8500,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8502,43): error TS1005: '}' expected.
+src/App.tsx(8504,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8505,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8506,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8508,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8509,5): error TS1109: Expression expected.
+src/App.tsx(8509,33): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8510,7): error TS1109: Expression expected.
+src/App.tsx(8511,9): error TS1109: Expression expected.
+src/App.tsx(8512,18): error TS1005: '}' expected.
+src/App.tsx(8513,29): error TS1005: '}' expected.
+src/App.tsx(8514,53): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8515,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8518,65): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8519,11): error TS1109: Expression expected.
+src/App.tsx(8521,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8522,65): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8523,11): error TS1109: Expression expected.
+src/App.tsx(8523,61): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8523,90): error TS1005: '}' expected.
+src/App.tsx(8523,103): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8523,133): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8525,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8541,13): error TS1005: '}' expected.
+src/App.tsx(8542,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8543,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8544,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8546,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8548,63): error TS1003: Identifier expected.
+src/App.tsx(8548,65): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8551,56): error TS1003: Identifier expected.
+src/App.tsx(8551,58): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8552,61): error TS1003: Identifier expected.
+src/App.tsx(8552,63): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8567,74): error TS1003: Identifier expected.
+src/App.tsx(8567,76): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8573,57): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8574,5): error TS1109: Expression expected.
+src/App.tsx(8576,7): error TS1109: Expression expected.
+src/App.tsx(8579,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8580,7): error TS1109: Expression expected.
+src/App.tsx(8581,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8582,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8588,28): error TS17008: JSX element 'HTMLTextAreaElement' has no corresponding closing tag.
+src/App.tsx(8590,42): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8591,5): error TS1109: Expression expected.
+src/App.tsx(8605,20): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8606,23): error TS1005: '}' expected.
+src/App.tsx(8609,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8610,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8611,64): error TS1003: Identifier expected.
+src/App.tsx(8611,66): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8612,56): error TS17008: JSX element 'string' has no corresponding closing tag.
+src/App.tsx(8617,44): error TS1003: Identifier expected.
+src/App.tsx(8617,63): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8626,52): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8627,5): error TS1109: Expression expected.
+src/App.tsx(8630,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8632,40): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8633,5): error TS1109: Expression expected.
+src/App.tsx(8640,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8642,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8643,5): error TS1109: Expression expected.
+src/App.tsx(8644,35): error TS1005: '}' expected.
+src/App.tsx(8645,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8646,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8648,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8690,28): error TS1005: '}' expected.
+src/App.tsx(8691,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8698,45): error TS1003: Identifier expected.
+src/App.tsx(8698,51): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8699,45): error TS1003: Identifier expected.
+src/App.tsx(8699,51): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8700,42): error TS1003: Identifier expected.
+src/App.tsx(8700,48): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8702,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8703,5): error TS1109: Expression expected.
+src/App.tsx(8703,16): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8704,7): error TS1109: Expression expected.
+src/App.tsx(8707,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8708,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8710,80): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8711,5): error TS1109: Expression expected.
+src/App.tsx(8712,7): error TS1109: Expression expected.
+src/App.tsx(8713,36): error TS1005: '}' expected.
+src/App.tsx(8715,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8721,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8722,7): error TS1109: Expression expected.
+src/App.tsx(8723,36): error TS1005: '}' expected.
+src/App.tsx(8725,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8731,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8732,7): error TS1109: Expression expected.
+src/App.tsx(8733,33): error TS1005: '}' expected.
+src/App.tsx(8735,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8741,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8742,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8744,98): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8745,5): error TS1109: Expression expected.
+src/App.tsx(8746,7): error TS1109: Expression expected.
+src/App.tsx(8746,21): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8747,212): error TS1005: '}' expected.
+src/App.tsx(8751,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8753,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8754,7): error TS1109: Expression expected.
+src/App.tsx(8754,21): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8755,117): error TS1005: '}' expected.
+src/App.tsx(8757,11): error TS1109: Expression expected.
+src/App.tsx(8759,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8760,11): error TS1109: Expression expected.
+src/App.tsx(8762,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8764,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8766,40): error TS1005: '}' expected.
+src/App.tsx(8767,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8768,37): error TS1005: '}' expected.
+src/App.tsx(8769,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8770,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8777,7): error TS1109: Expression expected.
+src/App.tsx(8779,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8780,7): error TS1109: Expression expected.
+src/App.tsx(8782,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8783,7): error TS1109: Expression expected.
+src/App.tsx(8785,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8791,38): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8792,9): error TS1109: Expression expected.
+src/App.tsx(8793,17): error TS1005: '}' expected.
+src/App.tsx(8798,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8799,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8801,22): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8802,9): error TS1109: Expression expected.
+src/App.tsx(8806,24): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8806,47): error TS1003: Identifier expected.
+src/App.tsx(8807,13): error TS1109: Expression expected.
+src/App.tsx(8809,45): error TS1005: '}' expected.
+src/App.tsx(8811,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8812,45): error TS1005: '}' expected.
+src/App.tsx(8814,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8815,42): error TS1005: '}' expected.
+src/App.tsx(8817,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8818,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8819,152): error TS1005: '}' expected.
+src/App.tsx(8821,41): error TS1005: '}' expected.
+src/App.tsx(8826,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8827,41): error TS1005: '}' expected.
+src/App.tsx(8832,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8833,38): error TS1005: '}' expected.
+src/App.tsx(8838,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8839,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8840,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8842,23): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8843,9): error TS1109: Expression expected.
+src/App.tsx(8849,37): error TS1005: '}' expected.
+src/App.tsx(8854,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8855,37): error TS1005: '}' expected.
+src/App.tsx(8860,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8861,34): error TS1005: '}' expected.
+src/App.tsx(8866,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8867,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8870,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8872,50): error TS17008: JSX element 'HTMLInputElement' has no corresponding closing tag.
+src/App.tsx(8872,124): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8873,5): error TS1109: Expression expected.
+src/App.tsx(8876,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8878,46): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8879,5): error TS1109: Expression expected.
+src/App.tsx(8880,86): error TS1005: '}' expected.
+src/App.tsx(8882,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8884,7): error TS1109: Expression expected.
+src/App.tsx(8885,87): error TS1005: '}' expected.
+src/App.tsx(8887,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8888,31): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8888,60): error TS1003: Identifier expected.
+src/App.tsx(8889,92): error TS1005: '}' expected.
+src/App.tsx(8891,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8892,28): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8892,54): error TS1003: Identifier expected.
+src/App.tsx(8893,90): error TS1005: '}' expected.
+src/App.tsx(8895,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8896,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8897,29): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8897,58): error TS1003: Identifier expected.
+src/App.tsx(8898,88): error TS1005: '}' expected.
+src/App.tsx(8900,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8944,9): error TS1109: Expression expected.
+src/App.tsx(8945,19): error TS1005: '}' expected.
+src/App.tsx(8947,35): error TS1005: '}' expected.
+src/App.tsx(8949,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8951,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8953,13): error TS1109: Expression expected.
+src/App.tsx(8957,18): error TS1005: '}' expected.
+src/App.tsx(8958,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8961,18): error TS1005: '}' expected.
+src/App.tsx(8962,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8963,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8964,77): error TS1005: '}' expected.
+src/App.tsx(8965,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8966,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8967,62): error TS1005: '}' expected.
+src/App.tsx(8968,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8970,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(8972,50): error TS17008: JSX element 'HTMLFormElement' has no corresponding closing tag.
+src/App.tsx(8972,69): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(8973,23): error TS1005: '}' expected.
+src/App.tsx(8975,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9625,1): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9629,3): error TS1109: Expression expected.
+src/App.tsx(9633,45): error TS1003: Identifier expected.
+src/App.tsx(9633,51): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9634,50): error TS1003: Identifier expected.
+src/App.tsx(9634,56): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9637,52): error TS1003: Identifier expected.
+src/App.tsx(9638,5): error TS1005: '...' expected.
+src/App.tsx(9638,12): error TS1005: '}' expected.
+src/App.tsx(9641,19): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9642,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9642,11): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9644,136): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9644,145): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9645,55): error TS1005: '}' expected.
+src/App.tsx(9646,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9648,39): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9649,5): error TS1109: Expression expected.
+src/App.tsx(9650,29): error TS1005: '}' expected.
+src/App.tsx(9651,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9653,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9656,63): error TS1003: Identifier expected.
+src/App.tsx(9656,65): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9659,56): error TS1003: Identifier expected.
+src/App.tsx(9659,58): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9660,61): error TS1003: Identifier expected.
+src/App.tsx(9660,63): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9674,74): error TS1003: Identifier expected.
+src/App.tsx(9674,76): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9680,57): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9681,5): error TS1109: Expression expected.
+src/App.tsx(9683,7): error TS1109: Expression expected.
+src/App.tsx(9686,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9687,7): error TS1109: Expression expected.
+src/App.tsx(9688,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9689,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9698,28): error TS17008: JSX element 'HTMLTextAreaElement' has no corresponding closing tag.
+src/App.tsx(9700,42): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9701,5): error TS1109: Expression expected.
+src/App.tsx(9715,20): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9716,23): error TS1005: '}' expected.
+src/App.tsx(9719,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9720,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9721,56): error TS17008: JSX element 'string' has no corresponding closing tag.
+src/App.tsx(9723,44): error TS1003: Identifier expected.
+src/App.tsx(9723,63): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9732,52): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9733,5): error TS1109: Expression expected.
+src/App.tsx(9736,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9738,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9819,9): error TS1005: '}' expected.
+src/App.tsx(9820,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9823,39): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9824,5): error TS1109: Expression expected.
+src/App.tsx(9825,7): error TS1109: Expression expected.
+src/App.tsx(9826,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9829,7): error TS1109: Expression expected.
+src/App.tsx(9830,15): error TS1005: '}' expected.
+src/App.tsx(9832,31): error TS1005: '}' expected.
+src/App.tsx(9834,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9835,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9837,9): error TS1109: Expression expected.
+src/App.tsx(9842,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9843,9): error TS1109: Expression expected.
+src/App.tsx(9845,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9846,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9847,25): error TS1005: '}' expected.
+src/App.tsx(9849,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9850,28): error TS1005: '}' expected.
+src/App.tsx(9851,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9852,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9854,40): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9855,5): error TS1109: Expression expected.
+src/App.tsx(9862,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9864,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9865,5): error TS1109: Expression expected.
+src/App.tsx(9866,35): error TS1005: '}' expected.
+src/App.tsx(9867,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9868,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9875,45): error TS1003: Identifier expected.
+src/App.tsx(9875,51): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9876,45): error TS1003: Identifier expected.
+src/App.tsx(9876,51): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9877,42): error TS1003: Identifier expected.
+src/App.tsx(9877,48): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9879,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9880,5): error TS1109: Expression expected.
+src/App.tsx(9880,16): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9881,7): error TS1109: Expression expected.
+src/App.tsx(9884,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9885,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9887,80): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9888,5): error TS1109: Expression expected.
+src/App.tsx(9889,7): error TS1109: Expression expected.
+src/App.tsx(9890,36): error TS1005: '}' expected.
+src/App.tsx(9892,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9898,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9899,7): error TS1109: Expression expected.
+src/App.tsx(9900,36): error TS1005: '}' expected.
+src/App.tsx(9902,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9908,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9909,7): error TS1109: Expression expected.
+src/App.tsx(9910,33): error TS1005: '}' expected.
+src/App.tsx(9912,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9918,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9919,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9921,98): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9922,5): error TS1109: Expression expected.
+src/App.tsx(9923,7): error TS1109: Expression expected.
+src/App.tsx(9923,21): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9924,212): error TS1005: '}' expected.
+src/App.tsx(9928,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9930,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9931,7): error TS1109: Expression expected.
+src/App.tsx(9931,21): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9932,117): error TS1005: '}' expected.
+src/App.tsx(9934,11): error TS1109: Expression expected.
+src/App.tsx(9936,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9937,11): error TS1109: Expression expected.
+src/App.tsx(9939,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9941,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9943,40): error TS1005: '}' expected.
+src/App.tsx(9944,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9945,37): error TS1005: '}' expected.
+src/App.tsx(9946,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9947,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9954,7): error TS1109: Expression expected.
+src/App.tsx(9956,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9957,7): error TS1109: Expression expected.
+src/App.tsx(9959,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9960,7): error TS1109: Expression expected.
+src/App.tsx(9962,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9968,38): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9969,9): error TS1109: Expression expected.
+src/App.tsx(9970,17): error TS1005: '}' expected.
+src/App.tsx(9975,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9976,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9978,22): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9979,9): error TS1109: Expression expected.
+src/App.tsx(9983,24): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(9983,47): error TS1003: Identifier expected.
+src/App.tsx(9984,13): error TS1109: Expression expected.
+src/App.tsx(9986,45): error TS1005: '}' expected.
+src/App.tsx(9988,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9989,45): error TS1005: '}' expected.
+src/App.tsx(9991,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9992,42): error TS1005: '}' expected.
+src/App.tsx(9994,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9995,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(9996,152): error TS1005: '}' expected.
+src/App.tsx(9998,41): error TS1005: '}' expected.
+src/App.tsx(10003,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10004,41): error TS1005: '}' expected.
+src/App.tsx(10009,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10010,38): error TS1005: '}' expected.
+src/App.tsx(10015,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10016,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10017,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10019,23): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(10020,9): error TS1109: Expression expected.
+src/App.tsx(10026,37): error TS1005: '}' expected.
+src/App.tsx(10031,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10032,37): error TS1005: '}' expected.
+src/App.tsx(10037,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10038,34): error TS1005: '}' expected.
+src/App.tsx(10043,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10044,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10047,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10049,50): error TS17008: JSX element 'HTMLInputElement' has no corresponding closing tag.
+src/App.tsx(10049,124): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(10050,5): error TS1109: Expression expected.
+src/App.tsx(10053,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10055,46): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(10056,5): error TS1109: Expression expected.
+src/App.tsx(10057,86): error TS1005: '}' expected.
+src/App.tsx(10059,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10061,7): error TS1109: Expression expected.
+src/App.tsx(10063,87): error TS1005: '}' expected.
+src/App.tsx(10065,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10066,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10067,29): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(10067,58): error TS1003: Identifier expected.
+src/App.tsx(10068,90): error TS1005: '}' expected.
+src/App.tsx(10070,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10071,29): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(10071,58): error TS1003: Identifier expected.
+src/App.tsx(10072,88): error TS1005: '}' expected.
+src/App.tsx(10074,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10075,26): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(10075,52): error TS1003: Identifier expected.
+src/App.tsx(10076,88): error TS1005: '}' expected.
+src/App.tsx(10078,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10090,49): error TS1005: '}' expected.
+src/App.tsx(10092,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10093,53): error TS1005: '}' expected.
+src/App.tsx(10095,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10127,9): error TS1109: Expression expected.
+src/App.tsx(10128,19): error TS1005: '}' expected.
+src/App.tsx(10130,35): error TS1005: '}' expected.
+src/App.tsx(10132,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10134,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10138,15): error TS1005: '}' expected.
+src/App.tsx(10139,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10140,100): error TS1005: '}' expected.
+src/App.tsx(10141,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10142,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10143,62): error TS1005: '}' expected.
+src/App.tsx(10144,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10146,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10148,50): error TS17008: JSX element 'HTMLFormElement' has no corresponding closing tag.
+src/App.tsx(10148,69): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(10149,23): error TS1005: '}' expected.
+src/App.tsx(10151,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10202,12): error TS17008: JSX element 'form' has no corresponding closing tag.
+src/App.tsx(10408,27): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(10411,29): error TS17002: Expected corresponding JSX closing tag for 'div'.
+src/App.tsx(10412,26): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10414,22): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10454,17): error TS1005: ')' expected.
+src/App.tsx(10614,17): error TS1003: Identifier expected.
+src/App.tsx(10615,14): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10887,13): error TS17015: Expected corresponding closing tag for JSX fragment.
+src/App.tsx(10887,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(10964,1): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10967,3): error TS1109: Expression expected.
+src/App.tsx(10969,44): error TS17008: JSX element 'any' has no corresponding closing tag.
+src/App.tsx(10970,41): error TS1003: Identifier expected.
+src/App.tsx(10970,43): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(10976,57): error TS1003: Identifier expected.
+src/App.tsx(10976,63): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(10977,50): error TS1003: Identifier expected.
+src/App.tsx(10977,56): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(10979,70): error TS1003: Identifier expected.
+src/App.tsx(10979,72): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(10984,52): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(10985,5): error TS1109: Expression expected.
+src/App.tsx(10988,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(10990,69): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(10990,86): error TS17008: JSX element 'string' has no corresponding closing tag.
+src/App.tsx(10990,95): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(10991,5): error TS1109: Expression expected.
+src/App.tsx(10991,43): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(10992,7): error TS1109: Expression expected.
+src/App.tsx(10998,36): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(10999,9): error TS1109: Expression expected.
+src/App.tsx(11000,62): error TS1005: '}' expected.
+src/App.tsx(11001,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(11002,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(11003,24): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(11004,9): error TS1109: Expression expected.
+src/App.tsx(11005,27): error TS1005: '}' expected.
+src/App.tsx(11008,9): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(11009,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(11010,25): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(11012,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(11013,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(11015,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(11037,7): error TS1005: '}' expected.
+src/App.tsx(11038,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(11040,32): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(11041,5): error TS1109: Expression expected.
+src/App.tsx(11041,34): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(11043,13): error TS1005: '}' expected.
+src/App.tsx(11045,29): error TS1005: '}' expected.
+src/App.tsx(11049,7): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(11050,45): error TS1005: '}' expected.
+src/App.tsx(11050,103): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(11051,5): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(11053,20): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(11054,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(11056,42): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(11057,24): error TS1005: '}' expected.
+src/App.tsx(11058,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(11060,48): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(11061,5): error TS1109: Expression expected.
+src/App.tsx(11068,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(11070,29): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/App.tsx(11071,25): error TS1005: '}' expected.
+src/App.tsx(11072,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(11327,1): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/App.tsx(11328,1): error TS1005: '</' expected.
+src/App.tsx(11328,1): error TS1005: '}' expected.

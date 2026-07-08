@@ -37,6 +37,7 @@ export default function ACPControlPanel() {
 
   // ACP data
   const [artists, setArtists] = useState<Artist[]>([]);
+  const [newArtistCreatedInfo, setNewArtistCreatedInfo] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -94,6 +95,8 @@ export default function ACPControlPanel() {
   const [feature3Desc, setFeature3Desc] = useState('');
   const [feature4Title, setFeature4Title] = useState('');
   const [feature4Desc, setFeature4Desc] = useState('');
+  const [featuresTitle, setFeaturesTitle] = useState('');
+  const [featuresSub, setFeaturesSub] = useState('');
 
   const [isSavingLanding, setIsSavingLanding] = useState(false);
   const [landingSuccessMsg, setLandingSuccessMsg] = useState('');
@@ -461,6 +464,12 @@ export default function ACPControlPanel() {
 
       const data = await res.json();
       if (res.ok) {
+        setNewArtistCreatedInfo({
+          name: artistName,
+          extension: artistExtension,
+          username: artistUsername,
+          password: artistPassword
+        });
         setShowAddModal(false);
         resetForm();
         fetchArtists();
@@ -584,6 +593,54 @@ export default function ACPControlPanel() {
     }
   };
 
+  const handleApproveExtensionChange = async (username: string) => {
+    if (!window.confirm('Bạn có chắc chắn muốn duyệt yêu cầu thay đổi Sub-domain này?')) return;
+    try {
+      const res = await fetch('/api/acp/artists/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ originalUsername: username, approveExtensionChange: true })
+      });
+      if (res.ok) {
+        fetchArtists();
+        setToast('Đã duyệt yêu cầu đổi Sub-domain!');
+        setTimeout(() => setToast(''), 3000);
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Không thể duyệt yêu cầu');
+      }
+    } catch (err) {
+      alert('Lỗi kết nối máy chủ!');
+    }
+  };
+
+  const handleRejectExtensionChange = async (username: string) => {
+    if (!window.confirm('Bạn có chắc chắn muốn từ chối yêu cầu thay đổi Sub-domain này?')) return;
+    try {
+      const res = await fetch('/api/acp/artists/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ originalUsername: username, rejectExtensionChange: true })
+      });
+      if (res.ok) {
+        fetchArtists();
+        setToast('Đã từ chối yêu cầu đổi Sub-domain!');
+        setTimeout(() => setToast(''), 3000);
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Không thể từ chối yêu cầu');
+      }
+    } catch (err) {
+      alert('Lỗi kết nối máy chủ!');
+    }
+  };
+
   const handleRejectUsernameChange = async (username: string) => {
     if (!window.confirm('Bạn có chắc chắn muốn TỪ CHỐI yêu cầu thay đổi username này?')) return;
     try {
@@ -690,7 +747,7 @@ export default function ACPControlPanel() {
     setArtistName(artist.artistName);
     setArtistUsername(artist.username);
     setArtistExtension(artist.extension);
-    setArtistPassword(artist.password);
+    setArtistPassword('');
     setArtistVerified(artist.verified);
     setArtistIsPublic(artist.isPublic !== false);
     setArtistDbConfig(artist.dbConfig || '');
@@ -1030,7 +1087,7 @@ export default function ACPControlPanel() {
                               </span>
                             )}
                           </td>
-                          <td className="p-4 text-sm font-mono text-neutral-400">{artist.password}</td>
+                          <td className="p-4 text-sm font-mono text-neutral-400">••••••••</td>
                           <td className="p-4">
                             {artist.dbConfig ? (
                               <div className="flex items-center gap-1 bg-purple-500/10 border border-purple-500/15 text-purple-400 px-2 py-0.5 rounded-lg text-[10px] w-fit font-mono font-bold">
@@ -1848,6 +1905,57 @@ export default function ACPControlPanel() {
         )}
       </main>
 
+      {/* New Artist Info Modal */}
+      {newArtistCreatedInfo && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-neutral-900 border border-white/5 rounded-[2rem] w-full max-w-lg p-6 sm:p-8 relative max-h-[90vh] overflow-y-auto shadow-2xl">
+            <h3 className="text-xl font-black mb-6 flex items-center gap-2 text-emerald-400">
+              <CheckCircle2 className="w-6 h-6" /> Tạo nghệ sĩ thành công!
+            </h3>
+            
+            <div className="bg-black/40 border border-white/10 rounded-xl p-4 font-mono text-sm text-neutral-300 relative group mb-6">
+              <button 
+                onClick={() => {
+                  const textToCopy = `Thông tin kho nhạc nghệ sĩ ${newArtistCreatedInfo.name}
+Nghệ danh: ${newArtistCreatedInfo.name}
+Username: ${newArtistCreatedInfo.username}
+Website: ${newArtistCreatedInfo.extension}.chorus.vn
+Admin: ${newArtistCreatedInfo.extension}.chorus.vn/admin
+Admin User: ${newArtistCreatedInfo.username}
+Admin Password: ${newArtistCreatedInfo.password}`;
+                  navigator.clipboard.writeText(textToCopy);
+                  setToast('Đã copy thông tin!');
+                  setTimeout(() => setToast(null), 3000);
+                }}
+                className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
+                title="Copy thông tin"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              </button>
+              
+              <div className="space-y-1.5 whitespace-pre-wrap pr-10">
+                <span className="text-white font-bold block mb-3 border-b border-white/10 pb-2">Thông tin kho nhạc nghệ sĩ {newArtistCreatedInfo.name}</span>
+                <p>Nghệ danh: <span className="text-white">{newArtistCreatedInfo.name}</span></p>
+                <p>Username: <span className="text-white">{newArtistCreatedInfo.username}</span></p>
+                <p>Website: <span className="text-emerald-400">{newArtistCreatedInfo.extension}.chorus.vn</span></p>
+                <p>Admin: <span className="text-emerald-400">{newArtistCreatedInfo.extension}.chorus.vn/admin</span></p>
+                <p>Admin User: <span className="text-white">{newArtistCreatedInfo.username}</span></p>
+                <p>Admin Password: <span className="text-white">{newArtistCreatedInfo.password}</span></p>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button 
+                onClick={() => setNewArtistCreatedInfo(null)}
+                className="bg-neutral-800 text-neutral-300 py-3 px-6 rounded-xl hover:bg-neutral-700 transition-all text-sm font-bold cursor-pointer"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Add Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -1911,7 +2019,7 @@ export default function ACPControlPanel() {
                   <button type="button" onClick={() => setArtistPassword(Math.random().toString(36).slice(-8))} className="text-[10px] text-purple-400 hover:text-purple-300 font-bold flex items-center gap-1 uppercase tracking-wider"><Sparkles className="w-3 h-3" /> Random</button>
                 </div>
                 <input 
-                  type="text" 
+                  type="password" 
                   required
                   value={artistPassword}
                   onChange={(e) => setArtistPassword(e.target.value)}
@@ -1980,21 +2088,6 @@ export default function ACPControlPanel() {
                 )}
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5 flex items-center gap-1.5">
-                  <Database className="w-3.5 h-3.5" /> Thông tin Database riêng (Nếu có)
-                </label>
-                <textarea 
-                  value={artistDbConfig}
-                  onChange={(e) => setArtistDbConfig(e.target.value)}
-                  className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none font-mono text-xs h-24"
-                  placeholder='{ "apiKey": "AIza...", "projectId": "...", "storageBucket": "..." }'
-                />
-                <p className="text-[10px] text-neutral-500 mt-1">
-                  Nhập cấu hình Firebase JSON nếu nghệ sĩ này muốn lưu trữ dữ liệu trên hệ thống Firestore & Google Cloud của riêng họ.
-                </p>
-              </div>
-
               {formErr && (
                 <p className="text-rose-500 text-xs font-bold text-center bg-rose-500/10 py-2.5 rounded-xl px-3 border border-rose-500/15">
                   {formErr}
@@ -2013,15 +2106,13 @@ export default function ACPControlPanel() {
                   type="submit"
                   className="bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white py-3 px-6 rounded-xl transition-all text-xs font-bold cursor-pointer"
                 >
-                  Lưu nghệ sĩ
+                  Tạo nghệ sĩ
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-
-      {/* Edit Modal */}
       {showEditModal && editingArtist && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-neutral-900 border border-white/5 rounded-[2rem] w-full max-w-lg p-6 sm:p-8 relative max-h-[90vh] overflow-y-auto shadow-2xl">
@@ -2033,9 +2124,8 @@ export default function ACPControlPanel() {
             </button>
             
             <h3 className="text-xl font-black mb-6 flex items-center gap-2">
-              <Edit2 className="w-5 h-5 text-purple-400" /> Sửa thông tin: {editingArtist.username}
+              <UserPlus className="w-5 h-5 text-purple-400" /> Cập nhật nghệ sĩ
             </h3>
-
             <form onSubmit={handleUpdateArtist} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Tên Nghệ Sĩ *</label>
@@ -2049,32 +2139,46 @@ export default function ACPControlPanel() {
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Phần mở rộng *</label>
-                <input 
-                  type="text" 
-                  required
-                  value={artistExtension}
-                  onChange={(e) => setArtistExtension(e.target.value.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase())}
-                  className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none font-mono"
-                  placeholder="vd: tennghesi"
-                />
-                <p className="text-[10px] text-neutral-500 mt-1">
-                    Truy cập qua: <strong>chorus.vn/{"{phần_mở_rộng}"}</strong> HOẶC subdomain <strong>{"{phần_mở_rộng}"}.chorus.vn</strong>
-                </p>
-              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5 opacity-50">Username (Đăng nhập) *</label>
+                  <input 
+                    type="text" 
+                    disabled
+                    readOnly
+                    value={artistUsername}
+                    className="w-full bg-black/20 text-neutral-400 border border-white/5 px-4 py-3 rounded-xl focus:outline-none font-mono cursor-not-allowed"
+                    placeholder="vd: username"
+                  />
+                </div>
 
-                            <div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Phần mở rộng *</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={artistExtension}
+                    onChange={(e) => setArtistExtension(e.target.value.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase())}
+                    className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none font-mono"
+                    placeholder="vd: tennghesi"
+                  />
+                  <p className="text-[10px] text-neutral-500 mt-1">
+                    Truy cập qua: <strong>chorus.vn/{"{phần_mở_rộng}"}</strong> HOẶC cấu hình DNS trỏ subdomain <strong>{"{phần_mở_rộng}"}.chorus.vn</strong> về IP máy chủ để dùng như trang độc lập.
+                  </p>
+                </div>
+              </div>
+              
+              <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400">Mật khẩu *</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400">Mật khẩu mới (Để trống nếu giữ nguyên)</label>
                   <button type="button" onClick={() => setArtistPassword(Math.random().toString(36).slice(-8))} className="text-[10px] text-purple-400 hover:text-purple-300 font-bold flex items-center gap-1 uppercase tracking-wider"><Sparkles className="w-3 h-3" /> Random</button>
                 </div>
                 <input 
-                  type="text" 
-                  required
+                  type="password" 
                   value={artistPassword}
                   onChange={(e) => setArtistPassword(e.target.value)}
                   className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
+                  placeholder="Nhập mật khẩu mới..."
                 />
               </div>
 
@@ -2175,7 +2279,6 @@ export default function ACPControlPanel() {
           </div>
         </div>
       )}
-
       {actionConfirm?.isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-fade-in-up text-black">
@@ -2206,5 +2309,4 @@ export default function ACPControlPanel() {
       )}
     </div>
   );
-
 }

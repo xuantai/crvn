@@ -1,0 +1,25 @@
+              {formErr && (
+                <p className="text-rose-500 text-xs font-bold text-center bg-rose-500/10 py-2.5 rounded-xl px-3 border border-rose-500/15">
+                  {formErr}
+                </p>
+              )}
+
+              <div className="flex justify-end gap-3 pt-4">
+                <button 
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="bg-neutral-800 text-neutral-300 py-3 px-6 rounded-xl hover:bg-neutral-700 transition-all text-xs font-bold cursor-pointer"
+                >
+                  Hủy bỏ
+                </button>
+                <button 
+                  type="submit"
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white py-3 px-6 rounded-xl transition-all text-xs font-bold cursor-pointer"
+                >
+                  Tạo nghệ sĩ
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}

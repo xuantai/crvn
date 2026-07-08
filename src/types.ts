@@ -50,6 +50,11 @@ export interface DemoSong {
   hasPassword?: boolean;
   linkDrive?: string;
   backupAudioUrl?: string;
+  isBrand?: boolean;
+  brandName?: string;
+  brandLogoUrl?: string;
+  brandBrief?: string;
+  brandReferenceVideos?: string[];
 }
 
 export interface TemplateConfig {

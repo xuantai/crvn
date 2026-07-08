@@ -367,19 +367,26 @@ function ArtistLandingCard({ artist, t }: { artist: any; t: any; key?: any }) {
       {/* Overlaid Info - text over cover, optimized vertical footprint, elegant typography */}
       <div className="p-8 relative z-20 w-full flex flex-col justify-end space-y-6">
         <div className="space-y-1">
-          <p className="text-neutral-200 text-xs line-clamp-1 font-serif italic tracking-wide drop-shadow-sm">
+          <p className="text-neutral-200 text-xs line-clamp-1 font-serif italic tracking-wide drop-shadow-sm mb-2">
             {artist.artistBio || `Thiên đường nhạc của`}
           </p>
-          <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-3xl font-black tracking-tight text-white drop-shadow-md">
-              {artist.artistName}
-            </h3>
-            {artist.verified && (
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 p-1 rounded-full shadow-sm shrink-0">
-                <BadgeCheck className="w-5 h-5 text-sky-400 fill-sky-450 shrink-0" title="Tài khoản xác thực" />
-              </div>
-            )}
-          </div>
+          <h3 className={`font-black tracking-tight text-white drop-shadow-md min-w-0 pt-0.5 leading-[1.35] ${artist.artistName.length > 15 ? 'text-2xl' : 'text-3xl'}`}>
+            {artist.artistName.split(' ').map((word, index, array) => {
+              if (index === array.length - 1) {
+                return (
+                  <span key={index} className="whitespace-nowrap">
+                    {word}
+                    {artist.verified && (
+                      <span className="inline-flex items-center align-baseline ml-2 bg-white/10 backdrop-blur-md border border-white/20 p-1 rounded-full shadow-sm shrink-0 relative top-[2px]">
+                        <BadgeCheck className="w-5 h-5 text-sky-400 fill-sky-450 shrink-0" title="Tài khoản xác thực" />
+                      </span>
+                    )}
+                  </span>
+                );
+              }
+              return word + ' ';
+            })}
+          </h3>
         </div>
 
         {/* Count Pill badges */}
@@ -957,10 +964,10 @@ export default function ChorusVNLanding() {
         <div className="max-w-7xl mx-auto px-6 sm:px-10">
           <div className="text-center max-w-2xl mx-auto mb-20 space-y-4">
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-950 font-sans">
-              {t('featuresTitle')}
+              {config.featuresTitle || t('featuresTitle')}
             </h2>
             <p className="text-neutral-500 text-sm max-w-lg mx-auto font-medium leading-relaxed">
-              {t('featuresSub')}
+              {config.featuresSub || t('featuresSub')}
             </p>
           </div>
 

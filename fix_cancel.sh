@@ -1,0 +1,1 @@
+sed -i -e "s/pendingUsernameChange: type === 'username' ? undefined : prev.pendingUsernameChange/pendingUsernameChange: type === 'username' ? undefined : prev.pendingUsernameChange,\n          pendingExtensionChange: type === 'extension' ? undefined : prev.pendingExtensionChange/g" src/App.tsx

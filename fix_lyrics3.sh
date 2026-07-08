@@ -1,0 +1,1 @@
+sed -i -e "/{ label: 'Chorus', value: 'Chorus', className: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200' },/i\                        { label: 'Pre-Chorus', value: 'Pre-Chorus', className: 'bg-teal-50 hover:bg-teal-100 text-teal-700 border-teal-200' }," src/App.tsx

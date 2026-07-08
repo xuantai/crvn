@@ -1,4 +1,6 @@
 import express from 'express';
+import bcrypt from 'bcryptjs';
+
 import fsSync from 'fs';
 import path from 'path';
 import fs from 'fs/promises';
@@ -196,6 +198,8 @@ let landingConfig = {
   feature3Desc: "Lưu trữ dữ liệu kép trên Cloud Firestore chất lượng cao kết hợp cơ chế dự phòng cục bộ. Cam kết phát nhạc ổn định, tốc độ load nhanh ngay cả khi internet quốc tế gặp sự cố.",
   feature4Title: "Bố cục mang đậm dấu ấn cá nhân",
   feature4Desc: "Tùy chỉnh ảnh bìa đại diện, màu sắc chủ đạo, ảnh đại diện, viết bio, cập nhật danh sách mạng xã hội. Trang cá nhân hoạt động độc lập như một website thu nhỏ của riêng bạn.",
+  featuresTitle: "Được thiết kế cho trải nghiệm đỉnh cao",
+  featuresSub: "Tích hợp những công nghệ hiện đại nhất để tối ưu hóa quy trình phân phối và lưu trữ nội bộ.",
   cloudSyncEnabled: true,
   systemIp: "103.1.2.3"
 };
@@ -1501,6 +1505,7 @@ async function startServer() {
       tagline, heroTitle, heroSubtitle, heroDescription, footerText,
       feature1Title, feature1Desc, feature2Title, feature2Desc,
       feature3Title, feature3Desc, feature4Title, feature4Desc,
+      featuresTitle, featuresSub,
       cloudSyncEnabled, systemIp,
       pageTitle, ogImageUrl, faviconUrl
     } = req.body;
@@ -1544,14 +1549,15 @@ async function startServer() {
     }
     const enrichedArtists = [];
     for (const a of artists) {
+      const { password, ...aWithoutPassword } = a;
       try {
         const d = await loadData(a.username);
         enrichedArtists.push({
-          ...a,
+          ...aWithoutPassword,
           homeCoverUrl: d?.config?.homeCoverUrl || ''
         });
       } catch (err) {
-        enrichedArtists.push(a);
+        enrichedArtists.push(aWithoutPassword);
       }
     }
     res.json(enrichedArtists);
@@ -1570,12 +1576,13 @@ async function startServer() {
       return res.status(400).json({ error: 'Username hoặc Phần mở rộng đã tồn tại!' });
     }
     
+    const hashedPassword = bcrypt.hashSync(password, 10);
     const newArtist = {
       id: Math.random().toString(36).substring(2, 15),
       artistName,
       username: username.toLowerCase().trim(),
       extension: extension.toLowerCase().trim(),
-      password,
+      password: hashedPassword,
       verified: !!verified,
       isPublic: isPublic !== false,
       dbConfig: dbConfig || "",
@@ -1588,14 +1595,19 @@ async function startServer() {
     await saveArtists(artists);
     await loadData(newArtist.username);
     
-    res.json({ success: true, artist: newArtist });
+    const responseArtist = {
+      ...newArtist,
+      password: password
+    };
+    
+    res.json({ success: true, artist: responseArtist });
   });
 
   app.post('/api/acp/artists/update', async (req, res) => {
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const { originalUsername, artistName, extension, password, verified, dbConfig, isPublic, approveNameChange, rejectNameChange, approveUsernameChange, rejectUsernameChange, hasExternalWebsite, externalWebsiteUrl } = req.body;
+    const { originalUsername, artistName, extension, password, verified, dbConfig, isPublic, approveNameChange, rejectNameChange, approveUsernameChange, rejectUsernameChange, approveExtensionChange, rejectExtensionChange, hasExternalWebsite, externalWebsiteUrl } = req.body;
     const artistIdx = artists.findIndex(a => a.username === originalUsername);
     if (artistIdx === -1) {
       return res.status(404).json({ error: 'Không tìm thấy nghệ sĩ!' });
@@ -1635,15 +1647,28 @@ async function startServer() {
       try {
         fs.unlinkSync(path.join(process.cwd(), `data_${oldUsername}.json`));
       } catch(e) {}
+    } else if (approveExtensionChange && artist.pendingExtensionChange) {
+      artist.extension = artist.pendingExtensionChange;
+      delete artist.pendingExtensionChange;
+      const data = await loadData(artist.username);
+      data.extension = artist.extension;
+      await saveData(artist.username, data);
+    } else if (rejectExtensionChange) {
+      delete artist.pendingExtensionChange;
+      const data = await loadData(artist.username);
+      delete data.pendingExtensionChange;
+      await saveData(artist.username, data);
     } else if (rejectUsernameChange) {
       delete artist.pendingUsernameChange;
       const data = await loadData(artist.username);
       delete data.pendingUsernameChange;
       await saveData(artist.username, data);
-    } else if (!approveNameChange && !rejectNameChange && !approveUsernameChange && !rejectUsernameChange) {
+    } else if (!approveNameChange && !rejectNameChange && !approveUsernameChange && !rejectUsernameChange && !approveExtensionChange && !rejectExtensionChange) {
       artist.artistName = artistName || artist.artistName;
       artist.extension = extension ? extension.toLowerCase().trim() : artist.extension;
-      artist.password = password || artist.password;
+      if (password) {
+        artist.password = bcrypt.hashSync(password, 10);
+      }
       artist.verified = verified !== undefined ? !!verified : artist.verified;
       artist.isPublic = isPublic !== undefined ? !!isPublic : (artist.isPublic !== false);
       artist.dbConfig = dbConfig !== undefined ? dbConfig : artist.dbConfig;
@@ -1821,15 +1846,18 @@ async function startServer() {
   app.post('/api/admin/login', (req: any, res) => {
     const { username, password } = req.body;
     let artist = req.artist;
-    
     if (username) {
       artist = artists.find(a => a.username.toLowerCase() === username.toLowerCase().trim());
     }
-    
-    if (artist && artist.password === password) {
+    const isMatch = artist && artist.password && (
+      (artist.password.startsWith('$2a$') || artist.password.startsWith('$2b$')) 
+        ? bcrypt.compareSync(password, artist.password) 
+        : artist.password === password
+    );
+    if (isMatch) {
       res.setHeader('Set-Cookie', [
         `adminToken_${artist.username}=${artist.password}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`,
-        `adminToken=${artist.password}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000` // Keep legacy for backward compat
+        `adminToken=${artist.password}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`
       ]);
       res.json({ success: true, token: artist.password, extension: artist.extension, username: artist.username, artist });
     } else {
@@ -1872,7 +1900,12 @@ async function startServer() {
     if (!oldPassword || !newPassword || !confirmPassword) {
       return res.status(400).json({ error: 'Vui lòng cung cấp đầy đủ thông tin!' });
     }
-    if (oldPassword !== artist.password) {
+    const isOldMatch = artist.password && (
+      (artist.password.startsWith('$2a$') || artist.password.startsWith('$2b$'))
+        ? bcrypt.compareSync(oldPassword, artist.password)
+        : artist.password === oldPassword
+    );
+    if (!isOldMatch) {
       return res.status(400).json({ error: 'Mật khẩu cũ không chính xác!' });
     }
     if (newPassword !== confirmPassword) {
@@ -1883,10 +1916,12 @@ async function startServer() {
     }
 
     const data = await loadData((req as any).artist?.username);
-    data.adminPassword = newPassword;
+    
+    const hashedNewPassword = bcrypt.hashSync(newPassword, 10);
+    data.adminPassword = hashedNewPassword;
     await saveData(data);
     
-    artist.password = newPassword;
+    artist.password = hashedNewPassword;
     await saveArtists(artists);
     
     res.setHeader('Set-Cookie', [
@@ -1923,7 +1958,9 @@ async function startServer() {
     const mPass = artist?.memberPassword || '';
     
     // Default member password is blank if not set, instead of XuanTaiDepTrai
-    if (password === mPass) {
+    
+    const isMatch = mPass && ((mPass.startsWith('$2a$') || mPass.startsWith('$2b$')) ? bcrypt.compareSync(password, mPass) : mPass === password);
+    if (isMatch) {
       res.setHeader('Set-Cookie', `memberToken=${mPass}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`);
       res.json({ success: true, token: mPass });
     } else {
@@ -2050,6 +2087,13 @@ async function startServer() {
         const idx = artists.findIndex(a => a.username === artist.username);
         if (idx !== -1) {
           delete artists[idx].pendingNameChange;
+        }
+      } else if (req.body.type === 'extension') {
+        delete artist.pendingExtensionChange;
+        delete data.pendingExtensionChange;
+        const idx = artists.findIndex(a => a.username === artist.username);
+        if (idx !== -1) {
+          delete artists[idx].pendingExtensionChange;
         }
       } else if (req.body.type === 'username') {
         delete artist.pendingUsernameChange;
@@ -2648,7 +2692,7 @@ app.post('/api/admin/tickets/create', async (req: any, res) => {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   const { songId, songTitle, sourceArtist, type, description } = req.body;
-  if (!songId || !songTitle || !sourceArtist || !type || !description) {
+  if (!type || !description) {
     return res.status(400).json({ error: 'Thiếu thông tin yêu cầu!' });
   }
 
@@ -2657,9 +2701,9 @@ app.post('/api/admin/tickets/create', async (req: any, res) => {
   const newTicket = {
     id: crypto.randomBytes(8).toString('hex'),
     type,
-    songId,
-    songTitle,
-    sourceArtist,
+    songId: songId || 'feedback',
+    songTitle: songTitle || 'General Feedback',
+    sourceArtist: sourceArtist || 'system',
     reporterArtist: req.artist.username,
     description,
     status: 'open',
@@ -2906,7 +2950,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
       lyrics: parseLyricsBeforeSave(req.body.lyrics || ''),
       template: req.body.template || '1',
       status: req.body.status || 'public',
-      password: req.body.password || '',
+      password: req.body.password ? bcrypt.hashSync(req.body.password, 10) : '',
       createdAt: Date.now(),
       composer: req.body.composer || data.artistName || 'Nghệ sĩ',
       singer: req.body.singer || data.artistName || 'Nghệ sĩ',
@@ -2921,7 +2965,13 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
       linkApple: req.body.linkApple || '',
       linkYoutubeMusic: req.body.linkYoutubeMusic || '',
       linkYoutube: req.body.linkYoutube || '',
-      linkDrive: req.body.linkDrive || ''
+      linkDrive: req.body.linkDrive || '',
+      isBrand: req.body.isBrand === 'true',
+      brandName: req.body.brandName || '',
+      brandBrief: req.body.brandBrief || '',
+      brandLogoUrl: req.body.brandLogoUrl || '',
+      brandColor: req.body.brandColor || '',
+      brandReferenceVideos: req.body.brandReferenceVideos ? JSON.parse(req.body.brandReferenceVideos) : []
     };
     data.demos.push(newDemo);
     await saveData(data);
@@ -3018,6 +3068,12 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         if (!updatedData.singer && !data.demos[idx].singer) updatedData.singer = data.artistName || 'Nghệ sĩ';
         if (req.body.isReleased !== undefined) {
              updatedData.isReleased = req.body.isReleased === 'true';
+        }
+        if (req.body.isBrand !== undefined) {
+             updatedData.isBrand = req.body.isBrand === "true";
+        }
+        if (req.body.brandReferenceVideos !== undefined) {
+            updatedData.brandReferenceVideos = JSON.parse(req.body.brandReferenceVideos);
         }
         if (req.body.isDraft !== undefined) {
              updatedData.isDraft = req.body.isDraft === 'true';
@@ -3995,5 +4051,4 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }
-
 startServer();
