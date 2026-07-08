@@ -6,6 +6,7 @@ import { toPng } from 'html-to-image';
 import { AppData, DemoSong, TemplateConfig, Achievement } from './types';
 import { motion, AnimatePresence } from 'motion/react';
 import { IndirectBioCard } from './components/IndirectBioCard';
+import { LoadingScreen } from './components/LoadingScreen';
 
 const brandColorCache: Record<string, { primary: string; secondary: string }> = {};
 
@@ -1332,7 +1333,7 @@ function Home() {
     });
   }, [t.lDemos]);
 
-  if (!data) return <div className="min-h-screen bg-black text-white flex items-center justify-center">{t.load}</div>;
+  if (!data) return <LoadingScreen text={t.load} />;
 
   return (
     <motion.div 
@@ -1474,7 +1475,7 @@ function Home() {
                   animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
                   onAnimationComplete={() => setShowArtist(true)}
-                  className="text-xl sm:text-2xl text-stone-200 font-medium max-w-3xl mx-auto drop-shadow-lg mb-2"
+                  className="text-xl sm:text-2xl text-stone-200 font-medium max-w-3xl mx-auto drop-shadow-lg mb-6 sm:mb-8 md:mb-10"
                 >
                   <AutoTranslate text={(!data.artistBio || ["Thiên đường demo của", "Thiên đường âm nhạc của"].includes(data.artistBio?.trim() || '')) ? t.dDesc : data.artistBio} />
                 </motion.p>
@@ -1484,7 +1485,7 @@ function Home() {
                       initial={{ scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
                       animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
                       transition={{ duration: 1.5, ease: "easeOut" }}
-                      className="text-4xl sm:text-6xl md:text-[6rem] lg:text-[7rem] font-black mb-4 tracking-tighter text-white drop-shadow-2xl leading-[1.1] text-center max-w-full"
+                      className="text-4xl sm:text-6xl md:text-[6rem] lg:text-[7rem] font-black mb-4 tracking-tighter text-white drop-shadow-2xl leading-[1.15] text-center max-w-full mt-3 sm:mt-4"
                     >
                       {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
                         if (index === array.length - 1) {
@@ -1516,7 +1517,7 @@ function Home() {
                   animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
                   onAnimationComplete={() => setShowArtist(true)}
-                  className="text-lg text-neutral-400 font-medium mb-4"
+                  className="text-lg text-neutral-400 font-medium mb-6 sm:mb-8"
                 >
                   <AutoTranslate text={(!data.artistBio || ["Thiên đường demo của", "Thiên đường âm nhạc của"].includes(data.artistBio?.trim() || '')) ? t.dDesc : data.artistBio} />
                 </motion.p>
@@ -1526,7 +1527,7 @@ function Home() {
                       initial={{ scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
                       animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
                       transition={{ duration: 1.5, ease: "easeOut" }}
-                      className="text-3xl sm:text-5xl md:text-6xl font-black mb-0 tracking-tight leading-[1.1] text-center max-w-full"
+                      className="text-3xl sm:text-5xl md:text-6xl font-black mb-0 tracking-tight leading-[1.15] text-center max-w-full mt-2 sm:mt-3"
                     >
                       {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
                         if (index === array.length - 1) {
@@ -3605,7 +3606,7 @@ function PlaylistPlayer() {
      }
   }, [id, currentSong]);
 
-  if (loading) return <div className="min-h-screen bg-black text-white flex items-center justify-center">{t.load}</div>;
+  if (loading) return <LoadingScreen text={t.load} />;
   if (isProtected) return (
      <div className="min-h-screen bg-stone-950 flex items-center justify-center p-4 relative overflow-hidden text-white font-sans">
         <button onClick={handleBackPlaylist} className="fixed top-6 left-6 opacity-60 hover:opacity-100 flex items-center gap-2 z-20 transition-opacity font-medium text-white cursor-pointer" title={t.back}>
@@ -4230,7 +4231,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
      }
   }, [demo]);
 
-  if (loading) return <div className="min-h-screen bg-black text-white flex items-center justify-center">{t.load}</div>;
+  if (loading) return <LoadingScreen text={t.load} />;
   if (!demo) return <div className="min-h-screen bg-black text-white flex items-center justify-center">Không tìm thấy demo</div>;
 
   const resolveCoverUrl = (urlStr: string | undefined): string => {
@@ -6438,7 +6439,7 @@ function AdminDashboard() {
     }
   };
 
-  if (!data) return <div className="min-h-screen bg-stone-100 flex items-center justify-center text-stone-500">Đang tải AdminCP...</div>;
+  if (!data) return <LoadingScreen text="Đang tải AdminCP..." />;
 
   return (
     <div className="min-h-screen bg-stone-100 text-stone-900 font-sans relative">
@@ -6498,22 +6499,11 @@ function AdminDashboard() {
               className={`flex items-center transition-colors ${
                 effectiveSidebarCollapsed ? 'justify-center w-10 h-10 rounded-xl mx-auto' : 'justify-start w-full gap-3 px-4 py-3 rounded-xl font-medium'
               } ${
-                activeTab === 'demos' && demosSubTab !== 'playlists' && demosSubTab !== 'drafts' ? 'bg-stone-900 text-white' : 'hover:bg-stone-200 text-stone-600'
+                activeTab === 'demos' && demosSubTab !== 'playlists' ? 'bg-stone-900 text-white' : 'hover:bg-stone-200 text-stone-600'
               }`}
               title="Bài Hát"
             >
               <Disc3 className="w-5 h-5" /> {!effectiveSidebarCollapsed && <span>Bài Hát</span>}
-            </button>
-            <button
-              onClick={() => { setActiveTab('demos'); setDemosSubTab('drafts'); }}
-              className={`flex items-center transition-colors ${
-                effectiveSidebarCollapsed ? 'justify-center w-10 h-10 rounded-xl mx-auto' : 'justify-start w-full gap-3 px-4 py-3 rounded-xl font-medium'
-              } ${
-                activeTab === 'demos' && demosSubTab === 'drafts' ? 'bg-stone-900 text-white' : 'hover:bg-stone-200 text-stone-600'
-              }`}
-              title="Nháp"
-            >
-              <FileText className="w-5 h-5" /> {!effectiveSidebarCollapsed && <span>Nháp</span>}
             </button>
             <button
               onClick={() => { setActiveTab('demos'); setDemosSubTab('playlists'); }}
@@ -10573,7 +10563,7 @@ function AdminEditDemo() {
     saveDemo(demo?.isDraft ? true : false);
   };
 
-  if (!demo) return <div className="min-h-screen bg-stone-100 flex items-center justify-center">Đang tải...</div>;
+  if (!demo) return <LoadingScreen text="Đang tải dữ liệu bài hát..." />;
 
   return (
     <div className="min-h-screen bg-stone-100 text-stone-900 font-sans py-12 px-4">
@@ -10808,39 +10798,20 @@ function AdminEditDemo() {
                         : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
                     }`}
                   >
-                    {/* Current Audio Info if exists */}
-                    {(demo?.audioUrl || uploadedAudioUrl) && (
-                      <div className="text-xs text-stone-500 border-b border-stone-200 pb-3 mb-1 flex justify-between items-center flex-wrap gap-2">
-                        <div className="min-w-0 flex-1">
-                          <span className="font-bold block sm:inline font-sans text-stone-700">File hiện tại:{' '}</span>
-                          <div className="mt-1">
-                            {(() => {
-                              const currentAudioUrl = uploadedAudioUrl || demo?.audioUrl || "";
-                              if (currentAudioUrl.includes("drive.google.com") || currentAudioUrl.includes("docs.google.com")) {
-                                  return (
-                                    <span className="text-amber-600 font-bold bg-amber-50 border border-amber-200 px-2.5 py-1.5 rounded-xl text-[11px] inline-block leading-normal">
-                                      ⚠️ Link Google Drive cũ (Hệ thống đã tắt tính năng chạy link trực tiếp, vui lòng tải file nhạc lên để phát ổn định)
-                                    </span>
-                                  );
-                              }
-                              return null;
-                            })()}
+                    {/* Google Drive Warning if applicable */}
+                    {(() => {
+                      const currentAudioUrl = uploadedAudioUrl || demo?.audioUrl || "";
+                      if (currentAudioUrl && (currentAudioUrl.includes("drive.google.com") || currentAudioUrl.includes("docs.google.com"))) {
+                        return (
+                          <div className="text-xs text-stone-500 mb-2">
+                            <span className="text-amber-600 font-bold bg-amber-50 border border-amber-200 px-2.5 py-1.5 rounded-xl text-[11px] inline-block leading-normal">
+                              ⚠️ Link Google Drive cũ (Hệ thống đã tắt tính năng chạy link trực tiếp, vui lòng tải file nhạc lên để phát ổn định)
+                            </span>
                           </div>
-                        </div>
-
-                        {demo?.audioUrl && (
-                          <button
-                            type="button"
-                            disabled={isReverting}
-                            onClick={handleRevertAudio}
-                            className="bg-stone-900 hover:bg-stone-800 text-white px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-colors font-bold text-[11px] shadow-sm shrink-0 disabled:opacity-50"
-                          >
-                            <RotateCcw className="w-3.5 h-3.5" /> 
-                            {isReverting ? 'Đang khôi phục...' : 'Khôi phục bản cũ'}
-                          </button>
-                        )}
-                      </div>
-                    )}
+                        );
+                      }
+                      return null;
+                    })()}
 
                     <div className="flex flex-wrap gap-4 items-center">
                       {(uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com') || audioUploadProgress === 100) ? (
@@ -10849,7 +10820,7 @@ function AdminEditDemo() {
                         <div className="w-16 h-16 rounded-xl bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-400 shadow-sm"><FileAudio className="w-8 h-8"/></div>
                       )}
                       <div className="flex-1 min-w-[150px]">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${audioUploadProgress === 100 || (uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com')) || (demo?.audioUrl && !uploadedAudioUrl) ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('audioEditUpload')?.click()}>
                               <Upload className="w-4 h-4"/>
                               <span className="max-w-[200px] truncate"></span>
@@ -10863,6 +10834,18 @@ function AdminEditDemo() {
                           ) : ((uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com') || audioUploadProgress === 100) ? (
                             <button type="button" onClick={() => { setUploadedAudioUrl(''); setAudioUploadProgress(0); setUploadedAudioName(''); (document.getElementById('audioEditUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
                           ) : null)}
+
+                          {demo?.audioUrl && demo?.backupAudioUrl && demo?.backupAudioUrl !== demo?.audioUrl && (
+                            <button
+                              type="button"
+                              disabled={isReverting}
+                              onClick={handleRevertAudio}
+                              className="bg-stone-900 hover:bg-stone-800 text-white px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-colors font-bold text-[11px] shadow-sm shrink-0 disabled:opacity-50"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" /> 
+                              {isReverting ? 'Đang khôi phục...' : 'Khôi phục bản cũ'}
+                            </button>
+                          )}
                         </div>
                         {audioUploadProgress > 0 && audioUploadProgress < 100 && (
                           <div className="w-full bg-stone-150 h-1.5 rounded-full overflow-hidden mt-2">
@@ -11499,7 +11482,7 @@ function AdminPlaylistEdit() {
     setDraggingIdx(null);
   };
 
-  if (isLoading) return <div className="min-h-screen bg-stone-100 flex items-center justify-center text-stone-500">Đang tải...</div>;
+  if (isLoading) return <LoadingScreen text="Đang tải dữ liệu playlist..." />;
 
   return (
     <div className="min-h-screen bg-stone-100 text-stone-900 font-sans relative pb-24">

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Music, BadgeCheck, Lock, Globe, ArrowRight, Sparkles, Disc3, CheckCircle2, ListMusic, X, AlertCircle, Mail } from 'lucide-react';
+import { Music, BadgeCheck, Lock, Globe, ArrowRight, Sparkles, Disc3, CheckCircle2, ListMusic, X, AlertCircle, Mail, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChorusLogo } from './ChorusLogo';
 
@@ -340,7 +340,7 @@ function ArtistLandingCard({ artist, t }: { artist: any; t: any; key?: any }) {
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <Music className="w-5 h-5 text-white" />
+              <ChorusLogo className="w-12 h-12" />
             )}
           </motion.div>
           {/* Active status pulse badge */}
@@ -438,9 +438,33 @@ function ArtistLandingCard({ artist, t }: { artist: any; t: any; key?: any }) {
   );
 }
 
+const preloadImages = (imageUrls: string[]): Promise<void> => {
+  const uniqueUrls = Array.from(new Set(imageUrls.filter(Boolean)));
+  if (uniqueUrls.length === 0) return Promise.resolve();
+
+  let loadedCount = 0;
+  return new Promise<void>((resolve) => {
+    uniqueUrls.forEach((url) => {
+      const img = new Image();
+      img.src = url;
+      img.onload = img.onerror = () => {
+        loadedCount++;
+        if (loadedCount === uniqueUrls.length) {
+          resolve();
+        }
+      };
+    });
+    // Fallback safety timeout after 4 seconds
+    setTimeout(() => resolve(), 4000);
+  });
+};
+
 export default function ChorusVNLanding() {
   const [artists, setArtists] = useState<LandingArtist[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
+  const PAGE_SIZE = 9;
+
   const [showBetaModal, setShowBetaModal] = useState(false);
   const [subscriberEmail, setSubscriberEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -496,9 +520,23 @@ export default function ChorusVNLanding() {
     // Load public artists
     fetch('/api/public/artists')
       .then((res) => res.json())
-      .then((data) => {
+      .then(async (data) => {
         if (Array.isArray(data)) {
           setArtists(data);
+          
+          // Preload images
+          const urls: string[] = [];
+          data.forEach((artist: any) => {
+            if (artist.homeCoverUrl) urls.push(artist.homeCoverUrl);
+            if (artist.slideshowImages && Array.isArray(artist.slideshowImages)) {
+              artist.slideshowImages.forEach((img: string) => {
+                if (img) urls.push(img);
+              });
+            }
+          });
+          FALLBACK_SLIDESHOW.forEach((img) => urls.push(img));
+
+          await preloadImages(urls);
         }
         setLoading(false);
       })
@@ -507,6 +545,16 @@ export default function ChorusVNLanding() {
         setLoading(false);
       });
   }, []);
+
+  const totalPages = Math.ceil(artists.length / PAGE_SIZE);
+
+  useEffect(() => {
+    if (totalPages <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentPage((prev) => (prev + 1) % totalPages);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [currentPage, totalPages]);
 
   const t = (key: string) => {
     const tr = (dict[lang] as any)[key] || (dict['vi'] as any)[key] || '';
@@ -543,23 +591,94 @@ export default function ChorusVNLanding() {
 
   return (
     <div className="min-h-screen bg-[#faf9f6] text-neutral-900 font-sans selection:bg-neutral-900/10 relative overflow-x-hidden">
-      {/* Delicate Radial Dot Grid Pattern Background matching the screenshot texture */}
-      <div className="absolute inset-0 bg-[radial-gradient(#e5e2dd_1.2px,transparent_1.2px)] [background-size:24px_24px] pointer-events-none opacity-80" />
+      <AnimatePresence mode="wait">
+        {loading ? (
+          <motion.div
+            key="preloader"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+            className="fixed inset-0 z-50 bg-[#faf9f6] flex flex-col items-center justify-center"
+          >
+            {/* Subtle dot background */}
+            <div className="absolute inset-0 bg-[radial-gradient(#e5e2dd_1.2px,transparent_1.2px)] [background-size:24px_24px] pointer-events-none opacity-80" />
+            
+            <div className="relative z-10 flex flex-col items-center text-center px-6">
+              {/* Pulsating premium vinyl-like outer circle */}
+              <div className="relative mb-8">
+                <motion.div
+                  animate={{ 
+                    rotate: 360,
+                  }}
+                  transition={{ 
+                    duration: 6, 
+                    repeat: Infinity, 
+                    ease: "linear" 
+                  }}
+                  className="w-24 h-24 rounded-full border border-neutral-300 flex items-center justify-center relative bg-white shadow-xl"
+                >
+                  {/* Grooves on vinyl */}
+                  <div className="absolute inset-2 rounded-full border border-dashed border-neutral-200" />
+                  <div className="absolute inset-4 rounded-full border border-neutral-200" />
+                  <div className="absolute inset-6 rounded-full border border-dashed border-neutral-150" />
+                  <div className="absolute inset-8 rounded-full border border-neutral-200" />
+                  
+                  {/* Music icon */}
+                  <Music className="w-8 h-8 text-neutral-800" />
+                </motion.div>
+                
+                {/* Ambient glowing pulses */}
+                <motion.div
+                  animate={{
+                    scale: [1, 1.3, 1],
+                    opacity: [0.3, 0.6, 0.3]
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  className="absolute -inset-4 bg-purple-500/10 rounded-full -z-10 blur-xl"
+                />
+              </div>
 
-      {/* Animated Wavy Music Staff & Notes Global Background */}
-      <div className="absolute top-0 left-0 right-0 h-[1000px] pointer-events-none z-0 overflow-hidden select-none">
-        <svg className="w-full h-full min-w-[1200px]" viewBox="0 0 1920 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="globalStaffGradient" x1="0%" y1="100%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#e5e5e5" stopOpacity="0.1" />
-              <stop offset="25%" stopColor="#8b5cf6" stopOpacity="0.22" />
-              <stop offset="50%" stopColor="#ec4899" stopOpacity="0.22" />
-              <stop offset="75%" stopColor="#3b82f6" stopOpacity="0.18" />
-              <stop offset="100%" stopColor="#e5e5e5" stopOpacity="0.1" />
-            </linearGradient>
-          </defs>
+              {/* Letter-spaced Title with smooth glow */}
+              <h2 className="text-xl font-black tracking-[0.25em] text-neutral-900 mb-3 font-sans">
+                CHORUS.VN
+              </h2>
+              
+              <div className="flex items-center gap-2 text-neutral-500 text-xs font-serif italic">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-450 animate-ping" />
+                <span>Đang tải không gian âm nhạc...</span>
+              </div>
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
-          {/* 5 undulating stairway-to-heaven staff lines drawing left-to-right */}
+      {!loading && (
+        <motion.div
+          initial={{ opacity: 0, filter: 'blur(8px)' }}
+          animate={{ opacity: 1, filter: 'blur(0px)' }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
+          {/* Delicate Radial Dot Grid Pattern Background matching the screenshot texture */}
+          <div className="absolute inset-0 bg-[radial-gradient(#e5e2dd_1.2px,transparent_1.2px)] [background-size:24px_24px] pointer-events-none opacity-80" />
+
+          {/* Animated Wavy Music Staff & Notes Global Background */}
+          <div className="absolute top-0 left-0 right-0 h-[1000px] pointer-events-none z-0 overflow-hidden select-none">
+            <svg className="w-full h-full min-w-[1200px]" viewBox="0 0 1920 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="globalStaffGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#e5e5e5" stopOpacity="0.1" />
+                  <stop offset="25%" stopColor="#8b5cf6" stopOpacity="0.22" />
+                  <stop offset="50%" stopColor="#ec4899" stopOpacity="0.22" />
+                  <stop offset="75%" stopColor="#3b82f6" stopOpacity="0.18" />
+                  <stop offset="100%" stopColor="#e5e5e5" stopOpacity="0.1" />
+                </linearGradient>
+              </defs>
+
+              {/* 5 undulating stairway-to-heaven staff lines drawing left-to-right */}
           <g stroke="url(#globalStaffGradient)" strokeWidth="1.5">
             <motion.path
               d="M -100,730 C 300,680 600,430 960,380 C 1320,330 1600,180 2020,130"
@@ -929,20 +1048,7 @@ export default function ChorusVNLanding() {
           </div>
         </div>
 
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white border border-neutral-200/50 rounded-[2.5rem] p-8 h-[280px] animate-pulse flex flex-col justify-between shadow-sm">
-                <div className="space-y-4">
-                  <div className="h-6 w-1/2 bg-neutral-200 rounded-lg"></div>
-                  <div className="h-4 w-5/6 bg-neutral-200 rounded-lg"></div>
-                  <div className="h-4 w-2/3 bg-neutral-200 rounded-lg"></div>
-                </div>
-                <div className="h-12 w-full bg-neutral-100 rounded-2xl"></div>
-              </div>
-            ))}
-          </div>
-        ) : artists.length === 0 ? (
+        {artists.length === 0 ? (
           <div className="bg-white/60 border border-dashed border-neutral-200 rounded-[3rem] p-16 text-center max-w-md mx-auto">
             <Disc3 className="w-14 h-14 text-neutral-300 mx-auto mb-4 animate-spin" style={{ animationDuration: '8s' }} />
             <h3 className="text-lg font-black text-neutral-800">{t('noArtists')}</h3>
@@ -951,10 +1057,61 @@ export default function ChorusVNLanding() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {artists.map((artist) => (
-              <ArtistLandingCard key={artist.extension} artist={artist} t={t} />
-            ))}
+          <div>
+            <div className="relative min-h-[500px]">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentPage}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                >
+                  {artists.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE).map((artist) => (
+                    <ArtistLandingCard key={artist.extension} artist={artist} t={t} />
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-3.5 mt-16 bg-white/60 border border-neutral-200/50 py-3.5 px-6 rounded-3xl w-fit mx-auto shadow-sm backdrop-blur-sm relative z-20">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages)}
+                  className="p-1.5 rounded-xl hover:bg-neutral-100 text-neutral-500 hover:text-black transition-all cursor-pointer"
+                  title="Trang trước"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+
+                <div className="flex items-center gap-2">
+                  {Array.from({ length: totalPages }).map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setCurrentPage(idx)}
+                      className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
+                        currentPage === idx
+                          ? 'w-6 bg-black'
+                          : 'w-2.5 bg-neutral-300 hover:bg-neutral-450'
+                      }`}
+                      title={`Trang ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((prev) => (prev + 1) % totalPages)}
+                  className="p-1.5 rounded-xl hover:bg-neutral-100 text-neutral-500 hover:text-black transition-all cursor-pointer"
+                  title="Trang sau"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         )}
       </section>
@@ -1091,6 +1248,8 @@ export default function ChorusVNLanding() {
           </div>
         )}
       </AnimatePresence>
+        </motion.div>
+      )}
     </div>
   );
 }
