@@ -93,6 +93,35 @@ const artistStorage = new AsyncLocalStorage<string>();
 const ARTISTS_FILE = path.join(process.cwd(), 'artists.json');
 let artists: any[] = [];
 
+const SENT_EMAILS_FILE = path.join(process.cwd(), 'sent_emails.json');
+let sentEmails: any[] = [];
+
+async function loadSentEmails() {
+  try {
+    if (fsSync.existsSync(SENT_EMAILS_FILE)) {
+      const content = await fs.readFile(SENT_EMAILS_FILE, 'utf-8');
+      sentEmails = JSON.parse(content);
+    } else {
+      sentEmails = [];
+    }
+  } catch (e) {
+    console.error("Error loading sent emails:", e);
+  }
+}
+
+async function saveSentEmail(mailRecord: any) {
+  sentEmails.push(mailRecord);
+  try {
+    await fs.writeFile(SENT_EMAILS_FILE, JSON.stringify(sentEmails, null, 2), 'utf-8');
+    if (!isFirestoreDisabled && landingConfig.cloudSyncEnabled !== false) {
+      const mailDoc = doc(db, 'app_data', 'sent_emails');
+      await setDoc(mailDoc, { history: sentEmails });
+    }
+  } catch (e) {
+    console.error("Error saving sent email:", e);
+  }
+}
+
 async function loadArtists() {
   if (!isFirestoreDisabled && landingConfig.cloudSyncEnabled !== false) {
     try {
@@ -106,9 +135,26 @@ async function loadArtists() {
             artist.id = Math.random().toString(36).substring(2, 15);
             changed = true;
           }
+          if (artist.activated === undefined) {
+            artist.activated = true;
+            changed = true;
+          }
+          if (!artist.createdAt) {
+            artist.createdAt = "2026-01-01T00:00:00.000Z";
+            changed = true;
+          }
+          if (artist.emailVerified === undefined) {
+            artist.emailVerified = true;
+            changed = true;
+          }
+          if (artist.email === undefined) {
+            artist.email = "";
+            changed = true;
+          }
         });
         await fs.writeFile(ARTISTS_FILE, JSON.stringify(artists, null, 2), 'utf-8');
         if (changed) await setDoc(masterDoc, { artists });
+        await loadSentEmails();
         return artists;
       }
     } catch (e) {
@@ -127,6 +173,22 @@ async function loadArtists() {
           artist.id = Math.random().toString(36).substring(2, 15);
           changed = true;
         }
+        if (artist.activated === undefined) {
+          artist.activated = true;
+          changed = true;
+        }
+        if (!artist.createdAt) {
+          artist.createdAt = "2026-01-01T00:00:00.000Z";
+          changed = true;
+        }
+        if (artist.emailVerified === undefined) {
+          artist.emailVerified = true;
+          changed = true;
+        }
+        if (artist.email === undefined) {
+          artist.email = "";
+          changed = true;
+        }
       });
       if (changed) {
         await fs.writeFile(ARTISTS_FILE, JSON.stringify(artists, null, 2), 'utf-8');
@@ -140,7 +202,11 @@ async function loadArtists() {
           extension: "acxuantai",
           password: "XuanTaiDepTrai",
           verified: true,
-          dbConfig: ""
+          dbConfig: "",
+          activated: true,
+          createdAt: "2026-01-01T00:00:00.000Z",
+          emailVerified: true,
+          email: "xuantai@chorus.vn"
         }
       ];
       await fs.writeFile(ARTISTS_FILE, JSON.stringify(artists, null, 2), 'utf-8');
@@ -155,7 +221,11 @@ async function loadArtists() {
         extension: "acxuantai",
         password: "XuanTaiDepTrai",
         verified: true,
-        dbConfig: ""
+        dbConfig: "",
+        activated: true,
+        createdAt: "2026-01-01T00:00:00.000Z",
+        emailVerified: true,
+        email: "xuantai@chorus.vn"
       }
     ];
   }
@@ -166,6 +236,7 @@ async function loadArtists() {
       await setDoc(masterDoc, { artists }, { merge: true });
     } catch (e) {}
   }
+  await loadSentEmails();
   return artists;
 }
 
@@ -1279,7 +1350,15 @@ async function startServer() {
 
   app.get('/api/data', async (req, res) => {
     try {
-      let data = await loadData((req as any).artist?.username);
+      const currentArtist = (req as any).artist;
+      if (currentArtist && currentArtist.activated === false) {
+        return res.json({
+          error: 'inactive',
+          message: 'Trang nghệ sĩ này chưa được kích hoạt hoặc đang chờ Ban quản trị duyệt kích hoạt!'
+        });
+      }
+
+      let data = await loadData(currentArtist?.username);
       data = applyBaseUrl(data);
       
       if (data.demos) {
@@ -1303,6 +1382,216 @@ async function startServer() {
     }
   });
 
+function generateCaptchaText() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let text = '';
+  for (let i = 0; i < 5; i++) {
+    text += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return text;
+}
+
+function generateCaptchaSvg(text: string) {
+  const width = 130;
+  const height = 45;
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`;
+  svg += `<rect width="100%" height="100%" fill="#1a1a1a"/>`;
+  
+  // Add some grid lines for noise
+  for (let i = 0; i < 6; i++) {
+    const x = Math.random() * width;
+    const y = Math.random() * height;
+    svg += `<line x1="${x}" y1="0" x2="${width - x}" y2="${height}" stroke="#333" stroke-width="1"/>`;
+    svg += `<line x1="0" y1="${y}" x2="${width}" y2="${height - y}" stroke="#333" stroke-width="1"/>`;
+  }
+
+  // Draw characters
+  const charWidth = width / (text.length + 1);
+  const colors = ['#a855f7', '#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const x = (i + 0.5) * charWidth + (Math.random() * 4 - 2);
+    const y = 30 + (Math.random() * 6 - 3);
+    const angle = (Math.random() * 40 - 20);
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    svg += `<text x="${x}" y="${y}" font-family="sans-serif" font-size="22" font-weight="bold" fill="${color}" transform="rotate(${angle} ${x} ${y})">${char}</text>`;
+  }
+
+  svg += `</svg>`;
+  return svg;
+}
+
+  app.get('/api/public/captcha', (req, res) => {
+    const text = generateCaptchaText();
+    const svg = generateCaptchaSvg(text);
+    const expiry = Date.now() + 5 * 60 * 1000; // 5 minutes validity
+    const CAPTCHA_SECRET = 'chorus_vn_captcha_secret_key_123';
+    const hash = crypto.createHmac('sha256', CAPTCHA_SECRET).update(text.toLowerCase() + ':' + expiry).digest('hex');
+    const token = `${expiry}:${hash}`;
+    res.json({ token, svg });
+  });
+
+  app.post('/api/public/register', async (req, res) => {
+    const { artistName, username, extension, email, password, captchaAnswer, captchaToken } = req.body;
+    
+    console.log(`[Register Request] Incoming: artistName="${artistName}", username="${username}", extension="${extension}", email="${email}", captchaAnswer="${captchaAnswer}"`);
+
+    if (!artistName || !username || !extension || !email || !password || !captchaAnswer || !captchaToken) {
+      console.warn('[Register Request] Missing required fields');
+      return res.status(400).json({ error: 'Vui lòng điền đầy đủ tất cả các trường dữ liệu!' });
+    }
+
+    // Verify Captcha
+    try {
+      const [expiry, hash] = captchaToken.split(':');
+      if (Date.now() > parseInt(expiry)) {
+        console.warn(`[Register Request] Captcha expired. Current time: ${Date.now()}, Expiry: ${expiry}`);
+        return res.status(400).json({ error: 'Mã xác nhận Captcha đã hết hạn, vui lòng tải lại captcha mới!' });
+      }
+      const CAPTCHA_SECRET = 'chorus_vn_captcha_secret_key_123';
+      const expectedHash = crypto.createHmac('sha256', CAPTCHA_SECRET).update(captchaAnswer.toLowerCase().trim() + ':' + expiry).digest('hex');
+      if (hash !== expectedHash) {
+        console.warn(`[Register Request] Captcha mismatch! Answer provided: "${captchaAnswer}", Expected hash check failed.`);
+        return res.status(400).json({ error: 'Mã xác nhận Captcha không chính xác!' });
+      }
+    } catch (e: any) {
+      console.error('[Register Request] Captcha validation error:', e.message || e);
+      return res.status(400).json({ error: 'Xác thực Captcha không hợp lệ!' });
+    }
+
+    // Standard validations
+    if (username.length < 3 || !/^[a-zA-Z0-9_]+$/.test(username)) {
+      return res.status(400).json({ error: 'Tên đăng nhập phải có ít nhất 3 ký tự và chỉ chứa chữ cái, số, dấu gạch dưới!' });
+    }
+
+    if (extension.length < 2 || !/^[a-zA-Z0-9_-]+$/.test(extension)) {
+      return res.status(400).json({ error: 'Phần mở rộng (Sub-domain) phải có ít nhất 2 ký tự và chỉ chứa chữ cái, số, gạch ngang, gạch dưới!' });
+    }
+
+    if (!email.includes('@')) {
+      return res.status(400).json({ error: 'Email không đúng định dạng!' });
+    }
+
+    // Check existing
+    const uLower = username.toLowerCase().trim();
+    const eLower = extension.toLowerCase().trim();
+    const emailLower = email.toLowerCase().trim();
+
+    const existingUser = artists.find(a => a.username.toLowerCase() === uLower || a.extension.toLowerCase() === eLower);
+    if (existingUser) {
+      if (existingUser.username.toLowerCase() === uLower) {
+        return res.status(400).json({ error: 'Tên đăng nhập đã tồn tại trong hệ thống!' });
+      } else {
+        return res.status(400).json({ error: 'Phần mở rộng (Sub-domain) đã được đăng ký bởi nghệ sĩ khác!' });
+      }
+    }
+
+    // Add new artist (inactive pending approval)
+    const hashedPassword = bcrypt.hashSync(password, 10);
+    const newArtist = {
+      id: Math.random().toString(36).substring(2, 15) + Date.now().toString(36),
+      artistName: artistName.trim(),
+      username: uLower,
+      extension: eLower,
+      email: emailLower,
+      password: hashedPassword,
+      verified: false,
+      isPublic: false, // hidden from public pages until activated
+      activated: false, // newly registered members are NOT activated
+      createdAt: new Date().toISOString(),
+      emailVerified: false, // false by default
+      dbConfig: "",
+      memberPassword: ""
+    };
+
+    artists.push(newArtist);
+    await saveArtists(artists);
+
+    // Initialize default structured data for the artist
+    const defaultData = {
+      pageTitle: `Kho nhạc của ${newArtist.artistName}`,
+      artistName: newArtist.artistName,
+      artistBio: `Thiên đường nhạc của ${newArtist.artistName}`,
+      homeCoverUrl: '',
+      faviconUrl: '',
+      ogImageUrl: '',
+      youtubePlaylistUrl: '',
+      spotifyUrl: '',
+      releasedSongs: [],
+      demos: [],
+      playlists: [],
+      adminPassword: newArtist.password,
+      memberPassword: ""
+    };
+    await saveData(newArtist.username, defaultData);
+
+    res.json({
+      success: true,
+      message: 'Đăng ký thành viên thành công! Tài khoản đang chờ Ban quản trị duyệt kích hoạt.'
+    });
+  });
+
+  app.post('/api/acp/send-mail', async (req, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const { recipientType, afterDate, subject, body } = req.body;
+    if (!subject || !body || !recipientType) {
+      return res.status(400).json({ error: 'Thiếu thông tin tiêu đề, nội dung hoặc người nhận!' });
+    }
+
+    let recipients = [];
+    if (recipientType === 'all') {
+      recipients = artists;
+    } else if (recipientType === 'verified') {
+      recipients = artists.filter(a => a.emailVerified === true);
+    } else if (recipientType === 'unverified') {
+      recipients = artists.filter(a => a.emailVerified !== true);
+    } else if (recipientType === 'after_date') {
+      if (!afterDate) {
+        return res.status(400).json({ error: 'Vui lòng chọn ngày đăng ký!' });
+      }
+      const targetDate = new Date(afterDate);
+      recipients = artists.filter(a => {
+        if (!a.createdAt) return false;
+        const regDate = new Date(a.createdAt);
+        return regDate >= targetDate;
+      });
+    }
+
+    // Filter out those without email
+    const validRecipients = recipients.filter(a => a.email && a.email.trim() !== '');
+
+    const mailRecord = {
+      id: Math.random().toString(36).substring(2, 15) + Date.now().toString(36),
+      recipientType,
+      afterDate: afterDate || null,
+      subject,
+      body,
+      sentAt: new Date().toISOString(),
+      recipientCount: validRecipients.length,
+      recipients: validRecipients.map(r => ({ artistName: r.artistName, email: r.email, username: r.username }))
+    };
+
+    await saveSentEmail(mailRecord);
+
+    res.json({
+      success: true,
+      message: `Đã gửi thư thành công tới ${validRecipients.length} nghệ sĩ!`,
+      record: mailRecord
+    });
+  });
+
+  app.get('/api/acp/sent-mails', async (req, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    if (sentEmails.length === 0) {
+      await loadSentEmails();
+    }
+    res.json(sentEmails);
+  });
+
   app.get('/api/public/landing-config', async (req, res) => {
     res.json(landingConfig);
   });
@@ -1322,7 +1611,7 @@ async function startServer() {
 
   app.get('/api/public/artists', async (req, res) => {
     const list = [];
-    const publicArtists = artists.filter(a => a.isPublic !== false && a.isPublic !== 'false' && a.hideFromHomepage !== true && a.hideFromHomepage !== 'true');
+    const publicArtists = artists.filter(a => (a.isPublic !== false || a.activated !== false) && a.hideFromHomepage !== true && a.hideFromHomepage !== 'true');
     for (const artist of publicArtists) {
       try {
         let pageTitle = `Kho nhạc của ${artist.artistName}`;
@@ -1607,7 +1896,7 @@ async function startServer() {
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const { originalUsername, artistName, extension, password, verified, dbConfig, isPublic, approveNameChange, rejectNameChange, approveUsernameChange, rejectUsernameChange, approveExtensionChange, rejectExtensionChange, hasExternalWebsite, externalWebsiteUrl } = req.body;
+    const { originalUsername, artistName, extension, password, verified, dbConfig, isPublic, approveNameChange, rejectNameChange, approveUsernameChange, rejectUsernameChange, approveExtensionChange, rejectExtensionChange, hasExternalWebsite, externalWebsiteUrl, email, activated, emailVerified } = req.body;
     const artistIdx = artists.findIndex(a => a.username === originalUsername);
     if (artistIdx === -1) {
       return res.status(404).json({ error: 'Không tìm thấy nghệ sĩ!' });
@@ -1674,6 +1963,9 @@ async function startServer() {
       artist.dbConfig = dbConfig !== undefined ? dbConfig : artist.dbConfig;
       artist.hasExternalWebsite = hasExternalWebsite !== undefined ? !!hasExternalWebsite : artist.hasExternalWebsite;
       artist.externalWebsiteUrl = externalWebsiteUrl !== undefined ? externalWebsiteUrl : artist.externalWebsiteUrl;
+      artist.email = email !== undefined ? email : artist.email;
+      artist.activated = activated !== undefined ? !!activated : (artist.activated !== false);
+      artist.emailVerified = emailVerified !== undefined ? !!emailVerified : artist.emailVerified;
       
       const data = await loadData(artist.username);
       data.artistName = artist.artistName;

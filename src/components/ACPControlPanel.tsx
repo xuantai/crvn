@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChorusLogo } from './ChorusLogo';
-import { Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X, LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home, Upload, MessageSquare, Send, AlertTriangle, Disc3, Bell, ChevronLeft } from 'lucide-react';
+import { Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X, LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home, Upload, MessageSquare, Send, AlertTriangle, Disc3, Bell, ChevronLeft, Mail } from 'lucide-react';
 
 
 interface Artist {
@@ -33,7 +33,19 @@ export default function ACPControlPanel() {
     message: string;
     onConfirm: () => void;
   } | null>(null);
-  const [activeTab, setActiveTab] = useState<'artists' | 'landing' | 'tickets'>('artists');
+  const [activeTab, setActiveTab] = useState<'artists' | 'landing' | 'tickets' | 'compose-mail'>('artists');
+  const [artistCurrentPage, setArtistCurrentPage] = useState(0);
+  const [artistPageSize, setArtistPageSize] = useState<number>(20); // 20, 50, 100
+
+  // Email states
+  const [mailRecipientType, setMailRecipientType] = useState<'all' | 'verified' | 'unverified' | 'registered_after'>('all');
+  const [mailRegisteredAfterDate, setMailRegisteredAfterDate] = useState('');
+  const [mailTitle, setMailTitle] = useState('');
+  const [mailContent, setMailContent] = useState('');
+  const [mailSending, setMailSending] = useState(false);
+  const [mailSuccess, setMailSuccess] = useState('');
+  const [mailError, setMailError] = useState('');
+  const [sentMails, setSentMails] = useState<any[]>([]);
 
   // ACP data
   const [artists, setArtists] = useState<Artist[]>([]);
@@ -139,6 +151,32 @@ export default function ACPControlPanel() {
       return () => clearInterval(interval);
     }
   }, [token]);
+
+  useEffect(() => {
+    if (token && activeTab === 'compose-mail') {
+      fetchSentMails();
+    }
+  }, [token, activeTab]);
+
+  useEffect(() => {
+    setArtistCurrentPage(0);
+  }, [searchQuery, artistPageSize]);
+
+  const fetchSentMails = async () => {
+    try {
+      const res = await fetch('/api/acp/sent-mails', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSentMails(data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchArtists = async () => {
     try {
@@ -904,6 +942,17 @@ export default function ACPControlPanel() {
               <span className="flex h-2 w-2 rounded-full bg-red-500 animate-pulse" />
             )}
           </button>
+          <button
+            onClick={() => setActiveTab('compose-mail')}
+            className={`py-4 px-6 text-sm font-black border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'compose-mail'
+                ? 'border-purple-500 text-white'
+                : 'border-transparent text-neutral-400 hover:text-white'
+            }`}
+          >
+            <Mail className="w-4 h-4 text-purple-400" />
+            <span>Soạn thư</span>
+          </button>
         </div>
 
         {activeTab === 'artists' ? (
@@ -964,7 +1013,8 @@ export default function ACPControlPanel() {
                   <p className="text-sm">Không tìm thấy nghệ sĩ nào phù hợp.</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
+                <>
+                  <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="border-b border-white/5 bg-neutral-900/50">
@@ -972,13 +1022,14 @@ export default function ACPControlPanel() {
                         <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider">Username</th>
                         <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider">Đường dẫn</th>
                         <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider">Hiển thị</th>
+                        <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider">Trạng Thái Duyệt</th>
                         <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider">Mật khẩu</th>
                         <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider">Database</th>
                         <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider text-right pr-6">Hành động</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
-                      {filteredArtists.map((artist) => (
+                      {filteredArtists.slice(artistCurrentPage * artistPageSize, (artistCurrentPage + 1) * artistPageSize).map((artist) => (
                         <tr key={artist.username} className="hover:bg-white/[0.02] transition-colors">
                           <td className="p-4 pl-6">
                             <div className="flex items-center gap-2.5">
@@ -1087,6 +1138,51 @@ export default function ACPControlPanel() {
                               </span>
                             )}
                           </td>
+                          <td className="p-4">
+                            <div className="flex items-center gap-2">
+                              {artist.activated !== false ? (
+                                <span className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-lg text-[10px] font-bold">
+                                  Hoạt Động
+                                </span>
+                              ) : (
+                                <span className="bg-red-500/10 border border-red-500/20 text-red-400 px-2 py-0.5 rounded-lg text-[10px] font-bold animate-pulse">
+                                  Chờ Duyệt
+                                </span>
+                              )}
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const nextActivatedStatus = artist.activated === false ? true : false;
+                                    const res = await fetch('/api/acp/artists/update', {
+                                      method: 'POST',
+                                      headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': `Bearer ${token}`
+                                      },
+                                      body: JSON.stringify({
+                                        originalUsername: artist.username,
+                                        activated: nextActivatedStatus
+                                      })
+                                    });
+                                    if (res.ok) {
+                                      fetchArtists();
+                                    } else {
+                                      alert("Lỗi khi thay đổi trạng thái kích hoạt!");
+                                    }
+                                  } catch (e) {
+                                    alert("Lỗi kết nối mạng!");
+                                  }
+                                }}
+                                className={`text-[10px] px-2 py-0.5 rounded-lg font-bold transition-all cursor-pointer border ${
+                                  artist.activated !== false
+                                    ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border-white/5'
+                                    : 'bg-purple-600 hover:bg-purple-500 text-white border-purple-500/50'
+                                }`}
+                              >
+                                {artist.activated !== false ? 'Khóa' : 'Kích hoạt'}
+                              </button>
+                            </div>
+                          </td>
                           <td className="p-4 text-sm font-mono text-neutral-400">••••••••</td>
                           <td className="p-4">
                             {artist.dbConfig ? (
@@ -1126,10 +1222,53 @@ export default function ACPControlPanel() {
                     </tbody>
                   </table>
                 </div>
-              )}
-            </div>
-          </>
-        ) : activeTab === 'landing' ? (
+
+                {/* Pagination Controls */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 border-t border-white/5 text-xs text-neutral-400 bg-neutral-950/20 backdrop-blur-sm">
+                  <div className="flex items-center gap-2">
+                    <span>Hiển thị</span>
+                    <select
+                      value={artistPageSize}
+                      onChange={(e) => {
+                        setArtistPageSize(Number(e.target.value));
+                        setArtistCurrentPage(0);
+                      }}
+                      className="bg-neutral-800 border border-white/10 rounded-lg px-2 py-1 text-white focus:outline-none focus:border-purple-500 cursor-pointer"
+                    >
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                    <span>nghệ sĩ mỗi trang</span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      disabled={artistCurrentPage === 0}
+                      onClick={() => setArtistCurrentPage(prev => Math.max(0, prev - 1))}
+                      className="px-3 py-1.5 rounded-lg bg-neutral-850 border border-white/5 hover:bg-neutral-800 text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+                    >
+                      Trước
+                    </button>
+                    
+                    <span className="font-mono text-neutral-400">
+                      Trang <span className="text-white font-bold">{artistCurrentPage + 1}</span> / {Math.max(1, Math.ceil(filteredArtists.length / artistPageSize))}
+                    </span>
+
+                    <button
+                      disabled={artistCurrentPage >= Math.ceil(filteredArtists.length / artistPageSize) - 1}
+                      onClick={() => setArtistCurrentPage(prev => prev + 1)}
+                      className="px-3 py-1.5 rounded-lg bg-neutral-850 border border-white/5 hover:bg-neutral-800 text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+                    >
+                      Sau
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </>
+      ) : activeTab === 'landing' ? (
           /* Homepage config panel tab */
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 bg-neutral-900/30 border border-white/5 rounded-3xl p-6 sm:p-8 backdrop-blur-md">
@@ -1600,6 +1739,224 @@ export default function ACPControlPanel() {
                       >
                         Copy
                       </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : activeTab === 'compose-mail' ? (
+          /* Compose Mail Tab */
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 bg-neutral-900/30 border border-white/5 rounded-3xl p-6 sm:p-8 backdrop-blur-md">
+              <div className="mb-6">
+                <h2 className="text-xl font-black flex items-center gap-2">
+                  <Mail className="w-5.5 h-5.5 text-purple-400" />
+                  <span>Soạn Thư Hệ Thống</span>
+                </h2>
+                <p className="text-neutral-400 text-xs mt-1">
+                  Gửi thông báo điện tử đến các nhóm nghệ sĩ trên hệ thống Chorus.vn.
+                </p>
+              </div>
+
+              <form 
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  setMailError('');
+                  setMailSuccess('');
+                  setMailSending(true);
+                  try {
+                    const res = await fetch('/api/acp/send-mail', {
+                      method: 'POST',
+                      headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                      },
+                      body: JSON.stringify({
+                        recipientType: mailRecipientType,
+                        registeredAfter: mailRecipientType === 'registered_after' ? mailRegisteredAfterDate : undefined,
+                        title: mailTitle,
+                        content: mailContent
+                      })
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                      setMailSuccess(data.message || 'Gửi thư thành công!');
+                      setMailTitle('');
+                      setMailContent('');
+                      fetchSentMails(); // Refresh history
+                    } else {
+                      setMailError(data.error || 'Có lỗi xảy ra khi gửi thư!');
+                    }
+                  } catch (err) {
+                    setMailError('Lỗi kết nối máy chủ!');
+                  } finally {
+                    setMailSending(false);
+                  }
+                }}
+                className="space-y-6"
+              >
+                {mailSuccess && (
+                  <div className="p-4 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
+                    {mailSuccess}
+                  </div>
+                )}
+                {mailError && (
+                  <div className="p-4 rounded-2xl bg-red-500/10 text-red-400 border border-red-500/20 text-xs font-semibold">
+                    {mailError}
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400">
+                    Đối tượng nhận thư
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setMailRecipientType('all')}
+                      className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                        mailRecipientType === 'all'
+                          ? 'bg-purple-500/10 border-purple-500 text-white font-black'
+                          : 'bg-black/20 border-white/5 text-neutral-400 hover:text-white hover:border-white/15'
+                      }`}
+                    >
+                      <div className="text-xs font-bold mb-0.5">Toàn bộ nghệ sĩ</div>
+                      <div className="text-[10px] text-neutral-400 font-medium">Gửi đến tất cả tài khoản nghệ sĩ</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setMailRecipientType('verified')}
+                      className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                        mailRecipientType === 'verified'
+                          ? 'bg-purple-500/10 border-purple-500 text-white font-black'
+                          : 'bg-black/20 border-white/5 text-neutral-400 hover:text-white hover:border-white/15'
+                      }`}
+                    >
+                      <div className="text-xs font-bold mb-0.5">Đã xác thực Email</div>
+                      <div className="text-[10px] text-neutral-400 font-medium">Chỉ nghệ sĩ đã xác minh địa chỉ email</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setMailRecipientType('unverified')}
+                      className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                        mailRecipientType === 'unverified'
+                          ? 'bg-purple-500/10 border-purple-500 text-white font-black'
+                          : 'bg-black/20 border-white/5 text-neutral-400 hover:text-white hover:border-white/15'
+                      }`}
+                    >
+                      <div className="text-xs font-bold mb-0.5">Chưa xác thực Email</div>
+                      <div className="text-[10px] text-neutral-400 font-medium">Nghệ sĩ đăng ký nhưng chưa xác minh email</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setMailRecipientType('registered_after')}
+                      className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                        mailRecipientType === 'registered_after'
+                          ? 'bg-purple-500/10 border-purple-500 text-white font-black'
+                          : 'bg-black/20 border-white/5 text-neutral-400 hover:text-white hover:border-white/15'
+                      }`}
+                    >
+                      <div className="text-xs font-bold mb-0.5">Đăng ký sau ngày</div>
+                      <div className="text-[10px] text-neutral-400 font-medium">Lọc nghệ sĩ theo mốc thời gian đăng ký</div>
+                    </button>
+                  </div>
+                </div>
+
+                {mailRecipientType === 'registered_after' && (
+                  <div className="space-y-2 bg-black/20 border border-white/5 p-4 rounded-2xl">
+                    <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400">
+                      Chọn ngày đăng ký sau mốc
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={mailRegisteredAfterDate}
+                      onChange={(e) => setMailRegisteredAfterDate(e.target.value)}
+                      className="bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-xs font-bold font-mono"
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400">
+                    Tiêu đề thư
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={mailTitle}
+                    onChange={(e) => setMailTitle(e.target.value)}
+                    placeholder="Nhập tiêu đề email thông báo..."
+                    className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-xs font-bold"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400">
+                    Nội dung thư (Hỗ trợ định dạng văn bản thường)
+                  </label>
+                  <textarea
+                    required
+                    rows={10}
+                    value={mailContent}
+                    onChange={(e) => setMailContent(e.target.value)}
+                    placeholder="Nhập nội dung thư gửi..."
+                    className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-xs leading-relaxed font-sans"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={mailSending}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-extrabold py-3.5 px-6 rounded-xl text-xs transition-all cursor-pointer shadow-md tracking-wider uppercase flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  <Send className="w-4 h-4" />
+                  {mailSending ? 'Đang gửi...' : 'GỬI THƯ HỆ THỐNG'}
+                </button>
+              </form>
+            </div>
+
+            {/* Sent Emails History Column */}
+            <div className="bg-neutral-900/30 border border-white/5 rounded-3xl p-6 backdrop-blur-md flex flex-col h-full max-h-[800px]">
+              <h3 className="text-sm font-black text-neutral-200 mb-4 pb-2 border-b border-white/5 flex items-center gap-2">
+                <Mail className="w-4 h-4 text-pink-400" />
+                <span>Lịch Sử Thư Đã Gửi</span>
+                <span className="ml-auto text-[10px] bg-white/5 px-2 py-0.5 rounded-full text-neutral-400 font-mono">
+                  {sentMails.length}
+                </span>
+              </h3>
+
+              {sentMails.length === 0 ? (
+                <div className="py-24 text-center text-neutral-500 flex flex-col items-center justify-center flex-grow">
+                  <Database className="w-10 h-10 mb-2 opacity-10" />
+                  <p className="text-xs font-bold">Chưa gửi thư nào.</p>
+                </div>
+              ) : (
+                <div className="overflow-y-auto custom-scrollbar space-y-3 flex-grow pr-1">
+                  {sentMails.map((mail, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-black/30 border border-white/5 p-4 rounded-2xl space-y-2 hover:border-pink-500/20 transition-all text-left"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-black uppercase tracking-wider text-neutral-400 font-mono">
+                          {mail.recipientType === 'all' && 'Toàn bộ nghệ sĩ'}
+                          {mail.recipientType === 'verified' && 'Đã xác thực email'}
+                          {mail.recipientType === 'unverified' && 'Chưa xác thực email'}
+                          {mail.recipientType === 'registered_after' && `Đăng ký sau ${mail.registeredAfter}`}
+                        </span>
+                        <span className="text-[9px] text-neutral-500 font-mono">
+                          {new Date(mail.sentAt).toLocaleDateString('vi-VN')}
+                        </span>
+                      </div>
+                      <h4 className="text-xs font-black text-white truncate">{mail.title}</h4>
+                      <p className="text-[11px] text-neutral-400 line-clamp-3 leading-relaxed whitespace-pre-wrap font-medium">
+                        {mail.content}
+                      </p>
                     </div>
                   ))}
                 </div>

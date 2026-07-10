@@ -165,6 +165,39 @@ function useBrandColors(logoUrl: string | null | undefined, defaultColor: string
   return colors;
 }
 
+function getLuminance(hex: string): number {
+  if (!hex) return 0.5;
+  let cleanHex = hex.replace('#', '');
+  if (cleanHex.length === 3) {
+    cleanHex = cleanHex.split('').map(c => c + c).join('');
+  }
+  if (cleanHex.length !== 6) return 0.5;
+  const r = parseInt(cleanHex.substring(0, 2), 16) / 255;
+  const g = parseInt(cleanHex.substring(2, 4), 16) / 255;
+  const b = parseInt(cleanHex.substring(4, 6), 16) / 255;
+  
+  const a = [r, g, b].map(v => {
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+  return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+}
+
+function getBrandBadgeStyle(primaryColor: string) {
+  const isColorLight = getLuminance(primaryColor) > 0.5;
+  const textColor = isColorLight ? '#000000' : '#ffffff';
+  const labelColor = isColorLight ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.8)';
+  const borderColor = isColorLight ? 'rgba(0, 0, 0, 0.15)' : 'rgba(255, 255, 255, 0.2)';
+  
+  return {
+    backgroundColor: primaryColor,
+    borderColor: borderColor,
+    labelColor: labelColor,
+    valueColor: textColor,
+    dotColor: textColor,
+    boxShadow: isColorLight ? '0 4px 12px rgba(0, 0, 0, 0.1)' : '0 4px 12px rgba(0, 0, 0, 0.3)'
+  };
+}
+
 interface BrandLogoColorExtractorProps {
   key?: React.Key;
   logoUrl: string | null | undefined;
@@ -306,7 +339,7 @@ function renderArtistNameWithLinks(text: string | null | undefined, systemArtist
 // Global styles added in index.css
 
 const translations: Record<string, Record<string, string>> = {
-  vi: { dDesc: "Thiên đường âm nhạc của", btnSpot: "Nghe trên Spotify", lDemos: "Đề Mô", lReleased: "Ra Rồi", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Cần Mật Khẩu", pNow: "Nghe Ngay", nDemo: "Chưa có demo nào.", rMv: "MV Đã Phát Hành", nMv: "Chưa có MV nào.", lMore: "Hiển thị thêm", mList: "người nghe hàng tháng", load: "Đang tải...", back: "Trở về", adm: "AdminCP", edit: "Chỉnh sửa", pPrompt: "Cần mật khẩu", pPrompt2: "Nhập mật khẩu để nghe demo này", unlock: "Mở khóa", wPass: "Sai mật khẩu", lyric: "Lời bài hát", nLyric: "Chưa cập nhật lời bài hát", sAuth: "Sáng tác:", lang: "Tiếng Việt", lDemosMobile: "Đề mô", lReleasedMobile: "Ra Rồi" },
+  vi: { dDesc: "Thiên đường âm nhạc của", btnSpot: "Nghe trên Spotify", lDemos: "Đề Mô", lReleased: "Ra Rồi", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Cần Mật Khẩu", pNow: "Nghe Ngay", nDemo: "Chưa có demo nào.", rMv: "MV Đã Phát Hành", nMv: "Chưa có MV nào.", lMore: "Hiển thị thêm", mList: "người nghe hàng tháng", load: "Đang tải trang...", back: "Trở về", adm: "AdminCP", edit: "Chỉnh sửa", pPrompt: "Cần mật khẩu", pPrompt2: "Nhập mật khẩu để nghe demo này", unlock: "Mở khóa", wPass: "Sai mật khẩu", lyric: "Lời bài hát", nLyric: "Chưa cập nhật lời bài hát", sAuth: "Sáng tác:", lang: "Tiếng Việt", lDemosMobile: "Đề mô", lReleasedMobile: "Ra Rồi" },
   en: { dDesc: "Music paradise of", btnSpot: "Listen on Spotify", lDemos: "Demo", lReleased: "Release", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Password", pNow: "Play Now", nDemo: "No demos yet.", rMv: "Released Music Videos", nMv: "No MVs yet.", lMore: "Load more", mList: "monthly listeners", load: "Loading...", back: "Back", adm: "Admin", edit: "Edit", pPrompt: "Password required", pPrompt2: "Enter password to listen to this demo", unlock: "Unlock", wPass: "Wrong password", lyric: "Lyrics", nLyric: "No lyrics yet", sAuth: "Composer:", lang: "English" },
   ko: { dDesc: "데모 파라다이스", btnSpot: "Spotify에서 듣기", lDemos: "최신 데모", lReleased: "발매된 음악", lDemoMark: "데모", lReleasedMark: "발매됨", pReq: "비밀번호", pNow: "지금 듣기", nDemo: "데모 없음", rMv: "발매된 뮤직비디오", nMv: "MV 없음", lMore: "더 보기", mList: "월간 청취자", load: "로딩 중...", back: "뒤로", adm: "관리자", edit: "편집", pPrompt: "비밀번호 필요", pPrompt2: "이 데모를 들으려면 비밀번호를 입력하세요", unlock: "잠금 해제", wPass: "잘못된 비밀번호", lyric: "가사", nLyric: "가사 없음", sAuth: "작곡가:", lang: "한국어" },
   ja: { dDesc: "デモパラダイス", btnSpot: "Spotifyで聴く", lDemos: "最新のデモ", lReleased: "リリースされた音楽", lDemoMark: "デモ", lReleasedMark: "リリース済", pReq: "パスワード", pNow: "今すぐ聴く", nDemo: "デモなし", rMv: "リリースされたMV", nMv: "MVなし", lMore: "もっと見る", mList: "月間リスナー", load: "読み込み中...", back: "戻る", adm: "管理者", edit: "編集", pPrompt: "パスワードが必要", pPrompt2: "このデモを聴くにはパスワードを入力してください", unlock: "ロック解除", wPass: "パスワードが間違っています", lyric: "歌詞", nLyric: "歌詞なし", sAuth: "作曲:", lang: "日本語" },
@@ -754,10 +787,45 @@ function AnimatedRoutes() {
 function AdminFloatingControls({ onLogout }: { onLogout: () => void }) {
   const isAdmin = !!getAdminToken();
   const location = useLocation();
+  const [isPageLoading, setIsPageLoading] = useState(true);
+
+  useEffect(() => {
+    // Reset to loading state on path change
+    setIsPageLoading(true);
+
+    let active = true;
+    let attempts = 0;
+
+    const checkLoading = () => {
+      if (!active) return;
+      
+      const loader = document.getElementById('global-loading-screen');
+      if (loader) {
+        // If loader is present, we must wait. Let's check again in 50ms.
+        setTimeout(checkLoading, 50);
+      } else {
+        // If loader is not present:
+        // We wait a tiny bit (250ms total) to ensure the page had a chance to mount its loader
+        if (attempts < 5) {
+          attempts++;
+          setTimeout(checkLoading, 50);
+        } else {
+          setIsPageLoading(false);
+        }
+      }
+    };
+
+    // Start checking
+    checkLoading();
+
+    return () => {
+      active = false;
+    };
+  }, [location.pathname]);
   
   if (!isAdmin) return null;
 
-  const isAdminPage = location.pathname.startsWith('/admin');
+  const isAdminPage = location.pathname.startsWith('/admin') || location.pathname.includes('/admin');
   if (isAdminPage) return null;
 
   const isListeningPage = location.pathname.includes('/demo/') || 
@@ -765,38 +833,48 @@ function AdminFloatingControls({ onLogout }: { onLogout: () => void }) {
                           location.pathname.includes('/playlist/');
 
   if (isListeningPage) return null;
+  if (isPageLoading) return null;
 
   return (
-    <div className={
-      isListeningPage
-        ? "hidden md:flex md:fixed md:left-6 md:top-1/2 md:-translate-y-1/2 z-[100] md:flex-col md:gap-4 md:translate-x-0"
-        : "fixed top-6 mt-[env(safe-area-inset-top,0px)] left-1/2 -translate-x-1/2 z-[100] flex flex-row gap-4"
-    }>
-       {isAdminPage ? (
-         <a 
-           href={getArtistExtensionFromUrl() ? `/${getArtistExtensionFromUrl()}` : "/"}
-           className="flex items-center justify-center p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/40 shadow-[0_4px_12px_rgba(0,0,0,0.15)] transition-all duration-300 hover:scale-115"
-           title="Trang chủ"
+    <AnimatePresence>
+      <motion.div 
+        key={location.pathname}
+        initial={{ opacity: 0, scale: 0.8, y: -10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.8, y: -10 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className={
+          isListeningPage
+            ? "hidden md:flex md:fixed md:left-6 md:top-1/2 md:-translate-y-1/2 z-[100] md:flex-col md:gap-4 md:translate-x-0"
+            : "fixed top-6 mt-[env(safe-area-inset-top,0px)] left-1/2 -translate-x-1/2 z-[100] flex flex-row gap-4"
+        }
+      >
+         {isAdminPage ? (
+           <a 
+             href={getArtistExtensionFromUrl() ? `/${getArtistExtensionFromUrl()}` : "/"}
+             className="flex items-center justify-center p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/40 shadow-[0_4px_12px_rgba(0,0,0,0.15)] transition-all duration-300 hover:scale-115"
+             title="Trang chủ"
+           >
+             <HomeIcon className="w-5 h-5 stroke-[1.5]" />
+           </a>
+         ) : (
+           <a 
+             href={getAdminLink()}
+             className="flex items-center justify-center p-3 rounded-full bg-emerald-500/10 hover:bg-emerald-500/25 backdrop-blur-md text-emerald-400 border border-emerald-500/40 shadow-[0_4px_12px_rgba(16,185,129,0.15)] transition-all duration-300 hover:scale-115 cursor-pointer"
+             title="Cài đặt (Admin)"
+           >
+             <Settings className="w-5 h-5 stroke-[1.5]" />
+           </a>
+         )}
+         <button 
+           onClick={onLogout}
+           className="flex items-center justify-center p-3 rounded-full bg-red-500/10 hover:bg-red-500/25 backdrop-blur-md text-red-400 border border-red-500/40 shadow-[0_4px_12px_rgba(239,68,68,0.15)] transition-all duration-300 hover:scale-115 cursor-pointer"
+           title="Đăng xuất"
          >
-           <HomeIcon className="w-5 h-5 stroke-[1.5]" />
-         </a>
-       ) : (
-         <a 
-           href={getAdminLink()}
-           className="flex items-center justify-center p-3 rounded-full bg-emerald-500/10 hover:bg-emerald-500/25 backdrop-blur-md text-emerald-400 border border-emerald-500/40 shadow-[0_4px_12px_rgba(16,185,129,0.15)] transition-all duration-300 hover:scale-115 cursor-pointer"
-           title="Cài đặt (Admin)"
-         >
-           <Settings className="w-5 h-5 stroke-[1.5]" />
-         </a>
-       )}
-       <button 
-         onClick={onLogout}
-         className="flex items-center justify-center p-3 rounded-full bg-red-500/10 hover:bg-red-500/25 backdrop-blur-md text-red-400 border border-red-500/40 shadow-[0_4px_12px_rgba(239,68,68,0.15)] transition-all duration-300 hover:scale-115 cursor-pointer"
-         title="Đăng xuất"
-       >
-         <LogOut className="w-5 h-5 stroke-[1.5]" />
-       </button>
-    </div>
+           <LogOut className="w-5 h-5 stroke-[1.5]" />
+         </button>
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
@@ -2032,7 +2110,14 @@ function Home() {
                                         className="flex flex-col justify-center w-full"
                                       >
                                         <h3 className={`font-bold transition-colors ${demo.achievements?.length ? 'text-[11px] sm:text-[13px] group-hover:text-amber-400 leading-tight whitespace-normal break-words' : 'text-base sm:text-lg group-hover:text-rose-400 truncate'}`}>
-                                          <HoverTranslate text={demo.title} format={true} />
+                                          <span className="relative inline-flex items-center">
+                                            <HoverTranslate text={demo.title} format={true} />
+                                            {demo.isReleased && (
+                                              <span className="absolute top-0 right-0 translate-x-[110%] -translate-y-[35%] rotate-[10deg] bg-emerald-600 text-[6px] font-black text-white px-1 py-0.2 rounded shadow-[0_0_8px_rgba(5,150,105,0.5)] tracking-widest border border-emerald-400/50 select-none z-20 whitespace-nowrap">
+                                                {t.lReleasedMark || 'RELEASED'}
+                                              </span>
+                                            )}
+                                          </span>
                                         </h3>
                                         <p className={`text-neutral-400 mt-1 ${demo.achievements?.length ? 'text-[9px] leading-tight whitespace-normal break-words' : 'text-xs truncate'}`}>
                                           {formatText(demo.singer || demo.author || data?.artistName || 'Nghệ sĩ', true)}
@@ -2048,9 +2133,6 @@ function Home() {
                                 )}
                                 {demo.isReleased ? (
                                   <>
-                                    <span className="absolute top-0 right-0 translate-x-[20%] -translate-y-[10%] rotate-[15deg] bg-emerald-600 text-[7px] font-black text-white px-1.5 py-0.5 rounded shadow-[0_0_10px_rgba(5,150,105,0.6)] tracking-widest border border-emerald-400/50 select-none flex-shrink-0 z-20 animate-released-wiggle">
-                                      {t.lReleasedMark || 'RELEASED'}
-                                      </span>
                                     <button
                                       key="share-btn"
                                       onClick={async (e) => {
@@ -3778,6 +3860,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
   const [systemArtists, setSystemArtists] = useState<any[]>([]);
   const [showBrandBrief, setShowBrandBrief] = useState(false);
   const [showBrandVideos, setShowBrandVideos] = useState(false);
+  const brandColors = useBrandColors(demo?.isBrand ? demo.brandLogoUrl : undefined, (demo as any)?.brandColor);
 
   useEffect(() => {
     fetch('/api/public/artists')
@@ -3878,8 +3961,9 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
         textLine = match?.[1] ? `Verse ${match[1]}` : "Verse";
         trimmed = textLine.trim();
         lower = trimmed.toLowerCase();
-      } else if (/^ver\s*(\d+)[:]*\s*$/i.test(lower)) {
-        textLine = trimmed.replace(/^ver\s*(\d+)[:]*\s*/i, "Verse $1");
+      } else if (/^\[?\s*vers?\s*(\d+)?\s*\]?[:]*\s*$/i.test(lower)) {
+        const match = trimmed.match(/^\[?\s*vers?\s*(\d+)?\s*\]?[:]*\s*$/i);
+        textLine = match?.[1] ? `Verse ${match[1]}` : "Verse";
         trimmed = textLine.trim();
         lower = trimmed.toLowerCase();
       } else if (/^rap[:]*\s*$/i.test(lower)) {
@@ -3890,7 +3974,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
 
       const isAnn = lower.includes("pre") || 
                     lower.includes("chorus") || 
-                    lower.includes("verse") || 
+                    lower.includes("vers") || 
                     lower.includes("bridge") || 
                     lower.includes("drop") ||
                     lower.includes("ending") ||
@@ -3901,8 +3985,8 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
         let annotation = trimmed;
         if (lower.includes("pre")) annotation = "Pre-Chorus";
         else if (lower.includes("chorus")) annotation = "Chorus";
-        else if (lower.includes("verse")) {
-          const match = trimmed.match(/verse\s*(\d+)?/i);
+        else if (lower.includes("vers")) {
+          const match = trimmed.match(/vers(?:e)?\s*(\d+)?/i);
           annotation = match?.[1] ? `Verse ${match[1]}` : "Verse";
         } else if (lower.includes("bridge")) annotation = "Bridge";
         else if (lower.includes("drop")) annotation = "Drop";
@@ -3950,8 +4034,9 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
         textLine = match?.[1] ? `Verse ${match[1]}` : "Verse";
         trimmed = textLine.trim();
         lower = trimmed.toLowerCase();
-      } else if (/^ver\s*(\d+)[:]*\s*$/i.test(lower)) {
-        textLine = trimmed.replace(/^ver\s*(\d+)[:]*\s*/i, "Verse $1");
+      } else if (/^\[?\s*vers?\s*(\d+)?\s*\]?[:]*\s*$/i.test(lower)) {
+        const match = trimmed.match(/^\[?\s*vers?\s*(\d+)?\s*\]?[:]*\s*$/i);
+        textLine = match?.[1] ? `Verse ${match[1]}` : "Verse";
         trimmed = textLine.trim();
         lower = trimmed.toLowerCase();
       } else if (/^rap[:]*\s*$/i.test(lower)) {
@@ -3962,7 +4047,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
       
       const isAnn = lower.includes("pre") || 
                     lower.includes("chorus") || 
-                    lower.includes("verse") || 
+                    lower.includes("vers") || 
                     lower.includes("bridge") || 
                     lower.includes("drop") ||
                     lower.includes("ending") ||
@@ -4010,8 +4095,8 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
             badgeClass = isLight 
               ? "bg-red-50 text-red-900 border border-red-300 font-bold" 
               : "bg-white/10 text-white border border-white/65 font-black backdrop-blur-sm shadow-sm";
-          } else if (lower.includes("verse")) {
-            const match = trimmed.match(/verse\s*(\d+)?/i);
+          } else if (lower.includes("vers")) {
+            const match = trimmed.match(/vers(?:e)?\s*(\d+)?/i);
             annotation = match?.[1] ? `Verse ${match[1]}` : "Verse";
             badgeClass = isLight 
               ? "bg-blue-50 text-blue-900 border border-blue-300 font-bold" 
@@ -4380,6 +4465,36 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
           <h2 className={`text-2xl font-black text-center mb-1 drop-shadow-sm`}>
             <HoverTranslate text={demo.title} />
           </h2>
+          {demo.isBrand && demo.brandName && (() => {
+            const badgeStyle = getBrandBadgeStyle(brandColors.primary);
+            return (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="my-3 flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-xl border shadow-md w-fit mx-auto"
+                style={{
+                  borderColor: badgeStyle.borderColor,
+                  backgroundColor: badgeStyle.backgroundColor,
+                  boxShadow: badgeStyle.boxShadow
+                }}
+              >
+                {demo.brandLogoUrl && (
+                  <div 
+                    className="w-5 h-5 rounded-md overflow-hidden flex items-center justify-center p-0.5 bg-white/10"
+                    style={{ border: `1px solid ${badgeStyle.borderColor}` }}
+                  >
+                    <img src={demo.brandLogoUrl} className="w-full h-full object-contain" alt={demo.brandName} referrerPolicy="no-referrer" />
+                  </div>
+                )}
+                <span className="text-[10px] uppercase tracking-widest font-black flex items-center gap-1">
+                  <span style={{ color: badgeStyle.labelColor }}>Đối tác:</span>
+                  <span style={{ color: badgeStyle.valueColor }}>{demo.brandName}</span>
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse ml-0.5" style={{ backgroundColor: badgeStyle.dotColor }}></span>
+              </motion.div>
+            );
+          })()}
           <p className="text-sm font-medium text-center mb-6 opacity-80">
              {renderArtistNameWithLinks(demo.singer || demo.author || (demo as any)?.defaultArtistName || 'Nghệ sĩ', systemArtists)}
              <span className="block text-xs mt-1 opacity-70">Sáng tác: {renderArtistNameWithLinks(demo.composer || (demo as any)?.defaultArtistName || 'Nghệ sĩ', systemArtists)}</span>
@@ -4736,23 +4851,54 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
             className="text-xl md:text-2xl font-black text-center mb-1 drop-shadow-sm flex items-center justify-center relative z-30"
             style={{ color: customConfig?.titleColor || undefined }}
           >
-            <span className="relative inline-block pr-10 z-40"></span>
+            <span className="relative inline-flex items-center">
               <HoverTranslate text={demo.title} format={true} />
+              <span className="inline-block w-5 md:w-7"></span>
               {demo.linkType === 'indirect' ? (
-               <div className="absolute top-0 right-0 translate-x-[15%] -translate-y-[10%] rotate-[12deg] bg-indigo-600 text-[9px] font-black text-white px-1.5 py-0.5 rounded shadow-[0_0_15px_rgba(79,70,229,0.8)] animate-[pulse_2s_ease-in-out_infinite] tracking-widest border border-white/20 select-none z-50 whitespace-nowrap">
-                 Landing Page
-               </div>
+                <div className="absolute top-0 right-0 translate-x-[105%] -translate-y-[25%] rotate-[10deg] bg-indigo-600 text-[7px] md:text-[8px] font-black text-white px-1.5 py-0.5 rounded shadow-[0_0_15px_rgba(79,70,229,0.8)] animate-[pulse_2s_ease-in-out_infinite] tracking-widest border border-white/20 select-none z-50 whitespace-nowrap">
+                  Landing Page
+                </div>
               ) : demo.isReleased ? (
-               <div className="absolute top-0 right-0 translate-x-[25%] -translate-y-[10%] rotate-[12deg] bg-emerald-600 text-[9px] font-black text-white px-2 py-0.5 rounded shadow-[0_0_15px_rgba(5,150,105,0.8)] tracking-widest border border-emerald-400/50 select-none animate-released-wiggle z-50">
-                 {t.lReleasedMark || 'RELEASED'}
-               </div>
+                <div className="absolute top-0 right-0 translate-x-[105%] -translate-y-[25%] rotate-[10deg] bg-emerald-600 text-[7px] md:text-[8px] font-black text-white px-1.5 py-0.5 rounded shadow-[0_0_15px_rgba(5,150,105,0.8)] tracking-widest border border-emerald-400/50 select-none animate-released-wiggle z-50 whitespace-nowrap">
+                  {t.lReleasedMark || 'RELEASED'}
+                </div>
               ) : (
-               <div className="absolute top-0 right-0 translate-x-[15%] -translate-y-[10%] rotate-[12deg] bg-rose-600 text-[9px] font-black text-white px-1.5 py-0.5 rounded shadow-[0_0_15px_rgba(225,29,72,0.8)] animate-[pulse_2s_ease-in-out_infinite] tracking-widest border border-white/20 select-none z-50">
-                 {t.lDemoMark || 'DEMO'}
-               </div>
+                <div className="absolute top-0 right-0 translate-x-[105%] -translate-y-[25%] rotate-[10deg] bg-rose-600 text-[7px] md:text-[8px] font-black text-white px-1.5 py-0.5 rounded shadow-[0_0_15px_rgba(225,29,72,0.8)] animate-[pulse_2s_ease-in-out_infinite] tracking-widest border border-white/20 select-none z-50 whitespace-nowrap">
+                  {t.lDemoMark || 'DEMO'}
+                </div>
               )}
-            
+            </span>
           </h1>
+          {demo.isBrand && demo.brandName && (() => {
+            const badgeStyle = getBrandBadgeStyle(brandColors.primary);
+            return (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="my-3 flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-xl border shadow-md w-fit mx-auto"
+                style={{
+                  borderColor: badgeStyle.borderColor,
+                  backgroundColor: badgeStyle.backgroundColor,
+                  boxShadow: badgeStyle.boxShadow
+                }}
+              >
+                {demo.brandLogoUrl && (
+                  <div 
+                    className="w-5 h-5 rounded-md overflow-hidden flex items-center justify-center p-0.5 bg-white/10"
+                    style={{ border: `1px solid ${badgeStyle.borderColor}` }}
+                  >
+                    <img src={demo.brandLogoUrl} className="w-full h-full object-contain" alt={demo.brandName} referrerPolicy="no-referrer" />
+                  </div>
+                )}
+                <span className="text-[10px] uppercase tracking-widest font-black flex items-center gap-1">
+                  <span style={{ color: badgeStyle.labelColor }}>Đối tác:</span>
+                  <span style={{ color: badgeStyle.valueColor }}>{demo.brandName}</span>
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse ml-0.5" style={{ backgroundColor: badgeStyle.dotColor }}></span>
+              </motion.div>
+            );
+          })()}
           <p 
             className="text-lg md:text-xl font-medium text-center mb-0"
             style={{
@@ -6315,6 +6461,7 @@ function AdminDashboard() {
           pageTitle: payload.pageTitle,
           artistName: payload.artistName,
           username: payload.username,
+          extension: payload.extension,
           artistBio: payload.artistBio,
           homeCoverUrl: payload.homeCoverUrl,
           faviconUrl: payload.faviconUrl,
@@ -6480,106 +6627,234 @@ function AdminDashboard() {
         <aside className={`${
           effectiveSidebarCollapsed 
             ? (isPCPreviewMode 
-                ? 'flex flex-col w-16 bg-white border-r border-stone-200 shrink-0 py-4 items-center space-y-4 relative' 
-                : 'hidden md:flex flex-col w-16 bg-white border-r border-stone-200 shrink-0 py-4 items-center space-y-4 relative')
-            : 'w-full md:w-64 shrink-0 flex flex-col md:sticky md:top-[88px] self-start relative'
+                ? 'flex flex-col w-16 bg-white border-r border-stone-200 shrink-0 py-4 items-center space-y-4 relative shadow-xs' 
+                : 'hidden md:flex flex-col w-16 bg-white border-r border-stone-200 shrink-0 py-4 items-center space-y-4 relative shadow-xs')
+            : 'w-full md:w-64 shrink-0 flex flex-col md:sticky md:top-[88px] self-start relative md:bg-white md:border md:border-stone-200/60 md:rounded-[2rem] md:p-5 md:shadow-[0_8px_30px_rgb(0,0,0,0.015)] md:backdrop-blur-md md:gap-5'
         }`}>
-          {!effectiveSidebarCollapsed && <h3 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2 px-4 hidden md:block">Quản lý</h3>}
+          {!effectiveSidebarCollapsed && (
+            <h3 className="text-[10px] font-extrabold text-stone-400 uppercase tracking-widest mb-2 px-4 hidden md:block select-none opacity-80">
+              Quản lý
+            </h3>
+          )}
           {!isPCPreviewMode && (
              <button
                 onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                className={`hidden md:flex absolute ${isSidebarCollapsed ? '-top-2 left-1/2 -translate-x-1/2 z-10' : '-top-2 right-2 z-10'} items-center justify-center p-1 text-stone-400 hover:text-stone-900 transition-colors bg-white rounded-md border border-stone-100 shadow-sm`}
+                className={`hidden md:flex absolute ${isSidebarCollapsed ? '-top-2 left-1/2 -translate-x-1/2 z-10' : '-top-2 right-2 z-10'} items-center justify-center p-1.5 text-stone-400 hover:text-stone-900 transition-all bg-white rounded-full border border-stone-200 shadow-sm hover:scale-105`}
              >
                 {isSidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
              </button>
           )}
-          <div className={`${effectiveSidebarCollapsed ? 'flex flex-col gap-2 w-full px-2' : 'mb-6 space-y-1'}`}>
-            <button
-              onClick={() => { setActiveTab('demos'); setDemosSubTab('released'); }}
-              className={`flex items-center transition-colors ${
-                effectiveSidebarCollapsed ? 'justify-center w-10 h-10 rounded-xl mx-auto' : 'justify-start w-full gap-3 px-4 py-3 rounded-xl font-medium'
-              } ${
-                activeTab === 'demos' && demosSubTab !== 'playlists' ? 'bg-stone-900 text-white' : 'hover:bg-stone-200 text-stone-600'
-              }`}
-              title="Bài Hát"
-            >
-              <Disc3 className="w-5 h-5" /> {!effectiveSidebarCollapsed && <span>Bài Hát</span>}
-            </button>
-            <button
-              onClick={() => { setActiveTab('demos'); setDemosSubTab('playlists'); }}
-              className={`flex items-center transition-colors ${
-                effectiveSidebarCollapsed ? 'justify-center w-10 h-10 rounded-xl mx-auto' : 'justify-start w-full gap-3 px-4 py-3 rounded-xl font-medium'
-              } ${
-                activeTab === 'demos' && demosSubTab === 'playlists' ? 'bg-stone-900 text-white' : 'hover:bg-stone-200 text-stone-600'
-              }`}
-              title="Playlist"
-            >
-              <ListMusic className="w-5 h-5" /> {!effectiveSidebarCollapsed && <span>Playlist</span>}
-            </button>
-            <button 
-              onClick={() => setActiveTab('templates')} 
-              className={`flex items-center transition-colors ${
-                effectiveSidebarCollapsed ? 'justify-center w-10 h-10 rounded-xl mx-auto' : 'justify-start w-full gap-3 px-4 py-3 rounded-xl font-medium'
-              } ${
-                activeTab === 'templates' ? 'bg-stone-900 text-white' : 'hover:bg-stone-200 text-stone-600'
-              }`} 
-              title="Giao Diện"
-            >
-              <Camera className="w-5 h-5" /> {!effectiveSidebarCollapsed && <span>Giao Diện</span>}
-            </button>
-            <button
-              onClick={() => setActiveTab('reposts')}
-              className={`flex items-center transition-colors relative ${
-                effectiveSidebarCollapsed ? 'justify-center w-10 h-10 rounded-xl mx-auto' : 'justify-start w-full gap-3 px-4 py-3 rounded-xl font-medium'
-              } ${
-                activeTab === 'reposts' ? 'bg-stone-900 text-white' : 'hover:bg-stone-200 text-stone-600'
-              }`}
-              title={`Đăng lại (${otherSongs.length})`}
-            >
-              <div className="relative flex items-center justify-center">
-                <Repeat className="w-5 h-5" />
-                {effectiveSidebarCollapsed && otherSongs.length > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">{otherSongs.length}</span>
-                )}
-              </div>
-              {!effectiveSidebarCollapsed && <span>Đăng lại ({otherSongs.length})</span>}
-            </button>
-            <button
-              onClick={() => setActiveTab('tickets')}
-              className={`flex items-center transition-colors relative ${
-                effectiveSidebarCollapsed ? 'justify-center w-10 h-10 rounded-xl mx-auto' : 'justify-start w-full gap-3 px-4 py-3 rounded-xl font-medium'
-              } ${
-                activeTab === 'tickets' ? 'bg-stone-900 text-white' : 'hover:bg-stone-200 text-stone-600'
-              }`}
-              title="Hộp Thư"
-            >
-              <MessageSquare className="w-5 h-5" /> 
-              {!effectiveSidebarCollapsed && <span className="flex items-center gap-2">Hộp Thư {bellCount > 0 && <Bell className="w-3.5 h-3.5 text-red-400 animate-bounce" />}</span>}
-              {bellCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-md animate-pulse">{bellCount}</span>
-              )}
-            </button>
-          </div>
           
-          <div className={`${effectiveSidebarCollapsed ? 'flex flex-col gap-2 w-full px-2' : 'mb-6 space-y-1'}`}>
-            {!effectiveSidebarCollapsed && <h3 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2 px-4">Hồ sơ & Mở rộng</h3>}
-            <button onClick={() => setActiveTab('profile')} className={`flex items-center transition-colors ${
-              effectiveSidebarCollapsed ? 'justify-center w-10 h-10 rounded-xl mx-auto' : 'justify-start w-full gap-3 px-4 py-3 rounded-xl font-medium'
-            } ${activeTab === 'profile' ? 'bg-stone-900 text-white' : 'hover:bg-stone-200 text-stone-600'}`} title="Cài Đặt">
-              <Settings className="w-5 h-5" /> {!effectiveSidebarCollapsed && <span>Cài Đặt</span>}
-            </button>
-            <button onClick={() => setActiveTab('socials')} className={`flex items-center transition-colors ${
-              effectiveSidebarCollapsed ? 'justify-center w-10 h-10 rounded-xl mx-auto' : 'justify-start w-full gap-3 px-4 py-3 rounded-xl font-medium'
-            } ${activeTab === 'socials' ? 'bg-stone-900 text-white' : 'hover:bg-stone-200 text-stone-600'}`} title="Mạng Xã Hội">
-              <Globe className="w-5 h-5" /> {!effectiveSidebarCollapsed && <span>Mạng Xã Hội</span>}
-            </button>
-            <button onClick={() => setActiveTab('security')} className={`flex items-center transition-colors ${
-              effectiveSidebarCollapsed ? 'justify-center w-10 h-10 rounded-xl mx-auto' : 'justify-start w-full gap-3 px-4 py-3 rounded-xl font-medium'
-            } ${activeTab === 'security' ? 'bg-stone-900 text-white' : 'hover:bg-stone-200 text-stone-600'}`} title="Bảo Mật">
-              <Lock className="w-5 h-5" /> {!effectiveSidebarCollapsed && <span>Bảo Mật</span>}
-            </button>
+          {(() => {
+            const isDemosActive = activeTab === 'demos' && demosSubTab !== 'playlists';
+            const isPlaylistActive = activeTab === 'demos' && demosSubTab === 'playlists';
+            const isTemplatesActive = activeTab === 'templates';
+            const isRepostsActive = activeTab === 'reposts';
+            const isTicketsActive = activeTab === 'tickets';
+            const isProfileActive = activeTab === 'profile';
+            const isSocialsActive = activeTab === 'socials';
+            const isSecurityActive = activeTab === 'security';
 
-          </div>
+            return (
+              <>
+                <div className={`${effectiveSidebarCollapsed ? 'flex flex-col gap-2 w-full px-2' : 'mb-3 space-y-1'}`}>
+                  <button
+                    onClick={() => { setActiveTab('demos'); setDemosSubTab('released'); }}
+                    className={`flex items-center transition-all relative group ${
+                      effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
+                    } ${
+                      isDemosActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                    }`}
+                    title="Bài Hát"
+                  >
+                    {isDemosActive && (
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 bg-stone-900 rounded-xl z-0 shadow-sm border border-stone-950"
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    <Disc3 className={`w-5 h-5 relative z-10 transition-colors ${isDemosActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                    {!effectiveSidebarCollapsed && <span className="relative z-10">Bài Hát</span>}
+                  </button>
+
+                  <button
+                    onClick={() => { setActiveTab('demos'); setDemosSubTab('playlists'); }}
+                    className={`flex items-center transition-all relative group ${
+                      effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
+                    } ${
+                      isPlaylistActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                    }`}
+                    title="Playlist"
+                  >
+                    {isPlaylistActive && (
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 bg-stone-900 rounded-xl z-0 shadow-sm border border-stone-950"
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    <ListMusic className={`w-5 h-5 relative z-10 transition-colors ${isPlaylistActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                    {!effectiveSidebarCollapsed && <span className="relative z-10">Playlist</span>}
+                  </button>
+
+                  <button 
+                    onClick={() => setActiveTab('templates')} 
+                    className={`flex items-center transition-all relative group ${
+                      effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
+                    } ${
+                      isTemplatesActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                    }`} 
+                    title="Giao Diện"
+                  >
+                    {isTemplatesActive && (
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 bg-stone-900 rounded-xl z-0 shadow-sm border border-stone-950"
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    <Camera className={`w-5 h-5 relative z-10 transition-colors ${isTemplatesActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                    {!effectiveSidebarCollapsed && <span className="relative z-10">Giao Diện</span>}
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('reposts')}
+                    className={`flex items-center transition-all relative group ${
+                      effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
+                    } ${
+                      isRepostsActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                    }`}
+                    title={`Đăng lại (${otherSongs.length})`}
+                  >
+                    {isRepostsActive && (
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 bg-stone-900 rounded-xl z-0 shadow-sm border border-stone-950"
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    <div className="relative flex items-center justify-center z-10">
+                      <Repeat className={`w-5 h-5 transition-colors ${isRepostsActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                      {effectiveSidebarCollapsed && otherSongs.length > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">{otherSongs.length}</span>
+                      )}
+                    </div>
+                    {!effectiveSidebarCollapsed && (
+                      <span className="relative z-10 flex items-center justify-between w-full">
+                        <span>Đăng lại</span>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold transition-colors ${isRepostsActive ? 'bg-white/20 text-white' : 'bg-stone-100 text-stone-600 group-hover:bg-stone-200/80 group-hover:text-stone-900'}`}>{otherSongs.length}</span>
+                      </span>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('tickets')}
+                    className={`flex items-center transition-all relative group ${
+                      effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
+                    } ${
+                      isTicketsActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                    }`}
+                    title="Hộp Thư"
+                  >
+                    {isTicketsActive && (
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 bg-stone-900 rounded-xl z-0 shadow-sm border border-stone-950"
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    <div className="relative flex items-center justify-center z-10">
+                      <MessageSquare className={`w-5 h-5 transition-colors ${isTicketsActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                      {effectiveSidebarCollapsed && bellCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white animate-pulse">{bellCount}</span>
+                      )}
+                    </div>
+                    {!effectiveSidebarCollapsed && (
+                      <span className="relative z-10 flex items-center justify-between w-full">
+                        <span className="flex items-center gap-2">
+                          Hộp Thư 
+                          {bellCount > 0 && <span className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-ping" />}
+                        </span>
+                        {bellCount > 0 && (
+                          <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs animate-pulse">
+                            {bellCount}
+                          </span>
+                        )}
+                      </span>
+                    )}
+                  </button>
+                </div>
+                
+                <div className={`${effectiveSidebarCollapsed ? 'flex flex-col gap-2 w-full px-2' : 'space-y-1'}`}>
+                  {!effectiveSidebarCollapsed && (
+                    <h3 className="text-[10px] font-extrabold text-stone-400 uppercase tracking-widest mb-3 mt-4 px-4 select-none opacity-80">
+                      Hồ sơ & Mở rộng
+                    </h3>
+                  )}
+                  <button
+                    onClick={() => setActiveTab('profile')}
+                    className={`flex items-center transition-all relative group ${
+                      effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
+                    } ${
+                      isProfileActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                    }`}
+                    title="Cài Đặt"
+                  >
+                    {isProfileActive && (
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 bg-stone-900 rounded-xl z-0 shadow-sm border border-stone-950"
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    <Settings className={`w-5 h-5 relative z-10 transition-colors ${isProfileActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                    {!effectiveSidebarCollapsed && <span className="relative z-10">Cài Đặt</span>}
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('socials')}
+                    className={`flex items-center transition-all relative group ${
+                      effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
+                    } ${
+                      isSocialsActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                    }`}
+                    title="Mạng Xã Hội"
+                  >
+                    {isSocialsActive && (
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 bg-stone-900 rounded-xl z-0 shadow-sm border border-stone-950"
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    <Globe className={`w-5 h-5 relative z-10 transition-colors ${isSocialsActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                    {!effectiveSidebarCollapsed && <span className="relative z-10">Mạng Xã Hội</span>}
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('security')}
+                    className={`flex items-center transition-all relative group ${
+                      effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
+                    } ${
+                      isSecurityActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                    }`}
+                    title="Bảo Mật"
+                  >
+                    {isSecurityActive && (
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 bg-stone-900 rounded-xl z-0 shadow-sm border border-stone-950"
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    <Lock className={`w-5 h-5 relative z-10 transition-colors ${isSecurityActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                    {!effectiveSidebarCollapsed && <span className="relative z-10">Bảo Mật</span>}
+                  </button>
+                </div>
+              </>
+            );
+          })()}
         </aside>
 
         <main className={`flex-1 bg-white flex flex-col ${isPCPreviewMode ? 'rounded-none border-0 shadow-none min-h-0 h-[calc(100vh-64px)] overflow-hidden' : 'rounded-none md:rounded-3xl border-0 md:border md:border-stone-200 shadow-none md:shadow-sm p-4 md:p-8 min-h-[calc(100vh-64px)]'}`}>
@@ -6593,112 +6868,160 @@ function AdminDashboard() {
                     onClick={() => setDemosSubTab('released')}
                     className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all relative ${
                       demosSubTab === 'released'
-                        ? 'bg-white text-stone-900 shadow-sm'
+                        ? 'text-stone-900'
                         : 'text-stone-500 hover:text-stone-900'
                     }`}
                   >
-                    <Music className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500" />
-                    <span>Ra rồi</span>
-                    <span className="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded text-xs">
+                    {demosSubTab === 'released' && (
+                      <motion.span
+                        layoutId="adminSubTabActiveBg"
+                        className="absolute inset-0 bg-white rounded-lg shadow-xs z-0 border border-stone-200/30"
+                        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                      />
+                    )}
+                    <Music className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 relative z-10" />
+                    <span className="relative z-10">Ra rồi</span>
+                    <span className={`px-1.5 py-0.5 rounded text-xs relative z-10 font-bold ${demosSubTab === 'released' ? 'bg-emerald-50 text-emerald-700' : 'bg-stone-200/70 text-stone-600'}`}>
                       {data.demos?.filter(d => d.isReleased && !d.deleted && !d.isDraft && d.linkType !== 'indirect')
                         .filter(d => !adminSearchQuery.trim() || d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}</span>
-                    
                   </button>
+
                   <button
                     type="button"
                     onClick={() => setDemosSubTab('demos')}
                     className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all relative ${
                       demosSubTab === 'demos'
-                        ? 'bg-white text-stone-900 shadow-sm'
+                        ? 'text-stone-900'
                         : 'text-stone-500 hover:text-stone-900'
                     }`}
                   >
-                    <Disc3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-500" />
-                    <span>Đề Mô</span>
-                    <span className="bg-rose-50 text-rose-700 px-1.5 py-0.5 rounded text-xs">
+                    {demosSubTab === 'demos' && (
+                      <motion.span
+                        layoutId="adminSubTabActiveBg"
+                        className="absolute inset-0 bg-white rounded-lg shadow-xs z-0 border border-stone-200/30"
+                        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                      />
+                    )}
+                    <Disc3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-500 relative z-10" />
+                    <span className="relative z-10">Đề Mô</span>
+                    <span className={`px-1.5 py-0.5 rounded text-xs relative z-10 font-bold ${demosSubTab === 'demos' ? 'bg-rose-50 text-rose-700' : 'bg-stone-200/70 text-stone-600'}`}>
                       {data.demos?.filter(d => !d.isReleased && !d.deleted && !d.isDraft && d.linkType !== 'indirect')
                         .filter(d => !adminSearchQuery.trim() || d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}</span>
-                    
                   </button>
+
                   <button
                     type="button"
                     onClick={() => setDemosSubTab('drafts')}
                     className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all relative ${
                       demosSubTab === 'drafts'
-                        ? 'bg-white text-stone-900 shadow-sm'
+                        ? 'text-stone-900'
                         : 'text-stone-500 hover:text-stone-900'
                     }`}
                   >
-                    <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500" />
-                    <span>Nháp</span>
-                    <span className="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded text-xs">
+                    {demosSubTab === 'drafts' && (
+                      <motion.span
+                        layoutId="adminSubTabActiveBg"
+                        className="absolute inset-0 bg-white rounded-lg shadow-xs z-0 border border-stone-200/30"
+                        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                      />
+                    )}
+                    <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 relative z-10" />
+                    <span className="relative z-10">Nháp</span>
+                    <span className={`px-1.5 py-0.5 rounded text-xs relative z-10 font-bold ${demosSubTab === 'drafts' ? 'bg-amber-50 text-amber-700' : 'bg-stone-200/70 text-stone-600'}`}>
                       {data.demos?.filter(d => d.isDraft && !d.deleted && d.linkType !== 'indirect')
                         .filter(d => !adminSearchQuery.trim() || d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}</span>
-                    
                   </button>
+
                   <button
                     type="button"
                     onClick={() => setDemosSubTab('landing_pages')}
                     className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all relative ${
                       demosSubTab === 'landing_pages'
-                        ? 'bg-white text-stone-900 shadow-sm'
+                        ? 'text-stone-900'
                         : 'text-stone-500 hover:text-stone-900'
                     }`}
                   >
-                    <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-500" />
-                    <span>Landing Page</span>
-                    <span className="bg-pink-50 text-pink-700 px-1.5 py-0.5 rounded text-xs">
+                    {demosSubTab === 'landing_pages' && (
+                      <motion.span
+                        layoutId="adminSubTabActiveBg"
+                        className="absolute inset-0 bg-white rounded-lg shadow-xs z-0 border border-stone-200/30"
+                        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                      />
+                    )}
+                    <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-500 relative z-10" />
+                    <span className="relative z-10">Landing Page</span>
+                    <span className={`px-1.5 py-0.5 rounded text-xs relative z-10 font-bold ${demosSubTab === 'landing_pages' ? 'bg-pink-50 text-pink-700' : 'bg-stone-200/70 text-stone-600'}`}>
                       {data.demos?.filter(d => d.linkType === 'indirect' && !d.deleted)
                         .filter(d => !adminSearchQuery.trim() || d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}</span>
-                    
                   </button>
+
                   <button
                     type="button"
                     onClick={() => setDemosSubTab('brands')}
                     className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all relative ${
                       demosSubTab === 'brands'
-                        ? 'bg-white text-stone-900 shadow-sm'
+                        ? 'text-stone-900'
                         : 'text-stone-500 hover:text-stone-900'
                     }`}
                   >
-                    <BadgeCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-500" />
-                    <span>Nhạc Thương Hiệu</span>
-                    <span className="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-xs">
+                    {demosSubTab === 'brands' && (
+                      <motion.span
+                        layoutId="adminSubTabActiveBg"
+                        className="absolute inset-0 bg-white rounded-lg shadow-xs z-0 border border-stone-200/30"
+                        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                      />
+                    )}
+                    <BadgeCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-500 relative z-10" />
+                    <span className="relative z-10">Nhạc Thương Hiệu</span>
+                    <span className={`px-1.5 py-0.5 rounded text-xs relative z-10 font-bold ${demosSubTab === 'brands' ? 'bg-indigo-50 text-indigo-700' : 'bg-stone-200/70 text-stone-600'}`}>
                       {data.demos?.filter(d => d.isBrand && !d.deleted)
                         .filter(d => !adminSearchQuery.trim() || d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}</span>
-                    
                   </button>
+
                   <button
                     type="button"
                     onClick={() => setDemosSubTab('playlists')}
                     className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all relative ${
                       demosSubTab === 'playlists'
-                        ? 'bg-white text-stone-900 shadow-sm'
+                        ? 'text-stone-900'
                         : 'text-stone-500 hover:text-stone-900'
                     }`}
                   >
-                    <ListMusic className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-500" />
-                    <span>Playlist</span>
-                    <span className="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded text-xs">
+                    {demosSubTab === 'playlists' && (
+                      <motion.span
+                        layoutId="adminSubTabActiveBg"
+                        className="absolute inset-0 bg-white rounded-lg shadow-xs z-0 border border-stone-200/30"
+                        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                      />
+                    )}
+                    <ListMusic className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-500 relative z-10" />
+                    <span className="relative z-10">Playlist</span>
+                    <span className={`px-1.5 py-0.5 rounded text-xs relative z-10 font-bold ${demosSubTab === 'playlists' ? 'bg-purple-50 text-purple-700' : 'bg-stone-200/70 text-stone-600'}`}>
                       {(data.playlists || []).filter(p => !p.deleted)
                         .filter(p => !adminSearchQuery.trim() || p.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}</span>
-                    
                   </button>
+
                   <button
                     type="button"
                     onClick={() => setDemosSubTab('trash')}
                     className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all relative ${
                       demosSubTab === 'trash'
-                        ? 'bg-white text-stone-900 shadow-sm'
+                        ? 'text-stone-900'
                         : 'text-stone-500 hover:text-stone-900'
                     }`}
                   >
-                    <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-500" />
-                    <span>Thùng rác</span>
-                    <span className="bg-stone-200 text-stone-700 px-1.5 py-0.5 rounded text-xs">
+                    {demosSubTab === 'trash' && (
+                      <motion.span
+                        layoutId="adminSubTabActiveBg"
+                        className="absolute inset-0 bg-white rounded-lg shadow-xs z-0 border border-stone-200/30"
+                        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                      />
+                    )}
+                    <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-500 relative z-10" />
+                    <span className="relative z-10">Thùng rác</span>
+                    <span className={`px-1.5 py-0.5 rounded text-xs relative z-10 font-bold ${demosSubTab === 'trash' ? 'bg-stone-200 text-stone-750' : 'bg-stone-200/70 text-stone-600'}`}>
                       {((data.demos?.filter(d => d.deleted).filter(d => !adminSearchQuery.trim() || d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0) + 
                        ((data.playlists || []).filter(p => p.deleted).filter(p => !adminSearchQuery.trim() || p.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0))}</span>
-                    
                   </button>
                 </div>
 

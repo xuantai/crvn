@@ -8,7 +8,7 @@ interface LoadingScreenProps {
 
 export function LoadingScreen({ text = 'Đang tải trang...' }: LoadingScreenProps) {
   return (
-    <div className="min-h-screen bg-[#faf9f6] text-neutral-900 font-sans flex flex-col items-center justify-center relative overflow-hidden">
+    <div id="global-loading-screen" className="global-loading-screen min-h-screen bg-[#faf9f6] text-neutral-900 font-sans flex flex-col items-center justify-center relative overflow-hidden">
       {/* Subtle dot background */}
       <div className="absolute inset-0 bg-[radial-gradient(#e5e2dd_1.2px,transparent_1.2px)] [background-size:24px_24px] pointer-events-none opacity-80" />
       

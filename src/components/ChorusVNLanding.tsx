@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Music, BadgeCheck, Lock, Globe, ArrowRight, Sparkles, Disc3, CheckCircle2, ListMusic, X, AlertCircle, Mail, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Music, BadgeCheck, Lock, Globe, ArrowRight, Sparkles, Disc3, CheckCircle2, ListMusic, X, AlertCircle, Mail, ChevronLeft, ChevronRight, UserPlus, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChorusLogo } from './ChorusLogo';
 
@@ -459,13 +459,66 @@ const preloadImages = (imageUrls: string[]): Promise<void> => {
   });
 };
 
+const removeAccents = (str: string) => {
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'd')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s_-]/g, '') // Keep alphanumeric, spaces, hyphens, underscores
+    .trim()
+    .replace(/\s+/g, '-'); // replace spaces with hyphens
+};
+
 export default function ChorusVNLanding() {
   const [artists, setArtists] = useState<LandingArtist[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
-  const PAGE_SIZE = 6;
+  const [pageSize, setPageSize] = useState<number>(20);
 
   const [showBetaModal, setShowBetaModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [regArtistName, setRegArtistName] = useState('');
+  const [regUsername, setRegUsername] = useState('');
+  const [regExtension, setRegExtension] = useState('');
+  const [usernameTouched, setUsernameTouched] = useState(false);
+  const [extensionTouched, setExtensionTouched] = useState(false);
+  const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [captchaAnswer, setCaptchaAnswer] = useState('');
+  const [captchaToken, setCaptchaToken] = useState('');
+  const [captchaSvg, setCaptchaSvg] = useState('');
+  const [regError, setRegError] = useState('');
+  const [regSuccess, setRegSuccess] = useState('');
+  const [regSubmitting, setRegSubmitting] = useState(false);
+  const registerModalBodyRef = useRef<HTMLDivElement>(null);
+
+  const fetchCaptcha = async () => {
+    try {
+      const res = await fetch('/api/public/captcha');
+      const data = await res.json();
+      setCaptchaToken(data.token);
+      setCaptchaSvg(data.svg);
+    } catch (e) {
+      console.error("Failed to load captcha:", e);
+    }
+  };
+
+  useEffect(() => {
+    if (showRegisterModal) {
+      fetchCaptcha();
+      setRegArtistName('');
+      setRegUsername('');
+      setRegExtension('');
+      setRegEmail('');
+      setRegPassword('');
+      setCaptchaAnswer('');
+      setRegError('');
+      setRegSuccess('');
+    }
+  }, [showRegisterModal]);
+
   const [subscriberEmail, setSubscriberEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [subscribeSuccess, setSubscribeSuccess] = useState(false);
@@ -546,7 +599,7 @@ export default function ChorusVNLanding() {
       });
   }, []);
 
-  const totalPages = Math.ceil(artists.length / PAGE_SIZE);
+  const totalPages = Math.ceil(artists.length / pageSize);
 
   useEffect(() => {
     if (totalPages <= 1) return;
@@ -871,6 +924,13 @@ export default function ChorusVNLanding() {
               <span>{t('statusBadge')}</span>
             </div>
 
+            <button
+              onClick={() => setShowRegisterModal(true)}
+              className="bg-black hover:bg-neutral-800 text-white px-4 py-2 rounded-xl text-[10px] font-black tracking-wider transition-all cursor-pointer shadow-sm shrink-0 uppercase"
+            >
+              Đăng ký
+            </button>
+
             {/* Language Selection Segmented Bar */}
             <div className="flex items-center gap-0.5 bg-neutral-200/50 border border-neutral-200/50 p-1 rounded-xl">
               {(['vi', 'en', 'ko'] as const).map((l) => (
@@ -1043,8 +1103,27 @@ export default function ChorusVNLanding() {
               {t('artistsSub')}
             </p>
           </div>
-          <div className="text-[10px] font-black text-neutral-500 uppercase tracking-widest bg-white border border-neutral-200/60 rounded-2xl px-5 py-3 shrink-0 shadow-sm">
-            {t('artistCount')}: <span className="text-neutral-900 font-extrabold">{artists.length} {t('artistUnit')}</span>
+          <div className="flex flex-col sm:flex-row items-center gap-4 bg-white border border-neutral-200/60 rounded-2xl px-5 py-3 shrink-0 shadow-sm text-[10px] font-black text-neutral-500 uppercase tracking-widest">
+            <div>
+              {t('artistCount')}: <span className="text-neutral-900 font-extrabold">{artists.length} {t('artistUnit')}</span>
+            </div>
+            <div className="hidden sm:block h-3 w-[1px] bg-neutral-300" />
+            <div className="flex items-center gap-1.5">
+              <span>Số nghệ sĩ/Trang:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(0);
+                }}
+                className="bg-transparent border-0 outline-none text-neutral-950 font-black cursor-pointer text-[10px] uppercase tracking-widest"
+              >
+                <option value={3}>3</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -1068,7 +1147,7 @@ export default function ChorusVNLanding() {
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                   className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
                 >
-                  {artists.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE).map((artist) => (
+                  {artists.slice(currentPage * pageSize, (currentPage + 1) * pageSize).map((artist) => (
                     <ArtistLandingCard key={artist.extension} artist={artist} t={t} />
                   ))}
                 </motion.div>
@@ -1188,18 +1267,20 @@ export default function ChorusVNLanding() {
           </p>
         </div>
       </footer>
+    </motion.div>
+  )}
 
       {/* Interactive Beta Registration Modal */}
       <AnimatePresence>
         {showBetaModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex justify-center items-start overflow-y-auto p-4 pt-[10vh] md:pt-[12vh]">
             {/* Overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowBetaModal(false)}
-              className="absolute inset-0 bg-neutral-950/40 backdrop-blur-sm"
+              className="fixed inset-0 bg-neutral-950/40 backdrop-blur-sm"
             ></motion.div>
 
             {/* Modal Body */}
@@ -1207,7 +1288,7 @@ export default function ChorusVNLanding() {
               initial={{ scale: 0.95, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
-              className="relative w-full max-w-md bg-white border border-neutral-200 rounded-[2.5rem] p-8 shadow-2xl overflow-hidden text-center z-10"
+              className="relative w-full max-w-md bg-white border border-neutral-200 rounded-[2.5rem] p-8 shadow-2xl overflow-hidden text-center z-10 my-auto"
             >
               {/* Close Button */}
               <button
@@ -1248,8 +1329,289 @@ export default function ChorusVNLanding() {
           </div>
         )}
       </AnimatePresence>
-        </motion.div>
-      )}
+
+      {/* Member Registration Modal */}
+      <AnimatePresence>
+        {showRegisterModal && (
+          <div className="fixed inset-0 z-50 flex justify-center items-start overflow-y-auto p-4 pt-[10vh] md:pt-[12vh]">
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => { if (!regSubmitting) setShowRegisterModal(false); }}
+              className="fixed inset-0 bg-neutral-950/45 backdrop-blur-sm"
+            ></motion.div>
+
+            {/* Modal Body */}
+            <motion.div
+              ref={registerModalBodyRef}
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              className="relative w-full max-w-lg bg-white border border-neutral-200 rounded-[2.5rem] p-8 shadow-2xl overflow-y-auto max-h-[90vh] z-10 custom-scrollbar text-left my-auto"
+            >
+              {/* Close Button */}
+              <button
+                disabled={regSubmitting}
+                onClick={() => setShowRegisterModal(false)}
+                className="absolute top-5 right-5 text-neutral-400 hover:text-black bg-neutral-100 hover:bg-neutral-200/60 p-2 rounded-xl transition-all cursor-pointer disabled:opacity-50"
+              >
+                <X className="w-4.5 h-4.5" />
+              </button>
+
+              <div className="space-y-6 relative z-10">
+                <div className="w-12 h-12 rounded-2xl bg-purple-100 border border-purple-200 flex items-center justify-center text-purple-600">
+                  <UserPlus className="w-5 h-5" />
+                </div>
+
+                <div className="space-y-1">
+                  <h3 className="text-xl font-black text-neutral-900">Đăng ký thành viên</h3>
+                  <p className="text-neutral-400 font-mono text-[9px] font-black uppercase tracking-wider">
+                    Become a Chorus Member
+                  </p>
+                </div>
+
+                {regSuccess ? (
+                  <div className="space-y-6 text-center py-6">
+                    <div className="w-16 h-16 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center mx-auto text-emerald-600 animate-bounce">
+                      <CheckCircle2 className="w-8 h-8" />
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="text-base font-bold text-neutral-900">Đăng ký hoàn tất!</h4>
+                      <p className="text-neutral-600 text-xs sm:text-sm leading-relaxed">
+                        Tài khoản <span className="font-extrabold text-black">{regUsername}</span> đã đăng ký thành công.
+                      </p>
+                      <p className="text-neutral-500 text-xs leading-relaxed max-w-sm mx-auto">
+                        Quản trị viên sẽ xác thực tài khoản của bạn. Sau khi được duyệt, trang nghệ sĩ <span className="font-extrabold text-purple-600">{regExtension}.chorus.vn</span> sẽ chính thức hoạt động!
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowRegisterModal(false)}
+                      className="w-full bg-black hover:bg-neutral-800 text-white font-extrabold py-3.5 px-6 rounded-xl text-xs transition-all cursor-pointer shadow-sm"
+                    >
+                      Đóng cửa sổ
+                    </button>
+                  </div>
+                ) : (
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      setRegError('');
+                      setRegSubmitting(true);
+                      // Scroll to top immediately to show submitting state / keep focus on feedback area
+                      registerModalBodyRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                      
+                      try {
+                        console.log('[Registration] Sending register payload:', {
+                          artistName: regArtistName,
+                          username: regUsername,
+                          extension: regExtension,
+                          email: regEmail
+                        });
+
+                        const res = await fetch('/api/public/register', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            artistName: regArtistName,
+                            username: regUsername,
+                            extension: regExtension,
+                            email: regEmail,
+                            password: regPassword,
+                            captchaAnswer,
+                            captchaToken
+                          })
+                        });
+                        const data = await res.json();
+                        console.log('[Registration] Received response:', data);
+
+                        if (res.ok) {
+                          setRegSuccess(data.message || 'Đăng ký thành công!');
+                          console.log('%c[Registration Success] Approve this user in /acp control panel', 'color: green; font-weight: bold;');
+                        } else {
+                          setRegError(data.error || 'Có lỗi xảy ra, vui lòng thử lại!');
+                          fetchCaptcha(); // reload captcha on error
+                        }
+                      } catch (err) {
+                        console.error('[Registration] Network error:', err);
+                        setRegError('Lỗi kết nối máy chủ!');
+                        fetchCaptcha();
+                      } finally {
+                        setRegSubmitting(false);
+                        // Ensure it stays at top to display success or error
+                        setTimeout(() => {
+                          registerModalBodyRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                        }, 50);
+                      }
+                    }}
+                    className="space-y-4"
+                  >
+                    {regError && (
+                      <div className="p-3.5 rounded-xl bg-red-50 text-red-600 border border-red-100 text-xs font-semibold">
+                        {regError}
+                      </div>
+                    )}
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block">
+                        Tên nghệ sĩ
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        disabled={regSubmitting}
+                        value={regArtistName}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setRegArtistName(val);
+                          const slug = removeAccents(val);
+                          if (!usernameTouched) {
+                            setRegUsername(slug.replace(/[^a-z0-9_]/g, ''));
+                          }
+                          if (!extensionTouched) {
+                            setRegExtension(slug.replace(/[^a-z0-9_-]/g, ''));
+                          }
+                        }}
+                        placeholder="Nghệ danh của bạn"
+                        className="w-full bg-neutral-50 border border-neutral-200/80 rounded-xl px-4 py-3 text-neutral-800 text-xs font-medium focus:outline-none focus:border-neutral-400 focus:bg-white transition-all font-sans"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block">
+                          Tên đăng nhập
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          disabled={regSubmitting}
+                          value={regUsername}
+                          onChange={(e) => {
+                            setUsernameTouched(true);
+                            setRegUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''));
+                          }}
+                          placeholder={regArtistName ? removeAccents(regArtistName).replace(/[^a-z0-9_]/g, '') : "ten-dang-nhap-admin"}
+                          className="w-full bg-neutral-50 border border-neutral-200/80 rounded-xl px-4 py-3 text-neutral-800 text-xs font-medium focus:outline-none focus:border-neutral-400 focus:bg-white transition-all font-sans"
+                        />
+                        <span className="text-[9px] text-neutral-400 block mt-0.5 leading-tight">
+                          * Chỉ gồm chữ thường không dấu, số, dấu gạch dưới.
+                        </span>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block">
+                          Phần Mở Rộng
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          disabled={regSubmitting}
+                          value={regExtension}
+                          onChange={(e) => {
+                            setExtensionTouched(true);
+                            setRegExtension(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''));
+                          }}
+                          placeholder={regArtistName ? removeAccents(regArtistName).replace(/[^a-z0-9_-]/g, '') : "nghesi"}
+                          className="w-full bg-neutral-50 border border-neutral-200/80 rounded-xl px-4 py-3 text-neutral-800 text-xs font-medium focus:outline-none focus:border-neutral-400 focus:bg-white transition-all font-sans"
+                        />
+                        <span className="text-[9px] text-neutral-400 block mt-0.5 leading-tight">
+                          Link kho nhạc của bạn sẽ là <span className="font-extrabold text-neutral-600">{regExtension || 'xxx'}</span>.chorus.vn ( tự động lấy phần trên để điền vào )
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block">
+                        Địa chỉ Email
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        disabled={regSubmitting}
+                        value={regEmail}
+                        onChange={(e) => setRegEmail(e.target.value)}
+                        placeholder="artist@gmail.com"
+                        className="w-full bg-neutral-50 border border-neutral-200/80 rounded-xl px-4 py-3 text-neutral-800 text-xs font-medium focus:outline-none focus:border-neutral-400 focus:bg-white transition-all font-sans"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block">
+                        Mật khẩu quản trị
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        disabled={regSubmitting}
+                        value={regPassword}
+                        onChange={(e) => setRegPassword(e.target.value)}
+                        placeholder="Nhập mật khẩu..."
+                        className="w-full bg-neutral-50 border border-neutral-200/80 rounded-xl px-4 py-3 text-neutral-800 text-xs font-medium focus:outline-none focus:border-neutral-400 focus:bg-white transition-all font-sans"
+                      />
+                    </div>
+
+                    {/* Captcha Block */}
+                    <div className="space-y-1.5 bg-neutral-50 border border-neutral-200/60 p-4 rounded-2xl">
+                      <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block mb-1">
+                        Mã xác nhận bảo vệ (Captcha)
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="rounded-xl overflow-hidden border border-neutral-200 shrink-0 bg-neutral-900 select-none cursor-pointer flex items-center justify-center text-[10px] text-neutral-400 font-mono"
+                          style={{ width: '130px', height: '45px' }}
+                          onClick={fetchCaptcha}
+                          title="Click để đổi mã khác"
+                        >
+                          {captchaSvg ? (
+                            <div dangerouslySetInnerHTML={{ __html: captchaSvg }} className="w-full h-full" />
+                          ) : (
+                            <span className="animate-pulse">Đang tải...</span>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={fetchCaptcha}
+                          disabled={regSubmitting}
+                          className="p-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 rounded-xl transition-colors cursor-pointer flex items-center justify-center"
+                          title="Tải lại Captcha"
+                        >
+                          <RefreshCw className="w-4 h-4" />
+                        </button>
+                        <input
+                          type="text"
+                          required
+                          disabled={regSubmitting}
+                          value={captchaAnswer}
+                          onChange={(e) => setCaptchaAnswer(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+                          placeholder="Nhập chữ..."
+                          className="w-full bg-white border border-neutral-200/80 rounded-xl px-4 py-3 text-neutral-850 text-xs font-black tracking-widest uppercase focus:outline-none focus:border-neutral-400 transition-all font-sans"
+                        />
+                      </div>
+                    </div>
+
+                    {regError && (
+                      <div className="p-3.5 rounded-xl bg-red-50 text-red-600 border border-red-100 text-xs font-semibold animate-pulse">
+                        {regError}
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={regSubmitting}
+                      className="w-full bg-black hover:bg-neutral-800 text-white font-extrabold py-4 px-6 rounded-xl text-xs transition-all cursor-pointer shadow-sm uppercase tracking-wider flex items-center justify-center gap-2"
+                    >
+                      {regSubmitting ? 'Đang gửi...' : 'ĐĂNG KÝ THÀNH VIÊN'}
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </form>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
