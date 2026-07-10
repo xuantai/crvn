@@ -184,17 +184,23 @@ function getLuminance(hex: string): number {
 
 function getBrandBadgeStyle(primaryColor: string) {
   const isColorLight = getLuminance(primaryColor) > 0.5;
-  const textColor = isColorLight ? '#000000' : '#ffffff';
-  const labelColor = isColorLight ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.8)';
-  const borderColor = isColorLight ? 'rgba(0, 0, 0, 0.15)' : 'rgba(255, 255, 255, 0.2)';
+  
+  // If the brand color is light, we use a dark contrasting translucent background
+  // If the brand color is dark, we use a light contrasting translucent background
+  const backgroundColor = isColorLight ? 'rgba(15, 15, 15, 0.85)' : 'rgba(245, 245, 245, 0.9)';
+  const borderColor = isColorLight ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)';
+  
+  const labelColor = isColorLight ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)';
+  const valueColor = primaryColor; // brand name takes the brand's primary color
+  const dotColor = primaryColor;
   
   return {
-    backgroundColor: primaryColor,
+    backgroundColor: backgroundColor,
     borderColor: borderColor,
     labelColor: labelColor,
-    valueColor: textColor,
-    dotColor: textColor,
-    boxShadow: isColorLight ? '0 4px 12px rgba(0, 0, 0, 0.1)' : '0 4px 12px rgba(0, 0, 0, 0.3)'
+    valueColor: valueColor,
+    dotColor: dotColor,
+    boxShadow: isColorLight ? '0 4px 12px rgba(0, 0, 0, 0.25)' : '0 4px 12px rgba(0, 0, 0, 0.05)'
   };
 }
 
@@ -2078,7 +2084,7 @@ function Home() {
                                     </div>
                                   </div>
                                 </div>
-                                <div className={`flex-1 min-w-0 relative z-10 flex flex-col justify-center h-full overflow-hidden ${demo.achievements?.length ? 'pr-1.5' : (demo.isReleased ? 'pr-12' : 'pr-4')}`}>
+                                <div className={`flex-1 min-w-0 relative z-10 flex flex-col justify-center h-full overflow-visible ${demo.achievements?.length ? 'pr-1.5' : (demo.isReleased ? 'pr-12' : 'pr-4')}`}>
                                   <AnimatePresence mode="wait">
                                     {demo.isBrand && showBrandState && demo.brandName ? (
                                       <motion.div
@@ -2110,10 +2116,10 @@ function Home() {
                                         className="flex flex-col justify-center w-full"
                                       >
                                         <h3 className={`font-bold transition-colors ${demo.achievements?.length ? 'text-[11px] sm:text-[13px] group-hover:text-amber-400 leading-tight whitespace-normal break-words' : 'text-base sm:text-lg group-hover:text-rose-400 truncate'}`}>
-                                          <span className="relative inline-flex items-center">
+                                          <span className="relative inline-flex items-center overflow-visible">
                                             <HoverTranslate text={demo.title} format={true} />
                                             {demo.isReleased && (
-                                              <span className="absolute top-0 right-0 translate-x-[110%] -translate-y-[35%] rotate-[10deg] bg-emerald-600 text-[6px] font-black text-white px-1 py-0.2 rounded shadow-[0_0_8px_rgba(5,150,105,0.5)] tracking-widest border border-emerald-400/50 select-none z-20 whitespace-nowrap">
+                                              <span className="absolute top-0 right-0 translate-x-[110%] -translate-y-[35%] rotate-[10deg] bg-emerald-600 text-[6px] font-black text-white px-1 py-0.2 rounded shadow-[0_0_8px_rgba(5,150,105,0.5)] tracking-widest border border-emerald-400/50 select-none z-50 whitespace-nowrap">
                                                 {t.lReleasedMark || 'RELEASED'}
                                               </span>
                                             )}

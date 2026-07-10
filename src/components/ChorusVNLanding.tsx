@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Music, BadgeCheck, Lock, Globe, ArrowRight, Sparkles, Disc3, CheckCircle2, ListMusic, X, AlertCircle, Mail, ChevronLeft, ChevronRight, UserPlus, RefreshCw } from 'lucide-react';
+import { Music, BadgeCheck, Lock, Globe, ArrowRight, Sparkles, Disc3, CheckCircle2, ListMusic, X, AlertCircle, Mail, ChevronLeft, ChevronRight, UserPlus, RefreshCw, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChorusLogo } from './ChorusLogo';
 
@@ -438,6 +438,57 @@ function ArtistLandingCard({ artist, t }: { artist: any; t: any; key?: any }) {
   );
 }
 
+function ArtistLandingMobileItem({ artist }: { artist: any; key?: any }) {
+  // Route URL calculations
+  const isProduction = window.location.hostname.includes('chorus.vn');
+  let href = `/${artist.extension}`;
+  let isExternal = false;
+
+  if (artist.hasExternalWebsite && artist.externalWebsiteUrl) {
+    const cleanUrl = artist.externalWebsiteUrl.trim().replace(/^https?:\/\//i, '');
+    href = `https://${cleanUrl}`;
+    isExternal = true;
+  } else if (artist.customDomain) {
+    const cleanUrl = artist.customDomain.trim().replace(/^https?:\/\//i, '');
+    href = `https://${cleanUrl}`;
+    isExternal = true;
+  } else if (isProduction) {
+    href = `https://${artist.extension}.chorus.vn`;
+    isExternal = true;
+  }
+
+  const linkProps = isExternal ? { href, target: "_blank", rel: "noopener noreferrer" } : { to: href };
+  const LinkComponent = isExternal ? 'a' : Link;
+
+  return (
+    <LinkComponent
+      {...(linkProps as any)}
+      className="flex flex-col items-center gap-2 group w-full"
+    >
+      <div className="relative w-16 h-16 group-active:scale-95 transition-all duration-300">
+        <div className="w-full h-full rounded-full overflow-hidden border-2 border-neutral-300 shadow-md">
+          <img
+            src={artist.homeCoverUrl || "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=150&auto=format&fit=crop&q=80"}
+            alt={artist.artistName}
+            className="w-full h-full object-cover select-none pointer-events-none"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+        {artist.verified && (
+          <div className="absolute bottom-0 right-0 bg-blue-500 rounded-full p-0.5 border border-white z-10 shadow-sm">
+            <svg className="w-2.5 h-2.5 text-white fill-current" viewBox="0 0 24 24">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+            </svg>
+          </div>
+        )}
+      </div>
+      <span className="text-[10px] font-bold text-neutral-800 text-center line-clamp-2 leading-tight group-hover:text-black transition-colors w-full break-words px-0.5">
+        {artist.artistName}
+      </span>
+    </LinkComponent>
+  );
+}
+
 const preloadImages = (imageUrls: string[]): Promise<void> => {
   const uniqueUrls = Array.from(new Set(imageUrls.filter(Boolean)));
   if (uniqueUrls.length === 0) return Promise.resolve();
@@ -471,11 +522,38 @@ const removeAccents = (str: string) => {
     .replace(/\s+/g, '-'); // replace spaces with hyphens
 };
 
+const cleanForSearch = (str: string) => {
+  if (!str) return '';
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'd')
+    .toLowerCase()
+    .trim();
+};
+
 export default function ChorusVNLanding() {
   const [artists, setArtists] = useState<LandingArtist[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
-  const [pageSize, setPageSize] = useState<number>(20);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const pageSize = isMobile ? 4 : 3;
+
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [pageSize]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [showBetaModal, setShowBetaModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
@@ -599,15 +677,31 @@ export default function ChorusVNLanding() {
       });
   }, []);
 
-  const totalPages = Math.ceil(artists.length / pageSize);
+  const filteredArtists = useMemo(() => {
+    if (!searchQuery.trim()) return artists;
+    const cleanQuery = cleanForSearch(searchQuery);
+    return artists.filter((artist) => {
+      return (
+        cleanForSearch(artist.artistName).includes(cleanQuery) ||
+        cleanForSearch(artist.username).includes(cleanQuery) ||
+        cleanForSearch(artist.extension).includes(cleanQuery)
+      );
+    });
+  }, [artists, searchQuery]);
+
+  const totalPages = Math.ceil(filteredArtists.length / pageSize);
 
   useEffect(() => {
-    if (totalPages <= 1) return;
+    setCurrentPage(0);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (totalPages <= 1 || searchQuery.trim() !== '') return;
     const interval = setInterval(() => {
       setCurrentPage((prev) => (prev + 1) % totalPages);
     }, 5000);
     return () => clearInterval(interval);
-  }, [currentPage, totalPages]);
+  }, [currentPage, totalPages, searchQuery]);
 
   const t = (key: string) => {
     const tr = (dict[lang] as any)[key] || (dict['vi'] as any)[key] || '';
@@ -1089,8 +1183,8 @@ export default function ChorusVNLanding() {
       </section>
 
       {/* Main Content & Activated Music Stores Showcase List */}
-      <section id="artist-showcase" className="py-24 px-6 sm:px-10 max-w-7xl mx-auto border-t border-neutral-200/40">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+      <section id="artist-showcase" className="py-12 md:py-24 px-6 sm:px-10 max-w-7xl mx-auto border-t border-neutral-200/40">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-16 gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-rose-500 text-xs font-black uppercase tracking-widest">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
@@ -1103,26 +1197,33 @@ export default function ChorusVNLanding() {
               {t('artistsSub')}
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row items-center gap-4 bg-white border border-neutral-200/60 rounded-2xl px-5 py-3 shrink-0 shadow-sm text-[10px] font-black text-neutral-500 uppercase tracking-widest">
-            <div>
-              {t('artistCount')}: <span className="text-neutral-900 font-extrabold">{artists.length} {t('artistUnit')}</span>
+          <div className="flex flex-col sm:flex-row items-center gap-4 shrink-0 w-full md:w-auto">
+            {/* Search Input Box */}
+            <div className="relative w-full sm:w-64">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-neutral-400">
+                <Search className="w-4 h-4" />
+              </span>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Tìm kiếm nghệ sĩ..."
+                className="w-full bg-white border border-neutral-200/85 rounded-2xl pl-10 pr-9 py-2.5 text-xs font-medium text-neutral-800 placeholder-neutral-400 focus:outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400/20 shadow-sm transition-all"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-neutral-400 hover:text-neutral-600 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
-            <div className="hidden sm:block h-3 w-[1px] bg-neutral-300" />
-            <div className="flex items-center gap-1.5">
-              <span>Số nghệ sĩ/Trang:</span>
-              <select
-                value={pageSize}
-                onChange={(e) => {
-                  setPageSize(Number(e.target.value));
-                  setCurrentPage(0);
-                }}
-                className="bg-transparent border-0 outline-none text-neutral-950 font-black cursor-pointer text-[10px] uppercase tracking-widest"
-              >
-                <option value={3}>3</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </select>
+
+            {/* Dynamic Count Badge */}
+            <div className="flex items-center gap-2 bg-white border border-neutral-200/60 rounded-2xl px-5 py-3 text-[10px] font-black text-neutral-500 uppercase tracking-widest shadow-sm w-full sm:w-auto justify-center shrink-0">
+              {t('artistCount')}: <span className="text-neutral-900 font-extrabold">{filteredArtists.length} {t('artistUnit')}</span>
             </div>
           </div>
         </div>
@@ -1137,58 +1238,74 @@ export default function ChorusVNLanding() {
           </div>
         ) : (
           <div>
-            <div className="relative min-h-[500px]">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentPage}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-                >
-                  {artists.slice(currentPage * pageSize, (currentPage + 1) * pageSize).map((artist) => (
-                    <ArtistLandingCard key={artist.extension} artist={artist} t={t} />
-                  ))}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-3.5 mt-16 bg-white/60 border border-neutral-200/50 py-3.5 px-6 rounded-3xl w-fit mx-auto shadow-sm backdrop-blur-sm relative z-20">
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages)}
-                  className="p-1.5 rounded-xl hover:bg-neutral-100 text-neutral-500 hover:text-black transition-all cursor-pointer"
-                  title="Trang trước"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-
-                <div className="flex items-center gap-2">
-                  {Array.from({ length: totalPages }).map((_, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setCurrentPage(idx)}
-                      className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
-                        currentPage === idx
-                          ? 'w-6 bg-black'
-                          : 'w-2.5 bg-neutral-300 hover:bg-neutral-450'
-                      }`}
-                      title={`Trang ${idx + 1}`}
-                    />
-                  ))}
+            {filteredArtists.length === 0 ? (
+              <div className="bg-white/60 border border-dashed border-neutral-200 rounded-[3rem] p-16 text-center max-w-md mx-auto">
+                <Search className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
+                <h3 className="text-lg font-black text-neutral-800">Không tìm thấy nghệ sĩ</h3>
+                <p className="text-neutral-500 text-xs mt-2 leading-relaxed">
+                  Không tìm thấy nghệ sĩ nào khớp với từ khoá "{searchQuery}". Hãy thử lại bằng từ khoá khác!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className={isMobile ? "relative" : "relative min-h-[500px]"}>
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentPage}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -15 }}
+                      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                      className={isMobile ? "grid grid-cols-4 gap-3 w-full max-w-sm mx-auto px-1 justify-items-center" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"}
+                    >
+                      {filteredArtists.slice(currentPage * pageSize, (currentPage + 1) * pageSize).map((artist) => (
+                        isMobile ? (
+                          <ArtistLandingMobileItem key={artist.extension} artist={artist} />
+                        ) : (
+                          <ArtistLandingCard key={artist.extension} artist={artist} t={t} />
+                        )
+                      ))}
+                    </motion.div>
+                  </AnimatePresence>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage((prev) => (prev + 1) % totalPages)}
-                  className="p-1.5 rounded-xl hover:bg-neutral-100 text-neutral-500 hover:text-black transition-all cursor-pointer"
-                  title="Trang sau"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-3 mt-6 md:mt-16 bg-white/60 border border-neutral-200/50 py-2.5 px-4 md:py-3.5 md:px-6 rounded-3xl w-fit mx-auto shadow-sm backdrop-blur-sm relative z-20">
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages)}
+                      className="p-1.5 rounded-xl hover:bg-neutral-100 text-neutral-500 hover:text-black transition-all cursor-pointer"
+                      title="Trang trước"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+
+                    <div className="flex items-center gap-2">
+                      {Array.from({ length: totalPages }).map((_, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setCurrentPage(idx)}
+                          className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
+                            currentPage === idx
+                              ? 'w-6 bg-black'
+                              : 'w-2.5 bg-neutral-300 hover:bg-neutral-450'
+                          }`}
+                          title={`Trang ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage((prev) => (prev + 1) % totalPages)}
+                      className="p-1.5 rounded-xl hover:bg-neutral-100 text-neutral-500 hover:text-black transition-all cursor-pointer"
+                      title="Trang sau"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1196,9 +1313,9 @@ export default function ChorusVNLanding() {
       </section>
 
       {/* Features Showcase Grid */}
-      <section className="py-24 bg-white/40 border-t border-b border-neutral-200/40 relative">
+      <section className="py-12 md:py-24 bg-white/40 border-t border-b border-neutral-200/40 relative">
         <div className="max-w-7xl mx-auto px-6 sm:px-10">
-          <div className="text-center max-w-2xl mx-auto mb-20 space-y-4">
+          <div className="text-center max-w-2xl mx-auto mb-10 md:mb-20 space-y-4">
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-950 font-sans">
               {config.featuresTitle || t('featuresTitle')}
             </h2>
