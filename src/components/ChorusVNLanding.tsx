@@ -38,14 +38,14 @@ interface LandingConfig {
 
 const dict = {
   vi: {
-    statusBadge: 'ĐANG PHÁT TRIỂN',
+    statusBadge: 'Đang hoạt động thử nghiệm',
     tagline: '✧ SẮP RA MẮT',
     heroSubTitle: 'Nơi những ca khúc khởi đầu.',
     placeholderEmail: 'Địa chỉ email của bạn...',
     buttonNotify: 'NHẬN THÔNG BÁO',
     successNotify: 'Đăng ký thành công! Cảm ơn bạn đã quan tâm.',
     artistsTitle: 'Kho nhạc cá nhân đã kích hoạt',
-    artistsSub: 'Danh sách các nghệ sĩ chính thức đang chia sẻ các bản demo và tuyển tập bài hát độc quyền của họ.',
+    artistsSub: '',
     artistCount: 'Tổng cộng',
     artistUnit: 'nghệ sĩ',
     accessStore: 'Truy cập kho nhạc',
@@ -1018,13 +1018,6 @@ export default function ChorusVNLanding() {
               <span>{t('statusBadge')}</span>
             </div>
 
-            <button
-              onClick={() => setShowRegisterModal(true)}
-              className="bg-black hover:bg-neutral-800 text-white px-4 py-2 rounded-xl text-[10px] font-black tracking-wider transition-all cursor-pointer shadow-sm shrink-0 uppercase"
-            >
-              Đăng ký
-            </button>
-
             {/* Language Selection Segmented Bar */}
             <div className="flex items-center gap-0.5 bg-neutral-200/50 border border-neutral-200/50 p-1 rounded-xl">
               {(['vi', 'en', 'ko'] as const).map((l) => (
@@ -1053,11 +1046,6 @@ export default function ChorusVNLanding() {
           transition={{ duration: 0.6, ease: 'easeOut' }}
           className="space-y-6"
         >
-          {/* Tagline Badge */}
-          <div className="inline-flex items-center gap-1.5 bg-white/60 border border-neutral-200/60 px-4 py-1.5 rounded-full text-[10px] font-extrabold text-neutral-500 tracking-wider">
-            <span>{config.tagline || t('tagline')}</span>
-          </div>
-
           {/* Brand Title: Chorus.vn (Classic Bold & Serif Italic pairing with staggered letter animation) */}
           <h1 className="text-6xl sm:text-[5.5rem] font-bold tracking-tight text-neutral-950 flex flex-wrap items-center justify-center font-sans gap-x-1 sm:gap-x-2 select-none overflow-visible py-2">
             <span className="flex">
@@ -1117,68 +1105,34 @@ export default function ChorusVNLanding() {
           </p>
         </motion.div>
 
-        {/* Dynamic Email Registration Bar */}
+        {/* Dynamic Email Registration Bar -> Now Custom TẠO KHO NHẠC CÁ NHÂN NGAY. Button */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
-          className="max-w-lg mx-auto"
+          className="flex justify-center"
         >
-          <form onSubmit={handleSubscribe} className="relative bg-white border border-neutral-200/80 rounded-full p-1.5 pl-5 flex items-center shadow-sm hover:border-neutral-300 transition-all focus-within:border-neutral-400 focus-within:ring-1 focus-within:ring-neutral-400">
-            <Mail className="w-4 h-4 text-neutral-400 shrink-0 mr-3" />
-            <input
-              type="email"
-              required
-              value={subscriberEmail}
-              onChange={(e) => setSubscriberEmail(e.target.value)}
-              placeholder={t('placeholderEmail')}
-              className="bg-transparent text-neutral-800 text-sm focus:outline-none flex-grow mr-2 w-full font-sans"
+          <motion.button
+            onClick={() => setShowRegisterModal(true)}
+            animate={{ 
+              boxShadow: ['0px 0px 0px 0px rgba(0,0,0,0.8)', '0px 0px 20px 6px rgba(0,0,0,0.25)', '0px 0px 0px 0px rgba(0,0,0,0.8)'],
+            }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-black text-white font-black text-sm md:text-base py-5 px-10 rounded-full uppercase tracking-wider flex items-center gap-2.5 cursor-pointer relative overflow-hidden group shadow-lg border border-neutral-800"
+          >
+            {/* Subtle animated gradient overlay */}
+            <motion.div 
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent z-0"
+              animate={{ x: ['-200%', '200%'] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
             />
-            <motion.button
-              type="submit"
-              disabled={isSubmitting}
-              animate={{ 
-                boxShadow: ['0px 0px 0px 0px rgba(0,0,0,0.8)', '0px 0px 15px 4px rgba(0,0,0,0.3)', '0px 0px 0px 0px rgba(0,0,0,0.8)'],
-              }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-black text-white font-black text-[10px] py-3.5 px-6 rounded-full shrink-0 uppercase tracking-wider flex items-center gap-1 cursor-pointer relative overflow-hidden group"
-            >
-              {/* Subtle animated gradient overlay */}
-              <motion.div 
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent z-0"
-                animate={{ x: ['-200%', '200%'] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              />
-              <span className="relative z-10">{isSubmitting ? '...' : t('buttonNotify')}</span>
-              <ArrowRight className="w-3 h-3 stroke-[2.5] relative z-10 group-hover:translate-x-1 transition-transform" />
-            </motion.button>
-          </form>
-
-          {/* Message alerts */}
-          <AnimatePresence mode="wait">
-            {subscribeSuccess && (
-              <motion.p
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                className="text-emerald-600 text-xs font-bold mt-4 bg-emerald-50 border border-emerald-100 py-2.5 px-4 rounded-xl"
-              >
-                {t('successNotify')}
-              </motion.p>
-            )}
-
-            {subscribeError && (
-              <motion.p
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                className="text-rose-600 text-xs font-bold mt-4 bg-rose-50 border border-rose-100 py-2.5 px-4 rounded-xl"
-              >
-                {subscribeError}
-              </motion.p>
-            )}
-          </AnimatePresence>
+            <span className="relative z-10">
+              {lang === 'vi' ? 'TẠO KHO NHẠC CÁ NHÂN NGAY.' : (lang === 'ko' ? '지금 나만의 음악 보관소 만들기' : 'CREATE PERSONAL MUSIC REPOSITORY NOW')}
+            </span>
+            <ArrowRight className="w-4 h-4 stroke-[2.5] relative z-10 group-hover:translate-x-1 transition-transform" />
+          </motion.button>
         </motion.div>
       </section>
 
@@ -1193,9 +1147,11 @@ export default function ChorusVNLanding() {
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-950 font-sans">
               {t('artistsTitle')}
             </h2>
-            <p className="text-neutral-500 text-sm max-w-xl font-medium leading-relaxed">
-              {t('artistsSub')}
-            </p>
+            {t('artistsSub') && (
+              <p className="text-neutral-500 text-sm max-w-xl font-medium leading-relaxed">
+                {t('artistsSub')}
+              </p>
+            )}
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4 shrink-0 w-full md:w-auto">
             {/* Search Input Box */}
@@ -1390,7 +1346,7 @@ export default function ChorusVNLanding() {
       {/* Interactive Beta Registration Modal */}
       <AnimatePresence>
         {showBetaModal && (
-          <div className="fixed inset-0 z-50 flex justify-center items-start overflow-y-auto p-4 pt-[10vh] md:pt-[12vh]">
+          <div className="fixed inset-0 z-50 flex justify-center items-center p-4">
             {/* Overlay */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -1450,7 +1406,7 @@ export default function ChorusVNLanding() {
       {/* Member Registration Modal */}
       <AnimatePresence>
         {showRegisterModal && (
-          <div className="fixed inset-0 z-50 flex justify-center items-start overflow-y-auto p-4 pt-[10vh] md:pt-[12vh]">
+          <div className="fixed inset-0 z-50 flex justify-center items-center p-4">
             {/* Overlay */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -1466,24 +1422,20 @@ export default function ChorusVNLanding() {
               initial={{ scale: 0.95, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
-              className="relative w-full max-w-lg bg-white border border-neutral-200 rounded-[2.5rem] p-8 shadow-2xl overflow-y-auto max-h-[90vh] z-10 custom-scrollbar text-left my-auto"
+              className="relative w-full max-w-lg bg-white border border-neutral-200 rounded-[2rem] p-5 md:p-8 shadow-2xl overflow-y-auto max-h-[90vh] z-10 custom-scrollbar text-left my-auto"
             >
               {/* Close Button */}
               <button
                 disabled={regSubmitting}
                 onClick={() => setShowRegisterModal(false)}
-                className="absolute top-5 right-5 text-neutral-400 hover:text-black bg-neutral-100 hover:bg-neutral-200/60 p-2 rounded-xl transition-all cursor-pointer disabled:opacity-50"
+                className="absolute top-5 right-5 text-neutral-400 hover:text-black bg-neutral-100 hover:bg-neutral-200/60 p-2 rounded-xl transition-all cursor-pointer disabled:opacity-50 z-20"
               >
-                <X className="w-4.5 h-4.5" />
+                <X className="w-4 h-4" />
               </button>
 
-              <div className="space-y-6 relative z-10">
-                <div className="w-12 h-12 rounded-2xl bg-purple-100 border border-purple-200 flex items-center justify-center text-purple-600">
-                  <UserPlus className="w-5 h-5" />
-                </div>
-
-                <div className="space-y-1">
-                  <h3 className="text-xl font-black text-neutral-900">Đăng ký thành viên</h3>
+              <div className="space-y-4 relative z-10">
+                <div className="space-y-0.5 pr-12">
+                  <h3 className="text-lg md:text-xl font-black text-neutral-900">Đăng ký thành viên</h3>
                   <p className="text-neutral-400 font-mono text-[9px] font-black uppercase tracking-wider">
                     Become a Chorus Member
                   </p>

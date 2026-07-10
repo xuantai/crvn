@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { IndirectBioCard } from './components/IndirectBioCard';
 import { LoadingScreen } from './components/LoadingScreen';
 
+let globalShowConfirm: any = null;
+
 const brandColorCache: Record<string, { primary: string; secondary: string }> = {};
 
 function useBrandColors(logoUrl: string | null | undefined, defaultColor: string | null | undefined) {
@@ -2013,13 +2015,13 @@ function Home() {
                                       <>
                                         <img 
                                           src={demo.brandLogoUrl} 
-                                          className="absolute inset-0 w-full h-full object-cover opacity-[0.10] blur-2xl scale-150 transition-transform duration-1000 ease-out group-hover:scale-[1.75]" 
+                                          className="absolute inset-0 w-full h-full object-cover opacity-[0.15] blur-2xl scale-150 transition-transform duration-1000 ease-out group-hover:scale-[1.75]" 
                                           alt="" 
                                           referrerPolicy="no-referrer"
                                         />
                                         <img 
                                           src={demo.brandLogoUrl} 
-                                          className="absolute -right-4 -bottom-4 w-28 h-28 opacity-[0.06] blur-[2px] rotate-12 scale-100 transition-all duration-1000 ease-out group-hover:scale-110 group-hover:opacity-12 group-hover:rotate-6" 
+                                          className="absolute -right-4 -bottom-4 w-28 h-28 opacity-[0.25] blur-[1px] rotate-12 scale-100 transition-all duration-1000 ease-out group-hover:scale-110 group-hover:opacity-[0.4] group-hover:rotate-6" 
                                           alt="" 
                                           referrerPolicy="no-referrer"
                                         />
@@ -2118,11 +2120,6 @@ function Home() {
                                         <h3 className={`font-bold transition-colors ${demo.achievements?.length ? 'text-[11px] sm:text-[13px] group-hover:text-amber-400 leading-tight whitespace-normal break-words' : 'text-base sm:text-lg group-hover:text-rose-400 truncate'}`}>
                                           <span className="relative inline-flex items-center overflow-visible">
                                             <HoverTranslate text={demo.title} format={true} />
-                                            {demo.isReleased && (
-                                              <span className="absolute top-0 right-0 translate-x-[110%] -translate-y-[35%] rotate-[10deg] bg-emerald-600 text-[6px] font-black text-white px-1 py-0.2 rounded shadow-[0_0_8px_rgba(5,150,105,0.5)] tracking-widest border border-emerald-400/50 select-none z-50 whitespace-nowrap">
-                                                {t.lReleasedMark || 'RELEASED'}
-                                              </span>
-                                            )}
                                           </span>
                                         </h3>
                                         <p className={`text-neutral-400 mt-1 ${demo.achievements?.length ? 'text-[9px] leading-tight whitespace-normal break-words' : 'text-xs truncate'}`}>
@@ -2155,10 +2152,13 @@ function Home() {
                                     >
                                       <Share2 className="w-3.5 h-3.5 stroke-[1.5]" />
                                     </button>
+                                    <span className="absolute -top-2.5 -right-2.5 rotate-[15deg] bg-emerald-600 shadow-[0_0_12px_rgba(16,185,129,0.8)] text-[9px] font-black text-white px-2 py-0.5 rounded border border-emerald-400/50 select-none flex-shrink-0 z-30">
+                                      {t.lReleasedMark || 'RELEASED'}
+                                    </span>
                                   </>
                                 ) : (
                                   <>
-                                    <span className={`absolute top-2 right-2 rotate-[15deg] ${demo.linkType === 'indirect' ? 'bg-indigo-600 shadow-[0_0_10px_rgba(79,70,229,0.8)]' : 'bg-rose-600 shadow-[0_0_10px_rgba(225,29,72,0.8)]'} text-[8px] font-black text-white px-1.5 py-0.5 rounded animate-[pulse_2s_ease-in-out_infinite] tracking-widest border border-white/20 select-none flex-shrink-0 z-20`}>
+                                    <span className={`absolute -top-2.5 -right-2.5 rotate-[15deg] ${demo.linkType === 'indirect' ? 'bg-indigo-600 shadow-[0_0_12px_rgba(79,70,229,0.8)]' : 'bg-rose-600 shadow-[0_0_12px_rgba(225,29,72,0.8)]'} text-[9px] font-black text-white px-2 py-0.5 rounded border border-white/20 select-none flex-shrink-0 z-30`}>
                                       {demo.linkType === 'indirect' ? 'Landing Page' : (t.lDemoMark || 'DEMO')}
                                       </span>
                                   </>
@@ -5677,7 +5677,7 @@ function AdminDatabaseSettings() {
         </div>
         <div className="flex gap-2">
           <button onClick={async () => {
-            if (window.confirm('CẢNH BÁO: Hành động này sẽ XÓA SẠCH toàn bộ dữ liệu (bài hát, playlist, cài đặt) trong Database ĐANG DÙNG. Bạn có chắc chắn muốn làm mới Database này?')) {
+            if (globalShowConfirm && await globalShowConfirm('CẢNH BÁO: Hành động này sẽ XÓA SẠCH toàn bộ dữ liệu (bài hát, playlist, cài đặt) trong Database ĐANG DÙNG. Bạn có chắc chắn muốn làm mới Database này?', 'Cảnh báo xóa sạch dữ liệu', 'danger')) {
               setLoading(true);
               try {
                 const res = await fetch('/api/admin/firebase-wipe', {
@@ -5853,7 +5853,7 @@ function AdminDashboard() {
   };
 
   const handleRemoveExternalRepost = async (id: string) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa bài hát ngoài này khỏi danh sách Đăng lại?')) return;
+    if (!(await showConfirm('Bạn có chắc chắn muốn xóa bài hát ngoài này khỏi danh sách Đăng lại?', 'Xác nhận xóa đăng lại', 'danger'))) return;
     try {
       const response = await fetch('/api/admin/remove-external-repost', {
         method: 'POST',
@@ -5867,10 +5867,10 @@ function AdminDashboard() {
         await fetchOtherSongs();
       } else {
         const dataRes = await response.json();
-        alert(dataRes.error || 'Lỗi khi xóa bài hát ngoài!');
+        await showConfirm(dataRes.error || 'Lỗi khi xóa bài hát ngoài!', 'Lỗi', 'alert');
       }
     } catch (err: any) {
-      alert('Lỗi kết nối: ' + err.message);
+      await showConfirm('Lỗi kết nối: ' + err.message, 'Lỗi', 'alert');
     }
   };
 
@@ -6159,7 +6159,37 @@ function AdminDashboard() {
     title: string;
     message: string;
     onConfirm: () => void;
+    onCancel?: () => void;
+    isAlertOnly?: boolean;
+    type?: 'confirm' | 'alert' | 'error' | 'success' | 'danger';
   } | null>(null);
+  const confirmResolverRef = useRef<((value: boolean) => void) | null>(null);
+
+  const showConfirm = (message: string, title = 'Xác nhận', type: 'confirm' | 'danger' | 'success' | 'alert' = 'confirm'): Promise<boolean> => {
+    return new Promise((resolve) => {
+      confirmResolverRef.current = resolve;
+      setActionConfirm({
+        isOpen: true,
+        title,
+        message,
+        isAlertOnly: type === 'alert',
+        type,
+        onConfirm: () => {
+          resolve(true);
+        },
+        onCancel: () => {
+          resolve(false);
+        }
+      });
+    });
+  };
+
+  useEffect(() => {
+    globalShowConfirm = showConfirm;
+    return () => {
+      globalShowConfirm = null;
+    };
+  }, []);
   const [deleteConfirm, setDeleteConfirm] = useState<{
     isOpen: boolean;
     type: 'song' | 'playlist';
@@ -6415,7 +6445,7 @@ function AdminDashboard() {
   };
 
   const handleCancelRequest = async (type: 'name' | 'username' | 'extension') => {
-    if (!window.confirm('Bạn có chắc muốn hủy yêu cầu này?')) return;
+    if (!(await showConfirm('Bạn có chắc muốn hủy yêu cầu này?', 'Xác nhận hủy yêu cầu'))) return;
     try {
       // Optimistically clear the pending status so the inputs unlock immediately
       setData(prev => {
@@ -8096,8 +8126,6 @@ function AdminDashboard() {
                   </div>
                 </div>
 
-
-
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-3 bg-stone-50 border border-stone-200 p-4 rounded-xl">
                     <input 
@@ -8880,22 +8908,49 @@ function AdminDashboard() {
       {/* Custom Delete Confirmation Modal */}
       {actionConfirm?.isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-fade-in-up">
-            <h3 className="text-xl font-bold mb-2">{actionConfirm.title}</h3>
-            <p className="text-stone-600 mb-6">{actionConfirm.message}</p>
-            <div className="flex gap-3 justify-end">
-              <button 
-                onClick={() => setActionConfirm(null)} 
-                className="px-4 py-2 rounded-xl bg-stone-100 text-stone-700 font-bold hover:bg-stone-200 transition-colors"
-              >
-                Hủy
-              </button>
-              <button 
-                onClick={() => { actionConfirm.onConfirm(); setActionConfirm(null); }} 
-                className="px-4 py-2 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors"
-              >
-                Xác nhận
-              </button>
+          <div className="bg-white rounded-[1.5rem] p-6 max-w-sm w-full shadow-2xl animate-fade-in-up text-black border border-stone-150 relative overflow-hidden">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-start justify-between">
+                <h3 className="text-lg font-black tracking-tight text-neutral-900 font-sans">
+                  {actionConfirm.title}
+                </h3>
+              </div>
+              <p className="text-neutral-600 text-sm leading-relaxed whitespace-pre-wrap">{actionConfirm.message}</p>
+              
+              <div className="flex gap-2.5 justify-end mt-2">
+                {!actionConfirm.isAlertOnly && (
+                  <button 
+                    onClick={() => {
+                      if (actionConfirm.onCancel) actionConfirm.onCancel();
+                      if (confirmResolverRef.current) {
+                        confirmResolverRef.current(false);
+                        confirmResolverRef.current = null;
+                      }
+                      setActionConfirm(null);
+                    }} 
+                    className="px-4 py-2.5 rounded-xl bg-neutral-100 text-neutral-700 text-xs font-bold hover:bg-neutral-200 transition-colors cursor-pointer"
+                  >
+                    Hủy
+                  </button>
+                )}
+                <button 
+                  onClick={() => {
+                    actionConfirm.onConfirm();
+                    if (confirmResolverRef.current) {
+                      confirmResolverRef.current(true);
+                      confirmResolverRef.current = null;
+                    }
+                    setActionConfirm(null);
+                  }} 
+                  className={`px-5 py-2.5 rounded-xl text-white text-xs font-bold transition-all duration-300 cursor-pointer shadow-md hover:shadow-lg ${
+                    actionConfirm.type === 'danger' || actionConfirm.type === 'error'
+                      ? 'bg-gradient-to-r from-red-500 to-rose-600 hover:opacity-90'
+                      : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90'
+                  }`}
+                >
+                  {actionConfirm.isAlertOnly ? 'Đóng' : 'Xác nhận'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -10561,7 +10616,7 @@ function AdminEditDemo() {
 
   const [isReverting, setIsReverting] = useState(false);
   const handleRevertAudio = async () => {
-    if (!window.confirm("Bạn có chắc chắn muốn khôi phục lại phiên bản file nhạc trước đó gần nhất không?")) {
+    if (!(globalShowConfirm && await globalShowConfirm("Bạn có chắc chắn muốn khôi phục lại phiên bản file nhạc trước đó gần nhất không?", "Khôi phục phiên bản trước"))) {
       return;
     }
     setIsReverting(true);
@@ -11602,7 +11657,7 @@ function AdminEditDemo() {
                       disabled={loading} 
                       type="button" 
                       onClick={async () => {
-                        if (!confirm("Bạn có chắc muốn làm mới Secret Link của bài này? Secret Link cũ sẽ không còn hoạt động, tự động chuyển về đường dẫn gốc yêu cầu mật khẩu.")) return;
+                        if (!(globalShowConfirm && await globalShowConfirm("Bạn có chắc muốn làm mới Secret Link của bài này? Secret Link cũ sẽ không còn hoạt động, tự động chuyển về đường dẫn gốc yêu cầu mật khẩu.", "Reset Secret Link", "danger"))) return;
                         const res = await fetch(`/api/demos/${demo.id}/reset-secret`, {
                           method: 'POST',
                           headers: {
@@ -11612,7 +11667,9 @@ function AdminEditDemo() {
                           }
                         });
                         if (res.ok) {
-                          alert("Đã reset Secret Link thành công!");
+                          if (globalShowConfirm) {
+                            await globalShowConfirm("Đã reset Secret Link thành công!", "Thông báo", "alert");
+                          }
                         }
                       }} 
                       className="flex-1 border-2 border-red-200 text-red-500 hover:bg-red-50 text-lg font-bold py-4 rounded-xl transition-colors disabled:opacity-80 flex justify-center items-center gap-2 shadow-sm"
@@ -11860,8 +11917,8 @@ function AdminPlaylistEdit() {
           <div className="pt-4 border-t border-stone-100">
              <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-bold text-stone-700">Secret Link (Link Bí Mật)</label>
-                <button type="button" onClick={() => {
-                   if (!secretLink || confirm("Tạo mới Secret Link? Link cũ sẽ không thể truy cập nữa.")) {
+                <button type="button" onClick={async () => {
+                   if (!secretLink || (globalShowConfirm && await globalShowConfirm("Tạo mới Secret Link? Link cũ sẽ không thể truy cập nữa.", "Xác nhận tạo mới"))) {
                       setSecretLink(Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
                    }
                 }} className="text-xs bg-stone-100 hover:bg-stone-200 text-stone-800 px-3 py-1.5 rounded-lg font-bold transition-colors">Tạo Link Mới</button>

@@ -32,7 +32,30 @@ export default function ACPControlPanel() {
     title: string;
     message: string;
     onConfirm: () => void;
+    onCancel?: () => void;
+    isAlertOnly?: boolean;
+    type?: 'confirm' | 'alert' | 'error' | 'success' | 'danger';
   } | null>(null);
+  const confirmResolverRef = useRef<((value: boolean) => void) | null>(null);
+
+  const showConfirm = (message: string, title = 'Xác nhận', type: 'confirm' | 'danger' | 'success' | 'alert' = 'confirm'): Promise<boolean> => {
+    return new Promise((resolve) => {
+      confirmResolverRef.current = resolve;
+      setActionConfirm({
+        isOpen: true,
+        title,
+        message,
+        isAlertOnly: type === 'alert',
+        type,
+        onConfirm: () => {
+          resolve(true);
+        },
+        onCancel: () => {
+          resolve(false);
+        }
+      });
+    });
+  };
   const [activeTab, setActiveTab] = useState<'artists' | 'landing' | 'tickets' | 'compose-mail'>('artists');
   const [artistCurrentPage, setArtistCurrentPage] = useState(0);
   const [artistPageSize, setArtistPageSize] = useState<number>(20); // 20, 50, 100
@@ -560,7 +583,7 @@ export default function ACPControlPanel() {
   };
 
   const handleApproveNameChange = async (username: string) => {
-    if (!window.confirm('Bạn có chắc chắn muốn duyệt yêu cầu thay đổi tên này?')) return;
+    if (!(await showConfirm('Bạn có chắc chắn muốn duyệt yêu cầu thay đổi tên này?', 'Xác nhận duyệt'))) return;
     try {
       const res = await fetch('/api/acp/artists/update', {
         method: 'POST',
@@ -576,15 +599,15 @@ export default function ACPControlPanel() {
         setTimeout(() => setToast(''), 3000);
       } else {
         const data = await res.json();
-        alert(data.error || 'Không thể duyệt yêu cầu');
+        await showConfirm(data.error || 'Không thể duyệt yêu cầu', 'Thông báo', 'alert');
       }
     } catch (err) {
-      alert('Lỗi kết nối máy chủ!');
+      await showConfirm('Lỗi kết nối máy chủ!', 'Lỗi', 'alert');
     }
   };
 
   const handleRejectNameChange = async (username: string) => {
-    if (!window.confirm('Bạn có chắc chắn muốn TỪ CHỐI yêu cầu thay đổi tên này?')) return;
+    if (!(await showConfirm('Bạn có chắc chắn muốn TỪ CHỐI yêu cầu thay đổi tên này?', 'Xác nhận từ chối', 'danger'))) return;
     try {
       const res = await fetch('/api/acp/artists/update', {
         method: 'POST',
@@ -600,15 +623,15 @@ export default function ACPControlPanel() {
         setTimeout(() => setToast(''), 3000);
       } else {
         const data = await res.json();
-        alert(data.error || 'Không thể từ chối yêu cầu');
+        await showConfirm(data.error || 'Không thể từ chối yêu cầu', 'Thông báo', 'alert');
       }
     } catch (err) {
-      alert('Lỗi kết nối máy chủ!');
+      await showConfirm('Lỗi kết nối máy chủ!', 'Lỗi', 'alert');
     }
   };
 
   const handleApproveUsernameChange = async (username: string) => {
-    if (!window.confirm('Bạn có chắc chắn muốn duyệt yêu cầu thay đổi username này? Sẽ thay đổi đường dẫn của nghệ sĩ!')) return;
+    if (!(await showConfirm('Bạn có chắc chắn muốn duyệt yêu cầu thay đổi username này? Sẽ thay đổi đường dẫn của nghệ sĩ!', 'Xác nhận duyệt'))) return;
     try {
       const res = await fetch('/api/acp/artists/update', {
         method: 'POST',
@@ -624,15 +647,15 @@ export default function ACPControlPanel() {
         setTimeout(() => setToast(''), 3000);
       } else {
         const data = await res.json();
-        alert(data.error || 'Không thể duyệt yêu cầu');
+        await showConfirm(data.error || 'Không thể duyệt yêu cầu', 'Thông báo', 'alert');
       }
     } catch (err) {
-      alert('Lỗi kết nối máy chủ!');
+      await showConfirm('Lỗi kết nối máy chủ!', 'Lỗi', 'alert');
     }
   };
 
   const handleApproveExtensionChange = async (username: string) => {
-    if (!window.confirm('Bạn có chắc chắn muốn duyệt yêu cầu thay đổi Sub-domain này?')) return;
+    if (!(await showConfirm('Bạn có chắc chắn muốn duyệt yêu cầu thay đổi Sub-domain này?', 'Xác nhận duyệt'))) return;
     try {
       const res = await fetch('/api/acp/artists/update', {
         method: 'POST',
@@ -648,15 +671,15 @@ export default function ACPControlPanel() {
         setTimeout(() => setToast(''), 3000);
       } else {
         const data = await res.json();
-        alert(data.error || 'Không thể duyệt yêu cầu');
+        await showConfirm(data.error || 'Không thể duyệt yêu cầu', 'Thông báo', 'alert');
       }
     } catch (err) {
-      alert('Lỗi kết nối máy chủ!');
+      await showConfirm('Lỗi kết nối máy chủ!', 'Lỗi', 'alert');
     }
   };
 
   const handleRejectExtensionChange = async (username: string) => {
-    if (!window.confirm('Bạn có chắc chắn muốn từ chối yêu cầu thay đổi Sub-domain này?')) return;
+    if (!(await showConfirm('Bạn có chắc chắn muốn từ chối yêu cầu thay đổi Sub-domain này?', 'Xác nhận từ chối', 'danger'))) return;
     try {
       const res = await fetch('/api/acp/artists/update', {
         method: 'POST',
@@ -672,15 +695,15 @@ export default function ACPControlPanel() {
         setTimeout(() => setToast(''), 3000);
       } else {
         const data = await res.json();
-        alert(data.error || 'Không thể từ chối yêu cầu');
+        await showConfirm(data.error || 'Không thể từ chối yêu cầu', 'Thông báo', 'alert');
       }
     } catch (err) {
-      alert('Lỗi kết nối máy chủ!');
+      await showConfirm('Lỗi kết nối máy chủ!', 'Lỗi', 'alert');
     }
   };
 
   const handleRejectUsernameChange = async (username: string) => {
-    if (!window.confirm('Bạn có chắc chắn muốn TỪ CHỐI yêu cầu thay đổi username này?')) return;
+    if (!(await showConfirm('Bạn có chắc chắn muốn TỪ CHỐI yêu cầu thay đổi username này?', 'Xác nhận từ chối', 'danger'))) return;
     try {
       const res = await fetch('/api/acp/artists/update', {
         method: 'POST',
@@ -696,19 +719,19 @@ export default function ACPControlPanel() {
         setTimeout(() => setToast(''), 3000);
       } else {
         const data = await res.json();
-        alert(data.error || 'Không thể từ chối yêu cầu');
+        await showConfirm(data.error || 'Không thể từ chối yêu cầu', 'Thông báo', 'alert');
       }
     } catch (err) {
-      alert('Lỗi kết nối máy chủ!');
+      await showConfirm('Lỗi kết nối máy chủ!', 'Lỗi', 'alert');
     }
   };
 
   const handleDeleteArtist = async (username: string) => {
     if (username === 'acxuantai') {
-      alert('Không thể xóa tài khoản master acxuantai!');
+      await showConfirm('Không thể xóa tài khoản master acxuantai!', 'Thông báo', 'alert');
       return;
     }
-    if (!window.confirm(`Bạn có chắc chắn muốn XÓA nghệ sĩ "${username}"? Toàn bộ file cấu hình của họ sẽ bị xóa.`)) return;
+    if (!(await showConfirm(`Bạn có chắc chắn muốn XÓA nghệ sĩ "${username}"? Toàn bộ file cấu hình của họ sẽ bị xóa.`, 'Xác nhận xóa', 'danger'))) return;
 
     try {
       const res = await fetch('/api/acp/artists/delete', {
@@ -724,10 +747,10 @@ export default function ACPControlPanel() {
         fetchArtists();
       } else {
         const data = await res.json();
-        alert(data.error || 'Lỗi khi xóa nghệ sĩ');
+        await showConfirm(data.error || 'Lỗi khi xóa nghệ sĩ', 'Lỗi', 'alert');
       }
     } catch (err) {
-      alert('Lỗi kết nối máy chủ!');
+      await showConfirm('Lỗi kết nối máy chủ!', 'Lỗi', 'alert');
     }
   };
 
@@ -2638,22 +2661,64 @@ Admin Password: ${newArtistCreatedInfo.password}`;
       )}
       {actionConfirm?.isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-fade-in-up text-black">
-            <h3 className="text-xl font-bold mb-2">{actionConfirm.title}</h3>
-            <p className="text-stone-600 mb-6">{actionConfirm.message}</p>
-            <div className="flex gap-3 justify-end">
-              <button 
-                onClick={() => setActionConfirm(null)} 
-                className="px-4 py-2 rounded-xl bg-stone-100 text-stone-700 font-bold hover:bg-stone-200 transition-colors cursor-pointer"
-              >
-                Hủy
-              </button>
-              <button 
-                onClick={() => { actionConfirm.onConfirm(); setActionConfirm(null); }} 
-                className="px-4 py-2 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors cursor-pointer"
-              >
-                Xác nhận
-              </button>
+          <div className="bg-white rounded-[1.5rem] p-6 max-w-sm w-full shadow-2xl animate-fade-in-up text-black border border-stone-150 relative overflow-hidden">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-start justify-between">
+                <h3 className="text-lg font-black tracking-tight text-neutral-900 font-sans">
+                  {actionConfirm.title}
+                </h3>
+                {actionConfirm.isAlertOnly && (
+                  <button 
+                    onClick={() => {
+                      if (actionConfirm.onCancel) actionConfirm.onCancel();
+                      if (confirmResolverRef.current) {
+                        confirmResolverRef.current(false);
+                        confirmResolverRef.current = null;
+                      }
+                      setActionConfirm(null);
+                    }}
+                    className="text-neutral-400 hover:text-black bg-neutral-100 hover:bg-neutral-200/60 p-1.5 rounded-lg transition-all cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              <p className="text-neutral-600 text-sm leading-relaxed whitespace-pre-wrap">{actionConfirm.message}</p>
+              
+              <div className="flex gap-2.5 justify-end mt-2">
+                {!actionConfirm.isAlertOnly && (
+                  <button 
+                    onClick={() => {
+                      if (actionConfirm.onCancel) actionConfirm.onCancel();
+                      if (confirmResolverRef.current) {
+                        confirmResolverRef.current(false);
+                        confirmResolverRef.current = null;
+                      }
+                      setActionConfirm(null);
+                    }} 
+                    className="px-4 py-2.5 rounded-xl bg-neutral-100 text-neutral-700 text-xs font-bold hover:bg-neutral-200 transition-colors cursor-pointer"
+                  >
+                    Hủy
+                  </button>
+                )}
+                <button 
+                  onClick={() => {
+                    actionConfirm.onConfirm();
+                    if (confirmResolverRef.current) {
+                      confirmResolverRef.current(true);
+                      confirmResolverRef.current = null;
+                    }
+                    setActionConfirm(null);
+                  }} 
+                  className={`px-5 py-2.5 rounded-xl text-white text-xs font-bold transition-all duration-300 cursor-pointer shadow-md hover:shadow-lg ${
+                    actionConfirm.type === 'danger' || actionConfirm.type === 'error'
+                      ? 'bg-gradient-to-r from-red-500 to-rose-600 hover:opacity-90'
+                      : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90'
+                  }`}
+                >
+                  {actionConfirm.isAlertOnly ? 'Đóng' : 'Xác nhận'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
