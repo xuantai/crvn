@@ -2398,6 +2398,7 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
   const almostEndedTriggered = useRef(false);
   const [currentSrc, setCurrentSrc] = useState(getAudioPlayUrl(src));
   const [audioError, setAudioError] = useState<string | null>(null);
+  const [isRepeat, setIsRepeat] = useState(false);
 
   useEffect(() => {
     setCurrentSrc(getAudioPlayUrl(src));
@@ -2553,7 +2554,7 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
             setAudioError("Không thể phát file nhạc này. Vui lòng kiểm tra lại định dạng hoặc liên kết file.");
           }
         }}
-        loop={playlistContext?.repeat === 2}
+        loop={playlistContext ? playlistContext.repeat === 2 : isRepeat}
       />
       
       {/* Wave visualizer */}
@@ -2632,16 +2633,26 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
              </button>
           </div>
         ) : (
-          <button 
-            onClick={togglePlay}
-            className={`w-12 h-12 md:w-14 md:h-14 flex items-center justify-center ${isLight ? 'bg-stone-900 text-white shadow-[0_0_20px_rgba(0,0,0,0.15)]' : 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)]'} rounded-full hover:scale-105 transition-all outline-none`}
-          >
-            {isPlaying ? (
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
-            ) : (
-               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="ml-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-            )}
-          </button>
+          <div className="flex items-center gap-4">
+             <button 
+               onClick={() => setIsRepeat(!isRepeat)} 
+               className={`opacity-60 hover:opacity-100 transition-all ${isRepeat ? (isLight ? 'text-indigo-600' : 'text-blue-400') + ' opacity-100 scale-110' : ''}`}
+               title="Lặp lại bài hát"
+             >
+               <Repeat className="w-4 h-4 md:w-5 md:h-5" />
+             </button>
+             <button 
+               onClick={togglePlay}
+               className={`w-12 h-12 md:w-14 md:h-14 flex items-center justify-center ${isLight ? 'bg-stone-900 text-white shadow-[0_0_20px_rgba(0,0,0,0.15)]' : 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)]'} rounded-full hover:scale-105 transition-all outline-none`}
+             >
+               {isPlaying ? (
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+               ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="ml-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+               )}
+             </button>
+             <div className="w-4 h-4 md:w-5 md:h-5 opacity-0 pointer-events-none"></div>
+          </div>
         )}
 
         <div className="w-20 md:w-24 flex justify-end"></div>
@@ -3949,7 +3960,11 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
 
   const getFormattedLyricsText = (rawLyrics: string) => {
     if (!rawLyrics) return '';
-    const lines = rawLyrics.split(/\r?\n/);
+    let lyricsToProcess = rawLyrics;
+    if (!/vers/i.test(lyricsToProcess) && !/\bpk\b/i.test(lyricsToProcess)) {
+      lyricsToProcess = `[Verse]\n${lyricsToProcess}`;
+    }
+    const lines = lyricsToProcess.split(/\r?\n/);
     const cleanedLines: string[] = [];
     let skipBlank = false;
     for (let i = 0; i < lines.length; i++) {
@@ -4019,7 +4034,11 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
 
   const parseLyricsToElements = (rawLyrics: string) => {
     if (!rawLyrics) return null;
-    const lines = rawLyrics.split(/\r?\n/);
+    let lyricsToProcess = rawLyrics;
+    if (!/vers/i.test(lyricsToProcess) && !/\bpk\b/i.test(lyricsToProcess)) {
+      lyricsToProcess = `[Verse]\n${lyricsToProcess}`;
+    }
+    const lines = lyricsToProcess.split(/\r?\n/);
     
     // Clean up lines: ignore all blank lines immediately following an annotation
     const cleanedLines: { text: string; origIdx: number }[] = [];
@@ -5034,31 +5053,135 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
       {/* Brand Popups */}
       {showBrandBrief && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[1000] flex items-center justify-center p-4" onClick={() => setShowBrandBrief(false)}>
-          <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl max-w-lg w-full text-white shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg flex items-center gap-2"><FileText className="w-5 h-5 text-indigo-400" /> Brief khách hàng</h3>
-              <button onClick={() => setShowBrandBrief(false)} className="p-1 hover:bg-white/10 rounded-lg"><X className="w-5 h-5" /></button>
+          <div className="relative overflow-hidden bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl max-w-lg w-full text-white shadow-2xl" onClick={e => e.stopPropagation()}>
+            <motion.div 
+              className="absolute inset-0 pointer-events-none z-0 opacity-45 blur-3xl rounded-2xl"
+              style={{
+                background: `radial-gradient(circle, ${(brandColors?.primary || '#6366f1')}40 0%, transparent 70%)`
+              }}
+              animate={{
+                opacity: [0.35, 0.65, 0.35],
+                scale: [0.95, 1.15, 0.95]
+              }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+            {demo?.brandLogoUrl && (
+              <>
+                <motion.img 
+                  src={demo.brandLogoUrl} 
+                  className="absolute inset-0 w-full h-full object-cover opacity-[0.12] blur-2xl pointer-events-none z-0" 
+                  alt="" 
+                  referrerPolicy="no-referrer"
+                  animate={{
+                    scale: [1.4, 1.55, 1.4],
+                    opacity: [0.10, 0.16, 0.10]
+                  }}
+                  transition={{
+                    duration: 10,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+                <motion.img 
+                  src={demo.brandLogoUrl} 
+                  className="absolute -right-4 -bottom-4 w-28 h-28 opacity-[0.35] blur-[0.5px] pointer-events-none z-0" 
+                  alt="" 
+                  referrerPolicy="no-referrer"
+                  animate={{
+                    y: [0, -4, 2, -3, 0],
+                    x: [0, 2, -2, 1, 0],
+                    rotate: [12, 15, 9, 14, 12]
+                  }}
+                  transition={{
+                    duration: 5,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+              </>
+            )}
+            <div className="relative z-10">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-lg flex items-center gap-2"><FileText className="w-5 h-5 text-indigo-400" /> Brief khách hàng</h3>
+                <button onClick={() => setShowBrandBrief(false)} className="p-1 hover:bg-white/10 rounded-lg"><X className="w-5 h-5" /></button>
+              </div>
+              <div className="text-sm text-stone-200 whitespace-pre-wrap leading-relaxed max-h-[60vh] overflow-y-auto custom-scrollbar">{demo?.brandBrief}</div>
             </div>
-            <div className="text-sm text-stone-200 whitespace-pre-wrap leading-relaxed max-h-[60vh] overflow-y-auto custom-scrollbar">{demo?.brandBrief}</div>
           </div>
         </div>
       )}
       {showBrandVideos && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[1000] flex items-center justify-center p-4" onClick={() => setShowBrandVideos(false)}>
-          <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl max-w-2xl w-full text-white shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg flex items-center gap-2"><Youtube className="w-5 h-5 text-rose-400" /> Video Tham Khảo</h3>
-              <button onClick={() => setShowBrandVideos(false)} className="p-1 hover:bg-white/10 rounded-lg"><X className="w-5 h-5" /></button>
-            </div>
-            <div className="grid grid-cols-1 gap-4 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">
-              {demo?.brandReferenceVideos?.map((vid, idx) => {
-                const embedUrl = vid.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/");
-                return (
-                  <div key={idx} className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 border border-white/10">
-                    <iframe src={embedUrl} className="w-full h-full" allowFullScreen></iframe>
-                  </div>
-                );
-              })}
+          <div className="relative overflow-hidden bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl max-w-2xl w-full text-white shadow-2xl" onClick={e => e.stopPropagation()}>
+            <motion.div 
+              className="absolute inset-0 pointer-events-none z-0 opacity-45 blur-3xl rounded-2xl"
+              style={{
+                background: `radial-gradient(circle, ${(brandColors?.primary || '#6366f1')}40 0%, transparent 70%)`
+              }}
+              animate={{
+                opacity: [0.35, 0.65, 0.35],
+                scale: [0.95, 1.15, 0.95]
+              }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+            {demo?.brandLogoUrl && (
+              <>
+                <motion.img 
+                  src={demo.brandLogoUrl} 
+                  className="absolute inset-0 w-full h-full object-cover opacity-[0.12] blur-2xl pointer-events-none z-0" 
+                  alt="" 
+                  referrerPolicy="no-referrer"
+                  animate={{
+                    scale: [1.4, 1.55, 1.4],
+                    opacity: [0.10, 0.16, 0.10]
+                  }}
+                  transition={{
+                    duration: 10,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+                <motion.img 
+                  src={demo.brandLogoUrl} 
+                  className="absolute -right-4 -bottom-4 w-28 h-28 opacity-[0.35] blur-[0.5px] pointer-events-none z-0" 
+                  alt="" 
+                  referrerPolicy="no-referrer"
+                  animate={{
+                    y: [0, -4, 2, -3, 0],
+                    x: [0, 2, -2, 1, 0],
+                    rotate: [12, 15, 9, 14, 12]
+                  }}
+                  transition={{
+                    duration: 5,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+              </>
+            )}
+            <div className="relative z-10">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-lg flex items-center gap-2"><Youtube className="w-5 h-5 text-rose-400" /> Video Tham Khảo</h3>
+                <button onClick={() => setShowBrandVideos(false)} className="p-1 hover:bg-white/10 rounded-lg"><X className="w-5 h-5" /></button>
+              </div>
+              <div className="grid grid-cols-1 gap-4 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">
+                {demo?.brandReferenceVideos?.map((vid, idx) => {
+                  const embedUrl = vid.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/");
+                  return (
+                    <div key={idx} className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 border border-white/10">
+                      <iframe src={embedUrl} className="w-full h-full" allowFullScreen></iframe>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
