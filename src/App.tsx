@@ -348,53 +348,191 @@ function renderArtistNameWithLinks(text: string | null | undefined, systemArtist
 
 const translations: Record<string, Record<string, string>> = {
   vi: {
+    "bài nhạc": "bài nhạc",
+    "Bài nhạc": "Bài nhạc",
+    "Hiển Thị": "Hiển Thị",
+    "Quay lại": "Quay lại",
+    "Danh sách Playlist": "Danh sách Playlist",
+    "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc",
+    "10 mục": "10 mục",
+    "20 mục": "20 mục",
+    "50 mục": "50 mục",
+    "100 mục": "100 mục",
+    "10 bài": "10 bài",
+    "20 bài": "20 bài",
+    "50 bài": "50 bài",
+    "100 bài": "100 bài",
+    "Hiển thị": "Hiển thị",
+    "Tìm kiếm...": "Tìm kiếm...",
+    "Chào Mừng Thành Viên!": "Chào Mừng Thành Viên!",
+    "Khu Vực Thành Viên": "Khu Vực Thành Viên",
+    "Vui lòng nhập thông tin đăng nhập quản trị": "Vui lòng nhập thông tin đăng nhập quản trị",
+    "Bạn đã đăng nhập thành công dưới quyền": "Bạn đã đăng nhập thành công dưới quyền",
+    "Thành viên VIP": "Thành viên VIP",
+    "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của": "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của",
+    "mà không cần nhập passcode riêng biệt.": "mà không cần nhập passcode riêng biệt.",
     "C\u1ea5u h\u00ecnh t\u00ean mi\u1ec1n ri\u00eang (Custom Domain)": "C\u1ea5u h\u00ecnh t\u00ean mi\u1ec1n ri\u00eang (Custom Domain)",
     "S\u1eed d\u1ee5ng t\u00ean mi\u1ec1n ri\u00eang c\u1ee7a b\u1ea1n (v\u00ed d\u1ee5:": "S\u1eed d\u1ee5ng t\u00ean mi\u1ec1n ri\u00eang c\u1ee7a b\u1ea1n (v\u00ed d\u1ee5:",
     "ho\u1eb7c": "ho\u1eb7c",
     ") thay v\u00ec s\u1eed d\u1ee5ng \u0111\u1ecba ch\u1ec9 m\u1eb7c \u0111\u1ecbnh c\u1ee7a h\u1ec7 th\u1ed1ng.": ") thay v\u00ec s\u1eed d\u1ee5ng \u0111\u1ecba ch\u1ec9 m\u1eb7c \u0111\u1ecbnh c\u1ee7a h\u1ec7 th\u1ed1ng.",
     "T\u1ef1 \u0111\u1ed9ng chuy\u1ec3n tab \u1edf trang ch\u1ee7 (Music / Demo / Playlist)": "T\u1ef1 \u0111\u1ed9ng chuy\u1ec3n tab \u1edf trang ch\u1ee7 (Music / Demo / Playlist)",
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn",
-    "Tab 3 (Album/EP)": "Tab 3 (Album/EP)", dDesc: "Thiên đường âm nhạc của", btnSpot: "Nghe trên Spotify", lDemos: "Đề Mô", lReleased: "Ra Rồi", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Cần Mật Khẩu", pNow: "Nghe Ngay", nDemo: "Chưa có demo nào.", rMv: "MV Đã Phát Hành", nMv: "Chưa có MV nào.", lMore: "Hiển thị thêm", mList: "người nghe hàng tháng", load: "Đang tải trang...", back: "Trở về", adm: "AdminCP", edit: "Chỉnh sửa", pPrompt: "Cần mật khẩu", pPrompt2: "Nhập mật khẩu để nghe demo này", unlock: "Mở khóa", wPass: "Sai mật khẩu", lyric: "Lời bài hát", nLyric: "Chưa cập nhật lời bài hát", sAuth: "Sáng tác:", lang: "Tiếng Việt", lDemosMobile: "Đề mô", lReleasedMobile: "Ra Rồi", searchSong: "Tìm kiếm bài hát...", noSongs: "Chưa có bài hát nào", noSongsDesc: "Danh sách đang được cập nhật, bạn vui lòng quay lại sau nhé!", closeSearch: "Đóng tìm kiếm", searchTitle: "Tìm kiếm bài hát", noDemoFound: "Không tìm thấy demo", mVault: "Kho Nhạc", "Hiển thị": "Hiển thị", "bài / trang": "bài / trang", "Tổng": "Tổng", "Trước": "Trước", "Sau": "Sau" },
+    "Tab 3 (Album/EP)": "Tab 3 (Album/EP)", dDesc: "Thiên đường âm nhạc của", btnSpot: "Nghe trên Spotify", lDemos: "Đề Mô", lReleased: "Ra Rồi", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Cần Mật Khẩu", pNow: "Nghe Ngay", nDemo: "Chưa có demo nào.", rMv: "MV Đã Phát Hành", nMv: "Chưa có MV nào.", lMore: "Hiển thị thêm", mList: "người nghe hàng tháng", load: "Đang tải trang...", back: "Trở về", adm: "AdminCP", edit: "Chỉnh sửa", pPrompt: "Cần mật khẩu", pPrompt2: "Nhập mật khẩu để nghe demo này", unlock: "Mở khóa", wPass: "Sai mật khẩu", lyric: "Lời bài hát", nLyric: "Chưa cập nhật lời bài hát", sAuth: "Sáng tác:", lang: "Tiếng Việt", lDemosMobile: "Đề mô", lReleasedMobile: "Ra Rồi", searchSong: "Tìm kiếm bài hát...", noSongs: "Chưa có bài hát nào", noSongsDesc: "Danh sách đang được cập nhật, bạn vui lòng quay lại sau nhé!", closeSearch: "Đóng tìm kiếm", searchTitle: "Tìm kiếm bài hát", noDemoFound: "Không tìm thấy demo", mVault: "Kho Nhạc", "Hiển thị": "Hiển thị", "bài / trang": "bài / trang", "Tổng": "Tổng", "Trước": "Trước", "Sau": "Sau", pPartner: "Đối tác:", pAutoNext: "Sẽ tự động chuyển bài nếu không nhập mật khẩu", vRef: "Video Tham Khảo", nArtist: "Nghệ sĩ" },
   en: {
+    "bài nhạc": "songs",
+    "Bài nhạc": "Songs",
+    "Hiển Thị": "Visibility",
+    "Quay lại": "Back",
+    "Danh sách Playlist": "Playlist List",
+    "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Create, arrange priority, and edit playlists",
+    "10 mục": "10 items",
+    "20 mục": "20 items",
+    "50 mục": "50 items",
+    "100 mục": "100 items",
+    "10 bài": "10 songs",
+    "20 bài": "20 songs",
+    "50 bài": "50 songs",
+    "100 bài": "100 songs",
+    "Hiển thị": "Show",
+    "Tìm kiếm...": "Search...",
+    "Chào Mừng Thành Viên!": "Welcome Member!",
+    "Khu Vực Thành Viên": "Member Area",
+    "Vui lòng nhập thông tin đăng nhập quản trị": "Please enter admin login info",
+    "Bạn đã đăng nhập thành công dưới quyền": "You have logged in successfully as",
+    "Thành viên VIP": "VIP Member",
+    "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của": "You can now enjoy all albums, playlists, and secure demo backing tracks on the system of",
+    "mà không cần nhập passcode riêng biệt.": "without needing a separate passcode.",
     "C\u1ea5u h\u00ecnh t\u00ean mi\u1ec1n ri\u00eang (Custom Domain)": "Custom Domain Configuration",
     "S\u1eed d\u1ee5ng t\u00ean mi\u1ec1n ri\u00eang c\u1ee7a b\u1ea1n (v\u00ed d\u1ee5:": "Use your custom domain (e.g.,",
     "ho\u1eb7c": "or",
     ") thay v\u00ec s\u1eed d\u1ee5ng \u0111\u1ecba ch\u1ec9 m\u1eb7c \u0111\u1ecbnh c\u1ee7a h\u1ec7 th\u1ed1ng.": ") instead of using the system's default address.",
     "T\u1ef1 \u0111\u1ed9ng chuy\u1ec3n tab \u1edf trang ch\u1ee7 (Music / Demo / Playlist)": "Auto-switch tabs on homepage (Music / Demo / Playlist)",
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "Hide from artist list on Chorus.vn homepage",
-    "Tab 3 (Album/EP)": "Tab 3 (Album/EP)", dDesc: "Music paradise of", btnSpot: "Listen on Spotify", lDemos: "Demo", lReleased: "Release", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Password", pNow: "Play Now", nDemo: "No demos yet.", rMv: "Released Music Videos", nMv: "No MVs yet.", lMore: "Load more", mList: "monthly listeners", load: "Loading...", back: "Back", adm: "Admin", edit: "Edit", pPrompt: "Password required", pPrompt2: "Enter password to listen to this demo", unlock: "Unlock", wPass: "Wrong password", lyric: "Lyrics", nLyric: "No lyrics yet", sAuth: "Composer:", lang: "English", searchSong: "Search songs...", noSongs: "No songs available", noSongsDesc: "The list is being updated, please come back later!", closeSearch: "Close search", searchTitle: "Search songs", noDemoFound: "Demo not found", mVault: "Music Vault", "Hiển thị": "Show", "bài / trang": "songs / page", "Tổng": "Total", "Trước": "Prev", "Sau": "Next" },
+    "Tab 3 (Album/EP)": "Tab 3 (Album/EP)", dDesc: "Music paradise of", btnSpot: "Listen on Spotify", lDemos: "Demo", lReleased: "Release", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Password", pNow: "Play Now", nDemo: "No demos yet.", rMv: "Released Music Videos", nMv: "No MVs yet.", lMore: "Load more", mList: "monthly listeners", load: "Loading...", back: "Back", adm: "Admin", edit: "Edit", pPrompt: "Password required", pPrompt2: "Enter password to listen to this demo", unlock: "Unlock", wPass: "Wrong password", lyric: "Lyrics", nLyric: "No lyrics yet", sAuth: "Composer:", lang: "English", searchSong: "Search songs...", noSongs: "No songs available", noSongsDesc: "The list is being updated, please come back later!", closeSearch: "Close search", searchTitle: "Search songs", noDemoFound: "Demo not found", mVault: "Music Vault", "Hiển thị": "Show", "bài / trang": "songs / page", "Tổng": "Total", "Trước": "Prev", "Sau": "Next", pPartner: "Partner:", pAutoNext: "Will auto skip if password not entered", vRef: "Reference Video", nArtist: "Artist" },
   ko: {
+    "bài nhạc": "bài nhạc",
+    "Bài nhạc": "Bài nhạc",
+    "Hiển Thị": "Hiển Thị",
+    "Quay lại": "Quay lại",
+    "Danh sách Playlist": "Danh sách Playlist",
+    "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc",
+    "10 mục": "10 mục",
+    "20 mục": "20 mục",
+    "50 mục": "50 mục",
+    "100 mục": "100 mục",
+    "10 bài": "10 bài",
+    "20 bài": "20 bài",
+    "50 bài": "50 bài",
+    "100 bài": "100 bài",
+    "Hiển thị": "Hiển thị",
+    "Tìm kiếm...": "Tìm kiếm...",
+    "Chào Mừng Thành Viên!": "Chào Mừng Thành Viên!",
+    "Khu Vực Thành Viên": "Khu Vực Thành Viên",
+    "Vui lòng nhập thông tin đăng nhập quản trị": "Vui lòng nhập thông tin đăng nhập quản trị",
+    "Bạn đã đăng nhập thành công dưới quyền": "Bạn đã đăng nhập thành công dưới quyền",
+    "Thành viên VIP": "Thành viên VIP",
+    "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của": "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của",
+    "mà không cần nhập passcode riêng biệt.": "mà không cần nhập passcode riêng biệt.",
     "C\u1ea5u h\u00ecnh t\u00ean mi\u1ec1n ri\u00eang (Custom Domain)": "\uc0ac\uc6a9\uc790 \uc9c0\uc815 \ub3c4\uba54\uc778 \uad6c\uc131",
     "S\u1eed d\u1ee5ng t\u00ean mi\u1ec1n ri\u00eang c\u1ee7a b\u1ea1n (v\u00ed d\u1ee5:": "\uc0ac\uc6a9\uc790 \uc9c0\uc815 \ub3c4\uba54\uc778 \uc0ac\uc6a9 (\uc608:",
     "ho\u1eb7c": "\ub610\ub294",
     ") thay v\u00ec s\u1eed d\u1ee5ng \u0111\u1ecba ch\u1ec9 m\u1eb7c \u0111\u1ecbnh c\u1ee7a h\u1ec7 th\u1ed1ng.": ") \uc2dc\uc2a4\ud15c \uae30\ubcf8 \uc8fc\uc18c \ub300\uc2e0 \uc0ac\uc6a9\ud558\uc2ed\uc2dc\uc624.",
     "T\u1ef1 \u0111\u1ed9ng chuy\u1ec3n tab \u1edf trang ch\u1ee7 (Music / Demo / Playlist)": "\ud648\ud398\uc774\uc9c0 \ud0ed \uc790\ub3d9 \uc804\ud658 (Music / Demo / Playlist)",
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "Chorus.vn \ud648\ud398\uc774\uc9c0\uc758 \uc544\ud2f0\uc2a4\ud2b8 \ubaa9\ub85d\uc5d0\uc11c \uc228\uae30\uae30",
-    "Tab 3 (Album/EP)": "\ud0ed 3 (Album/EP)", dDesc: "데모 파라다이스", btnSpot: "Spotify에서 듣기", lDemos: "최신 데모", lReleased: "발매된 음악", lDemoMark: "데모", lReleasedMark: "발매됨", pReq: "비밀번호", pNow: "지금 듣기", nDemo: "데모 없음", rMv: "발매된 뮤직비디오", nMv: "MV 없음", lMore: "더 보기", mList: "월간 청취자", load: "로딩 중...", back: "뒤로", adm: "관리자", edit: "편집", pPrompt: "비밀번호 필요", pPrompt2: "이 데모를 들으려면 비밀번호를 입력하세요", unlock: "잠금 해제", wPass: "잘못된 비밀번호", lyric: "가사", nLyric: "가사 없음", sAuth: "작곡가:", lang: "한국어", searchSong: "노래 검색...", noSongs: "등록된 곡이 없습니다", noSongsDesc: "목록이 업데이트 중입니다. 나중에 다시 방문해 주세요!", closeSearch: "검색 닫기", searchTitle: "노래 검색", noDemoFound: "데모를 찾을 수 없습니다", mVault: "음악 보관함", "Hiển thị": "표시", "bài / trang": "곡 / 페이지", "Tổng": "총", "Trước": "이전", "Sau": "다음" },
+    "Tab 3 (Album/EP)": "\ud0ed 3 (Album/EP)", dDesc: "데모 파라다이스", btnSpot: "Spotify에서 듣기", lDemos: "최신 데모", lReleased: "발매된 음악", lDemoMark: "데모", lReleasedMark: "발매됨", pReq: "비밀번호", pNow: "지금 듣기", nDemo: "데모 없음", rMv: "발매된 뮤직비디오", nMv: "MV 없음", lMore: "더 보기", mList: "월간 청취자", load: "로딩 중...", back: "뒤로", adm: "관리자", edit: "편집", pPrompt: "비밀번호 필요", pPrompt2: "이 데모를 들으려면 비밀번호를 입력하세요", unlock: "잠금 해제", wPass: "잘못된 비밀번호", lyric: "가사", nLyric: "가사 없음", sAuth: "작곡가:", lang: "한국어", searchSong: "노래 검색...", noSongs: "등록된 곡이 없습니다", noSongsDesc: "목록이 업데이트 중입니다. 나중에 다시 방문해 주세요!", closeSearch: "검색 닫기", searchTitle: "노래 검색", noDemoFound: "데모를 찾을 수 없습니다", mVault: "음악 보관함", "Hiển thị": "표시", "bài / trang": "곡 / 페이지", "Tổng": "총", "Trước": "이전", "Sau": "다음", pPartner: "파트너:", pAutoNext: "비밀번호 미입력 시 자동 다음 곡", vRef: "참조 비디오", nArtist: "아티스트" },
   ja: {
+    "bài nhạc": "bài nhạc",
+    "Bài nhạc": "Bài nhạc",
+    "Hiển Thị": "Hiển Thị",
+    "Quay lại": "Quay lại",
+    "Danh sách Playlist": "Danh sách Playlist",
+    "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc",
+    "10 mục": "10 mục",
+    "20 mục": "20 mục",
+    "50 mục": "50 mục",
+    "100 mục": "100 mục",
+    "10 bài": "10 bài",
+    "20 bài": "20 bài",
+    "50 bài": "50 bài",
+    "100 bài": "100 bài",
+    "Hiển thị": "Hiển thị",
+    "Tìm kiếm...": "Tìm kiếm...",
+    "Chào Mừng Thành Viên!": "Chào Mừng Thành Viên!",
+    "Khu Vực Thành Viên": "Khu Vực Thành Viên",
+    "Vui lòng nhập thông tin đăng nhập quản trị": "Vui lòng nhập thông tin đăng nhập quản trị",
+    "Bạn đã đăng nhập thành công dưới quyền": "Bạn đã đăng nhập thành công dưới quyền",
+    "Thành viên VIP": "Thành viên VIP",
+    "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của": "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của",
+    "mà không cần nhập passcode riêng biệt.": "mà không cần nhập passcode riêng biệt.",
     "C\u1ea5u h\u00ecnh t\u00ean mi\u1ec1n ri\u00eang (Custom Domain)": "\u30ab\u30b9\u30bf\u30e0\u30c9\u30e1\u30a4\u30f3\u69cb\u6210",
     "S\u1eed d\u1ee5ng t\u00ean mi\u1ec1n ri\u00eang c\u1ee7a b\u1ea1n (v\u00ed d\u1ee5:": "\u30ab\u30b9\u30bf\u30e0\u30c9\u30e1\u30a4\u30f3\u3092\u4f7f\u7528\u3059\u308b\uff08\u4f8b\uff1a",
     "ho\u1eb7c": "\u307e\u305f\u306f",
     ") thay v\u00ec s\u1eed d\u1ee5ng \u0111\u1ecba ch\u1ec9 m\u1eb7c \u0111\u1ecbnh c\u1ee7a h\u1ec7 th\u1ed1ng.": ") \u30b7\u30b9\u30c6\u30e0\u306e\u30c7\u30d5\u30a9\u30eb\u30c8\u30a2\u30c9\u30ec\u30b9\u306e\u4ee3\u308f\u308a\u306b\u4f7f\u7528\u3057\u307e\u3059\u3002",
     "T\u1ef1 \u0111\u1ed9ng chuy\u1ec3n tab \u1edf trang ch\u1ee7 (Music / Demo / Playlist)": "\u30db\u30fc\u30e0\u30da\u30fc\u30b8\u3067\u30bf\u30d6\u3092\u81ea\u52d5\u5207\u308a\u66ff\u3048 (Music / Demo / Playlist)",
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "Chorus.vn \u30db\u30fc\u30e0\u30da\u30fc\u30b8\u306e\u30a2\u30fc\u30c6\u30a3\u30b9\u30c8\u30ea\u30b9\u30c8\u304b\u3089\u975e\u8868\u793a",
-    "Tab 3 (Album/EP)": "\u30bf\u30d6 3 (Album/EP)", dDesc: "デモパラダイス", btnSpot: "Spotifyで聴く", lDemos: "最新のデモ", lReleased: "リリースされた音楽", lDemoMark: "デモ", lReleasedMark: "リリース済", pReq: "パスワード", pNow: "今すぐ聴く", nDemo: "デモなし", rMv: "リリースされたMV", nMv: "MVなし", lMore: "もっと見る", mList: "月間リスナー", load: "読み込み中...", back: "戻る", adm: "管理者", edit: "編集", pPrompt: "パスワードが必要", pPrompt2: "このデモを聴くにはパスワードを入力してください", unlock: "ロック解除", wPass: "パスワードが間違っています", lyric: "歌詞", nLyric: "歌詞なし", sAuth: "作曲:", lang: "日本語", searchSong: "曲名で検索...", noSongs: "登録された曲はありません", noSongsDesc: "リストは更新中です。後で戻ってきてください！", closeSearch: "検索を閉じる", searchTitle: "曲名で検索", noDemoFound: "デモが見つかりません", mVault: "ミュージックボルト", "Hiển thị": "表示", "bài / trang": "曲 / ページ", "Tổng": "合計", "Trước": "前へ", "Sau": "次へ" },
+    "Tab 3 (Album/EP)": "\u30bf\u30d6 3 (Album/EP)", dDesc: "デモパラダイス", btnSpot: "Spotifyで聴く", lDemos: "最新のデモ", lReleased: "リリースされた音楽", lDemoMark: "デモ", lReleasedMark: "リリース済", pReq: "パスワード", pNow: "今すぐ聴く", nDemo: "デモなし", rMv: "リリースされたMV", nMv: "MVなし", lMore: "もっと見る", mList: "月間リスナー", load: "読み込み中...", back: "戻る", adm: "管理者", edit: "編集", pPrompt: "パスワードが必要", pPrompt2: "このデモを聴くにはパスワードを入力してください", unlock: "ロック解除", wPass: "パスワードが間違っています", lyric: "歌詞", nLyric: "歌詞なし", sAuth: "作曲:", lang: "日本語", searchSong: "曲名で検索...", noSongs: "登録された曲はありません", noSongsDesc: "リストは更新中です。後で戻ってきてください！", closeSearch: "検索を閉じる", searchTitle: "曲名で検索", noDemoFound: "デモが見つかりません", mVault: "ミュージックボルト", "Hiển thị": "表示", "bài / trang": "曲 / ページ", "Tổng": "合計", "Trước": "前へ", "Sau": "次へ", pPartner: "パートナー:", pAutoNext: "パスワード未入力で自動スキップ", vRef: "参考動画", nArtist: "アーティスト" },
   th: {
+    "bài nhạc": "bài nhạc",
+    "Bài nhạc": "Bài nhạc",
+    "Hiển Thị": "Hiển Thị",
+    "Quay lại": "Quay lại",
+    "Danh sách Playlist": "Danh sách Playlist",
+    "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc",
+    "10 mục": "10 mục",
+    "20 mục": "20 mục",
+    "50 mục": "50 mục",
+    "100 mục": "100 mục",
+    "10 bài": "10 bài",
+    "20 bài": "20 bài",
+    "50 bài": "50 bài",
+    "100 bài": "100 bài",
+    "Hiển thị": "Hiển thị",
+    "Tìm kiếm...": "Tìm kiếm...",
+    "Chào Mừng Thành Viên!": "Chào Mừng Thành Viên!",
+    "Khu Vực Thành Viên": "Khu Vực Thành Viên",
+    "Vui lòng nhập thông tin đăng nhập quản trị": "Vui lòng nhập thông tin đăng nhập quản trị",
+    "Bạn đã đăng nhập thành công dưới quyền": "Bạn đã đăng nhập thành công dưới quyền",
+    "Thành viên VIP": "Thành viên VIP",
+    "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của": "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của",
+    "mà không cần nhập passcode riêng biệt.": "mà không cần nhập passcode riêng biệt.",
     "C\u1ea5u h\u00ecnh t\u00ean mi\u1ec1n ri\u00eang (Custom Domain)": "\u0e01\u0e32\u0e23\u0e01\u0e33\u0e2b\u0e19\u0e14\u0e04\u0e48\u0e32\u0e42\u0e14\u0e40\u0e21\u0e19\u0e17\u0e35\u0e48\u0e01\u0e33\u0e2b\u0e19\u0e14\u0e40\u0e2d\u0e07",
     "S\u1eed d\u1ee5ng t\u00ean mi\u1ec1n ri\u00eang c\u1ee7a b\u1ea1n (v\u00ed d\u1ee5:": "\u0e43\u0e0a\u0e49\u0e42\u0e14\u0e40\u0e21\u0e19\u0e17\u0e35\u0e48\u0e01\u0e33\u0e2b\u0e19\u0e14\u0e40\u0e2d\u0e07\u0e02\u0e2d\u0e07\u0e04\u0e38\u0e13 (\u0e40\u0e0a\u0e48\u0e19",
     "ho\u1eb7c": "\u0e2b\u0e23\u0e37\u0e2d",
     ") thay v\u00ec s\u1eed d\u1ee5ng \u0111\u1ecba ch\u1ec9 m\u1eb7c \u0111\u1ecbnh c\u1ee7a h\u1ec7 th\u1ed1ng.": ") \u0e41\u0e17\u0e19\u0e17\u0e35\u0e48\u0e08\u0e30\u0e43\u0e0a\u0e49\u0e17\u0e35\u0e48\u0e2d\u0e22\u0e39\u0e48\u0e40\u0e23\u0e34\u0e48\u0e21\u0e15\u0e49\u0e19\u0e02\u0e2d\u0e07\u0e23\u0e30\u0e1a\u0e1a",
     "T\u1ef1 \u0111\u1ed9ng chuy\u1ec3n tab \u1edf trang ch\u1ee7 (Music / Demo / Playlist)": "\u0e2a\u0e25\u0e31\u0e1a\u0e41\u0e17\u0e47\u0e1a\u0e2d\u0e31\u0e15\u0e42\u0e19\u0e21\u0e31\u0e15\u0e34\u0e43\u0e19\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e23\u0e01 (Music / Demo / Playlist)",
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "\u0e0b\u0e48\u0e2d\u0e19\u0e08\u0e32\u0e01\u0e23\u0e32\u0e22\u0e0a\u0e37\u0e48\u0e2d\u0e28\u0e34\u0e25\u0e1b\u0e34\u0e19\u0e43\u0e19\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e23\u0e01\u0e02\u0e2d\u0e07 Chorus.vn",
-    "Tab 3 (Album/EP)": "\u0e41\u0e17\u0e47\u0e1a 3 (Album/EP)", dDesc: "สวรรค์แห่งเพลงเดโม่ของ", btnSpot: "ฟังบน Spotify", lDemos: "ตัวอย่างล่าสุด", lReleased: "เพลงที่ปล่อยแล้ว", lDemoMark: "เดโม่", lReleasedMark: "ปล่อยแล้ว", pReq: "รหัสผ่าน", pNow: "ฟังเลย", nDemo: "ไม่มีตัวอย่าง", rMv: "มิวสิควิดีโอ", nMv: "ไม่มี MV", lMore: "โหลดเพิ่ม", mList: "ผู้ฟังรายเดือน", load: "กำลังโหลด...", back: "กลับ", adm: "แอดมิน", edit: "แก้ไข", pPrompt: "ต้องใช้รหัสผ่าน", pPrompt2: "ใส่รหัสผ่านเพื่อฟังเดโม่นี้", unlock: "ปลดล็อค", wPass: "รหัสผ่านผิด", lyric: "เนื้อเพลง", nLyric: "ไม่มีเนื้อเพลง", sAuth: "แต่งโดย:", lang: "ไทย", searchSong: "ค้นหาเพลง...", noSongs: "ยังไม่มีเพลง", noSongsDesc: "กำลังอัปเดตรายการ โปรดกลับมาใหม่อีกครั้งในภายหลัง!", closeSearch: "ปิดการค้นหา", searchTitle: "ค้นหาเพลง", noDemoFound: "ไม่พบเดโม", mVault: "คลังเพลง", "Hiển thị": "แสดง", "bài / trang": "เพลง / หน้า", "Tổng": "ทั้งหมด", "Trước": "ก่อนหน้า", "Sau": "ถัดไป" },
+    "Tab 3 (Album/EP)": "\u0e41\u0e17\u0e47\u0e1a 3 (Album/EP)", dDesc: "สวรรค์แห่งเพลงเดโม่ของ", btnSpot: "ฟังบน Spotify", lDemos: "ตัวอย่างล่าสุด", lReleased: "เพลงที่ปล่อยแล้ว", lDemoMark: "เดโม่", lReleasedMark: "ปล่อยแล้ว", pReq: "รหัสผ่าน", pNow: "ฟังเลย", nDemo: "ไม่มีตัวอย่าง", rMv: "มิวสิควิดีโอ", nMv: "ไม่มี MV", lMore: "โหลดเพิ่ม", mList: "ผู้ฟังรายเดือน", load: "กำลังโหลด...", back: "กลับ", adm: "แอดมิน", edit: "แก้ไข", pPrompt: "ต้องใช้รหัสผ่าน", pPrompt2: "ใส่รหัสผ่านเพื่อฟังเดโม่นี้", unlock: "ปลดล็อค", wPass: "รหัสผ่านผิด", lyric: "เนื้อเพลง", nLyric: "ไม่มีเนื้อเพลง", sAuth: "แต่งโดย:", lang: "ไทย", searchSong: "ค้นหาเพลง...", noSongs: "ยังไม่มีเพลง", noSongsDesc: "กำลังอัปเดตรายการ โปรดกลับมาใหม่อีกครั้งในภายหลัง!", closeSearch: "ปิดการค้นหา", searchTitle: "ค้นหาเพลง", noDemoFound: "ไม่พบเดโม", mVault: "คลังเพลง", "Hiển thị": "แสดง", "bài / trang": "เพลง / หน้า", "Tổng": "ทั้งหมด", "Trước": "ก่อนหน้า", "Sau": "ถัดไป", pPartner: "พาร์ทเนอร์:", pAutoNext: "จะข้ามอัตโนมัติหากไม่ใส่รหัส", vRef: "วิดีโออ้างอิง", nArtist: "ศิลปิน" },
   zh: {
+    "bài nhạc": "bài nhạc",
+    "Bài nhạc": "Bài nhạc",
+    "Hiển Thị": "Hiển Thị",
+    "Quay lại": "Quay lại",
+    "Danh sách Playlist": "Danh sách Playlist",
+    "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc",
+    "10 mục": "10 mục",
+    "20 mục": "20 mục",
+    "50 mục": "50 mục",
+    "100 mục": "100 mục",
+    "10 bài": "10 bài",
+    "20 bài": "20 bài",
+    "50 bài": "50 bài",
+    "100 bài": "100 bài",
+    "Hiển thị": "Hiển thị",
+    "Tìm kiếm...": "Tìm kiếm...",
+    "Chào Mừng Thành Viên!": "Chào Mừng Thành Viên!",
+    "Khu Vực Thành Viên": "Khu Vực Thành Viên",
+    "Vui lòng nhập thông tin đăng nhập quản trị": "Vui lòng nhập thông tin đăng nhập quản trị",
+    "Bạn đã đăng nhập thành công dưới quyền": "Bạn đã đăng nhập thành công dưới quyền",
+    "Thành viên VIP": "Thành viên VIP",
+    "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của": "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của",
+    "mà không cần nhập passcode riêng biệt.": "mà không cần nhập passcode riêng biệt.",
     "C\u1ea5u h\u00ecnh t\u00ean mi\u1ec1n ri\u00eang (Custom Domain)": "\u81ea\u5b9a\u4e49\u57df\u540d\u914d\u7f6e",
     "S\u1eed d\u1ee5ng t\u00ean mi\u1ec1n ri\u00eang c\u1ee7a b\u1ea1n (v\u00ed d\u1ee5:": "\u4f7f\u7528\u81ea\u5b9a\u4e49\u57df\u540d\uff08\u4f8b\u5982\uff1a",
     "ho\u1eb7c": "\u6216",
     ") thay v\u00ec s\u1eed d\u1ee5ng \u0111\u1ecba ch\u1ec9 m\u1eb7c \u0111\u1ecbnh c\u1ee7a h\u1ec7 th\u1ed1ng.": ") \u4ee3\u66ff\u7cfb\u7edf\u9ed8\u8ba4\u5730\u5740\u3002",
     "T\u1ef1 \u0111\u1ed9ng chuy\u1ec3n tab \u1edf trang ch\u1ee7 (Music / Demo / Playlist)": "\u9996\u9875\u81ea\u52a8\u5207\u6362\u9009\u9879\u5361 (Music / Demo / Playlist)",
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "\u4ece Chorus.vn \u9996\u9875\u7684\u827a\u672f\u5bb6\u5217\u8868\u4e2d\u9690\u85cf",
-    "Tab 3 (Album/EP)": "\u9009\u9879\u5361 3 (Album/EP)", dDesc: "的演示天堂", btnSpot: "在Spotify收听", lDemos: "最新演示", lReleased: "已发行的音乐", lDemoMark: "演示", lReleasedMark: "已发行", pReq: "需要密码", pNow: "立即收听", nDemo: "暂无演示", rMv: "已发行的视频", nMv: "暂无视频", lMore: "加载更多", mList: "月度听众", load: "载入中...", back: "返回", adm: "管理", edit: "编辑", pPrompt: "需要密码", pPrompt2: "输入密码收听此演示", unlock: "解锁", wPass: "密码错误", lyric: "歌词", nLyric: "暂无歌词", sAuth: "作曲:", lang: "中文", searchSong: "搜索歌曲...", noSongs: "暂无歌曲", noSongsDesc: "列表正在更新中，请稍后再来！", closeSearch: "关闭搜索", searchTitle: "搜索歌曲", noDemoFound: "找不到演示", mVault: "音乐库", "Hiển thị": "显示", "bài / trang": "首歌曲 / 页", "Tổng": "总计", "Trước": "上一步", "Sau": "下一步" }
+    "Tab 3 (Album/EP)": "\u9009\u9879\u5361 3 (Album/EP)", dDesc: "的演示天堂", btnSpot: "在Spotify收听", lDemos: "最新演示", lReleased: "已发行的音乐", lDemoMark: "演示", lReleasedMark: "已发行", pReq: "需要密码", pNow: "立即收听", nDemo: "暂无演示", rMv: "已发行的视频", nMv: "暂无视频", lMore: "加载更多", mList: "月度听众", load: "载入中...", back: "返回", adm: "管理", edit: "编辑", pPrompt: "需要密码", pPrompt2: "输入密码收听此演示", unlock: "解锁", wPass: "密码错误", lyric: "歌词", nLyric: "暂无歌词", sAuth: "作曲:", lang: "中文", searchSong: "搜索歌曲...", noSongs: "暂无歌曲", noSongsDesc: "列表正在更新中，请稍后再来！", closeSearch: "关闭搜索", searchTitle: "搜索歌曲", noDemoFound: "找不到演示", mVault: "音乐库", "Hiển thị": "显示", "bài / trang": "首歌曲 / 页", "Tổng": "总计", "Trước": "上一步", "Sau": "下一步", pPartner: "合作伙伴:", pAutoNext: "未输入密码将自动跳过", vRef: "参考视频", nArtist: "艺术家" }
 };
 
 const adminTranslations: Record<string, Record<string, string>> = {
@@ -871,11 +1009,9 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Hủy bỏ": "Hủy bỏ",
     "Gửi báo cáo": "Gửi báo cáo",
     "Đang tạo...": "Đang tạo...",
-    "Tạo Playlist": "Tạo Playlist",
     "Thêm đã chọn": "Thêm đã chọn",
     "Có lỗi xảy ra khi tạo playlist.": "Có lỗi xảy ra khi tạo playlist.",
     "Có lỗi xảy ra khi kết nối máy chủ.": "Có lỗi xảy ra khi kết nối máy chủ.",
-    "Tất cả bài hát đều đã ở trong playlist này rồi.": "Tất cả bài hát đều đã ở trong playlist này rồi."
   },
   en: {
     "Bài hát Preview": "Preview Song",
@@ -1348,11 +1484,9 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Hủy bỏ": "Cancel",
     "Gửi báo cáo": "Submit Report",
     "Đang tạo...": "Creating...",
-    "Tạo Playlist": "Create Playlist",
     "Thêm đã chọn": "Add selected",
     "Có lỗi xảy ra khi tạo playlist.": "An error occurred while creating the playlist.",
     "Có lỗi xảy ra khi kết nối máy chủ.": "An error occurred while connecting to the server.",
-    "Tất cả bài hát đều đã ở trong playlist này rồi.": "All songs are already in this playlist."
   },
   ko: {
     "Bài hát Preview": "프리뷰 곡",
@@ -1825,11 +1959,9 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Hủy bỏ": "취소",
     "Gửi báo cáo": "보고서 제출",
     "Đang tạo...": "생성 중...",
-    "Tạo Playlist": "재생목록 만들기",
     "Thêm đã chọn": "선택한 항목 추가",
     "Có lỗi xảy ra khi tạo playlist.": "재생목록을 만드는 동안 오류가 발생했습니다.",
     "Có lỗi xảy ra khi kết nối máy chủ.": "서버에 연결하는 동안 오류가 발생했습니다.",
-    "Tất cả bài hát đều đã ở trong playlist này rồi.": "모든 노래가 이미 이 재생목록에 있습니다."
   },
   ja: {
     "Bài hát Preview": "プレビュー曲",
@@ -2302,11 +2434,9 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Hủy bỏ": "キャンセル",
     "Gửi báo cáo": "報告を送信",
     "Đang tạo...": "作成中...",
-    "Tạo Playlist": "プレイリストを作成",
     "Thêm đã chọn": "選択した曲を追加",
     "Có lỗi xảy ra khi tạo playlist.": "プレイリストの作成中にエラーが発生しました。",
     "Có lỗi xảy ra khi kết nối máy chủ.": "サーバーへの接続中にエラーが発生しました。",
-    "Tất cả bài hát đều đã ở trong playlist này rồi.": "すべての曲がすでにこのプレイリストに含まれています。"
   },
   th: {
     "Bài hát Preview": "ตัวอย่างเพลง",
@@ -2779,7 +2909,6 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Hủy bỏ": "ยกเลิก",
     "Gửi báo cáo": "ส่งรายงาน",
     "Đang tạo...": "กำลังสร้าง...",
-    "Tạo Playlist": "สร้างเพลย์ลิสต์",
     "Thêm đã chọn": "เพิ่มที่เลือก",
     "Có lỗi xảy ra khi tạo playlist.": "เกิดข้อผิดพลาดขณะสร้างเพลย์ลิสต์",
     "Có lỗi xảy ra khi kết nối máy chủ.": "เกิดข้อผิดพลาดขณะเชื่อมต่อกับเซิร์वर",
@@ -3253,11 +3382,9 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Hủy bỏ": "取消",
     "Gửi báo cáo": "提交报告",
     "Đang tạo...": "正在创建...",
-    "Tạo Playlist": "创建播放列表",
     "Thêm đã chọn": "添加已选",
     "Có lỗi xảy ra khi tạo playlist.": "创建播放列表时出错。",
     "Có lỗi xảy ra khi kết nối máy chủ.": "连接到服务器时出错。",
-    "Tất cả bài hát đều đã ở trong playlist này rồi.": "所有歌曲均已在此播放列表中。"
   }
 };
 
@@ -3463,6 +3590,7 @@ import ChorusVNLanding from './components/ChorusVNLanding';
 
 // ---- ADMIN LOGIN & REQUIRE ADMIN ----
 function AdminLogin() {
+  const { t } = useAdminTranslation();
   const ext = getArtistExtensionFromUrl();
   const [usr, setUsr] = useState('');
   const [pwd, setPwd] = useState('');
@@ -3508,7 +3636,7 @@ function AdminLogin() {
     <div className="min-h-screen bg-stone-100 flex items-center justify-center p-4 text-stone-900 font-sans">
       <div className="bg-white p-8 rounded-3xl shadow-xl max-w-sm w-full border border-stone-200">
         <h2 className="text-2xl font-black mb-2 text-center text-stone-800">Admin Login</h2>
-        <p className="text-stone-500 mb-6 text-center text-sm">Vui lòng nhập thông tin đăng nhập quản trị</p>
+        <p className="text-stone-500 mb-6 text-center text-sm">{t("Vui lòng nhập thông tin đăng nhập quản trị")}</p>
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-1">Username</label>
@@ -3602,10 +3730,10 @@ function MemberLogin() {
           </div>
           
           <h2 className="text-2xl font-black mb-3 tracking-tight bg-gradient-to-r from-purple-400 via-pink-400 to-rose-500 bg-clip-text text-transparent">
-            Chào Mừng Thành Viên!
+            {t("Chào Mừng Thành Viên!")}
           </h2>
           <p className="text-neutral-400 text-sm leading-relaxed mb-8">
-            Bạn đã đăng nhập thành công dưới quyền <strong>Thành viên VIP</strong>. Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của <strong>{artistName}</strong> mà không cần nhập passcode riêng biệt.
+            {t("Bạn đã đăng nhập thành công dưới quyền")} <strong>{t("Thành viên VIP")}</strong>. {t("Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của")} <strong>{artistName}</strong> {t("mà không cần nhập passcode riêng biệt.")}
           </p>
 
           <div className="space-y-3">
@@ -3638,7 +3766,7 @@ function MemberLogin() {
           <div className="mx-auto w-14 h-14 bg-neutral-800 rounded-2xl flex items-center justify-center mb-4 border border-white/5">
             <Lock className="w-6 h-6 text-rose-500" />
           </div>
-          <h2 className="text-xl font-black tracking-tight">Khu Vực Thành Viên</h2>
+          <h2 className="text-xl font-black tracking-tight">{t("Khu Vực Thành Viên")}</h2>
           <p className="text-neutral-500 text-xs mt-1 leading-relaxed">
             Nhập mật khẩu thành viên để nghe nhạc tự do không cần passcode
           </p>
@@ -5018,7 +5146,7 @@ function Home() {
                                   </div>
                                 </div>
                               </div>
-                              <div className="flex-1 min-w-0 relative z-10 pr-12">
+                              <div className="flex-1 min-w-0 relative z-10 pr-22">
                                 <h3 className="text-base sm:text-lg font-bold group-hover:text-purple-400 transition-colors truncate">
                                   {playlist.title}
                                 </h3>
@@ -5170,7 +5298,7 @@ function Home() {
                                     </div>
                                   </div>
                                 </div>
-                                <div className={`flex-1 min-w-0 relative z-10 flex flex-col justify-center h-full overflow-visible ${demo.achievements?.length ? 'pr-1.5' : (demo.isReleased ? 'pr-12' : 'pr-4')}`}>
+                                <div className={`flex-1 min-w-0 relative z-10 flex flex-col justify-center h-full overflow-visible ${demo.achievements?.length ? 'pr-2.5' : (demo.isReleased ? 'pr-22' : 'pr-4')}`}>
                                   <AnimatePresence mode="wait">
                                     {demo.isBrand && showBrandState && demo.brandName ? (
                                       <motion.div
@@ -6914,7 +7042,7 @@ function PlaylistPlayer() {
           <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-6 mx-auto">
              <Lock className="w-8 h-8 text-white/80" />
           </div>
-          <h2 className="text-xl font-bold text-white text-center mb-2">Playlist được bảo vệ</h2>
+          <h2 className="text-xl font-bold text-white text-center mb-2">{t("Playlist được bảo vệ")}</h2>
           {protectedInfo.title && <p className="text-stone-400 text-sm text-center mb-6">{protectedInfo.title}</p>}
           <form onSubmit={verifyPassword} className="space-y-4">
              <div>
@@ -6923,7 +7051,7 @@ function PlaylistPlayer() {
              <button type="submit" disabled={verifying || !password} className="w-full bg-white text-black font-bold py-3 rounded-xl disabled:opacity-50 hover:bg-stone-200 transition-colors">
                 {verifying ? 'Đang kiểm tra...' : 'Truy cập'}
              </button>
-             <p className="text-stone-500 text-xs text-center">Hoặc sử dụng Secret Link nếu có.</p>
+             <p className="text-stone-500 text-xs text-center">{t("Hoặc sử dụng Secret Link nếu có.")}</p>
           </form>
         </div>
      </div>
@@ -6995,7 +7123,7 @@ function PlaylistPlayer() {
                          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-neutral-800 flex-shrink-0 overflow-hidden border border-white/5 relative z-10 transition-transform">
                             {song.coverUrl ? <img src={song.coverUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform" /> : <Music className="w-4 h-4 m-3 sm:m-3.5 text-neutral-500" />}
                          </div>
-                         <div className={`flex-1 min-w-0 flex flex-col justify-center relative z-10 ${song.achievements?.length ? 'pr-1' : 'pr-4'}`}>
+                         <div className={`flex-1 min-w-0 flex flex-col justify-center relative z-10 ${song.achievements?.length ? 'pr-2' : 'pr-4'}`}>
                             <p className={`font-bold transition-colors ${i === currentIndex ? 'text-purple-400' : (song.achievements?.length ? 'text-amber-100 hover:text-amber-300' : 'text-white')} ${song.achievements?.length ? 'text-[10px] sm:text-[11px] leading-[1.15] whitespace-normal break-words' : 'text-sm truncate'}`}>
                               <HoverTranslate text={song.title} />
                             </p>
@@ -7719,7 +7847,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
                   </div>
                 )}
                 <span className="text-[10px] uppercase tracking-widest font-black flex items-center gap-1">
-                  <span style={{ color: badgeStyle.labelColor }}>Đối tác:</span>
+                  <span style={{ color: badgeStyle.labelColor }}>{t.pPartner || "Đối tác:"}</span>
                   <span style={{ color: badgeStyle.valueColor }}>{demo.brandName}</span>
                 </span>
                 <span className="w-1.5 h-1.5 rounded-full animate-pulse ml-0.5" style={{ backgroundColor: badgeStyle.dotColor }}></span>
@@ -7727,13 +7855,13 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
             );
           })()}
           <p className="text-sm font-medium text-center mb-6 opacity-80">
-             {renderArtistNameWithLinks(demo.singer || demo.author || (demo as any)?.defaultArtistName || 'Nghệ sĩ', systemArtists)}
-             <span className="block text-xs mt-1 opacity-70">Sáng tác: {renderArtistNameWithLinks(demo.composer || (demo as any)?.defaultArtistName || 'Nghệ sĩ', systemArtists)}</span>
+             {renderArtistNameWithLinks(demo.singer || demo.author || (demo as any)?.defaultArtistName || (t.nArtist || 'Nghệ sĩ'), systemArtists)}
+             <span className="block text-xs mt-1 opacity-70">{t.sAuth || 'Sáng tác:'} {renderArtistNameWithLinks(demo.composer || (demo as any)?.defaultArtistName || (t.nArtist || 'Nghệ sĩ'), systemArtists)}</span>
           </p>
           
           <p className="text-center mb-6 text-sm font-semibold opacity-70">
              {t.pPrompt2}
-             {playlistSongs && <span className="block mt-2 italic text-xs">Sẽ tự động chuyển bài nếu không nhập mật khẩu</span>}
+             {playlistSongs && <span className="block mt-2 italic text-xs">{t.pAutoNext || "Sẽ tự động chuyển bài nếu không nhập mật khẩu"}</span>}
           </p>
           
           <form onSubmit={handleUnlock} onClick={(e) => e.stopPropagation()} className="space-y-4">
@@ -8123,7 +8251,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
                   </div>
                 )}
                 <span className="text-[10px] uppercase tracking-widest font-black flex items-center gap-1">
-                  <span style={{ color: badgeStyle.labelColor }}>Đối tác:</span>
+                  <span style={{ color: badgeStyle.labelColor }}>{t.pPartner || "Đối tác:"}</span>
                   <span style={{ color: badgeStyle.valueColor }}>{demo.brandName}</span>
                 </span>
                 <span className="w-1.5 h-1.5 rounded-full animate-pulse ml-0.5" style={{ backgroundColor: badgeStyle.dotColor }}></span>
@@ -8375,7 +8503,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
             )}
             <div className="relative z-10">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-lg flex items-center gap-2"><Youtube className="w-5 h-5 text-rose-400" /> Video Tham Khảo</h3>
+                <h3 className="font-bold text-lg flex items-center gap-2"><Youtube className="w-5 h-5 text-rose-400" /> {t.vRef || "Video Tham Khảo"}</h3>
                 <button onClick={() => setShowBrandVideos(false)} className="p-1 hover:bg-white/10 rounded-lg"><X className="w-5 h-5" /></button>
               </div>
               <div className="grid grid-cols-1 gap-4 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">
@@ -8836,7 +8964,7 @@ function AdminTemplateEdit({ config, demos, onBack, onSave, isPCPreviewMode, set
              <div className={`w-full h-auto md:h-full ${isPCPreviewMode ? 'md:w-[260px] p-4 space-y-4' : 'md:w-[400px] p-6 md:p-8 space-y-6'} bg-white flex-shrink-0 border-b md:border-b-0 md:border-r overflow-visible md:overflow-y-auto custom-scrollbar`}>
                  <div>
                      <h3 className={`${isPCPreviewMode ? 'text-lg' : 'text-2xl'} font-black mb-1`}>{t("Chỉnh sửa")}</h3>
-                     <p className="inline-block bg-stone-100 text-stone-500 font-mono text-xs px-2 py-0.5 rounded-md mt-1">Giao diện #{config.id}</p>
+                     <p className="inline-block bg-stone-100 text-stone-500 font-mono text-xs px-2 py-0.5 rounded-md mt-1">{t("Giao diện")} #{config.id}</p>
                  </div>
                  
                  <div>
@@ -8880,6 +9008,7 @@ function AdminTemplateEdit({ config, demos, onBack, onSave, isPCPreviewMode, set
 }
 
 function AdminDatabaseSettings() {
+  const { t } = useAdminTranslation();
   const [configsData, setConfigsData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -8983,7 +9112,7 @@ function AdminDatabaseSettings() {
     }
   };
 
-  if (loading && !configsData) return <div className="text-stone-500">Đang tải...</div>;
+  if (loading && !configsData) return <div className="text-stone-500">{t("Đang tải...")}</div>;
 
   if (editingConfigId && editForm) {
     return (
@@ -8992,12 +9121,12 @@ function AdminDatabaseSettings() {
           <button onClick={() => { setEditingConfigId(null); setEditForm(null); }} className="p-2 hover:bg-stone-200 rounded-lg text-stone-500">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h2 className="text-2xl font-bold text-stone-900">{editingConfigId === 'new' ? 'Thêm cấu hình mới' : 'Chỉnh sửa cấu hình'}</h2>
+          <h2 className="text-2xl font-bold text-stone-900">{editingConfigId === 'new' ? t('Thêm cấu hình mới') : t('Chỉnh sửa cấu hình')}</h2>
         </div>
         
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Tên gợi nhớ (VD: DB cũ, Mặc định...)</label>
+            <label className="block text-sm font-medium text-stone-700 mb-1">{t("Tên gợi nhớ (VD: DB cũ, Mặc định...)")}</label>
             <input type="text" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} className="w-full px-4 py-2 bg-stone-100 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-stone-900" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -9030,7 +9159,7 @@ function AdminDatabaseSettings() {
               <input type="text" value={editForm.config.measurementId || ''} onChange={e => setEditForm({...editForm, config: {...editForm.config, measurementId: e.target.value}})} className="w-full px-4 py-2 bg-stone-100 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-stone-900" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Firestore Database ID (mặc định là default)</label>
+              <label className="block text-sm font-medium text-stone-700 mb-1">{t("Firestore Database ID (mặc định là default)")}</label>
               <input type="text" value={editForm.config.firestoreDatabaseId || ''} onChange={e => setEditForm({...editForm, config: {...editForm.config, firestoreDatabaseId: e.target.value}})} placeholder="default" className="w-full px-4 py-2 bg-stone-100 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-stone-900" />
             </div>
           </div>
@@ -9054,8 +9183,8 @@ function AdminDatabaseSettings() {
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold mb-2 text-stone-900">Quản Lý Cơ Sở Dữ Liệu</h2>
-          <p className="text-sm text-stone-500">Chuyển đổi giữa các Firebase config (DB mới / DB cũ) an toàn.</p>
+          <h2 className="text-2xl font-bold mb-2 text-stone-900">{t("Quản Lý Cơ Sở Dữ Liệu")}</h2>
+          <p className="text-sm text-stone-500">{t("Chuyển đổi giữa các Firebase config (DB mới / DB cũ) an toàn.")}</p>
         </div>
         <div className="flex gap-2">
           <button onClick={async () => {
@@ -9069,9 +9198,9 @@ function AdminDatabaseSettings() {
  'Authorization': `Bearer ${getAdminToken()}` }
                 });
                 if (res.ok) {
-                  setSuccess('Đã xóa sạch dữ liệu trong DB hiện tại. Vui lòng tải lại trang!');
+                  setSuccess('{t("Đã xóa sạch dữ liệu trong DB hiện tại. Vui lòng tải lại trang!")}');
                 } else {
-                  setError('Lỗi khi xóa DB');
+                  setError('{t("Lỗi khi xóa DB")}');
                 }
               } catch (e) {
                 setError('Lỗi kết nối máy chủ');
@@ -9080,13 +9209,13 @@ function AdminDatabaseSettings() {
               }
             }
           }} className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 text-sm">
-            <Trash2 className="w-4 h-4" /> Làm mới DB này
+            <Trash2 className="w-4 h-4" /> {t("Làm mới DB này")}
           </button>
           <button onClick={() => {
             setEditingConfigId('new');
             setEditForm({ name: '', config: { projectId: '', apiKey: '', appId: '', authDomain: '', storageBucket: '', messagingSenderId: '', measurementId: '', firestoreDatabaseId: 'default' } });
           }} className="flex items-center gap-2 px-4 py-2 bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] rounded-xl font-bold hover:bg-stone-800 text-sm">
-            <Plus className="w-4 h-4" /> Thêm DB mới
+            <Plus className="w-4 h-4" /> {t("Thêm DB mới")}
           </button>
         </div>
       </div>
@@ -9102,7 +9231,7 @@ function AdminDatabaseSettings() {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
-                    {c.name} {isActive && <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Đang dùng</span>}
+                    {c.name} {isActive && <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">{t("Đang dùng")}</span>}
                   </h3>
                   <p className="text-sm text-stone-500 font-mono mt-1">{c.config.projectId}</p>
                 </div>
@@ -10610,7 +10739,7 @@ function AdminDashboard() {
                     </div>
 
                     {/* Items per page selector and Action Button wrapper */}
-                    <div className="flex items-center gap-3 justify-between sm:justify-end w-full sm:w-auto shrink-0">
+                    <div className="flex items-center gap-3 justify-between sm:justify-end w-full sm:w-auto shrink-0 pr-4 py-2">
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-stone-400 font-medium">{t("Hiển thị")}:</span>
                         <select 
@@ -10631,13 +10760,13 @@ function AdminDashboard() {
                             setNewPlaylistTitle('');
                             setShowCreatePlaylistModal(true);
                           }}
-                          className="group w-10 h-10 flex items-center justify-center bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:scale-110 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] rounded-xl hover:bg-stone-800 transition-colors shadow-sm shrink-0 mr-0 cursor-pointer"
+                          className="group w-10 h-10 flex items-center justify-center bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:scale-110 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] rounded-xl hover:bg-stone-800 transition-colors shadow-sm shrink-0 cursor-pointer"
                           title={t("Tạo Playlist")}
                         >
                           <Plus className="w-5 h-5 group-hover:rotate-[360deg] transition-transform duration-500 ease-in-out" />
                         </button>
                       ) : demosSubTab !== 'trash' ? (
-                        <Link to={getAdminLink('/new')} className="group w-10 h-10 flex items-center justify-center bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:scale-110 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] rounded-xl hover:bg-stone-800 transition-colors shadow-sm shrink-0 mr-0" title={t("Thêm Mới Bài Hát")}>
+                        <Link to={getAdminLink('/new')} className="group w-10 h-10 flex items-center justify-center bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:scale-110 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] rounded-xl hover:bg-stone-800 transition-colors shadow-sm shrink-0" title={t("Thêm Mới Bài Hát")}>
                           <Plus className="w-5 h-5 group-hover:rotate-[360deg] transition-transform duration-500 ease-in-out" />
                         </Link>
                       ) : null}
@@ -10857,7 +10986,7 @@ function AdminDashboard() {
                                 )}
                                 {(demo.linkType === 'indirect' ? demo.password : (demo.password || (data?.globalPassword && !demo.isReleased))) ? (
                                   <span className="bg-stone-100 text-stone-700 px-1.5 py-0.5 border border-stone-200 rounded flex items-center gap-1 text-[10px] md:text-xs">
-                                    <Lock className="w-3 h-3 text-stone-500" /> <span className="font-mono">{demo.password || `Mật khẩu chung: ${data?.globalPassword}`}</span></span>
+                                    <Lock className="w-3 h-3 text-stone-500" /> <span className="font-mono">{demo.password || `${t('Mật khẩu chung')}: ${data?.globalPassword}`}</span></span>
                                   
                                 ) : null}
                               </div>
@@ -10958,7 +11087,7 @@ function AdminDashboard() {
                                 {demo.title} {demo.password && !demo.isReleased && <Lock className="w-3 h-3 inline text-amber-500 mb-0.5" />}
                               </h4>
                               <p className="text-xs md:text-sm text-stone-500 truncate flex items-center gap-2">
-                                <span className="text-indigo-600 font-bold bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">Đối Tác: {demo.brandName || '---'}</span>
+                                <span className="text-indigo-600 font-bold bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">{t('Đối Tác')}: {demo.brandName || '---'}</span>
                                 {demo.singer}
                               </p>
                             </div>
@@ -11127,7 +11256,7 @@ function AdminDashboard() {
                               <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
                               <div className="flex flex-col flex-1 min-w-0">
                                 <h4 className="font-bold text-stone-850 text-base">{pl.title}</h4>
-                                <span className="text-xs text-stone-400 mt-0.5">{songCount} bài nhạc</span>
+                                <span className="text-xs text-stone-400 mt-0.5">{songCount} {t('bài nhạc')}</span>
                               </div>
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0 self-end md:self-auto">
@@ -11190,7 +11319,7 @@ function AdminDashboard() {
                       </div>
 
                       <div>
-                        <h4 className="text-stone-500 text-xs font-bold uppercase tracking-wider mb-2 px-1">Các mục trong thùng rác ({allTrashed.length})</h4>
+                        <h4 className="text-stone-500 text-xs font-bold uppercase tracking-wider mb-2 px-1">{t('Các mục trong thùng rác')} ({allTrashed.length})</h4>
                         <div className="space-y-2">
                           {allTrashed.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item: any) => (
                             <div key={`${item._type}-${item.id}`} className="border border-stone-100 p-3 rounded-xl flex items-center justify-between gap-3 bg-white shadow-sm hover:bg-stone-50/30 transition-all">
@@ -12810,7 +12939,7 @@ function AchievementEditor({ achievements, onChange }: { achievements: Achieveme
                    <select 
                      value={ach.type} 
                      onChange={e => handleUpdate(index, 'type', e.target.value)}
-                     className="w-full border border-stone-300 rounded-lg px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white appearance-none cursor-pointer pr-10 hover:border-stone-400 transition-colors"
+                     className="w-full border border-stone-300 rounded-lg px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white appearance-none cursor-pointer pr-20 hover:border-stone-400 transition-colors"
                    >
                      {Object.entries(achievementTypes).map(([k, v]) => (
                        <option key={k} value={k}>{v}</option>
@@ -15498,7 +15627,7 @@ function AdminPlaylistEdit() {
       <header className="bg-white border-b border-stone-200 sticky top-0 z-20">
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to={getAdminLink()} className="text-sm font-medium text-stone-500 hover:text-stone-900 flex items-center gap-1">
-             <ArrowLeft className="w-4 h-4" /> Quay lại
+             <ArrowLeft className="w-4 h-4" /> {t("Quay lại")}
           </Link>
           <button onClick={handleSave} className="bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] px-4 py-2 rounded-lg font-medium hover:bg-stone-800 transition-colors shadow-sm">{t("Lưu thay đổi")}</button>
         </div>
@@ -15606,7 +15735,7 @@ function AdminPlaylistEdit() {
                   onClick={() => setShowAddModal(true)}
                   className="flex items-center gap-1.5 bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] hover:bg-stone-800 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors shadow-sm"
                 >
-                  <Plus className="w-3.5 h-3.5" /> Thêm bài hát
+                  <Plus className="w-3.5 h-3.5" /> {t("Thêm bài hát")}
                 </button>
              </div>
              {songs.length === 0 ? (
@@ -15669,7 +15798,7 @@ function AdminPlaylistEdit() {
               </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+            <div className="flex-1 overflow-y-auto space-y-2 pr-2">
               {(() => {
                 const currentSongIds = songs.map(s => s.id);
                 const availableSongs = appData?.demos?.filter((d: any) => !currentSongIds.includes(d.id)) || [];
@@ -15731,7 +15860,7 @@ function AdminPlaylistEdit() {
                 disabled={selectedNewSongIds.length === 0}
                 className="px-4 py-2 bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] rounded-lg font-medium hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Thêm đã chọn ({selectedNewSongIds.length})
+                {t("Thêm đã chọn")} ({selectedNewSongIds.length})
               </button>
             </div>
           </div>

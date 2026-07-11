@@ -1,0 +1,957 @@
+24: useEffect(() => {
+34: useEffect(() => {
+43: const canvas = document.createElement("canvas");
+47: const ctx = canvas.getContext("2d");
+77: const sorted = Object.values(counts).sort((a, b) => b.count - a.count);
+174: cleanHex = cleanHex.split('').map(c => c + c).join('');
+177: const r = parseInt(cleanHex.substring(0, 2), 16) / 255;
+178: const g = parseInt(cleanHex.substring(2, 4), 16) / 255;
+179: const b = parseInt(cleanHex.substring(4, 6), 16) / 255;
+221: function formatText(text: string | null | undefined, disableLinks = false) {
+223: const lines = text.replace(/\s+\(/g, '\n(').split('\n');
+227: const segments = line.split(/(\s*,\s*|\s*&\s*)/g);
+232: const isSeparator = /^(\s*,\s*|\s*&\s*)$/.test(segment);
+261: const lines = text.replace(/\s+\(/g, '\n(').split('\n');
+265: const segments = line.split(/(\s*,\s*|\s*&\s*)/g);
+270: const isSeparator = /^(\s*,\s*|\s*&\s*)$/.test(segment);
+548: "Không thể gửi tin nhắn: ${errorData.error || t(\"Lỗi không xác định\")}": "Không thể gửi tin nhắn: ${errorData.error || t(\"Lỗi không xác định\")}",
+594: "Lỗi: ${err.error || t(\"Gửi báo cáo thất bại\")}": "Lỗi: ${err.error || t(\"Gửi báo cáo thất bại\")}",
+595: "Lỗi: ${err.error || t(\"Gửi feedback thất bại\")}": "Lỗi: ${err.error || t(\"Gửi feedback thất bại\")}",
+1025: "Không thể gửi tin nhắn: ${errorData.error || t(\"Lỗi không xác định\")}": "Could not send message: ${errorData.error || t(\"Unknown error\")}",
+1071: "Lỗi: ${err.error || t(\"Gửi báo cáo thất bại\")}": "Error: ${err.error || t(\"Report submission failed\")}",
+1072: "Lỗi: ${err.error || t(\"Gửi feedback thất bại\")}": "Error: ${err.error || t(\"Feedback submission failed\")}",
+1500: "Không thể gửi tin nhắn: ${errorData.error || t(\"Lỗi không xác định\")}": "메시지를 보낼 수 없습니다: ${errorData.error || t(\"알 수 없는 오류\")}",
+1546: "Lỗi: ${err.error || t(\"Gửi báo cáo thất bại\")}": "오류: ${err.error || t(\"보고서 제출 실패\")}",
+1547: "Lỗi: ${err.error || t(\"Gửi feedback thất bại\")}": "오류: ${err.error || t(\"피드백 제출 실패\")}",
+1975: "Không thể gửi tin nhắn: ${errorData.error || t(\"Lỗi không xác định\")}": "メッセージを送信できませんでした: ${errorData.error || t(\"不明なエラー\")}",
+2021: "Lỗi: ${err.error || t(\"Gửi báo cáo thất bại\")}": "エラー: ${err.error || t(\"レポート送信失敗\")}",
+2022: "Lỗi: ${err.error || t(\"Gửi feedback thất bại\")}": "エラー: ${err.error || t(\"フィードバック送信失敗\")}",
+2450: "Không thể gửi tin nhắn: ${errorData.error || t(\"Lỗi không xác định\")}": "ไม่สามารถส่งข้อความ: ${errorData.error || t(\"ข้อผิดพลาดที่ไม่รู้จัก\")}",
+2496: "Lỗi: ${err.error || t(\"Gửi báo cáo thất bại\")}": "ข้อผิดพลาด: ${err.error || t(\"ส่งรายงานไม่สำเร็จ\")}",
+2497: "Lỗi: ${err.error || t(\"Gửi feedback thất bại\")}": "ข้อผิดพลาด: ${err.error || t(\"ส่งคำติชมไม่สำเร็จ\")}",
+2926: "Không thể gửi tin nhắn: ${errorData.error || t(\"Lỗi không xác định\")}": "无法发送消息: ${errorData.error || t(\"未知错误\")}",
+2972: "Lỗi: ${err.error || t(\"Gửi báo cáo thất bại\")}": "错误：${err.error || t(\"提交报告失败\")}",
+2973: "Lỗi: ${err.error || t(\"Gửi feedback thất bại\")}": "错误：${err.error || t(\"提交反馈失败\")}",
+3254: const { lang } = useContext(LanguageContext);
+3297: const segments = window.location.pathname.split('/').filter(Boolean);
+3367: init.headers.set('x-artist-extension', ext);
+3461: useEffect(() => {
+3501: <p className="text-stone-500 mb-6 text-center text-sm">{t("Vui lòng nhập thông tin đăng nhập quản trị")}</p>
+3544: useEffect(() => {
+3586: <div className="absolute top-0 left-0 w-[100vw] h-[100vh] bg-[radial-gradient(ellipse_at_top_left,rgba(147,51,234,0.15),transparent_50%)] pointer-events-none animate-pulse"></div>
+3587: <div className="absolute bottom-0 right-0 w-[100vw] h-[100vh] bg-[radial-gradient(ellipse_at_bottom_right,rgba(225,29,72,0.15),transparent_50%)] pointer-events-none animate-pulse"></div>
+3595: {t("Chào Mừng Thành Viên!")}
+3598: {t("Bạn đã đăng nhập thành công dưới quyền")} <strong>{t("Thành viên VIP")}</strong>. {t("Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của")} <strong>{artistName}</strong> {t("mà không cần nhập passcode riêng biệt.")}
+3624: <div className="absolute top-0 left-0 w-[100vw] h-[100vh] bg-[radial-gradient(ellipse_at_center,rgba(225,29,72,0.15),transparent_50%)] pointer-events-none animate-pulse"></div>
+3631: <h2 className="text-xl font-black tracking-tight">{t("Khu Vực Thành Viên")}</h2>
+3659: <ArrowLeft className="w-3.5 h-3.5" /> {t("Trở về Trang chủ")}
+3725: useEffect(() => {
+3738: setTimeout(checkLoading, 50);
+3744: setTimeout(checkLoading, 50);
+3820: useEffect(() => {
+3823: setTimeout(() => setShowTooltip(false), 3000); // Tắt sau 3s
+3844: {t("Đăng Bài Hát Mới")}
+3878: useEffect(() => {
+3882: useEffect(() => {
+3902: useEffect(() => {
+3920: useEffect(() => {
+3928: const parts = currentSrc.split('uploads%2F');
+3931: const filename = filenameWithParams.split('?')[0];
+3932: const decodedFilename = decodeURIComponent(filename);
+3964: const { lang, artistData, landingConfig } = useContext(LanguageContext);
+3967: useEffect(() => {
+3991: const { lang, artistData, landingConfig } = useContext(LanguageContext);
+3995: useEffect(() => {
+4024: {format ? formatText(output) : output}
+4045: const { lang, setLang } = useContext(LanguageContext);
+4096: const { lang } = useContext(LanguageContext);
+4159: <><span className="text-amber-400 drop-shadow-[0_0_4px_rgba(251,191,36,0.5)]">TOP {achievement.value} <span className="text-stone-200">{t('trending')}</span></span></>
+4161: <><span className="text-red-400 drop-shadow-[0_0_4px_rgba(248,113,113,0.3)]">&gt; {achievement.value} <span className="text-stone-200">{t('views')}</span></span></>
+4184: <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00f2fe] via-white to-[#fe0979] drop-shadow-[0_0_4px_rgba(255,255,255,0.3)]">✨ {t('viral').toUpperCase()} ✨</span>
+4206: <span className="text-[#1DB954] drop-shadow-[0_0_4px_rgba(29,185,84,0.5)]">&gt; {achievement.value} <span className="text-stone-200">{t('streams')}</span></span>
+4228: <span className="text-[#c084fc] drop-shadow-[0_0_4px_rgba(168,85,247,0.5)]">&gt; {achievement.value} <span className="text-stone-200">{t('streams')}</span></span>
+4241: useEffect(() => {
+4272: const { lang, setLang, setArtistData, landingConfig, artistData } = useContext(LanguageContext);
+4306: useEffect(() => {
+4310: timeoutId = setTimeout(() => {
+4312: timeoutId = setTimeout(cycle, 2500);
+4316: return () => clearTimeout(timeoutId);
+4319: useEffect(() => {
+4366: useEffect(() => {
+4376: useEffect(() => {
+4389: useEffect(() => {
+4398: useEffect(() => {
+4409: const timeoutId = setTimeout(() => {
+4419: clearTimeout(timeoutId);
+4431: setToast(t.toastCopy || 'Đã copy link!');
+4432: setTimeout(() => setToast(''), 3000);
+4435: useEffect(() => {
+4448: link = document.createElement('link');
+4457: meta = document.createElement('meta');
+4480: fetch(`/api/spotify-profile?url=${encodeURIComponent(data.spotifyUrl)}`)
+4513: maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)',
+4514: WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)'
+4521: <div className="absolute inset-0 bg-cover bg-center opacity-80" style={{ backgroundImage: `url(${data.homeCoverUrl})`, backgroundPosition: 'center 20%', maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)', WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)' }}></div>
+4524: <div className="fixed inset-0 z-[-1] pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-900 via-neutral-950 to-neutral-950"></div>
+4630: onAnimationComplete={() => setShowArtist(true)}
+4643: {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
+4672: onAnimationComplete={() => setShowArtist(true)}
+4685: {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
+4983: const hash = Array.from(playlist.id as string).reduce((sum: number, char: any) => sum + char.charCodeAt(0), 0);
+5024: setToast('Đã copy link playlist!');
+5025: setTimeout(() => setToast(''), 3000);
+5107: background: `radial-gradient(circle at bottom right, ${activeBrandColors.primary}20, transparent 65%)`
+5113: <div className="absolute inset-[-50%] bg-[conic-gradient(from_0deg,transparent_0_280deg,theme(colors.amber.500)_360deg)] animate-rotate-border z-0 opacity-80" />
+5200: {formatText(demo.singer || demo.author || data?.artistName || 'Nghệ sĩ', true)}
+5221: setToast('Đã copy link bài hát!');
+5222: setTimeout(() => setToast(''), 3000);
+5524: await navigator.clipboard.writeText(text);
+5533: const textArea = document.createElement("textarea");
+5557: return `/api/proxy-audio?url=${encodeURIComponent(url)}`;
+5573: useEffect(() => {
+5578: useEffect(() => {
+5657: return `${mins}:${secs.toString().padStart(2, '0')}`;
+5708: const parts = currentSrc.split('uploads%2F');
+5710: const filename = parts[1].split('?')[0];
+5711: const fallbackUrl = `/uploads/${decodeURIComponent(filename)}`;
+5801: <button onClick={() => playlistContext.setRepeat((playlistContext.repeat + 1) % 3)} className={`opacity-60 hover:opacity-100 ${playlistContext.repeat > 0 ? 'text-blue-400 opacity-100' : ''}`}>
+5808: onClick={() => setIsRepeat(!isRepeat)}
+6067: backgroundImage: 'linear-gradient(105deg, rgba(0,0,0,0.2) 0%, rgba(255,255,255,0.12) 20%, rgba(0,0,0,0.3) 40%, rgba(255,255,255,0.15) 60%, rgba(0,0,0,0.3) 80%, rgba(255,255,255,0.08) 100%)',
+6140: <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(253,224,71,0.25)_0%,transparent_70%)] animate-sun-rays-spin" style={{ transformOrigin: 'center' }}>
+6200: <div className="absolute top-0 left-0 w-[100vw] h-[100vh] bg-[radial-gradient(ellipse_at_top_left,rgba(250,204,21,0.1),transparent_50%)] animate-flicker" style={{ animationDelay: '0.2s' }}></div>
+6201: <div className="absolute top-0 right-0 w-[100vw] h-[100vh] bg-[radial-gradient(ellipse_at_top_right,rgba(249,115,22,0.1),transparent_50%)] animate-flicker" style={{ animationDelay: '0.5s' }}></div>
+6221: <div className="absolute top-[-5%] right-[0%] w-[100vw] h-[100vh] bg-[radial-gradient(ellipse_at_top_right,rgba(212,175,55,0.2),transparent_50%)] mix-blend-screen animate-flicker pointer-events-none" style={{ animationDuration: '4s' }}></div>
+6258: <div className="absolute top-[30%] left-1/2 -translate-x-1/2 w-[35vw] h-[35vw] min-w-[250px] min-h-[250px] rounded-full bg-[radial-gradient(circle_at_center,rgba(249,115,22,0.8),rgba(234,179,8,0.6)_50%,transparent_70%)] opacity-80 animate-[pulse_5s_ease-in-out_infinite]"></div>
+6295: <div className="absolute top-0 left-0 w-[100vw] h-[100vh] bg-[radial-gradient(ellipse_at_center_left,rgba(14,165,233,0.15),transparent_50%)]"></div>
+6296: <div className="absolute bottom-0 right-0 w-[100vw] h-[100vh] bg-[radial-gradient(ellipse_at_bottom_right,rgba(14,116,144,0.15),transparent_50%)] animate-pulse" style={{ animationDuration: '8s' }}></div>
+6353: <div className="absolute inset-0 bg-[#000]/10 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,_rgba(0,0,0,0.15)_50%)] bg-[size:100%_4px]" />
+6356: <div className="absolute top-0 left-0 w-[100vw] h-[100vh] bg-[radial-gradient(ellipse_at_top_left,rgba(236,72,153,0.15),transparent_50%)]"></div>
+6357: <div className="absolute bottom-0 right-0 w-[100vw] h-[100vh] bg-[radial-gradient(ellipse_at_bottom_right,rgba(16,185,129,0.15),transparent_50%)]"></div>
+6390: <div className="absolute top-0 left-0 w-[100vw] h-[100vh] bg-[radial-gradient(ellipse_at_top_left,rgba(236,72,153,0.15),transparent_50%)] animate-pulse" style={{ animationDuration: '8s' }}></div>
+6391: <div className="absolute bottom-0 right-0 w-[100vw] h-[100vh] bg-[radial-gradient(ellipse_at_bottom_right,rgba(147,51,234,0.15),transparent_50%)] animate-pulse" style={{ animationDuration: '12s' }}></div>
+6392: <div className="absolute top-[20%] right-0 w-[100vw] h-[100vh] bg-[radial-gradient(ellipse_at_right,rgba(6,182,212,0.15),transparent_50%)] animate-pulse" style={{ animationDuration: '10s' }}></div>
+6393: <div className="absolute bottom-0 left-[20%] w-[100vw] h-[100vh] bg-[radial-gradient(ellipse_at_bottom,rgba(234,179,8,0.1),transparent_50%)] animate-pulse" style={{ animationDuration: '9s' }}></div>
+6465: useEffect(() => {
+6474: confettiTimer1 = setTimeout(() => {
+6479: confettiTimer2 = setTimeout(() => {
+6482: setTimeout(() => {
+6493: clearTimeout(confettiTimer1);
+6494: clearTimeout(confettiTimer2);
+6499: useEffect(() => {
+6508: hatTimer1 = setTimeout(() => {
+6514: hatTimer2 = setTimeout(() => {
+6517: setTimeout(() => {
+6528: clearTimeout(hatTimer1);
+6529: clearTimeout(hatTimer2);
+6667: const { lang, landingConfig, artistData } = useContext(LanguageContext);
+6694: useEffect(() => {
+6699: if (interactTimerRef.current) clearTimeout(interactTimerRef.current);
+6705: useEffect(() => {
+6712: if (interactTimerRef.current) clearTimeout(interactTimerRef.current);
+6713: interactTimerRef.current = setTimeout(() => {
+6718: useEffect(() => {
+6722: if (interactTimerRef.current) clearTimeout(interactTimerRef.current);
+6725: if (interactTimerRef.current) clearTimeout(interactTimerRef.current);
+6729: useEffect(() => {
+6740: useEffect(() => {
+6749: const targetSongId = queryParams.get('song');
+6774: const token = urlParams.get('secret') || urlParams.get('token') || sessionStorage.getItem(`playlist_token_${id}`) || '';
+6775: fetch(`/api/playlists/${id}${token ? `?token=${encodeURIComponent(token)}` : ''}`, {
+6792: setPlaylist(data.playlist);
+6877: if (interactTimerRef.current) clearTimeout(interactTimerRef.current);
+6882: useEffect(() => {
+6885: if (searchParams.get('song') !== (currentSong.slug || currentSong.id)) {
+6907: <h2 className="text-xl font-bold text-white text-center mb-2">{t("Playlist được bảo vệ")}</h2>
+6916: <p className="text-stone-500 text-xs text-center">{t("Hoặc sử dụng Secret Link nếu có.")}</p>
+6961: <button onClick={() => setRepeat(!repeat)} className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all ${repeat ? 'bg-purple-500/20 text-purple-400 border-purple-500/50' : 'bg-white/5 text-neutral-400 hover:text-white border-white/5'}`}>
+6979: <div className="absolute inset-[-100%] bg-[conic-gradient(from_0deg,transparent_0_280deg,theme(colors.amber.500)_360deg)] animate-rotate-border z-0 opacity-80" />
+6992: <p className={`text-neutral-400 mt-0.5 ${song.achievements?.length ? 'text-[8.5px] sm:text-[9px] leading-tight opacity-90 whitespace-normal break-words' : 'text-xs truncate'}`}>{formatText(song.singer || song.composer || 'Đang cập nhật', true)}</p>
+7041: const { lang, landingConfig, artistData } = useContext(LanguageContext);
+7060: const secretKey = searchParams.get('secret');
+7078: useEffect(() => {
+7092: useEffect(() => {
+7144: hash += idStr.charCodeAt(i);
+7160: if (!/vers/i.test(lyricsToProcess) && !/\bpk\b/i.test(lyricsToProcess)) {
+7163: const lines = lyricsToProcess.split(/\r?\n/);
+7171: if (/^\[?\s*(dk|đk)\s*(\d+)?\s*\]?[:]*\s*$/i.test(lower)) {
+7176: } else if (/^\[?\s*pk\s*(\d+)?\s*\]?[:]*\s*$/i.test(lower)) {
+7181: } else if (/^\[?\s*vers?\s*(\d+)?\s*\]?[:]*\s*$/i.test(lower)) {
+7186: } else if (/^rap[:]*\s*$/i.test(lower)) {
+7234: if (!/vers/i.test(lyricsToProcess) && !/\bpk\b/i.test(lyricsToProcess)) {
+7237: const lines = lyricsToProcess.split(/\r?\n/);
+7248: if (/^\[?\s*(dk|đk)\s*(\d+)?\s*\]?[:]*\s*$/i.test(lower)) {
+7253: } else if (/^\[?\s*pk\s*(\d+)?\s*\]?[:]*\s*$/i.test(lower)) {
+7258: } else if (/^\[?\s*vers?\s*(\d+)?\s*\]?[:]*\s*$/i.test(lower)) {
+7263: } else if (/^rap[:]*\s*$/i.test(lower)) {
+7394: useEffect(() => {
+7398: useEffect(() => {
+7403: useEffect(() => {
+7406: const t1 = setTimeout(() => {
+7412: const t2 = setTimeout(() => {
+7419: clearTimeout(t1);
+7420: clearTimeout(t2);
+7424: useEffect(() => {
+7439: let queryParam = secretKey ? `?secret=${encodeURIComponent(secretKey)}` : '';
+7443: queryParam += (queryParam ? '&' : '?') + `playlistId=${encodeURIComponent(playlistId)}&playlistToken=${encodeURIComponent(pToken)}`;
+7464: useEffect(() => {
+7466: const timer = setTimeout(() => {
+7469: return () => clearTimeout(timer);
+7509: useEffect(() => {
+7512: if (demo.secretKey && /secret/i.test(titleSuffix)) {
+7522: metaTitle = document.createElement('meta');
+7531: metaImage = document.createElement('meta');
+7578: themeClasses = "bg-slate-900 text-slate-300 bg-[linear-gradient(to_bottom,_var(--tw-gradient-stops))] from-slate-900 to-slate-950";
+7581: themeClasses = "bg-emerald-50 text-emerald-900 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]";
+7584: themeClasses = "bg-red-500 text-white bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-rose-400 to-red-600";
+7587: themeClasses = "bg-pink-50 text-pink-900 bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-fuchsia-100 to-pink-50";
+7593: themeClasses = "bg-red-600 text-yellow-50 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-600 via-red-500 to-red-700 [text-shadow:0_2px_4px_rgba(153,27,27,0.8)]";
+7841: setToast('Đã copy link bài hát!');
+7842: setTimeout(() => setToast(''), 3000);
+7859: setToast('Đã copy Secret Link!');
+7860: setTimeout(() => setToast(''), 3000);
+8145: style={{ maskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 25%, black 100%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 25%, black 100%)' }}
+8216: const rawLyricsText = getFormattedLyricsText(demo.lyrics).replace(/\n{3,}/g, '\n\n');
+8219: setToast('Đã copy lời bài hát!');
+8220: setTimeout(() => setToast(''), 3000);
+8256: background: `radial-gradient(circle, ${(brandColors?.primary || '#6366f1')}40 0%, transparent 70%)`
+8319: background: `radial-gradient(circle, ${(brandColors?.primary || '#6366f1')}40 0%, transparent 70%)`
+8419: useEffect(() => {
+8436: timeoutId = setTimeout(playLoop, 5000);
+8443: timeoutId = setTimeout(playLoop, 5000);
+8446: clearTimeout(timeoutId);
+8609: useEffect(() => {
+8639: merged.sort((a: any, b: any) => a.order - b.order);
+8657: setToast(t('Đã lưu cấu hình!'));
+8658: setTimeout(() => setToast(''), 3000);
+8684: if (isLoading) return <div>{t("Đang tải...")}</div>;
+8707: <h2 className="text-2xl font-black text-stone-900 tracking-tight">{t("Chỉnh Sửa Giao Diện")}</h2>
+8710: <p className="text-stone-500 mb-6 text-sm">{t("Kéo thả để sắp xếp lại thứ tự hiển thị của giao diện khi chọn. Nhấn vào Giao Diện để chỉnh sửa chi tiết.")}</p>
+8720: onDragStart={(e) => handleDragStart(e, config.id)}
+8752: {t("Chưa có bài hát nào dùng giao diện này")}
+8762: function AdminTemplateEdit({ config, demos, onBack, onSave, isPCPreviewMode, setIsPCPreviewMode }: any) {
+8779: const isValidHex = /^#([0-9A-F]{3}){1,2}$/i.test(value);
+8784: <label className={`block font-bold text-stone-700 mb-1 ${isPCPreviewMode ? 'text-xs' : 'text-sm'}`}>{t(label)}</label>
+8810: <ArrowLeft className="w-5 h-5"/> {t("Trở về")}
+8816: title={t("Giao diện xem trên máy tính")}
+8821: {t("Lưu cài đặt")}
+8828: <h3 className={`${isPCPreviewMode ? 'text-lg' : 'text-2xl'} font-black mb-1`}>{t("Chỉnh sửa")}</h3>
+8829: <p className="inline-block bg-stone-100 text-stone-500 font-mono text-xs px-2 py-0.5 rounded-md mt-1">{t("Giao diện")} #{config.id}</p>
+8833: <label className={`${isPCPreviewMode ? 'text-xs' : 'text-sm'} block font-bold text-stone-700 mb-2`}>{t("Bài hát Preview")}</label>
+8843: <label className={`block font-bold text-stone-700 mb-1 ${isPCPreviewMode ? 'text-xs' : 'text-sm'}`}>{t("Tên hiển thị")}</label>
+8864: <div className="text-stone-500 bg-stone-900 h-full w-full flex items-center justify-center font-medium">{t("Hãy chọn bài hát để xem.")}</div>
+8880: useEffect(() => {
+8976: if (loading && !configsData) return <div className="text-stone-500">{t("Đang tải...")}</div>;
+8985: <h2 className="text-2xl font-bold text-stone-900">{editingConfigId === 'new' ? t('Thêm cấu hình mới') : t('Chỉnh sửa cấu hình')}</h2>
+8990: <label className="block text-sm font-medium text-stone-700 mb-1">{t("Tên gợi nhớ (VD: DB cũ, Mặc định...)")}</label>
+9023: <label className="block text-sm font-medium text-stone-700 mb-1">{t("Firestore Database ID (mặc định là default)")}</label>
+9047: <h2 className="text-2xl font-bold mb-2 text-stone-900">{t("Quản Lý Cơ Sở Dữ Liệu")}</h2>
+9048: <p className="text-sm text-stone-500">{t("Chuyển đổi giữa các Firebase config (DB mới / DB cũ) an toàn.")}</p>
+9062: setSuccess('{t("Đã xóa sạch dữ liệu trong DB hiện tại. Vui lòng tải lại trang!")}');
+9064: setError('{t("Lỗi khi xóa DB")}');
+9073: <Trash2 className="w-4 h-4" /> {t("Làm mới DB này")}
+9079: <Plus className="w-4 h-4" /> {t("Thêm DB mới")}
+9095: {c.name} {isActive && <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">{t("Đang dùng")}</span>}
+9146: return { label: t("Yêu cầu gỡ"), className: 'bg-red-50 text-red-600 border border-red-100' };
+9148: return { label: t("Yêu cầu sửa"), className: 'bg-amber-50 text-amber-600 border border-amber-100' };
+9150: return { label: t("Báo Lỗi"), className: 'bg-rose-50 text-rose-600 border border-rose-100' };
+9152: return { label: t("Góp ý tính năng"), className: 'bg-purple-50 text-purple-650 border border-purple-100' };
+9154: return { label: t("Báo cáo tài khoản"), className: 'bg-slate-100 text-slate-700 border border-slate-200' };
+9156: return { label: type || t("Khác"), className: 'bg-stone-50 text-stone-600 border border-stone-150' };
+9180: useEffect(() => {
+9219: setExternalError(dataRes.error || t("Có lỗi xảy ra khi kiểm tra bài hát!"));
+9221: setExternalSuccess(t("Thêm bài hát đăng lại ngoài thành công!"));
+9225: setTimeout(() => setShowExternalUrlInput(false), 2000);
+9228: setExternalError(t("Lỗi kết nối: ") + err.message);
+9235: if (!(await showConfirm(t("Bạn có chắc chắn muốn xóa bài hát ngoài này khỏi danh sách Đăng lại?"), t("Xác nhận xóa đăng lại"), 'danger'))) return;
+9249: await showConfirm(dataRes.error || t("Lỗi khi xóa bài hát ngoài!"), t("Lỗi"), 'alert');
+9252: await showConfirm(t("Lỗi kết nối: ") + err.message, t("Lỗi"), 'alert');
+9257: if (!(await showConfirm(t("Hệ thống sẽ tự động sử dụng AI (Gemini) để dịch tất cả thông tin hồ sơ, tiêu đề, mô tả, các đề mô (tên, lyrics, tác giả, ca sĩ) và danh sách phát sang 5 ngôn ngữ khác (Anh, Hàn, Nhật, Thái, Trung). Quá trình này có thể mất khoảng 5-10 giây. Bạn có muốn tiếp tục?"), t("Tự động dịch thuật"), 'confirm'))) {
+9283: await showConfirm(t("Dịch thuật thành công! Toàn bộ thông tin hồ sơ và danh sách nhạc đã được dịch sang tất cả ngôn ngữ."), t("Thành công"), 'success');
+9286: await showConfirm(errData.error || t("Có lỗi xảy ra khi dịch thuật!"), t("Lỗi"), 'alert');
+9289: await showConfirm(t("Lỗi kết nối: ") + err.message, t("Lỗi"), 'alert');
+9322: setTicketsList(list);
+9326: setBellCount(openEditTickets.length);
+9330: if (updatedSelected) setSelectedTicket(updatedSelected);
+9339: useEffect(() => {
+9367: setToast(t("Đã gửi báo cáo thành công!"));
+9373: setToast(`Lỗi: ${err.error || t("Gửi báo cáo thất bại")}`);
+9376: setToast(`Lỗi: ${e.message}`);
+9383: setToast(t("Vui lòng điền đầy đủ tiêu đề và mô tả!"));
+9404: setToast(t("Đã gửi feedback thành công!"));
+9412: setToast(`Lỗi: ${err.error || t("Gửi feedback thất bại")}`);
+9415: setToast(`Lỗi: ${e.message}`);
+9423: useEffect(() => {
+9442: setChatMessageText('');
+9447: setToast(`Không thể gửi tin nhắn: ${errorData.error || t("Lỗi không xác định")}`);
+9451: setToast(`Đã xảy ra lỗi: ${e.message}`);
+9458: title: t("Mở lại yêu cầu"),
+9459: message: t("Bạn có chắc chắn muốn mở lại ticket này không?"),
+9470: setToast(t("Đã mở lại ticket thành công!"));
+9474: setToast(`Lỗi: ${err.error}`);
+9486: title: t("Từ chối yêu cầu"),
+9487: message: t("Bạn có chắc chắn muốn từ chối yêu cầu và đóng ticket này?"),
+9498: setToast(t("Đã đóng ticket thành công!"));
+9517: setToast(t("Đã đóng ticket thành công!"));
+9528: title: t("Xác nhận gỡ bài"),
+9529: message: t("Bạn có chắc chắn gỡ bài hát này khỏi trang của mình theo yêu cầu của đối tác không?"),
+9540: setToast(t("Đã ra quyết định gỡ bài hát và đóng ticket!"));
+9544: setToast(`Lỗi: ${err.error}`);
+9547: setToast(`Lỗi: ${e.message}`);
+9562: setToast(t("Đã ra quyết định gỡ bài hát và đóng ticket!"));
+9566: setToast(`Lỗi: ${err.error}`);
+9569: setToast(`Lỗi: ${e.message}`);
+9586: const showConfirm = (message: string, title = t("Xác nhận"), type: 'confirm' | 'danger' | 'success' | 'alert' = 'confirm'): Promise<boolean> => {
+9605: useEffect(() => {
+9710: useEffect(() => {
+9742: setMemberPassInput(resData.memberPassword);
+9746: console.error(t("Lỗi tải thông tin quản trị:"), err);
+9750: useEffect(() => { loadData(); }, []);
+9776: } else reject(new Error('Upload failed'));
+9778: xhr.onerror = () => reject(new Error('Network error'));
+9787: setToast(t("Đã copy link!"));
+9788: setTimeout(() => setToast(''), 3000);
+9796: setToast(t("Đã copy Secret Link!"));
+9797: setTimeout(() => setToast(''), 3000);
+9819: setToast(type === 'song' ? t("Đã di chuyển bài hát vào Thùng rác!") : t("Đã di chuyển playlist vào Thùng rác!"));
+9820: setTimeout(() => setToast(''), 3000);
+9836: setToast(t("Đã tạo bản sao thành công! Đang chuyển hướng..."));
+9837: setTimeout(() => {
+9838: setToast('');
+9842: alert(t("Lỗi khi duplicate bản ghi."));
+9861: setToast(type === 'song' ? t("Đã khôi phục bài hát!") : t("Đã khôi phục playlist!"));
+9862: setTimeout(() => setToast(''), 3000);
+9867: if (!(await showConfirm(t("Bạn có chắc muốn hủy yêu cầu này?"), t("Xác nhận hủy yêu cầu")))) return;
+9890: setToast(t("Đã hủy yêu cầu!"));
+9891: setTimeout(() => setToast(''), 3000);
+9946: setToast(t("Đã lưu thông tin thành công!"));
+9947: setTimeout(() => setToast(''), 3000);
+9949: setToast(t("Lỗi khi lưu thông tin!"));
+9950: setTimeout(() => setToast(''), 3000);
+9953: setToast(t("Lỗi kết nối máy chủ!"));
+9954: setTimeout(() => setToast(''), 3000);
+9964: setAdminPassError(t("Vui lòng điền đầy đủ các trường!"));
+9968: setAdminPassError(t("Xác nhận mật khẩu mới không khớp!"));
+9972: setAdminPassError(t("Mật khẩu mới phải từ 4 ký tự trở lên!"));
+9995: setAdminPassSuccess(t("Đổi mật khẩu quản trị thành công!"));
+9999: setToast(t("Đổi mật khẩu quản trị thành công!"));
+10000: setTimeout(() => setToast(''), 3000);
+10002: setAdminPassError(resData.error || t("Đã có lỗi xảy ra!"));
+10005: setAdminPassError(t("Lỗi kết nối máy chủ!"));
+10015: setMemberPassError(t("Mật khẩu thành viên tối thiểu phải từ 4 ký tự!"));
+10033: setMemberPassSuccess(t("Cập nhật mật khẩu thành viên thành công!"));
+10034: setToast(t("Đã cập nhật mật khẩu thành viên!"));
+10035: setTimeout(() => setToast(''), 3000);
+10038: setMemberPassError(resData.error || t("Đã có lỗi xảy ra!"));
+10041: setMemberPassError(t("Lỗi kết nối máy chủ!"));
+10045: if (!data) return <LoadingScreen text={t("Đang tải AdminCP...")} />;
+10066: title={t("Trang chủ")}
+10074: title={t("Đăng xuất")}
+10093: {t("Quản lý")}
+10125: title={t("Bài Hát")}
+10148: {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Bài Hát")}</span>}
+10158: title={t("Playlist")}
+10181: {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Playlist")}</span>}
+10191: title={t("Giao Diện")}
+10214: {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Giao Diện")}</span>}
+10224: title={`${t("Đăng lại")} (${otherSongs.length})`}
+10252: <span>{t("Đăng lại")}</span>
+10265: title={t("Hộp thư")}
+10294: {t("Hộp thư")}
+10308: {t("Hồ sơ & Mở rộng")}
+10318: title={t("Cài Đặt")}
+10341: {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Cài Đặt")}</span>}
+10351: title={t("Mạng Xã Hội")}
+10374: {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Mạng Xã Hội")}</span>}
+10384: title={t("Bảo Mật")}
+10407: {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Bảo Mật")}</span>}
+10427: {t("Danh sách Playlist")}
+10429: <p className="text-xs text-stone-500 mt-1">{t("Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc")}</p>
+10451: <span className={`relative z-10 ${demosSubTab === 'released' ? 'inline' : 'hidden sm:inline'}`}>{t("Đã phát hành")}</span>
+10474: <span className={`relative z-10 ${demosSubTab === 'demos' ? 'inline' : 'hidden sm:inline'}`}>{t("Demo")}</span>
+10497: <span className={`relative z-10 ${demosSubTab === 'drafts' ? 'inline' : 'hidden sm:inline'}`}>{t("Bản nháp")}</span>
+10520: <span className={`relative z-10 ${demosSubTab === 'landing_pages' ? 'inline' : 'hidden sm:inline'}`}>{t("Landing Page")}</span>
+10543: <span className={`relative z-10 ${demosSubTab === 'brands' ? 'inline' : 'hidden sm:inline'}`}>{t("Nhạc Thương Hiệu")}</span>
+10566: <span>{t("Thùng rác")}</span>
+10589: placeholder={t("Tìm kiếm...")}
+10605: <span className="text-xs text-stone-400 font-medium">{t("Hiển thị")}:</span>
+10611: <option value={10}>{demosSubTab === 'playlists' ? t("10 mục") : t("10 bài")}</option>
+10612: <option value={20}>{demosSubTab === 'playlists' ? t("20 mục") : t("20 bài")}</option>
+10613: <option value={50}>{demosSubTab === 'playlists' ? t("50 mục") : t("50 bài")}</option>
+10614: <option value={100}>{demosSubTab === 'playlists' ? t("100 mục") : t("100 bài")}</option>
+10625: title={t("Tạo Playlist")}
+10630: <Link to={getAdminLink('/new')} className="group w-10 h-10 flex items-center justify-center bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:scale-110 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] rounded-xl hover:bg-stone-800 transition-colors shadow-sm shrink-0 mr-0" title={t("Thêm Mới Bài Hát")}>
+10648: return <div className="py-12 text-center text-stone-500 italic border border-stone-200 rounded-xl bg-stone-50">{t('Chưa có Landing Page nào. Hãy tạo mới và chọn Loại Liên Kết là "Landing Page"!')}</div>;
+10653: <GripVertical className="w-3.5 h-3.5 shrink-0" /> {t("Kéo thả các dòng để sắp xếp thứ tự")}
+10669: <span className="text-stone-500 font-medium">{t("Landing Page / Điều hướng")}</span>
+10674: <button type="button" onClick={() => handleShare(demo.slug || demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Chia sẻ Link")}>
+10677: <button type="button" onClick={() => handleDuplicate(demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Nhân bản")}>
+10680: <Link to={getAdminLink(`/edit/${demo.id}`)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title={t("Chỉnh sửa")}>
+10683: <button type="button" onClick={() => handleDeleteClick('song', demo.id, demo.title)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold text-lg" title={t("Xóa")}>
+10701: return <div className="py-12 text-center text-stone-500 italic border border-stone-200 rounded-xl bg-stone-50">{t('Chưa có bài hát đã phát hành nào. Hãy tạo mới và đặt trạng thái "Ra rồi"!')}</div>;
+10706: <GripVertical className="w-3.5 h-3.5 shrink-0" /> {t("Kéo thả các dòng bài hát để sắp xếp thứ tự hiển thị ưu tiên ngoài trang chủ")}
+10756: {demo.singer && <span className="text-stone-500 font-medium">{t("Ca sĩ")}: {demo.singer}</span>}
+10761: <button type="button" onClick={() => handleShare(demo.slug || demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Chia sẻ Link")}>
+10765: <button type="button" onClick={() => handleShareSecret(demo)} className="text-amber-600 hover:bg-amber-50 p-2 rounded-lg transition-colors animate-[fade-in_0.3s_ease-out]" title="Copy Secret Link">
+10769: <button type="button" onClick={() => handleDuplicate(demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Nhân bản")}>
+10772: <Link to={getAdminLink(`/edit/${demo.id}`)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title={t("Chỉnh sửa")}>
+10775: <button type="button" onClick={() => handleDeleteClick('song', demo.id, demo.title)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold text-lg" title={t("Xóa")}>
+10793: return <div className="py-12 text-center text-stone-500 italic border border-stone-200 rounded-xl bg-stone-50">{t('Chưa có bài hát demo nào. Hãy tạo mới và đặt trạng thái "Đề mô"!')}</div>;
+10798: <GripVertical className="w-3.5 h-3.5 shrink-0" /> {t("Kéo thả các dòng bài hát để sắp xếp thứ tự hiển thị ưu tiên ngoài trang chủ")}
+10845: <EyeOff className="w-3 h-3" />{t("Ẩn")}</span>
+10850: <Lock className="w-3 h-3 text-stone-500" /> <span className="font-mono">{demo.password || `${t('Mật khẩu chung')}: ${data?.globalPassword}`}</span></span>
+10857: <button type="button" onClick={() => handleShare(demo.slug || demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Chia sẻ Link")}>
+10861: <button type="button" onClick={() => handleShareSecret(demo)} className="text-amber-600 hover:bg-amber-50 p-2 rounded-lg transition-colors animate-[fade-in_0.3s_ease-out]" title="Copy Secret Link">
+10865: <button type="button" onClick={() => handleDuplicate(demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Nhân bản")}>
+10868: <Link to={getAdminLink(`/edit/${demo.id}`)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title={t("Chỉnh sửa")}>
+10871: <button type="button" onClick={() => handleDeleteClick('song', demo.id, demo.title)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold text-lg" title={t("Xóa")}>
+10889: return <div className="py-12 text-center text-stone-500 italic border border-stone-200 rounded-xl bg-stone-50">{t('Chưa có bài hát thương hiệu nào. Hãy tạo mới và đánh dấu "Nhạc Thương Hiệu"!')}</div>;
+10894: <GripVertical className="w-3.5 h-3.5 shrink-0" /> {t("Kéo thả các dòng bài hát để sắp xếp thứ tự hiển thị ưu tiên ngoài trang chủ")}
+10942: <span className="text-[10px] font-bold text-white bg-black/50 px-1.5 py-0.5 rounded">{t("NHÁP")}</span>
+10951: <span className="text-indigo-600 font-bold bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">{t('Đối Tác')}: {demo.brandName || '---'}</span>
+10957: <button type="button" onClick={() => handleShare(demo.slug || demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Chia sẻ Link")}>
+10961: <button type="button" onClick={() => handleShareSecret(demo)} className="text-amber-600 hover:bg-amber-50 p-2 rounded-lg transition-colors animate-[fade-in_0.3s_ease-out]" title="Copy Secret Link">
+10965: <button type="button" onClick={() => handleDuplicate(demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Nhân bản")}>
+10968: <Link to={getAdminLink(`/edit/${demo.id}`)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title={t("Chỉnh sửa")}>
+10971: <button type="button" onClick={() => handleDeleteClick('song', demo.id, demo.title)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold text-lg" title={t("Xóa")}>
+10988: return <div className="py-12 text-center text-stone-500 italic border border-stone-200 rounded-xl bg-stone-50">{t("Chưa có bản nháp nào. Bản nháp được lưu từ màn hình tạo hoặc chỉnh sửa bài hát!")}</div>;
+10993: <GripVertical className="w-3.5 h-3.5 shrink-0" /> {t("Kéo thả để sắp xếp thứ tự hiển thị bản nháp")}
+11035: {demo.title || t("(Chưa đặt tiêu đề)")}
+11038: <span className="px-1.5 py-0.5 rounded font-semibold bg-amber-50 text-amber-600 text-[10px]">{t("Bản nháp")}</span>
+11039: {demo.singer && <span className="text-stone-500 font-medium">{t("Ca sĩ")}: {demo.singer}</span>}
+11044: <button type="button" onClick={() => handleDuplicate(demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Nhân bản")}>
+11047: <Link to={getAdminLink(`/edit/${demo.id}`)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title={t("Chỉnh sửa")}>
+11050: <button type="button" onClick={() => handleDeleteClick('song', demo.id, demo.title || t("Bản nháp"))} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold text-lg" title={t("Xóa")}>
+11068: return <div className="py-12 text-center text-stone-500 border border-dashed border-stone-200 rounded-2xl italic bg-stone-50 font-medium text-sm">{t("Chưa có playlist nào. Hãy tạo mới một playlist bên trên!")}</div>;
+11073: <GripVertical className="w-3.5 h-3.5 shrink-0" /> {t("Kéo thả để sắp xếp thứ tự hiển thị playlist ưu tiên ngoài trang chủ")}
+11120: <span className="text-xs text-stone-400 mt-0.5">{songCount} {t('bài nhạc')}</span>
+11124: <Link to={getAdminLink(`/playlist/${pl.id}`)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title={t("Chỉnh sửa playlist")}>
+11127: <button type="button" onClick={() => handleDeleteClick('playlist', pl.id, pl.title)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold" title={t("Xóa playlist")}>
+11146: ].sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
+11157: <span className="text-stone-500 italic font-medium text-sm">{t("Thùng rác trống rỗng.")}</span>
+11163: if (!deletedAt) return t("30 ngày");
+11167: if (remainingMs <= 0) return t("0 ngày ( sắp dọn dẹp )");
+11177: <p className="font-bold text-stone-850">{t("Lưu ý dọn dẹp thùng rác:")}</p>
+11178: <p className="opacity-90">{t("Hệ thống sẽ giữ tạm thời các mục trên tại đây tối đa 30 ngày. Quá thời gian này, các mục sẽ bị dọn dẹp và xóa vĩnh viễn không thể khôi phục.")}</p>
+11183: <h4 className="text-stone-500 text-xs font-bold uppercase tracking-wider mb-2 px-1">{t('Các mục trong thùng rác')} ({allTrashed.length})</h4>
+11188: <span className="font-bold text-stone-850 text-sm md:text-base truncate">{item.title || t("(Chưa đặt tiêu đề)")}</span>
+11190: <span>{item._type === 'playlist' ? 'Playlist' : (item.isReleased ? t("Bài viết ra rồi") : t("Demo / Nháp"))}</span>
+11219: <h2 className="text-2xl font-bold mb-8">{t("Thông tin hồ sơ")}</h2>
+11223: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Giới thiệu ngắn")}</label>
+11227: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Tên nghệ sĩ")}</label>
+11231: <span>{t("Đang yêu cầu đổi thành:")}<strong>{data.pendingNameChange}</strong></span>
+11234: <button type="button" onClick={() => handleCancelRequest('name')} className="shrink-0 bg-stone-100 hover:bg-stone-200 text-stone-600 px-4 py-3 rounded-xl font-bold transition-colors cursor-pointer">Cancel</button>
+11241: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Username đăng nhập")}</label>
+11245: <span>{t("Đang yêu cầu đổi thành:")}<strong>{data.pendingUsernameChange}</strong></span>
+11248: <button type="button" onClick={() => handleCancelRequest('username')} className="shrink-0 bg-stone-100 hover:bg-stone-200 text-stone-600 px-4 py-3 rounded-xl font-bold transition-colors cursor-pointer">Cancel</button>
+11255: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Phần mở rộng (Sub-domain)")}</label>
+11259: <span>{t("Đang yêu cầu đổi thành:")}<strong>{data.pendingExtensionChange}</strong></span>
+11262: <button type="button" onClick={() => handleCancelRequest('extension')} className="shrink-0 bg-stone-100 hover:bg-stone-200 text-stone-600 px-4 py-3 rounded-xl font-bold transition-colors cursor-pointer">Cancel</button>
+11273: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ngôn ngữ mặc định (Default Language)")}</label>
+11279: <option value="vi">{t("Tiếng Việt")}</option>
+11286: <p className="text-xs text-stone-500 mt-1.5">{t("Ngôn ngữ mặc định ban đầu khi khách truy cập vào trang cá nhân của bạn.")}</p>
+11292: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Avatar Nghệ Sĩ")}</label>
+11304: alert(t("Lỗi upload"));
+11321: <span className="max-w-[150px] truncate">{homeCoverProgress > 0 && homeCoverProgress < 100 ? `Đang tải ${homeCoverProgress}%` : (homeCoverUrlPreview ? t("Thay đổi") : t("Chọn ảnh"))}</span>
+11324: <button type="button" onClick={() => setHomeCoverProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
+11335: {t("Kéo thả ảnh trực tiếp vào ô này")}
+11345: alert(t("Lỗi upload"));
+11350: <p className="text-xs text-stone-500 mt-2">{t("Dùng đại diện cho kho nhạc, nên chọn ảnh vuông.")}</p>
+11353: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ảnh nền trang chủ ( Chọn nhiều ảnh để chạy slideshow )")}</label>
+11375: <button type="button" onClick={() => setSlideshowImages(prev => prev.filter((_, idx) => idx !== i))} className="absolute inset-0 bg-red-600/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity font-bold text-sm">{t("Xóa")}</button>
+11381: <div className="text-xs font-semibold relative z-10 px-1 text-center">{slideProgress > 0 && slideProgress < 100 ? `${slideProgress}%` : t("Thêm ảnh")}</div>
+11404: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Favicon (Icon trên trình duyệt)")}</label>
+11416: alert(t("Lỗi upload"));
+11433: <span className="max-w-[150px] truncate">{faviconProgress > 0 && faviconProgress < 100 ? `Đang tải ${faviconProgress}%` : (faviconUrlPreview ? t("Thay đổi") : t("Chọn ảnh"))}</span>
+11436: <button type="button" onClick={() => setFaviconProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
+11447: {t("Kéo thả ảnh trực tiếp vào ô này")}
+11457: alert(t("Lỗi upload"));
+11466: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Thumbnail ( Ảnh minh họa khi chia sẻ Link )")}</label>
+11478: alert(t("Lỗi upload"));
+11495: <span className="max-w-[150px] truncate">{ogImageProgress > 0 && ogImageProgress < 100 ? `Đang tải ${ogImageProgress}%` : (ogImageUrlPreview ? t("Thay đổi") : t("Chọn ảnh"))}</span>
+11498: <button type="button" onClick={() => setOgImageProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
+11509: {t("Kéo thả ảnh trực tiếp vào ô này")}
+11519: alert(t("Lỗi upload"));
+11529: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Tiêu đề Website")}</label>
+11530: <input name="pageTitle" defaultValue={data.pageTitle} placeholder={t("Để trống sẽ dùng mặc định: Thiên Đường Demo của [Tên nghệ sĩ]")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
+11535: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Link Playlist YouTube (Nhạc đã phát hành)")}</label>
+11537: <p className="text-sm text-stone-500 mt-2">{t("Sẽ tự động hiển thị 4 bài hát mới nhất từ playlist này.")}</p>
+11545: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Mật khẩu chung cho các Demo")}</label>
+11546: <input name="globalPassword" defaultValue={data.globalPassword} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono" placeholder={t("Để trống nếu không muốn dùng mật khẩu chung")} autoComplete="new-password" data-lpignore="true" data-1p-ignore="true" />
+11547: <p className="text-sm text-stone-500 mt-2">{t("Tất cả các link ở trang chủ nếu chưa đặt mật khẩu riêng thì sẽ được bảo vệ bởi mật khẩu chung này.")}</p>
+11553: {t("Cấu hình tên miền riêng (Custom Domain)")}
+11562: {t("Sử dụng tên miền riêng của bạn (ví dụ:")} <code className="font-mono bg-stone-100 px-1 rounded">nghesi.com</code> {t("hoặc")} <code className="font-mono bg-stone-100 px-1 rounded">music.nghesi.com</code> {t(") thay vì sử dụng địa chỉ mặc định của hệ thống.")}
+11573: placeholder={t("VD: nghesi.com")}
+11578: {customDomain.trim().length > 3 && /^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}$/.test(customDomain.trim()) ? (
+11581: <span>{t("📋 Hướng dẫn cấu hình DNS")}</span>
+11584: {t("Vui lòng truy cập trang quản lý tên miền của bạn (ví dụ: Cloudflare, GoDaddy, Nhân Hòa...) và thiết lập bản ghi sau để kết nối tên miền này:")}
+11591: <th className="pb-2 font-semibold uppercase">{t("Loại bản ghi")}</th>
+11592: <th className="pb-2 font-semibold uppercase">{t("Tên (Host)")}</th>
+11593: <th className="pb-2 font-semibold uppercase">{t("Giá trị (Points to)")}</th>
+11599: <td className="py-2.5 font-mono text-stone-600">{customDomain.trim().split('.').length > 2 ? customDomain.trim().split('.')[0] : '@'}</td>
+11602: {customDomain.trim().split('.').length <= 2 && (
+11614: <strong>{t("💡 Lưu ý:")}</strong> {t("Sau khi cấu hình xong, quá trình cập nhật DNS có thể mất từ vài phút đến tối đa 24 giờ tùy nhà đăng ký tên miền.")}
+11619: ⚠️ {t("Định dạng tên miền không hợp lệ (ví dụ đúng: nghesi.com, sub.nghesi.com)")}
+11636: {t("Tự động chuyển tab ở trang chủ (Music / Demo / Playlist)")}
+11649: {t("Ẩn khỏi danh sách nghệ sĩ trên trang chủ Chorus.vn")}
+11655: <h3 className="font-bold text-stone-800 text-sm">{t("Tên tùy chỉnh các Tab Danh Sách Nhạc")}</h3>
+11658: <label className="block text-xs font-bold text-stone-600 mb-1.5">{t("Tab 1 (Nhạc phát hành)")}</label>
+11659: <input name="tab1Name" defaultValue={data.tab1Name} placeholder={t("Mặc định: Ra Rồi")} className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
+11662: <label className="block text-xs font-bold text-stone-600 mb-1.5">{t("Tab 2 (Nhạc đề mô)")}</label>
+11663: <input name="tab2Name" defaultValue={data.tab2Name} placeholder={t("Mặc định: Đề Mô")} className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
+11666: <label className="block text-xs font-bold text-stone-600 mb-1.5">{t("Tab 3 (Album/EP)")}</label>
+11667: <input name="tab3Name" defaultValue={data.tab3Name} placeholder={t("Mặc định: Album/EP")} className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
+11673: <button type="submit" className="bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] px-6 py-3 rounded-xl font-medium hover:bg-stone-800 transition-colors">{t("Lưu thay đổi")}</button>
+11675: if (!confirm(t("Bạn có chắc muốn làm mới toàn bộ Secret Link? Các Secret Link cũ sẽ không còn hoạt động, tự động chuyển về đường dẫn gốc yêu cầu mật khẩu."))) return;
+11685: setToast(t("Đã reset toàn bộ Secret Link thành công!"));
+11686: setTimeout(() => setToast(''), 3000);
+11689: }} className="text-red-500 font-bold ml-auto px-4 py-2 border border-red-200 rounded-xl hover:bg-red-50 transition-colors">{t("Reset Toàn Bộ Secret Link")}</button>
+11700: <h2 className="text-2xl font-bold mb-8">{t("Mạng xã hội")}</h2>
+11720: <button type="submit" className="bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] px-6 py-3 rounded-xl font-medium hover:bg-stone-800 transition-colors">{t("Lưu thay đổi")}</button>
+11737: <h2 className="text-2xl font-bold mb-2 text-stone-900">{t("Đổi Mật Khẩu Quản Trị (Admin)")}</h2>
+11738: <p className="text-sm text-stone-500 mb-6">{t("Bạn sẽ dùng mật khẩu này để đăng nhập vào trang quản trị AdminCP này.")}</p>
+11742: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Mật khẩu cũ")}</label>
+11748: placeholder={t("Nhập mật khẩu hiện tại")}
+11753: <label className="block text-sm font-bold text-stone-700">{t("Mật khẩu mới")}</label>
+11754: <button type="button" onClick={() => { const p = Math.random().toString(36).slice(-8); setNewAdminPass(p); setConfirmAdminPass(p); }} className="text-xs text-rose-500 hover:text-rose-600 font-bold flex items-center gap-1"><Sparkles className="w-3 h-3" />{t("Tự sinh Ngẫu Nhiên")}</button>
+11761: placeholder={t("Mật khẩu mới (tối thiểu 4 ký tự)")}
+11765: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Xác nhận mật khẩu mới")}</label>
+11771: placeholder={t("Nhập lại mật khẩu mới")}
+11783: {t("Đổi mật khẩu Admin")}
+11791: <h2 className="text-2xl font-bold mb-2 text-stone-900">{t("Thiết Lập Mật Khẩu Thành Viên")}</h2>
+11793: {t("Người dùng nhập mật khẩu này tại trang")}{" "}
+11797: {t("để nghe tự do mọi album/bài hát bị khóa mà không cần nhập mật khẩu.")}
+11803: <button type="button" onClick={() => setMemberPassInput(Math.random().toString(36).slice(-8))} className="text-xs text-rose-500 hover:text-rose-600 font-bold flex items-center gap-1"><Sparkles className="w-3 h-3" />{t("Tự sinh Ngẫu Nhiên")}</button>
+11808: onChange={(e) => setMemberPassInput(e.target.value)}
+11810: placeholder={t("Mật khẩu thành viên")}
+11822: {t("Cập nhật mật khẩu Thành viên")}
+11837: <h2 className="text-2xl font-bold text-stone-900">{t("Đăng lại")} ({otherSongs.length})</h2>
+11838: <p className="text-sm text-stone-500 mt-1">{t("Danh sách các bài hát của bạn đang được các nghệ sĩ khác đăng tải lên kênh của họ hoặc liên kết từ URL ngoài.")}</p>
+11842: onClick={() => setShowExternalUrlInput(!showExternalUrlInput)}
+11846: {t("URL Ngoài")}
+11852: <h3 className="font-bold text-stone-850 text-sm">{t("Nhập link bài hát ngoài hệ thống")}</h3>
+11857: placeholder={t("Hỗ trợ các link bài hát chung cấu trúc với chorus.vn (ví dụ: https://tai.com/song/ten-bai-hat)")}
+11872: t("Kiểm tra & Thêm")
+11889: <h3 className="font-bold text-stone-850 mb-1">{t("Không tìm thấy bài hát nào")}</h3>
+11890: <p className="text-stone-500 text-sm max-w-sm mx-auto">{t("Hiện tại không có bài hát nào của bạn do nghệ sĩ khác đăng tải hoặc liên kết ngoài.")}</p>
+11898: <th className="px-6 py-4">{t("Bài hát")}</th>
+11899: <th className="px-6 py-4">{t("Vai trò của bạn")}</th>
+11900: <th className="px-6 py-4">{t("Người đăng tải")}</th>
+11901: <th className="px-6 py-4 text-right">{t("Hành động")}</th>
+11924: <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5" title={t("Bài hát ngoài hệ thống")}>
+11925: <Globe className="w-2.5 h-2.5" /> {t("Ngoài")}
+11929: <div className="text-xs text-stone-500 mt-0.5">{t("Ca sĩ")}: {song.singer || t("Chưa rõ")} | {t("Sáng tác")}: {song.composer || t("Chưa rõ")}</div>
+11935: {isSinger && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-100">{t("Ca sĩ")}</span>}
+11936: {isComposer && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100">{t("Nhạc sĩ")}</span>}
+11937: {!isSinger && !isComposer && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-stone-100 text-stone-600 border border-stone-200">{t("Nghệ sĩ liên quan")}</span>}
+11944: <Globe className="w-3 h-3 text-emerald-500" /> {t("Ngoại tuyến")}
+11955: title={t("Đăng lại bài hát này lên kênh của bạn")}
+11961: onClick={() => handleRemoveExternalRepost(song.id)}
+11963: title={t("Xóa khỏi danh sách đăng lại")}
+11971: title={t("Gửi báo cáo / yêu cầu gỡ hoặc chỉnh sửa")}
+11995: <h2 className="text-2xl font-bold text-stone-900">{t("Hộp thư Ticket")}</h2>
+11996: <p className="text-sm text-stone-500 mt-1">{t("Nơi trao đổi và giải quyết các vấn đề bản quyền, yêu cầu gỡ hoặc chỉnh sửa thông tin bài hát.")}</p>
+12002: <Plus className="w-4 h-4" /> {t("Tạo Feedback / Báo lỗi")}
+12010: <h3 className="font-bold text-stone-800 text-sm">{t("Danh sách cuộc hội thoại")} ({ticketsList.length})</h3>
+12015: {t("Không có ticket nào hiện tại.")}
+12025: onClick={() => setSelectedTicket(ticket)}
+12033: {ticket.status === 'open' ? t("Đang xử lý") : t("Đã đóng")}
+12042: <span>{t("Bởi:")}<strong className="text-stone-700">{ticket.reporter.name}</strong></span>
+12065: onClick={() => setSelectedTicket(null)}
+12079: <span className="hidden sm:inline">{t("Người yêu cầu:")}<strong>{selectedTicket.reporter.name}</strong> <span className="hidden sm:inline">(u/ {selectedTicket.reporter.username})</span></span>
+12092: title={t("Duyệt Gỡ Bài")}
+12095: <span className="hidden sm:inline text-xs font-bold whitespace-nowrap">{t("Đồng Ý")}</span>
+12099: onClick={() => handleResolveTicket(selectedTicket.id)}
+12101: title={t("Đóng Ticket")}
+12104: <span className="hidden sm:inline text-xs font-bold whitespace-nowrap">{t("Đóng Ticket")}</span>
+12110: onClick={() => handleReopenTicket(selectedTicket.id)}
+12112: title={t("Mở lại Ticket")}
+12114: <span className="hidden sm:inline text-xs font-bold whitespace-nowrap">{t("Mở Lại")}</span>
+12124: <p className="font-bold text-stone-800 uppercase tracking-wider text-[10px]">{t("Yêu cầu ban đầu:")}</p>
+12131: if (msg.sender === 'admin' && msg.senderName !== t("Hệ thống") && msg.senderName !== t("Admin hệ thống") && msg.senderName !== 'Admin') {
+12138: const isSystemAdmin = msg.senderName === t("Hệ thống") || msg.senderName === t("Admin hệ thống") || (msg.sender === 'admin' && msg.senderName === 'Admin');
+12143: const initial = (msg.senderName || senderUsername || '?').charAt(0).toUpperCase();
+12242: onChange={(e) => setChatMessageText(e.target.value)}
+12244: placeholder={t("Nhập tin nhắn trao đổi...")}
+12260: <h4 className="font-bold text-stone-800 mb-1">{t("Hộp hội thoại trống")}</h4>
+12261: <p className="text-sm max-w-xs">{t("Vui lòng chọn một cuộc hội thoại ticket từ danh sách bên trái để bắt đầu trao đổi.")}</p>
+12279: <h3 className="font-bold text-lg text-stone-900">{t("Báo cáo & Yêu cầu bài hát")}</h3>
+12280: <p className="text-xs text-stone-500">{t("Gửi yêu cầu gỡ hoặc chỉnh sửa cho bài hát này")}</p>
+12291: <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">{t("Loại yêu cầu")}</label>
+12298: <span className={`font-bold text-xs ${reportType === 'edit' ? 'text-blue-700' : 'text-blue-600'}`}>{t("Yêu cầu chỉnh sửa")}</span>
+12299: <span className={`text-[10px] leading-tight ${reportType === 'edit' ? 'text-blue-600' : 'text-stone-500'}`}>{t("Trao đổi với người đăng để cập nhật nội dung")}</span>
+12306: <span className={`font-bold text-xs ${reportType === 'remove' ? 'text-red-700' : 'text-red-600'}`}>{t("Yêu cầu gỡ")}</span>
+12307: <span className={`text-[10px] leading-tight ${reportType === 'remove' ? 'text-red-600' : 'text-stone-500'}`}>{t("Tố cáo bài viết vi phạm.")}</span>
+12313: <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">{t("Mô tả lý do / Nội dung chi tiết")}</label>
+12317: placeholder={t("Mô tả cụ thể lý do yêu cầu (ví dụ: Vi phạm bản quyền, sai thông tin ca sĩ, nhạc sĩ...)")}
+12330: {t("Hủy bỏ")}
+12338: {t("Gửi báo cáo")}
+12352: setIsCreatingPlaylist(true);
+12364: setToast(t("Tạo playlist thành công!"));
+12365: setTimeout(() => setToast(''), 3000);
+12371: setToast(errData.error || t("Có lỗi xảy ra khi tạo playlist."));
+12372: setTimeout(() => setToast(''), 3000);
+12375: setToast(t("Có lỗi xảy ra khi kết nối máy chủ."));
+12376: setTimeout(() => setToast(''), 3000);
+12378: setIsCreatingPlaylist(false);
+12389: <h3 className="font-bold text-lg text-stone-900">{t("Tạo Playlist Mới")}</h3>
+12390: <p className="text-xs text-stone-500">{t("Tạo danh sách phát nhạc để phân loại các bài hát của bạn")}</p>
+12396: <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">{t("Tên playlist")}</label>
+12401: placeholder={t("Nhập tên playlist (ví dụ: Album Vol. 1, Single...)")}
+12415: {t("Hủy bỏ")}
+12422: {isCreatingPlaylist ? t("Đang tạo...") : t("Tạo Playlist")}
+12438: <h3 className="font-bold text-lg text-stone-900">{t("Gửi Feedback / Báo lỗi")}</h3>
+12439: <p className="text-xs text-stone-500">{t("Chúng tôi luôn lắng nghe ý kiến đóng góp từ bạn")}</p>
+12445: <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">{t("Loại feedback")}</label>
+12451: <option value="bug">{t("Báo Lỗi")}</option>
+12452: <option value="feature">{t("Góp ý tính năng")}</option>
+12453: <option value="account">{t("Báo Cáo Tài Khoản")}</option>
+12458: <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">{t("Tiêu đề")}</label>
+12463: placeholder={t("Nhập tiêu đề ngắn gọn (ví dụ: Lỗi không phát được nhạc...)")}
+12470: <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">{t("Nội dung mô tả")}</label>
+12474: placeholder={t("Mô tả cụ thể và chi tiết ý kiến hoặc lỗi bạn gặp phải...")}
+12488: {t("Hủy bỏ")}
+12495: {isSubmittingFeedback ? t("Đang gửi...") : t("Gửi phản hồi")}
+12523: confirmResolverRef.current(false);
+12530: {t("Hủy")}
+12537: confirmResolverRef.current(true);
+12548: {actionConfirm.isAlertOnly ? t("Đóng") : t("Xác nhận")}
+12562: <h3 className="font-bold text-lg text-stone-900">{t("Xác nhận xóa tạm thời")}</h3>
+12566: Bạn có chắc chắn muốn xóa {deleteConfirm.type === 'song' ? t("bài hát") : 'playlist'}{' '}
+12570: Mục này sẽ được chuyển vào <span className="font-bold text-stone-800">{t("Thùng rác tạm thời")}</span> và tự động xóa vĩnh viễn sau 30 ngày.
+12596: function PlaylistSelect({ selectedIds, onChange }: { selectedIds: string[], onChange: (ids: string[]) => void }) {
+12603: useEffect(() => {
+12615: useEffect(() => {
+12656: <label className="block text-sm font-bold text-stone-700">{t("Thêm vào Playlist")}</label>
+12659: <span className="truncate">{selectedIds.length > 0 ? `${selectedIds.length} playlist được chọn` : t("Chọn Playlist")}</span>
+12674: <input type="text" value={newTitle} onChange={e => setNewTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleCreate())} placeholder={t("Tên Playlist mới...")} className="flex-1 px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-stone-900" />
+12675: <button type="button" onClick={handleCreate} disabled={!newTitle.trim()} className="px-4 py-2 bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] rounded-lg text-sm font-bold hover:bg-stone-800 disabled:opacity-50">{t("Tạo mới")}</button>
+12709: <ArrowLeft className="w-5 h-5"/> {t("Trở về")}
+12712: <button onClick={() => setIsPCPreviewMode(false)} className={`flex items-center justify-center p-2 rounded-lg transition-all duration-300 ${!isPCPreviewMode ? 'border-2 border-stone-850 bg-transparent text-stone-900' : 'border border-stone-200 bg-transparent text-stone-400 hover:text-stone-700 hover:border-stone-400'} shadow-sm`} title={t("Xem giao diện điện thoại")}>
+12715: <button onClick={() => setIsPCPreviewMode(true)} className={`hidden md:flex items-center justify-center p-2 rounded-lg transition-all duration-300 ${isPCPreviewMode ? 'border-2 border-stone-850 bg-transparent text-stone-900' : 'border border-stone-200 bg-transparent text-stone-400 hover:text-stone-700 hover:border-stone-400'} shadow-sm`} title={t("Xem giao diện máy tính")}>
+12718: <button type="button" onClick={() => onSelect(selectedId)} className="bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] px-5 py-2 rounded-xl text-sm font-bold shadow hover:bg-stone-800">{t("Chọn")}</button>
+12723: <h3 className="text-xl font-black mb-4">{t("Chọn Template")}</h3>
+12734: <button onClick={() => setIsPCPreviewMode(false)} className={`flex items-center justify-center p-2 rounded-lg border transition-all duration-300 ${!isPCPreviewMode ? 'border-white/60 bg-transparent text-white' : 'border-white/20 bg-transparent text-white/40 hover:text-white/60 hover:border-white/40'} shadow-sm`} title={t("Xem giao diện điện thoại")}>
+12737: <button onClick={() => setIsPCPreviewMode(true)} className={`hidden md:flex items-center justify-center p-2 rounded-lg border transition-all duration-300 ${isPCPreviewMode ? 'border-white/60 bg-transparent text-white' : 'border-white/20 bg-transparent text-white/40 hover:text-white/60 hover:border-white/40'} shadow-sm`} title={t("Xem giao diện máy tính")}>
+12752: <div className="text-stone-500 bg-stone-900 h-full w-full flex items-center justify-center font-medium">{t("Đang tải...")}</div>
+12761: youtube_trending: t('Top Trending YouTube'),
+12762: tiktok_viral: t('Viral TikTok'),
+12763: spotify_streams: t("Lượt Streams Spotify"),
+12764: zing_streams: t("Lượt Streams Zing MP3"),
+12765: youtube_views: t('Views YouTube'),
+12791: {t("Thành tích đặc sắc (Sử dụng để tạo điểm nhấn hiệu ứng ngoài Trang Chủ)")}
+12798: <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-2">{t("Loại thành tích")}</label>
+12815: <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-2">{t("Giá trị / Nội dung chi tiết")}</label>
+12820: placeholder={t("VD: 10M, Dành cho hiệu ứng TikTok...")}
+12827: title={t("Xóa")}
+12842: <Plus className="w-4 h-4" /> {t("Thêm thành tích")}
+12854: const [loadingText, setLoadingText] = useState(t("Đang xử lý..."));
+12874: useEffect(() => {
+12902: useEffect(() => {
+12917: const sorted = data.templateConfigs.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id)) })).sort((a: any, b: any) => a.order - b.order);
+12975: const parts = url.split('/');
+12977: return decodeURIComponent(lastPart.replace(/^\d+[-_]/, ''));
+13004: setTimeout(() => {
+13041: useEffect(() => {
+13047: useEffect(() => {
+13063: const sorted = data.templateConfigs.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id)) })).sort((a: any, b: any) => a.order - b.order);
+13101: useEffect(() => {
+13146: triggerNotification(t("Dung lượng file nhạc quá lớn (") + (file.size / (1024 * 1024)).toFixed(1) + t("MB). Vui lòng tải lên file nhạc dưới 100MB để đảm bảo tốc độ xử lý của server."), 'warning', t("Tệp quá lớn"));
+13154: triggerNotification(t("Dung lượng file ảnh quá lớn. Vui lòng chọn file dưới 100MB."), 'warning', t("Ảnh quá lớn"));
+13218: triggerNotification(xhr.status === 413 ? t("Hệ thống báo lỗi file quá lớn.") : t("Lỗi tải file. Vui lòng thử lại."), 'error', t("Tải tệp thất bại"));
+13246: triggerNotification(t("Lỗi kết nối. Có thể mạng yếu hoặc file quá khổng lồ."), 'error', t("Lỗi kết nối"));
+13279: triggerNotification(t("Vui lòng nhập tên bài hát!"), "warning", t("Thiếu thông tin"));
+13284: triggerNotification(t("Vui lòng tải lên file nhạc!"), "warning", t("Chưa tải nhạc"));
+13288: triggerNotification(t("Vui lòng đợi file nhạc tải lên xong!"), "info", t("Đang tải lên"));
+13292: triggerNotification(t("Vui lòng đợi ảnh nền tải lên xong!"), "info", t("Đang tải lên"));
+13297: triggerNotification(t("Vui lòng đợi ảnh bìa tải lên xong!"), "info", t("Đang tải lên"));
+13301: setLoadingText(isDraft ? t("Đang lưu bản nháp...") : t("Đang xuất bản bài hát..."));
+13304: formData.set('title', title);
+13305: formData.set('slug', slug);
+13306: formData.set('composer', composer);
+13307: formData.set('singer', singer);
+13308: formData.set('lyrics', lyrics);
+13309: formData.set('template', template);
+13310: formData.set('audioUrl', uploadedAudioUrl);
+13311: formData.set('backupAudioUrl', uploadedAudioUrl);
+13312: formData.set('coverUrl', uploadedCoverUrl);
+13313: formData.set('backgroundUrl', uploadedBgUrl);
+13314: formData.set('playlistIds', JSON.stringify(playlistIds));
+13315: formData.set('achievements', JSON.stringify(achievements));
+13316: formData.set('releaseYear', releaseYear);
+13317: formData.set('linkType', linkType);
+13318: formData.set('linkZing', linkZing);
+13319: formData.set('linkSpotify', linkSpotify);
+13320: formData.set('linkApple', linkApple);
+13321: formData.set('linkYoutubeMusic', linkYoutubeMusic);
+13322: formData.set('linkYoutube', linkYoutube);
+13323: formData.set('linkDrive', linkDrive);
+13327: formData.set('password', password);
+13328: formData.set('status', statusEl?.value || 'public');
+13329: formData.set('isReleased', isReleased ? 'true' : 'false');
+13330: formData.set('isDraft', isDraft ? 'true' : 'false');
+13331: formData.set('isBrand', isBrand ? 'true' : 'false');
+13332: formData.set('brandName', brandName);
+13333: formData.set('brandBrief', brandBrief);
+13334: formData.set('brandColor', brandColor);
+13335: formData.set('brandLogoUrl', uploadedBrandLogoUrl);
+13336: formData.set('brandReferenceVideos', JSON.stringify(brandReferenceVideos));
+13337: formData.set('isBrand', isBrand ? 'true' : 'false');
+13338: formData.set('brandName', brandName);
+13339: formData.set('brandBrief', brandBrief);
+13340: formData.set('brandColor', brandColor);
+13341: formData.set('brandLogoUrl', uploadedBrandLogoUrl);
+13342: formData.set('brandReferenceVideos', JSON.stringify(brandReferenceVideos));
+13356: triggerNotification(t("Đã lưu bản nháp thành công!"), 'success', t("Thành công"), () => {
+13360: triggerNotification(t("Đăng bài hát thành công!"), 'success', t("Thành công"), () => {
+13365: triggerNotification(t("Lỗi tải lên bài hát!"), 'error', t("Thất bại"));
+13368: triggerNotification(t("Lỗi mạng!"), 'error', t("Lỗi mạng"));
+13382: <ArrowLeft className="w-5 h-5" /> {t("Trở về Dashboard")}
+13388: <button type="button" onClick={() => setLinkType('direct')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${linkType === 'direct' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}>{t("Trực Tiếp")}</button>
+13394: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Tên bài hát")}<span className="text-red-500">*</span></label>
+13395: <input name="title" required value={title} onChange={e => setTitle(e.target.value)} placeholder={t("Nhập tên bài hát mới...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+13399: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Phần mở rộng (Link bài hát)")}</label>
+13404: <p className="text-xs text-stone-500 mt-2">{t("Sẽ tự động tạo dựa trên tên bài hát nếu bỏ trống.")}</p>
+13408: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Link Google Drive tải nhạc")}</label>
+13419: <p className="text-xs text-stone-500 mt-2">{t("Nếu nhập link, người dùng sẽ thấy icon tải nhạc (Download) ở trên phần lời bài hát để click tải.")}</p>
+13424: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Sáng tác")}</label>
+13425: <input name="composer" value={composer} onChange={e => setComposer(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+13428: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ca sĩ thể hiện")}</label>
+13429: <input name="singer" value={singer} onChange={e => setSinger(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+13432: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Năm phát hành")}</label>
+13433: <input name="releaseYear" value={releaseYear} onChange={e => setReleaseYear(e.target.value)} placeholder={t("Ví dụ: 2026, 2024...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+13439: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Bìa Đĩa (Dùng làm thumbnail)")}</label>
+13466: <span className="max-w-[150px] truncate">{coverUploadProgress > 0 && coverUploadProgress < 100 ? `Đang tải ${coverUploadProgress}%` : (uploadedCoverName ? formatFileName(uploadedCoverName) : t("Chọn bìa đĩa"))}</span>
+13469: <button type="button" onClick={() => cancelUpload('cover')} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
+13480: {uploadedCoverName ? `Tệp đã chọn: ${formatFileName(uploadedCoverName, 30)}` : t("Kéo thả bìa đĩa trực tiếp vào ô này")}
+13490: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ảnh Nền (Nếu có)")}</label>
+13517: <span className="max-w-[150px] truncate">{bgUploadProgress > 0 && bgUploadProgress < 100 ? `Đang tải ${bgUploadProgress}%` : (uploadedBgName ? formatFileName(uploadedBgName) : t("Chọn ảnh nền"))}</span>
+13520: <button type="button" onClick={() => cancelUpload('background')} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
+13531: {uploadedBgName ? `Tệp đã chọn: ${formatFileName(uploadedBgName, 30)}` : t("Kéo thả ảnh nền trực tiếp vào ô này")}
+13545: <label className="block text-sm font-bold text-stone-700 mb-2">{t("File Nhạc (Audio)")}<span className="text-red-500">*</span></label>
+13573: <span className="max-w-[200px] truncate">{audioUploadProgress > 0 && audioUploadProgress < 100 ? `Đang tải ${audioUploadProgress}%` : (uploadedAudioName ? formatFileName(uploadedAudioName) : t("Chọn file nhạc"))}</span>
+13576: <button type="button" onClick={() => cancelUpload('audio')} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
+13587: {uploadedAudioName ? `Tệp đã chọn: ${formatFileName(uploadedAudioName, 30)}` : t("Kéo thả file nhạc (.mp3, .wav, .m4a) trực tiếp vào ô này")}
+13599: <label htmlFor="isBrandCreateDirect" className="font-bold text-stone-700 text-sm cursor-pointer">{t("Là nhạc thương hiệu (Brand Music)")}</label>
+13604: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Tên đối tác")}<span className="text-red-500">*</span></label>
+13608: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Brief khách hàng (nếu có)")}</label>
+13609: <textarea rows={3} value={brandBrief} onChange={e => setBrandBrief(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder={t("Nhập brief khách hàng...")} />
+13613: <span>{t("Video Tham Khảo (Tối đa 5 video)")}</span>
+13615: <button type="button" onClick={() => setBrandReferenceVideos([...brandReferenceVideos, ""])} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-indigo-200"><Plus className="w-3 h-3"/>{t("Thêm video")}</button>
+13626: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Logo đối tác (Upload)")}</label>
+13660: <span className="max-w-[150px] truncate">{brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? `Đang tải ${brandLogoUploadProgress}%` : (uploadedBrandLogoName ? formatFileName(uploadedBrandLogoName) : t("Chọn logo"))}</span>
+13663: <button type="button" onClick={() => setBrandLogoUploadProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
+13674: {uploadedBrandLogoName ? `Tệp đã chọn: ${formatFileName(uploadedBrandLogoName, 30)}` : t("Kéo thả logo trực tiếp vào ô này")}
+13697: <label className="block text-sm font-bold text-stone-700">{t("Lời bài hát")}</label>
+13727: placeholder={t("Nhập lời bài hát mới (nếu có)...")}
+13734: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Template Giao Diện")}</label>
+13747: <Eye className="w-5 h-5" /> {t("Xem trước giao diện")}
+13759: <label htmlFor="isBrandCreateIndirect" className="font-bold text-stone-700 text-sm cursor-pointer">{t("Là nhạc thương hiệu (Brand Music)")}</label>
+13764: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Tên đối tác")}<span className="text-red-500">*</span></label>
+13768: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Brief khách hàng (nếu có)")}</label>
+13769: <textarea rows={3} value={brandBrief} onChange={e => setBrandBrief(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder={t("Nhập brief khách hàng...")} />
+13773: <span>{t("Video Tham Khảo (Tối đa 5 video)")}</span>
+13775: <button type="button" onClick={() => setBrandReferenceVideos([...brandReferenceVideos, ""])} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-indigo-200"><Plus className="w-3 h-3"/>{t("Thêm video")}</button>
+13786: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Logo đối tác (Upload)")}</label>
+13820: <span className="max-w-[150px] truncate">{brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? `Đang tải ${brandLogoUploadProgress}%` : (uploadedBrandLogoName ? formatFileName(uploadedBrandLogoName) : t("Chọn logo"))}</span>
+13823: <button type="button" onClick={() => setBrandLogoUploadProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
+13834: {uploadedBrandLogoName ? `Tệp đã chọn: ${formatFileName(uploadedBrandLogoName, 30)}` : t("Kéo thả logo trực tiếp vào ô này")}
+13856: <h3 className="font-bold text-stone-800 text-lg">{t("Liên kết phát nhạc")}</h3>
+13860: <input name="linkZing" value={linkZing} onChange={e => setLinkZing(e.target.value)} placeholder={t("Nhập link Zing MP3...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+13864: <input name="linkSpotify" value={linkSpotify} onChange={e => setLinkSpotify(e.target.value)} placeholder={t("Nhập link Spotify...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+13868: <input name="linkApple" value={linkApple} onChange={e => setLinkApple(e.target.value)} placeholder={t("Nhập link Apple Music...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+13872: <input name="linkYoutubeMusic" value={linkYoutubeMusic} onChange={e => setLinkYoutubeMusic(e.target.value)} placeholder={t("Nhập link YouTube Music...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+13876: <input name="linkYoutube" value={linkYoutube} onChange={e => setLinkYoutube(e.target.value)} placeholder={t("Nhập link YouTube MV...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+13888: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Mật khẩu bảo vệ (tùy chọn)")}</label>
+13891: <input name="password" value={password} onChange={e => setPassword(e.target.value)} placeholder={t("Bỏ trống nếu không cần")} className="w-full border border-stone-300 rounded-xl pl-10 pr-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+13896: <span>{t("✓ Bài hát đã phát hành sẽ không sử dụng mật khẩu bảo vệ.")}</span>
+13900: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Hiển thị (Trạng thái phát hành)")}</label>
+13902: <option value="public">{t("Công khai")}</option>
+13903: <option value="hidden">{t("Ẩn")}</option>
+13912: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Đã phát hành")}</label>
+13939: {loading ? t("Đang lưu...") : t("Lưu Bản Nháp")}
+13949: {loading ? t("Đang xuất bản...") : t("Xuất Bản")}
+13963: singer: singer || appData?.artistName || t("Nghệ sĩ"),
+13964: composer: composer || appData?.artistName || t("Nghệ sĩ"),
+13992: <p className="text-stone-400 text-xs leading-relaxed">{t("Vui lòng đợi trong giây lát. Hệ thống đang tối ưu hóa dữ liệu và lưu trữ an toàn trên cloud.")}</p>
+14010: <h4 className="text-white font-black text-xl mb-2 tracking-tight">{notification.title || (notification.type === 'error' ? t("Lỗi xảy ra") : t("Thông báo"))}</h4>
+14032: const [loadingText, setLoadingText] = useState(t("Đang xử lý..."));
+14084: const parts = url.split('/');
+14086: return decodeURIComponent(lastPart.replace(/^\d+[-_]/, ''));
+14116: setTimeout(() => {
+14139: useEffect(() => {
+14162: const sorted = data.templateConfigs.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id)) })).sort((a: any, b: any) => a.order - b.order);
+14220: console.error(t("Lỗi tải thông tin quản trị:"), err);
+14226: if (!(globalShowConfirm && await globalShowConfirm(t("Bạn có chắc chắn muốn khôi phục lại phiên bản file nhạc trước đó gần nhất không?"), t("Khôi phục phiên bản trước")))) {
+14243: triggerNotification(t("Khôi phục phiên bản nhạc thành công!"), "success", t("Thành công"));
+14246: triggerNotification(errData.error || t("Có lỗi xảy ra khi khôi phục."), "error", t("Thất bại"));
+14250: triggerNotification(t("Lỗi kết nối."), "error", t("Lỗi kết nối"));
+14266: useEffect(() => {
+14281: useEffect(() => {
+14326: triggerNotification(t("Dung lượng file nhạc quá lớn (") + (file.size / (1024 * 1024)).toFixed(1) + t("MB). Vui lòng tải lên file nhạc dưới 100MB để đảm bảo tốc độ xử lý của server."), 'warning', t("Tệp quá lớn"));
+14334: triggerNotification(t("Dung lượng file ảnh quá lớn. Vui lòng chọn file dưới 100MB."), 'warning', t("Ảnh quá lớn"));
+14398: triggerNotification(xhr.status === 413 ? t("Hệ thống báo lỗi file quá lớn.") : t("Lỗi tải file. Vui lòng thử lại."), 'error', t("Tải tệp thất bại"));
+14426: triggerNotification(t("Lỗi kết nối. Có thể mạng yếu hoặc file quá khổng lồ."), 'error', t("Lỗi kết nối"));
+14459: triggerNotification(t("Vui lòng nhập tên bài hát!"), "warning", t("Thiếu thông tin"));
+14465: triggerNotification(t("Vui lòng tải lên file nhạc!"), "warning", t("Chưa tải nhạc"));
+14470: triggerNotification(t("Vui lòng đợi file nhạc tải lên xong!"), "info", t("Đang tải lên"));
+14474: triggerNotification(t("Vui lòng đợi ảnh bìa tải lên xong!"), "info", t("Đang tải lên"));
+14478: triggerNotification(t("Vui lòng đợi ảnh nền tải lên xong!"), "info", t("Đang tải lên"));
+14482: setLoadingText(isDraft ? t("Đang lưu bản nháp...") : t("Đang xuất bản bài hát..."));
+14485: formData.set('title', title);
+14486: formData.set('slug', slug);
+14487: formData.set('composer', composer);
+14488: formData.set('singer', singer);
+14489: formData.set('lyrics', lyrics);
+14490: formData.set('template', template);
+14492: formData.set('audioUrl', uploadedAudioUrl);
+14493: formData.set('backupAudioUrl', uploadedAudioUrl);
+14495: formData.set('audioUrl', demo?.audioUrl || '');
+14496: formData.set('backupAudioUrl', demo?.backupAudioUrl || demo?.audioUrl || '');
+14498: formData.set('coverUrl', uploadedCoverUrl || demo?.coverUrl || '');
+14499: formData.set('backgroundUrl', uploadedBgUrl || demo?.backgroundUrl || '');
+14500: formData.set('playlistIds', JSON.stringify(playlistIds));
+14501: formData.set('achievements', JSON.stringify(achievements));
+14502: formData.set('releaseYear', releaseYear);
+14503: formData.set('linkType', linkType);
+14504: formData.set('linkZing', linkZing);
+14505: formData.set('linkSpotify', linkSpotify);
+14506: formData.set('linkApple', linkApple);
+14507: formData.set('linkYoutubeMusic', linkYoutubeMusic);
+14508: formData.set('linkYoutube', linkYoutube);
+14509: formData.set('linkDrive', linkDrive);
+14513: formData.set('password', password);
+14514: formData.set('status', statusEl?.value || 'public');
+14515: formData.set('isReleased', isReleased ? 'true' : 'false');
+14516: formData.set('isDraft', isDraft ? 'true' : 'false');
+14517: formData.set('isBrand', isBrand ? 'true' : 'false');
+14518: formData.set('brandName', brandName);
+14519: formData.set('brandBrief', brandBrief);
+14520: formData.set('brandColor', brandColor);
+14521: formData.set('brandLogoUrl', uploadedBrandLogoUrl);
+14522: formData.set('brandReferenceVideos', JSON.stringify(brandReferenceVideos));
+14523: formData.set('isBrand', isBrand ? 'true' : 'false');
+14524: formData.set('brandName', brandName);
+14525: formData.set('brandBrief', brandBrief);
+14526: formData.set('brandColor', brandColor);
+14527: formData.set('brandLogoUrl', uploadedBrandLogoUrl);
+14528: formData.set('brandReferenceVideos', JSON.stringify(brandReferenceVideos));
+14540: triggerNotification(isDraft ? t("Cập nhật bản nháp thành công!") : t("Cập nhật thành công!"), 'success', t("Thành công"), () => {
+14544: triggerNotification(t("Lỗi cập nhật. Thử tải lại trang và làm lại!"), 'error', t("Thất bại"));
+14547: triggerNotification(t("Lỗi mạng!"), 'error', t("Lỗi mạng"));
+14557: if (!demo) return <LoadingScreen text={t("Đang tải dữ liệu bài hát...")} />;
+14564: <ArrowLeft className="w-5 h-5" /> {t("Trở về Dashboard")}
+14580: setToast(t("Đã tạo bản sao thành công! Đang chuyển hướng..."));
+14581: setTimeout(() => {
+14582: setToast('');
+14586: alert(t("Lỗi khi duplicate bản ghi."));
+14599: <h1 className="text-3xl font-bold mb-6">{t("Chỉnh Sửa Demo")}</h1>
+14602: <button type="button" onClick={() => setLinkType('direct')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${linkType === 'direct' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}>{t("Trực Tiếp")}</button>
+14608: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Tên bài hát")}<span className="text-red-500">*</span></label>
+14609: <input name="title" required value={title} onChange={e => setTitle(e.target.value)} placeholder={t("Nhập tên bài hát...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+14613: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Phần mở rộng (Link bài hát)")}</label>
+14621: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Link Google Drive tải nhạc")}</label>
+14632: <p className="text-xs text-stone-500 mt-2">{t("Nếu nhập link, người dùng sẽ thấy icon tải nhạc (Download) ở trên phần lời bài hát để click tải.")}</p>
+14637: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Sáng tác")}</label>
+14638: <input name="composer" value={composer} onChange={e => setComposer(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+14641: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ca sĩ thể hiện")}</label>
+14642: <input name="singer" value={singer} onChange={e => setSinger(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+14645: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Năm phát hành")}</label>
+14646: <input name="releaseYear" value={releaseYear} onChange={e => setReleaseYear(e.target.value)} placeholder={t("Ví dụ: 2026, 2024...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+14652: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Bìa Đĩa Chỉnh Sửa (Dùng làm thumbnail)")}</label>
+14682: : (uploadedCoverName ? formatFileName(uploadedCoverName) : (getFileNameFromUrl(uploadedCoverUrl || demo?.coverUrl) ? formatFileName(getFileNameFromUrl(uploadedCoverUrl || demo?.coverUrl)) : t("Chọn bìa đĩa")))}
+14686: <button type="button" onClick={() => cancelUpload('cover')} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
+14701: : t("Kéo thả bìa đĩa trực tiếp vào ô này"))}
+14711: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ảnh Nền (Nếu có)")}</label>
+14741: : (uploadedBgName ? formatFileName(uploadedBgName) : (getFileNameFromUrl(uploadedBgUrl || demo?.backgroundUrl) ? formatFileName(getFileNameFromUrl(uploadedBgUrl || demo?.backgroundUrl)) : t("Chọn ảnh nền")))}
+14745: <button type="button" onClick={() => cancelUpload('background')} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
+14760: : t("Kéo thả ảnh nền trực tiếp vào ô này"))}
+14774: <label className="block text-sm font-bold text-stone-700 mb-2">{t("File Nhạc (Audio)")}<span className="text-red-500">*</span></label>
+14820: : (uploadedAudioName ? formatFileName(uploadedAudioName) : (getFileNameFromUrl(uploadedAudioUrl || demo?.audioUrl) ? formatFileName(getFileNameFromUrl(uploadedAudioUrl || demo?.audioUrl)) : t("Chọn file nhạc")))}
+14824: <button type="button" onClick={() => cancelUpload('audio')} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
+14837: {isReverting ? t("Đang khôi phục...") : t("Khôi phục bản cũ")}
+14851: : t("Kéo thả file nhạc (.mp3, .wav, .m4a) trực tiếp vào ô này"))}
+14863: <label htmlFor="isBrandEditDirect" className="font-bold text-stone-700 text-sm cursor-pointer">{t("Là nhạc thương hiệu (Brand Music)")}</label>
+14868: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Tên đối tác")}<span className="text-red-500">*</span></label>
+14872: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Brief khách hàng (nếu có)")}</label>
+14873: <textarea rows={3} value={brandBrief} onChange={e => setBrandBrief(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder={t("Nhập brief khách hàng...")} />
+14877: <span>{t("Video Tham Khảo (Tối đa 5 video)")}</span>
+14879: <button type="button" onClick={() => setBrandReferenceVideos([...brandReferenceVideos, ""])} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-indigo-200"><Plus className="w-3 h-3"/>{t("Thêm video")}</button>
+14890: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Logo đối tác (Upload)")}</label>
+14924: <span className="max-w-[150px] truncate">{brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? `Đang tải ${brandLogoUploadProgress}%` : (uploadedBrandLogoName ? formatFileName(uploadedBrandLogoName) : t("Chọn logo"))}</span>
+14927: <button type="button" onClick={() => setBrandLogoUploadProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
+14938: {uploadedBrandLogoName ? `Tệp đã chọn: ${formatFileName(uploadedBrandLogoName, 30)}` : t("Kéo thả logo trực tiếp vào ô này")}
+14961: <label className="block text-sm font-bold text-stone-700">{t("Lời bài hát")}</label>
+14991: placeholder={t("Nhập lời bài hát chỉnh sửa (nếu có)...")}
+14998: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Template Giao Diện")}</label>
+15011: <Eye className="w-5 h-5" /> {t("Xem trước giao diện")}
+15024: <label htmlFor="isBrandCreate" className="font-bold text-stone-700 text-sm cursor-pointer">{t("Là nhạc thương hiệu (Brand Music)")}</label>
+15029: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Tên đối tác")}<span className="text-red-500">*</span></label>
+15033: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Brief khách hàng (nếu có)")}</label>
+15034: <textarea rows={3} value={brandBrief} onChange={e => setBrandBrief(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder={t("Nhập brief khách hàng...")} />
+15038: <span>{t("Video Tham Khảo (Tối đa 5 video)")}</span>
+15040: <button type="button" onClick={() => setBrandReferenceVideos([...brandReferenceVideos, ""])} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-indigo-200"><Plus className="w-3 h-3"/>{t("Thêm video")}</button>
+15051: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Logo đối tác (Upload)")}</label>
+15085: <span className="max-w-[150px] truncate">{brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? `Đang tải ${brandLogoUploadProgress}%` : (uploadedBrandLogoName ? formatFileName(uploadedBrandLogoName) : t("Chọn logo"))}</span>
+15088: <button type="button" onClick={() => setBrandLogoUploadProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
+15099: {uploadedBrandLogoName ? `Tệp đã chọn: ${formatFileName(uploadedBrandLogoName, 30)}` : t("Kéo thả logo trực tiếp vào ô này")}
+15121: <h3 className="font-bold text-stone-800 text-lg">{t("Liên kết phát nhạc")}</h3>
+15125: <input name="linkZing" value={linkZing} onChange={e => setLinkZing(e.target.value)} placeholder={t("Nhập link Zing MP3...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+15129: <input name="linkSpotify" value={linkSpotify} onChange={e => setLinkSpotify(e.target.value)} placeholder={t("Nhập link Spotify...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+15133: <input name="linkApple" value={linkApple} onChange={e => setLinkApple(e.target.value)} placeholder={t("Nhập link Apple Music...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+15137: <input name="linkYoutubeMusic" value={linkYoutubeMusic} onChange={e => setLinkYoutubeMusic(e.target.value)} placeholder={t("Nhập link YouTube Music...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+15141: <input name="linkYoutube" value={linkYoutube} onChange={e => setLinkYoutube(e.target.value)} placeholder={t("Nhập link YouTube MV...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+15153: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Mật khẩu bảo vệ (tùy chọn)")}</label>
+15156: <input name="password" value={password} onChange={e => setPassword(e.target.value)} placeholder={t("Bỏ trống nếu không cần")} className="w-full border border-stone-300 rounded-xl pl-10 pr-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+15161: <span>{t("✓ Bài hát đã phát hành sẽ không sử dụng mật khẩu bảo vệ.")}</span>
+15165: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Hiển thị (Trạng thái phát hành)")}</label>
+15167: <option value="public">{t("Công khai")}</option>
+15168: <option value="hidden">{t("Ẩn")}</option>
+15177: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Đã phát hành")}</label>
+15201: <div className="font-bold text-stone-800 text-sm tracking-tight">{t("Secret Link (Chia sẻ trực tiếp xem không hỏi mật khẩu)")}</div>
+15216: setToast(t("Đã copy Secret Link!"));
+15217: setTimeout(() => setToast(''), 3000);
+15238: {loading ? t("Đang lưu...") : t("Lưu Bản Nháp")}
+15248: {loading ? t("Đang xuất bản...") : t("Xuất Bản")}
+15260: {loading ? t("Đang lưu...") : t("Lưu Thay Đổi")}
+15267: if (!(globalShowConfirm && await globalShowConfirm(t("Bạn có chắc muốn làm mới Secret Link của bài này? Secret Link cũ sẽ không còn hoạt động, tự động chuyển về đường dẫn gốc yêu cầu mật khẩu."), "Reset Secret Link", "danger"))) return;
+15278: await globalShowConfirm(t("Đã reset Secret Link thành công!"), t("Thông báo"), "alert");
+15307: singer: singer || appData?.artistName || t("Nghệ sĩ"),
+15308: composer: composer || appData?.artistName || t("Nghệ sĩ"),
+15336: <p className="text-stone-400 text-xs leading-relaxed">{t("Vui lòng đợi trong giây lát. Hệ thống đang tối ưu hóa dữ liệu và lưu trữ an toàn trên cloud.")}</p>
+15354: <h4 className="text-white font-black text-xl mb-2 tracking-tight">{notification.title || (notification.type === 'error' ? t("Lỗi xảy ra") : t("Thông báo"))}</h4>
+15413: } else reject(new Error('Upload failed'));
+15415: xhr.onerror = () => reject(new Error('Network error'));
+15420: useEffect(() => {
+15433: setPlaylist(playlistData.playlist);
+15436: setIsDraft(playlistData.playlist.isDraft || false);
+15457: setToast(t("Đã lưu thành công!"));
+15458: setTimeout(() => setToast(''), 3000);
+15479: if (isLoading) return <LoadingScreen text={t("Đang tải dữ liệu playlist...")} />;
+15493: <button onClick={handleSave} className="bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] px-4 py-2 rounded-lg font-medium hover:bg-stone-800 transition-colors shadow-sm">{t("Lưu thay đổi")}</button>
+15500: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Tên Playlist")}</label>
+15510: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Hiển Thị")}</label>
+15511: <select value={isDraft ? 'true' : 'false'} onChange={e => setIsDraft(e.target.value === 'true')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white">
+15512: <option value="false">{t("Công khai (hiện ở trang chủ)")}</option>
+15513: <option value="true">{t("Riêng tư / Bản nháp (ẩn khỏi trang chủ)")}</option>
+15517: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Mật khẩu Playlist (tùy chọn)")}</label>
+15520: <input type="text" value={password} onChange={e => setPassword(e.target.value)} placeholder={t("Bỏ trống nếu không cần")} className="w-full border border-stone-300 rounded-xl pl-10 pr-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+15527: <label className="block text-sm font-bold text-stone-700">{t("Secret Link (Link Bí Mật)")}</label>
+15529: if (!secretLink || (globalShowConfirm && await globalShowConfirm(t("Tạo mới Secret Link? Link cũ sẽ không thể truy cập nữa."), t("Xác nhận tạo mới")))) {
+15532: }} className="text-xs bg-stone-100 hover:bg-stone-200 text-stone-800 px-3 py-1.5 rounded-lg font-bold transition-colors">{t("Tạo Link Mới")}</button>
+15536: <p className="text-emerald-800 text-sm font-medium mb-2">{t("Sử dụng link sau để truy cập trực tiếp (không cần nhập mật khẩu playlist):")}</p>
+15540: await navigator.clipboard.writeText(`${window.location.origin}/playlist/${id}?secret=${secretLink}`);
+15541: setToast(t("Đã copy Secret Link!"));
+15542: setTimeout(() => setToast(''), 3000);
+15544: <button type="button" onClick={() => setSecretLink('')} className="bg-red-100 text-red-600 px-3 py-2 rounded-lg font-bold text-sm hover:bg-red-200">{t("Xóa")}</button>
+15548: <p className="text-sm text-stone-500 italic">{t("Chưa tạo Secret Link cho Playlist này.")}</p>
+15553: <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ảnh bìa Playlist (Kích thước vuông)")}</label>
+15583: alert(t("Lỗi upload"));
+15588: <p className="text-xs text-stone-500 mt-2">{t("Dùng để làm ảnh đại diện cho Playlist khi chia sẻ.")}</p>
+15593: <h3 className="text-sm font-bold text-stone-700">{t("Danh sách bài hát (Kéo thả để sắp xếp)")}</h3>
+15599: <Plus className="w-3.5 h-3.5" /> {t("Thêm bài hát")}
+15603: <div className="text-center py-8 text-stone-400 border-2 border-dashed rounded-xl">{t("Chưa có bài hát nào trong playlist này.")}</div>
+15610: onDragStart={() => handleDragStart(i)}
+15636: title={t("Xóa khỏi playlist")}
+15652: <h3 className="font-bold text-lg text-stone-900">{t("Thêm bài hát vào playlist")}</h3>
+15667: return <p className="text-center text-stone-500 py-8">{t("Tất cả bài hát đều đã ở trong playlist này rồi.")}</p>;
+15724: {t("Thêm đã chọn")} ({selectedNewSongIds.length})
