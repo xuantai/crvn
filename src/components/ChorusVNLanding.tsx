@@ -34,6 +34,9 @@ interface LandingConfig {
   feature3Desc?: string;
   feature4Title?: string;
   feature4Desc?: string;
+  statusBadge?: string;
+  featuresTitle?: string;
+  featuresSub?: string;
 }
 
 const dict = {
@@ -68,7 +71,37 @@ const dict = {
     betaSubtitle: 'BETA TESTING ONLY',
     betaDesc: 'Chúng tôi đang hoạt động thử nghiệm và chưa mở đăng ký rộng rãi cho công chúng.',
     betaSubDesc: 'Hệ thống chỉ cung cấp tài khoản nội bộ cho các nghệ sĩ trong chương trình thử nghiệm. Mọi thông tin liên hệ xin gửi về ban quản trị.',
-    betaBtn: 'Đã hiểu, đóng lại'
+    betaBtn: 'Đã hiểu, đóng lại',
+    searchPlaceholder: 'Tìm kiếm nghệ sĩ...',
+    noArtistsFound: 'Không tìm thấy nghệ sĩ',
+    noArtistsFoundDesc: 'Không tìm thấy nghệ sĩ nào khớp với từ khoá "{query}". Hãy thử lại bằng từ khoá khác!',
+    prevPage: 'Trang trước',
+    nextPage: 'Trang sau',
+    pageIndicator: 'Trang',
+    registerTitle: 'Đăng ký thành viên',
+    registerSubTitle: 'Become a Chorus Member',
+    registerSuccessTitle: 'Đăng ký hoàn tất!',
+    registerSuccessDesc1: 'Tài khoản {username} đã đăng ký thành công.',
+    registerSuccessDesc2: 'Quản trị viên sẽ xác thực tài khoản của bạn. Sau khi được duyệt, trang nghệ sĩ {extension}.chorus.vn sẽ chính thức hoạt động!',
+    closeWindow: 'Đóng cửa sổ',
+    artistNameLabel: 'Tên nghệ sĩ',
+    artistNamePlaceholder: 'Nghệ danh của bạn',
+    usernameLabel: 'Tên đăng nhập',
+    usernamePlaceholder: 'ten-dang-nhap-admin',
+    usernameNote: '* Chỉ gồm chữ thường không dấu, số, dấu gạch dưới.',
+    extensionLabel: 'Phần Mở Rộng',
+    extensionPlaceholder: 'nghesi',
+    extensionNote: 'Link kho nhạc của bạn sẽ là {extension}.chorus.vn ( tự động lấy phần trên để điền vào )',
+    emailLabel: 'Địa chỉ Email',
+    passwordLabel: 'Mật khẩu quản trị',
+    passwordPlaceholder: 'Nhập mật khẩu...',
+    captchaLabel: 'Mã xác nhận bảo vệ (Captcha)',
+    captchaPlaceholder: 'Nhập chữ...',
+    submitting: 'Đang gửi...',
+    submitButton: 'ĐĂNG KÝ THÀNH VIÊN',
+    loading: 'Đang tải...',
+    captchaClickTooltip: 'Click để đổi mã khác',
+    captchaReloadTooltip: 'Tải lại Captcha'
   },
   en: {
     statusBadge: 'IN DEVELOPMENT',
@@ -101,7 +134,37 @@ const dict = {
     betaSubtitle: 'BETA TESTING ONLY',
     betaDesc: 'We are currently operating in a closed test and have not opened registration to the public.',
     betaSubDesc: 'The system only provides internal accounts for artists in the testing program. Please send inquiries to the administrator.',
-    betaBtn: 'Understood, Close'
+    betaBtn: 'Understood, Close',
+    searchPlaceholder: 'Search artists...',
+    noArtistsFound: 'No artists found',
+    noArtistsFoundDesc: 'No artists match the keyword "{query}". Please try again with another keyword!',
+    prevPage: 'Previous page',
+    nextPage: 'Next page',
+    pageIndicator: 'Page',
+    registerTitle: 'Member Registration',
+    registerSubTitle: 'Become a Chorus Member',
+    registerSuccessTitle: 'Registration Completed!',
+    registerSuccessDesc1: 'Account {username} has been registered successfully.',
+    registerSuccessDesc2: 'The administrator will verify your account. Once approved, your artist page {extension}.chorus.vn will officially go live!',
+    closeWindow: 'Close window',
+    artistNameLabel: 'Artist Name',
+    artistNamePlaceholder: 'Your stage name',
+    usernameLabel: 'Username',
+    usernamePlaceholder: 'admin-username',
+    usernameNote: '* Lowercase letters without accents, numbers, and underscores only.',
+    extensionLabel: 'Subdomain Extension',
+    extensionPlaceholder: 'artist',
+    extensionNote: 'Your music vault link will be {extension}.chorus.vn (automatically filled based on artist name)',
+    emailLabel: 'Email Address',
+    passwordLabel: 'Admin Password',
+    passwordPlaceholder: 'Enter password...',
+    captchaLabel: 'Security Verification (Captcha)',
+    captchaPlaceholder: 'Enter letters...',
+    submitting: 'Submitting...',
+    submitButton: 'REGISTER MEMBER',
+    loading: 'Loading...',
+    captchaClickTooltip: 'Click to change code',
+    captchaReloadTooltip: 'Reload Captcha'
   },
   ko: {
     statusBadge: '개발 중',
@@ -134,7 +197,37 @@ const dict = {
     betaSubtitle: 'BETA TESTING ONLY',
     betaDesc: '현재 비공개 테스트 운영 중이며 일반 대중에게는 회원 가입을 개방하지 않았습니다.',
     betaSubDesc: '본 시스템은 테스트 프로그램에 참여하는 아티스트들을 위해 내부 계정만 제공합니다. 모든 문의 사항은 관리자에게 보내주시기 바랍니다.',
-    betaBtn: '이해했습니다, 닫기'
+    betaBtn: '이해했습니다, 닫기',
+    searchPlaceholder: '아티스트 검색...',
+    noArtistsFound: '아티스트를 찾을 수 없습니다',
+    noArtistsFoundDesc: '"{query}"와 일치하는 아티스트를 찾을 수 없습니다. 다른 키워드로 다시 시도해 주세요!',
+    prevPage: '이전 페이지',
+    nextPage: '다음 페이지',
+    pageIndicator: '페이지',
+    registerTitle: '회원 가입',
+    registerSubTitle: 'Become a Chorus Member',
+    registerSuccessTitle: '가입 완료!',
+    registerSuccessDesc1: '계정 {username}이(g) 성공적으로 등록되었습니다.',
+    registerSuccessDesc2: '관리자가 귀하의 계정을 확인해 드립니다. 승인되면 아티스트 페이지 {extension}.chorus.vn이 정식 출시됩니다!',
+    closeWindow: '창 닫기',
+    artistNameLabel: '아티스트 이름',
+    artistNamePlaceholder: '귀하의 예명',
+    usernameLabel: '사용자 이름 (ID)',
+    usernamePlaceholder: 'admin-username',
+    usernameNote: '* 영문 소문자, 숫자, 밑줄(_)만 사용할 수 있습니다.',
+    extensionLabel: '서브도메인 확장자',
+    extensionPlaceholder: 'artist',
+    extensionNote: '귀하의 음악 보관함 링크는 {extension}.chorus.vn이 됩니다 (아티스트 이름에 따라 자동 생성됨)',
+    emailLabel: '이메일 주소',
+    passwordLabel: '관리자 비밀번호',
+    passwordPlaceholder: '비밀번호를 입력하세요...',
+    captchaLabel: '보안 문자 (Captcha)',
+    captchaPlaceholder: '문자를 입력하세요...',
+    submitting: '제출 중...',
+    submitButton: '회원 등록',
+    loading: '로딩 중...',
+    captchaClickTooltip: '클릭하여 다른 코드로 변경',
+    captchaReloadTooltip: '보안 문자 새로고침'
   }
 };
 
@@ -144,6 +237,21 @@ const FALLBACK_SLIDESHOW = [
   "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80",
   "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=600&auto=format&fit=crop&q=80"
 ];
+
+const slideVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? 300 : -300,
+    opacity: 0
+  }),
+  center: {
+    x: 0,
+    opacity: 1
+  },
+  exit: (direction: number) => ({
+    x: direction < 0 ? 300 : -300,
+    opacity: 0
+  })
+};
 
 function ArtistLandingCard({ artist, t }: { artist: any; t: any; key?: any }) {
   // Determine images to use for the background slideshow
@@ -537,6 +645,8 @@ export default function ChorusVNLanding() {
   const [artists, setArtists] = useState<LandingArtist[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
+  const [slideDirection, setSlideDirection] = useState<number>(1);
+  const [isPreloading, setIsPreloading] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -618,7 +728,10 @@ export default function ChorusVNLanding() {
     feature3Title: '',
     feature3Desc: '',
     feature4Title: '',
-    feature4Desc: ''
+    feature4Desc: '',
+    statusBadge: '',
+    featuresTitle: '',
+    featuresSub: ''
   });
 
   useEffect(() => {
@@ -691,21 +804,77 @@ export default function ChorusVNLanding() {
 
   const totalPages = Math.ceil(filteredArtists.length / pageSize);
 
+  const getArtistsForPage = (pageIndex: number, list: LandingArtist[]) => {
+    if (list.length <= pageSize) return list;
+    let start = pageIndex * pageSize;
+    if (start + pageSize > list.length) {
+      start = list.length - pageSize;
+    }
+    return list.slice(start, start + pageSize);
+  };
+
+  const handlePageChange = async (nextPageIdx: number) => {
+    if (nextPageIdx === currentPage || isPreloading) return;
+    setIsPreloading(true);
+    
+    const targetArtists = getArtistsForPage(nextPageIdx, filteredArtists);
+    
+    // Collect all image URLs to preload
+    const urlsToPreload: string[] = [];
+    targetArtists.forEach((artist) => {
+      if (artist.homeCoverUrl) {
+        urlsToPreload.push(artist.homeCoverUrl);
+      }
+      if (artist.slideshowImages && artist.slideshowImages.length > 0) {
+        artist.slideshowImages.forEach((img) => urlsToPreload.push(img));
+      } else {
+        FALLBACK_SLIDESHOW.forEach((img) => urlsToPreload.push(img));
+      }
+    });
+    
+    try {
+      await Promise.race([
+        preloadImages(urlsToPreload),
+        new Promise(resolve => setTimeout(resolve, 2500))
+      ]);
+    } catch (e) {
+      console.warn("Preloading error:", e);
+    }
+    
+    setSlideDirection(nextPageIdx > currentPage ? 1 : -1);
+    setCurrentPage(nextPageIdx);
+    setIsPreloading(false);
+  };
+
   useEffect(() => {
     setCurrentPage(0);
   }, [searchQuery]);
 
   useEffect(() => {
-    if (totalPages <= 1 || searchQuery.trim() !== '') return;
+    if (totalPages <= 1 || searchQuery.trim() !== '' || isPreloading) return;
     const interval = setInterval(() => {
-      setCurrentPage((prev) => (prev + 1) % totalPages);
-    }, 5000);
+      const nextIdx = (currentPage + 1) % totalPages;
+      handlePageChange(nextIdx);
+    }, 8000);
     return () => clearInterval(interval);
-  }, [currentPage, totalPages, searchQuery]);
+  }, [currentPage, totalPages, searchQuery, isPreloading]);
 
   const t = (key: string) => {
+    const originalValue = (dict['vi'] as any)[key];
+    if (originalValue) {
+      const staticTr = (config as any)?.staticTranslations?.[lang]?.[originalValue];
+      if (staticTr) return staticTr;
+    }
     const tr = (dict[lang] as any)[key] || (dict['vi'] as any)[key] || '';
     return tr;
+  };
+
+  const translateHomeText = (text: string | undefined): string => {
+    if (!text) return '';
+    if (lang === 'vi') return text;
+    const staticTr = (config as any)?.staticTranslations?.[lang]?.[text.trim()];
+    if (staticTr) return staticTr;
+    return text;
   };
 
   const handleSubscribe = async (e: React.FormEvent) => {
@@ -1013,17 +1182,22 @@ export default function ChorusVNLanding() {
           {/* Action Header: Status Badge & Language Segmented Toggler */}
           <div className="flex items-center gap-4">
             {/* Status Badge */}
-            <div className="hidden md:flex items-center gap-2 bg-white/60 border border-neutral-200/60 px-4 py-2 rounded-full text-[10px] font-black text-neutral-600 tracking-wider">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>{t('statusBadge')}</span>
-            </div>
+            {config.statusBadge !== '' && (
+              <div className="hidden md:flex items-center gap-2 bg-white/60 border border-neutral-200/60 px-4 py-2 rounded-full text-[10px] font-black text-neutral-600 tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>{translateHomeText(config.statusBadge) || t('statusBadge')}</span>
+              </div>
+            )}
 
             {/* Language Selection Segmented Bar */}
             <div className="flex items-center gap-0.5 bg-neutral-200/50 border border-neutral-200/50 p-1 rounded-xl">
               {(['vi', 'en', 'ko'] as const).map((l) => (
                 <button
                   key={l}
-                  onClick={() => setLang(l)}
+                  onClick={() => {
+                    setLang(l);
+                    localStorage.setItem('preferredLang', l);
+                  }}
                   className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold uppercase transition-all cursor-pointer ${
                     lang === l
                       ? 'bg-black text-white shadow-sm'
@@ -1093,7 +1267,7 @@ export default function ChorusVNLanding() {
 
           {/* Slogan */}
           <p className="font-serif italic text-xl sm:text-2xl text-neutral-500 tracking-wide font-light">
-            {config.heroSubtitle || t('heroSubTitle')}
+            {translateHomeText(config.heroSubtitle) || t('heroSubTitle')}
           </p>
 
           {/* Thin horizontal elegant divider line */}
@@ -1101,7 +1275,7 @@ export default function ChorusVNLanding() {
 
           {/* Subtitle Description */}
           <p className="text-neutral-600 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed font-sans font-normal">
-            {config.heroDescription || t('heroDescription')}
+            {translateHomeText(config.heroDescription) || t('heroDescription')}
           </p>
         </motion.div>
 
@@ -1163,7 +1337,7 @@ export default function ChorusVNLanding() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Tìm kiếm nghệ sĩ..."
+                placeholder={t('searchPlaceholder') || 'Tìm kiếm nghệ sĩ...'}
                 className="w-full bg-white border border-neutral-200/85 rounded-2xl pl-10 pr-9 py-2.5 text-xs font-medium text-neutral-800 placeholder-neutral-400 focus:outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400/20 shadow-sm transition-all"
               />
               {searchQuery && (
@@ -1197,24 +1371,39 @@ export default function ChorusVNLanding() {
             {filteredArtists.length === 0 ? (
               <div className="bg-white/60 border border-dashed border-neutral-200 rounded-[3rem] p-16 text-center max-w-md mx-auto">
                 <Search className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
-                <h3 className="text-lg font-black text-neutral-800">Không tìm thấy nghệ sĩ</h3>
+                <h3 className="text-lg font-black text-neutral-800">{t('noArtistsFound')}</h3>
                 <p className="text-neutral-500 text-xs mt-2 leading-relaxed">
-                  Không tìm thấy nghệ sĩ nào khớp với từ khoá "{searchQuery}". Hãy thử lại bằng từ khoá khác!
+                  {(t('noArtistsFoundDesc') || '').replace('{query}', searchQuery)}
                 </p>
               </div>
             ) : (
               <div>
-                <div className={isMobile ? "relative" : "relative min-h-[500px]"}>
-                  <AnimatePresence mode="wait">
+                <div className={isMobile ? "relative overflow-hidden" : "relative min-h-[500px] overflow-hidden"}>
+                  {isPreloading && (
+                    <div className="absolute inset-0 bg-[#faf9f6]/30 backdrop-blur-[2px] flex items-center justify-center z-30 transition-all duration-300 rounded-[2.5rem]">
+                      <div className="flex items-center gap-3 bg-white/90 px-5 py-3 rounded-2xl border border-neutral-200/50 shadow-md">
+                        <RefreshCw className="w-4 h-4 animate-spin text-black" />
+                        <span className="text-[10px] font-black tracking-widest text-neutral-500 uppercase">
+                          {lang === 'vi' ? 'Đang chuẩn bị...' : 'LOADING...'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  <AnimatePresence mode="wait" custom={slideDirection}>
                     <motion.div
                       key={currentPage}
-                      initial={{ opacity: 0, y: 15 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -15 }}
-                      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                      custom={slideDirection}
+                      variants={slideVariants}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      transition={{ 
+                        x: { type: "spring", stiffness: 300, damping: 30 },
+                        opacity: { duration: 0.3 }
+                      }}
                       className={isMobile ? "grid grid-cols-4 gap-3 w-full max-w-sm mx-auto px-1 justify-items-center" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"}
                     >
-                      {filteredArtists.slice(currentPage * pageSize, (currentPage + 1) * pageSize).map((artist) => (
+                      {getArtistsForPage(currentPage, filteredArtists).map((artist) => (
                         isMobile ? (
                           <ArtistLandingMobileItem key={artist.extension} artist={artist} />
                         ) : (
@@ -1229,9 +1418,9 @@ export default function ChorusVNLanding() {
                   <div className="flex items-center justify-center gap-3 mt-6 md:mt-16 bg-white/60 border border-neutral-200/50 py-2.5 px-4 md:py-3.5 md:px-6 rounded-3xl w-fit mx-auto shadow-sm backdrop-blur-sm relative z-20">
                     <button
                       type="button"
-                      onClick={() => setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages)}
+                      onClick={() => handlePageChange((currentPage - 1 + totalPages) % totalPages)}
                       className="p-1.5 rounded-xl hover:bg-neutral-100 text-neutral-500 hover:text-black transition-all cursor-pointer"
-                      title="Trang trước"
+                      title={t('prevPage')}
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
@@ -1241,22 +1430,22 @@ export default function ChorusVNLanding() {
                         <button
                           key={idx}
                           type="button"
-                          onClick={() => setCurrentPage(idx)}
+                          onClick={() => handlePageChange(idx)}
                           className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
                             currentPage === idx
                               ? 'w-6 bg-black'
                               : 'w-2.5 bg-neutral-300 hover:bg-neutral-450'
                           }`}
-                          title={`Trang ${idx + 1}`}
+                          title={`${t('pageIndicator')} ${idx + 1}`}
                         />
                       ))}
                     </div>
 
                     <button
                       type="button"
-                      onClick={() => setCurrentPage((prev) => (prev + 1) % totalPages)}
+                      onClick={() => handlePageChange((currentPage + 1) % totalPages)}
                       className="p-1.5 rounded-xl hover:bg-neutral-100 text-neutral-500 hover:text-black transition-all cursor-pointer"
-                      title="Trang sau"
+                      title={t('nextPage')}
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
@@ -1273,10 +1462,10 @@ export default function ChorusVNLanding() {
         <div className="max-w-7xl mx-auto px-6 sm:px-10">
           <div className="text-center max-w-2xl mx-auto mb-10 md:mb-20 space-y-4">
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-950 font-sans">
-              {config.featuresTitle || t('featuresTitle')}
+              {translateHomeText(config.featuresTitle) || t('featuresTitle')}
             </h2>
             <p className="text-neutral-500 text-sm max-w-lg mx-auto font-medium leading-relaxed">
-              {config.featuresSub || t('featuresSub')}
+              {translateHomeText(config.featuresSub) || t('featuresSub')}
             </p>
           </div>
 
@@ -1286,9 +1475,9 @@ export default function ChorusVNLanding() {
                 <Lock className="w-5 h-5 text-neutral-700" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-extrabold text-neutral-900">{config.feature1Title || t('feature1Title')}</h3>
+                <h3 className="text-lg font-extrabold text-neutral-900">{translateHomeText(config.feature1Title) || t('feature1Title')}</h3>
                 <p className="text-neutral-500 text-xs sm:text-sm leading-relaxed">
-                  {config.feature1Desc || t('feature1Desc')}
+                  {translateHomeText(config.feature1Desc) || t('feature1Desc')}
                 </p>
               </div>
             </div>
@@ -1298,9 +1487,9 @@ export default function ChorusVNLanding() {
                 <Globe className="w-5 h-5 text-neutral-700" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-extrabold text-neutral-900">{config.feature2Title || t('feature2Title')}</h3>
+                <h3 className="text-lg font-extrabold text-neutral-900">{translateHomeText(config.feature2Title) || t('feature2Title')}</h3>
                 <p className="text-neutral-500 text-xs sm:text-sm leading-relaxed">
-                  {config.feature2Desc || t('feature2Desc')}
+                  {translateHomeText(config.feature2Desc) || t('feature2Desc')}
                 </p>
               </div>
             </div>
@@ -1310,9 +1499,9 @@ export default function ChorusVNLanding() {
                 <CheckCircle2 className="w-5 h-5 text-neutral-700" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-extrabold text-neutral-900">{config.feature3Title || t('feature3Title')}</h3>
+                <h3 className="text-lg font-extrabold text-neutral-900">{translateHomeText(config.feature3Title) || t('feature3Title')}</h3>
                 <p className="text-neutral-500 text-xs sm:text-sm leading-relaxed">
-                  {config.feature3Desc || t('feature3Desc')}
+                  {translateHomeText(config.feature3Desc) || t('feature3Desc')}
                 </p>
               </div>
             </div>
@@ -1322,9 +1511,9 @@ export default function ChorusVNLanding() {
                 <Disc3 className="w-5 h-5 text-neutral-700" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-extrabold text-neutral-900">{config.feature4Title || t('feature4Title')}</h3>
+                <h3 className="text-lg font-extrabold text-neutral-900">{translateHomeText(config.feature4Title) || t('feature4Title')}</h3>
                 <p className="text-neutral-500 text-xs sm:text-sm leading-relaxed">
-                  {config.feature4Desc || t('feature4Desc')}
+                  {translateHomeText(config.feature4Desc) || t('feature4Desc')}
                 </p>
               </div>
             </div>
@@ -1336,7 +1525,7 @@ export default function ChorusVNLanding() {
       <footer className="border-t border-neutral-200/40 py-16 px-6 sm:px-10 text-center text-xs">
         <div className="max-w-7xl mx-auto">
           <p className="font-extrabold text-neutral-800 text-sm tracking-wide">
-            {config.footerText || t('footer')}
+            {translateHomeText(config.footerText) || t('footer')}
           </p>
         </div>
       </footer>
@@ -1435,9 +1624,9 @@ export default function ChorusVNLanding() {
 
               <div className="space-y-4 relative z-10">
                 <div className="space-y-0.5 pr-12">
-                  <h3 className="text-lg md:text-xl font-black text-neutral-900">Đăng ký thành viên</h3>
+                  <h3 className="text-lg md:text-xl font-black text-neutral-900">{t('registerTitle')}</h3>
                   <p className="text-neutral-400 font-mono text-[9px] font-black uppercase tracking-wider">
-                    Become a Chorus Member
+                    {t('registerSubTitle')}
                   </p>
                 </div>
 
@@ -1447,19 +1636,19 @@ export default function ChorusVNLanding() {
                       <CheckCircle2 className="w-8 h-8" />
                     </div>
                     <div className="space-y-2">
-                      <h4 className="text-base font-bold text-neutral-900">Đăng ký hoàn tất!</h4>
+                      <h4 className="text-base font-bold text-neutral-900">{t('registerSuccessTitle')}</h4>
                       <p className="text-neutral-600 text-xs sm:text-sm leading-relaxed">
-                        Tài khoản <span className="font-extrabold text-black">{regUsername}</span> đã đăng ký thành công.
+                        {t('registerSuccessDesc1').replace('{username}', regUsername)}
                       </p>
                       <p className="text-neutral-500 text-xs leading-relaxed max-w-sm mx-auto">
-                        Quản trị viên sẽ xác thực tài khoản của bạn. Sau khi được duyệt, trang nghệ sĩ <span className="font-extrabold text-purple-600">{regExtension}.chorus.vn</span> sẽ chính thức hoạt động!
+                        {t('registerSuccessDesc2').replace('{extension}', regExtension)}
                       </p>
                     </div>
                     <button
                       onClick={() => setShowRegisterModal(false)}
                       className="w-full bg-black hover:bg-neutral-800 text-white font-extrabold py-3.5 px-6 rounded-xl text-xs transition-all cursor-pointer shadow-sm"
                     >
-                      Đóng cửa sổ
+                      {t('closeWindow')}
                     </button>
                   </div>
                 ) : (
@@ -1524,7 +1713,7 @@ export default function ChorusVNLanding() {
 
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block">
-                        Tên nghệ sĩ
+                        {t('artistNameLabel')}
                       </label>
                       <input
                         type="text"
@@ -1542,7 +1731,7 @@ export default function ChorusVNLanding() {
                             setRegExtension(slug.replace(/[^a-z0-9_-]/g, ''));
                           }
                         }}
-                        placeholder="Nghệ danh của bạn"
+                        placeholder={t('artistNamePlaceholder')}
                         className="w-full bg-neutral-50 border border-neutral-200/80 rounded-xl px-4 py-3 text-neutral-800 text-xs font-medium focus:outline-none focus:border-neutral-400 focus:bg-white transition-all font-sans"
                       />
                     </div>
@@ -1550,7 +1739,7 @@ export default function ChorusVNLanding() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block">
-                          Tên đăng nhập
+                          {t('usernameLabel')}
                         </label>
                         <input
                           type="text"
@@ -1561,17 +1750,17 @@ export default function ChorusVNLanding() {
                             setUsernameTouched(true);
                             setRegUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''));
                           }}
-                          placeholder={regArtistName ? removeAccents(regArtistName).replace(/[^a-z0-9_]/g, '') : "ten-dang-nhap-admin"}
+                          placeholder={regArtistName ? removeAccents(regArtistName).replace(/[^a-z0-9_]/g, '') : t('usernamePlaceholder')}
                           className="w-full bg-neutral-50 border border-neutral-200/80 rounded-xl px-4 py-3 text-neutral-800 text-xs font-medium focus:outline-none focus:border-neutral-400 focus:bg-white transition-all font-sans"
                         />
                         <span className="text-[9px] text-neutral-400 block mt-0.5 leading-tight">
-                          * Chỉ gồm chữ thường không dấu, số, dấu gạch dưới.
+                          {t('usernameNote')}
                         </span>
                       </div>
 
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block">
-                          Phần Mở Rộng
+                          {t('extensionLabel')}
                         </label>
                         <input
                           type="text"
@@ -1582,18 +1771,18 @@ export default function ChorusVNLanding() {
                             setExtensionTouched(true);
                             setRegExtension(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''));
                           }}
-                          placeholder={regArtistName ? removeAccents(regArtistName).replace(/[^a-z0-9_-]/g, '') : "nghesi"}
+                          placeholder={regArtistName ? removeAccents(regArtistName).replace(/[^a-z0-9_-]/g, '') : t('extensionPlaceholder')}
                           className="w-full bg-neutral-50 border border-neutral-200/80 rounded-xl px-4 py-3 text-neutral-800 text-xs font-medium focus:outline-none focus:border-neutral-400 focus:bg-white transition-all font-sans"
                         />
                         <span className="text-[9px] text-neutral-400 block mt-0.5 leading-tight">
-                          Link kho nhạc của bạn sẽ là <span className="font-extrabold text-neutral-600">{regExtension || 'xxx'}</span>.chorus.vn ( tự động lấy phần trên để điền vào )
+                          {t('extensionNote').replace('{extension}', regExtension || 'xxx')}
                         </span>
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block">
-                        Địa chỉ Email
+                        {t('emailLabel')}
                       </label>
                       <input
                         type="email"
@@ -1608,7 +1797,7 @@ export default function ChorusVNLanding() {
 
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block">
-                        Mật khẩu quản trị
+                        {t('passwordLabel')}
                       </label>
                       <input
                         type="password"
@@ -1616,7 +1805,7 @@ export default function ChorusVNLanding() {
                         disabled={regSubmitting}
                         value={regPassword}
                         onChange={(e) => setRegPassword(e.target.value)}
-                        placeholder="Nhập mật khẩu..."
+                        placeholder={t('passwordPlaceholder')}
                         className="w-full bg-neutral-50 border border-neutral-200/80 rounded-xl px-4 py-3 text-neutral-800 text-xs font-medium focus:outline-none focus:border-neutral-400 focus:bg-white transition-all font-sans"
                       />
                     </div>
@@ -1624,19 +1813,19 @@ export default function ChorusVNLanding() {
                     {/* Captcha Block */}
                     <div className="space-y-1.5 bg-neutral-50 border border-neutral-200/60 p-4 rounded-2xl">
                       <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block mb-1">
-                        Mã xác nhận bảo vệ (Captcha)
+                        {t('captchaLabel')}
                       </label>
                       <div className="flex items-center gap-3">
                         <div
                           className="rounded-xl overflow-hidden border border-neutral-200 shrink-0 bg-neutral-900 select-none cursor-pointer flex items-center justify-center text-[10px] text-neutral-400 font-mono"
                           style={{ width: '130px', height: '45px' }}
                           onClick={fetchCaptcha}
-                          title="Click để đổi mã khác"
+                          title={t('captchaClickTooltip')}
                         >
                           {captchaSvg ? (
                             <div dangerouslySetInnerHTML={{ __html: captchaSvg }} className="w-full h-full" />
                           ) : (
-                            <span className="animate-pulse">Đang tải...</span>
+                            <span className="animate-pulse">{t('loading')}</span>
                           )}
                         </div>
                         <button
@@ -1644,7 +1833,7 @@ export default function ChorusVNLanding() {
                           onClick={fetchCaptcha}
                           disabled={regSubmitting}
                           className="p-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 rounded-xl transition-colors cursor-pointer flex items-center justify-center"
-                          title="Tải lại Captcha"
+                          title={t('captchaReloadTooltip')}
                         >
                           <RefreshCw className="w-4 h-4" />
                         </button>
@@ -1654,7 +1843,7 @@ export default function ChorusVNLanding() {
                           disabled={regSubmitting}
                           value={captchaAnswer}
                           onChange={(e) => setCaptchaAnswer(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
-                          placeholder="Nhập chữ..."
+                          placeholder={t('captchaPlaceholder')}
                           className="w-full bg-white border border-neutral-200/80 rounded-xl px-4 py-3 text-neutral-850 text-xs font-black tracking-widest uppercase focus:outline-none focus:border-neutral-400 transition-all font-sans"
                         />
                       </div>
@@ -1671,7 +1860,7 @@ export default function ChorusVNLanding() {
                       disabled={regSubmitting}
                       className="w-full bg-black hover:bg-neutral-800 text-white font-extrabold py-4 px-6 rounded-xl text-xs transition-all cursor-pointer shadow-sm uppercase tracking-wider flex items-center justify-center gap-2"
                     >
-                      {regSubmitting ? 'Đang gửi...' : 'ĐĂNG KÝ THÀNH VIÊN'}
+                      {regSubmitting ? t('submitting') : t('submitButton')}
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   </form>

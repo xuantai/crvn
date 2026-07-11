@@ -1,5 +1,5 @@
 {
-  "name": "remix fix lỗi: Chorus.vn",
+  "name": "Tạo tiểu sử, cấu hình db: Chorus.vn",
   "description": "Website quản lý và phát hành demo nhạc dành cho nhạc sĩ.",
   "requestFramePermissions": [],
   "majorCapabilities": [

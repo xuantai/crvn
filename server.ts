@@ -151,6 +151,10 @@ async function loadArtists() {
             artist.email = "";
             changed = true;
           }
+          if (!artist.defaultLanguage) {
+            artist.defaultLanguage = "vi";
+            changed = true;
+          }
         });
         await fs.writeFile(ARTISTS_FILE, JSON.stringify(artists, null, 2), 'utf-8');
         if (changed) await setDoc(masterDoc, { artists });
@@ -187,6 +191,10 @@ async function loadArtists() {
         }
         if (artist.email === undefined) {
           artist.email = "";
+          changed = true;
+        }
+        if (!artist.defaultLanguage) {
+          artist.defaultLanguage = "vi";
           changed = true;
         }
       });
@@ -258,6 +266,7 @@ async function saveArtists(list: any[]) {
 const LANDING_FILE = path.join(process.cwd(), 'landing_config.json');
 let landingConfig = {
   tagline: "✧ SẮP RA MẮT",
+  heroTitle: "",
   heroSubtitle: "Nơi những ca khúc khởi đầu.",
   heroDescription: "Chúng tôi đang xây dựng một không gian trực tuyến, nơi các nhạc sĩ, ca sĩ, nhà sản xuất âm nhạc, quản lý nghệ sĩ, thương hiệu... có thể chia sẻ các ca khúc đã phát hành và demo chưa ra mắt của mình.",
   footerText: "CHORUS.VN © 2026 - Nơi những ca khúc bắt đầu.",
@@ -272,7 +281,12 @@ let landingConfig = {
   featuresTitle: "Được thiết kế cho trải nghiệm đỉnh cao",
   featuresSub: "Tích hợp những công nghệ hiện đại nhất để tối ưu hóa quy trình phân phối và lưu trữ nội bộ.",
   cloudSyncEnabled: true,
-  systemIp: "103.1.2.3"
+  systemIp: "103.1.2.3",
+  pageTitle: "",
+  faviconUrl: "",
+  ogImageUrl: "",
+  statusBadge: "",
+  staticTranslations: {} as any
 };
 
 const SUBSCRIBERS_FILE = path.join(process.cwd(), 'subscribers.json');
@@ -775,6 +789,7 @@ async function loadData(explicitUsername?: string) {
         
         if (!data.demos) data.demos = [];
         if (!data.playlists) data.playlists = [];
+        if (!data.defaultLanguage) data.defaultLanguage = artist.defaultLanguage || 'vi';
         
         if (data.adminPassword) {
           currentAdminPasswordLocal = data.adminPassword;
@@ -847,6 +862,7 @@ async function loadData(explicitUsername?: string) {
       
       if (!parsedData.demos) parsedData.demos = [];
       if (!parsedData.playlists) parsedData.playlists = [];
+      if (!parsedData.defaultLanguage) parsedData.defaultLanguage = artist.defaultLanguage || 'vi';
       
       if (parsedData.adminPassword) {
         currentAdminPasswordLocal = parsedData.adminPassword;
@@ -898,6 +914,7 @@ async function loadData(explicitUsername?: string) {
     pageTitle: `Kho nhạc của ${artist.artistName || 'Nghệ sĩ'}`,
     artistName: artist.artistName || 'Nghệ sĩ',
     artistBio: `Thiên đường nhạc của ${artist.artistName || 'Nghệ sĩ'}`,
+    defaultLanguage: artist.defaultLanguage || 'vi',
     homeCoverUrl: '',
     faviconUrl: '',
     ogImageUrl: '',
@@ -1796,19 +1813,181 @@ function generateCaptchaSvg(text: string) {
       feature3Title, feature3Desc, feature4Title, feature4Desc,
       featuresTitle, featuresSub,
       cloudSyncEnabled, systemIp,
-      pageTitle, ogImageUrl, faviconUrl
+      pageTitle, ogImageUrl, faviconUrl, statusBadge
     } = req.body;
     await saveLandingConfig({ 
       tagline, heroTitle, heroSubtitle, heroDescription, footerText,
       feature1Title, feature1Desc, feature2Title, feature2Desc,
       feature3Title, feature3Desc, feature4Title, feature4Desc,
+      featuresTitle: featuresTitle || '',
+      featuresSub: featuresSub || '',
       cloudSyncEnabled: cloudSyncEnabled !== false,
       systemIp: systemIp || '',
       pageTitle: pageTitle || '',
       ogImageUrl: ogImageUrl || '',
-      faviconUrl: faviconUrl || ''
+      faviconUrl: faviconUrl || '',
+      statusBadge: statusBadge || ''
     });
     res.json({ success: true, landingConfig });
+  });
+
+  app.post('/api/acp/landing-config/translate-all', express.json(), async (req: any, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+      const config = await loadLandingConfig();
+
+      const landingFields = [
+        config.tagline,
+        config.heroTitle,
+        config.heroSubtitle,
+        config.heroDescription,
+        config.footerText,
+        config.pageTitle,
+        (config as any).featuresTitle,
+        (config as any).featuresSub,
+        (config as any).statusBadge,
+        (config as any).feature1Title,
+        (config as any).feature1Desc,
+        (config as any).feature2Title,
+        (config as any).feature2Desc,
+        (config as any).feature3Title,
+        (config as any).feature3Desc,
+        (config as any).feature4Title,
+        (config as any).feature4Desc,
+      ];
+
+      const commonStrings = [
+        "Thiên đường âm nhạc của",
+        "Nghe trên Spotify",
+        "Đề Mô",
+        "Ra Rồi",
+        "DEMO",
+        "RELEASED",
+        "Cần Mật Khẩu",
+        "Nghe Ngay",
+        "Chưa có demo nào.",
+        "MV Đã Phát Hành",
+        "Chưa có MV nào.",
+        "Hiển thị thêm",
+        "người nghe hàng tháng",
+        "Đang tải trang...",
+        "Trở về",
+        "AdminCP",
+        "Chỉnh sửa",
+        "Cần mật khẩu",
+        "Nhập mật khẩu để nghe demo này",
+        "Mở khóa",
+        "Sai mật khẩu",
+        "Lời bài hát",
+        "Chưa cập nhật lời bài hát",
+        "Sáng tác:",
+        "Tiếng Việt",
+        "Đề mô",
+        "Ra Rồi",
+        "Tìm kiếm bài hát...",
+        "Chưa có bài hát nào",
+        "Danh sách đang được cập nhật, bạn vui lòng quay lại sau nhé!",
+        "Đóng tìm kiếm",
+        "Tìm kiếm bài hát",
+        "Không tìm thấy demo",
+        "Kho Nhạc"
+      ];
+
+      const stringsToTranslate = Array.from(new Set([
+        ...landingFields,
+        ...commonStrings
+      ].filter(s => s && typeof s === 'string' && s.trim().length > 0).map(s => s.trim())));
+
+      if (stringsToTranslate.length === 0) {
+        return res.json({ success: true, message: 'Không có dữ liệu nào cần dịch.', config });
+      }
+
+      const stringToId = new Map<string, string>();
+      const idToString = new Map<string, string>();
+      let counter = 1;
+      stringsToTranslate.forEach(str => {
+        const id = String(counter++);
+        stringToId.set(str, id);
+        idToString.set(id, str);
+      });
+
+      const geminiInput: Record<string, string> = {};
+      stringToId.forEach((id, str) => {
+        geminiInput[id] = str;
+      });
+
+      const targetLangs = ['en', 'ko', 'ja', 'th', 'zh'];
+      const staticTranslations: any = (config as any).staticTranslations || {};
+
+      const ai = new GoogleGenAI({
+        apiKey: process.env.GEMINI_API_KEY,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          }
+        }
+      });
+
+      for (const lang of targetLangs) {
+        const targetLanguageName = lang === 'en' ? 'English' : 
+                                   lang === 'ko' ? 'Korean' : 
+                                   lang === 'ja' ? 'Japanese' : 
+                                   lang === 'th' ? 'Thai' : 'Chinese';
+                                   
+        try {
+          const prompt = `Translate the following Vietnamese texts into ${targetLanguageName}.
+These are general text labels, button labels, titles, and descriptions for a music web application.
+The input is a JSON map where the keys are ID numbers and the values are the Vietnamese texts to translate.
+Translate each value to ${targetLanguageName}, keeping the exact same ID key.
+Maintain exact line breaks (\\n), formatting, and emojis for each translated string.
+Return ONLY a valid JSON object of the translated map. Do not wrap in markdown \`\`\`json blocks.
+
+Input:
+${JSON.stringify(geminiInput, null, 2)}`;
+
+          const response = await generateContentWithRetry(
+            ai,
+            'gemini-3.5-flash',
+            prompt
+          );
+
+          const text = response.text?.trim() || "{}";
+          let cleanText = text;
+          if (cleanText.startsWith("```")) {
+            cleanText = cleanText.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+          }
+          
+          let translatedMap: Record<string, string> = {};
+          try {
+            translatedMap = JSON.parse(cleanText);
+          } catch (jsonErr) {
+            console.error(`Failed to parse landing config translation for ${targetLanguageName}:`, cleanText);
+          }
+          
+          staticTranslations[lang] = staticTranslations[lang] || {};
+          
+          Object.entries(translatedMap).forEach(([id, translatedVal]) => {
+            const originalStr = idToString.get(id);
+            if (originalStr && typeof translatedVal === 'string') {
+              staticTranslations[lang][originalStr] = translatedVal;
+            }
+          });
+        } catch (langErr: any) {
+          console.error(`Error translating landing config to ${targetLanguageName}:`, langErr.message || langErr);
+        }
+      }
+
+      (config as any).staticTranslations = staticTranslations;
+      await saveLandingConfig(config);
+
+      res.json({ success: true, landingConfig: config });
+    } catch (err: any) {
+      console.error('Error in translate-landing-config:', err);
+      res.status(500).json({ error: err.message || 'Internal Server Error' });
+    }
   });
 
   app.post('/api/acp/login', (req, res) => {
@@ -1843,7 +2022,7 @@ function generateCaptchaSvg(text: string) {
         const d = await loadData(a.username);
         enrichedArtists.push({
           ...aWithoutPassword,
-          homeCoverUrl: d?.config?.homeCoverUrl || ''
+          homeCoverUrl: d?.config?.homeCoverUrl || d?.homeCoverUrl || ''
         });
       } catch (err) {
         enrichedArtists.push(aWithoutPassword);
@@ -1856,13 +2035,13 @@ function generateCaptchaSvg(text: string) {
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const { artistName, username, extension, password, verified, dbConfig, isPublic, hasExternalWebsite, externalWebsiteUrl } = req.body;
+    const { artistName, username, extension, password, verified, dbConfig, isPublic, hasExternalWebsite, externalWebsiteUrl, artistBio } = req.body;
     if (!artistName || !username || !extension || !password) {
       return res.status(400).json({ error: 'Vui lòng điền đầy đủ các thông tin bắt buộc!' });
     }
     
     if (artists.some(a => a.username.toLowerCase() === username.toLowerCase().trim() || a.extension.toLowerCase() === extension.toLowerCase().trim())) {
-      return res.status(400).json({ error: 'Username hoặc Phần mở rộng đã tồn tại!' });
+      return res.status(400).json({ error: 'Username hoặc Phân mở rộng đã tồn tại!' });
     }
     
     const hashedPassword = bcrypt.hashSync(password, 10);
@@ -1882,7 +2061,11 @@ function generateCaptchaSvg(text: string) {
     
     artists.push(newArtist);
     await saveArtists(artists);
-    await loadData(newArtist.username);
+    const data = await loadData(newArtist.username);
+    if (artistBio !== undefined) {
+      data.artistBio = artistBio;
+      await saveData(newArtist.username, data);
+    }
     
     const responseArtist = {
       ...newArtist,
@@ -1896,7 +2079,7 @@ function generateCaptchaSvg(text: string) {
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const { originalUsername, artistName, extension, password, verified, dbConfig, isPublic, approveNameChange, rejectNameChange, approveUsernameChange, rejectUsernameChange, approveExtensionChange, rejectExtensionChange, hasExternalWebsite, externalWebsiteUrl, email, activated, emailVerified } = req.body;
+    const { originalUsername, artistName, extension, password, verified, dbConfig, isPublic, approveNameChange, rejectNameChange, approveUsernameChange, rejectUsernameChange, approveExtensionChange, rejectExtensionChange, hasExternalWebsite, externalWebsiteUrl, email, activated, emailVerified, defaultLanguage, artistBio } = req.body;
     const artistIdx = artists.findIndex(a => a.username === originalUsername);
     if (artistIdx === -1) {
       return res.status(404).json({ error: 'Không tìm thấy nghệ sĩ!' });
@@ -1966,10 +2149,15 @@ function generateCaptchaSvg(text: string) {
       artist.email = email !== undefined ? email : artist.email;
       artist.activated = activated !== undefined ? !!activated : (artist.activated !== false);
       artist.emailVerified = emailVerified !== undefined ? !!emailVerified : artist.emailVerified;
+      artist.defaultLanguage = defaultLanguage !== undefined ? defaultLanguage : (artist.defaultLanguage || 'vi');
       
       const data = await loadData(artist.username);
       data.artistName = artist.artistName;
       data.adminPassword = artist.password;
+      data.defaultLanguage = artist.defaultLanguage;
+      if (artistBio !== undefined) {
+        data.artistBio = artistBio;
+      }
       await saveData(artist.username, data);
     }
     
@@ -2435,6 +2623,15 @@ function generateCaptchaSvg(text: string) {
         data.pendingExtensionChange = req.body.extension;
         await saveArtists(artists);
         nameChangeNotice = true;
+      }
+    }
+
+    if (req.body.defaultLanguage !== undefined) {
+      data.defaultLanguage = req.body.defaultLanguage;
+      const artist = req.artist;
+      if (artist) {
+        artist.defaultLanguage = req.body.defaultLanguage;
+        await saveArtists(artists);
       }
     }
 
@@ -4049,35 +4246,335 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     res.status(404).json({ error: 'Not found' });
   });
 
+  // Helper for translation with retry logic & fallback models
+  function getRetryDelay(error: any): number | null {
+    try {
+      const details = error?.details || error?.status?.details || error?.error?.details;
+      if (Array.isArray(details)) {
+        for (const detail of details) {
+          if (detail?.retryDelay) {
+            const match = detail.retryDelay.match(/^([0-9.]+)(s|ms)?$/);
+            if (match) {
+              const val = parseFloat(match[1]);
+              const unit = match[2] || 's';
+              return unit === 'ms' ? val : val * 1000;
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    try {
+      const errMsg = error?.message || error?.error?.message || '';
+      const match = errMsg.match(/retry in ([0-9.]+)\s*s/i);
+      if (match) {
+        return parseFloat(match[1]) * 1000;
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    return null;
+  }
+
+  async function generateContentWithRetry(
+    ai: any,
+    model: string,
+    contents: any,
+    config: any = {},
+    retries = 5,
+    delay = 1500
+  ): Promise<any> {
+    let attempt = 0;
+    const modelsToTry = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-3.1-flash-lite'];
+    
+    while (attempt < retries) {
+      const currentModel = attempt >= 1 ? modelsToTry[attempt % modelsToTry.length] : model;
+      try {
+        const response = await ai.models.generateContent({
+          model: currentModel,
+          contents,
+          config,
+        });
+        return response;
+      } catch (error: any) {
+        attempt++;
+        console.warn(`Gemini API attempt ${attempt} failed with model ${currentModel}:`, error?.message || error);
+        if (attempt >= retries) {
+          throw error;
+        }
+        
+        let waitTime = delay * Math.pow(2, attempt - 1);
+        const detectedDelay = getRetryDelay(error);
+        if (detectedDelay !== null) {
+          waitTime = detectedDelay + 1500; // Add 1.5 seconds safety buffer
+          console.log(`Detected 429 Rate Limit. Sleeping for ${waitTime}ms before retry...`);
+        }
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+    }
+  }
+
   app.post('/api/translate', express.json(), async (req, res) => {
     const { text, targetLang } = req.body;
     if (!text) return res.json({ translated: '' });
     
     try {
-       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-       const targetLanguageName = targetLang === 'en' ? 'English' : 
-                                  targetLang === 'ko' ? 'Korean' : 
-                                  targetLang === 'ja' ? 'Japanese' : 
-                                  targetLang === 'th' ? 'Thai' : 
-                                  targetLang === 'zh' ? 'Chinese' : 'Vietnamese';
-       
-       if (targetLanguageName === 'Vietnamese') return res.json({ translated: text });
-  
-       const response = await ai.models.generateContent({
-         model: 'gemini-2.5-flash',
-         contents: [
-           {
-             role: 'user', 
-             parts: [{ text: `Translate the following short text (like a song title or bio) into ${targetLanguageName}. Only output the translation, do not include any quotes, extra words, or markdown. Text to translate:\n\n${text}` }]
-           }
-         ]
-       });
-       
-       const translated = response.text?.trim() || text;
-       res.json({ translated });
+        const ai = new GoogleGenAI({
+          apiKey: process.env.GEMINI_API_KEY,
+          httpOptions: {
+            headers: {
+              'User-Agent': 'aistudio-build',
+            }
+          }
+        });
+        const targetLanguageName = targetLang === 'en' ? 'English' : 
+                                   targetLang === 'ko' ? 'Korean' : 
+                                   targetLang === 'ja' ? 'Japanese' : 
+                                   targetLang === 'th' ? 'Thai' : 
+                                   targetLang === 'zh' ? 'Chinese' : 'Vietnamese';
+        
+        if (targetLanguageName === 'Vietnamese') return res.json({ translated: text });
+   
+        const response = await generateContentWithRetry(
+          ai,
+          'gemini-2.5-flash',
+          [
+            {
+              role: 'user', 
+              parts: [{ text: `Translate the following short text (like a song title or bio) into ${targetLanguageName}. Only output the translation, do not include any quotes, extra words, or markdown. Text to translate:\n\n${text}` }]
+            }
+          ]
+        );
+        
+        const translated = response.text?.trim() || text;
+        res.json({ translated });
     } catch (error) {
-       console.log('Translation fallback (quota or network error):', (error as any)?.message);
-       res.json({ translated: text });
+        console.log('Translation fallback (quota or network error):', (error as any)?.message);
+        res.json({ translated: text });
+    }
+  });
+
+  app.post('/api/admin/translate-all', express.json(), async (req: any, res) => {
+    if (!isRequestAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    try {
+      const data = await loadData(req.artist?.username);
+      
+      // Collect all unique strings that can be translated
+      const stringsToTranslate = Array.from(new Set([
+        data.pageTitle,
+        data.artistBio,
+        data.tab1Name,
+        data.tab2Name,
+        data.tab3Name,
+        ...(data.demos || []).flatMap((d: any) => [d.title, d.lyrics, d.composer, d.singer, d.brandBrief, d.brandName]),
+        ...(data.playlists || []).flatMap((p: any) => [p.name, p.description])
+      ].filter(s => s && typeof s === 'string' && s.trim().length > 0).map(s => s.trim())));
+      
+      if (stringsToTranslate.length === 0) {
+        return res.json({ success: true, message: 'Không có dữ liệu nào cần dịch.', data });
+      }
+      
+      const stringToId = new Map<string, string>();
+      const idToString = new Map<string, string>();
+      let counter = 1;
+      stringsToTranslate.forEach(str => {
+        const id = String(counter++);
+        stringToId.set(str, id);
+        idToString.set(id, str);
+      });
+      
+      const geminiInput: Record<string, string> = {};
+      stringToId.forEach((id, str) => {
+        geminiInput[id] = str;
+      });
+      
+      const targetLangs = ['en', 'ko', 'ja', 'th', 'zh'];
+      const staticTranslations: any = data.staticTranslations || {};
+      
+      const ai = new GoogleGenAI({
+        apiKey: process.env.GEMINI_API_KEY,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          }
+        }
+      });
+      
+      for (const lang of targetLangs) {
+        const targetLanguageName = lang === 'en' ? 'English' : 
+                                   lang === 'ko' ? 'Korean' : 
+                                   lang === 'ja' ? 'Japanese' : 
+                                   lang === 'th' ? 'Thai' : 'Chinese';
+                                   
+        try {
+          const prompt = `Translate the following Vietnamese texts into ${targetLanguageName}.
+These are music catalog fields like titles, bios, descriptions, and song lyrics.
+The input is a JSON map where the keys are ID numbers and the values are the Vietnamese texts to translate.
+Translate each value to ${targetLanguageName}, keeping the exact same ID key.
+Maintain exact line breaks (\\n), formatting, and emojis for each translated string.
+Return ONLY a valid JSON object of the translated map. Do not wrap in markdown \`\`\`json blocks.
+
+Input:
+${JSON.stringify(geminiInput, null, 2)}`;
+
+          const response = await generateContentWithRetry(
+            ai,
+            'gemini-2.5-flash',
+            prompt
+          );
+
+          const text = response.text?.trim() || "{}";
+          let cleanText = text;
+          if (cleanText.startsWith("```")) {
+            cleanText = cleanText.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+          }
+          
+          let translatedMap: Record<string, string> = {};
+          try {
+            translatedMap = JSON.parse(cleanText);
+          } catch (jsonErr) {
+            console.error(`Failed to parse translation for ${targetLanguageName}:`, cleanText);
+          }
+          
+          staticTranslations[lang] = staticTranslations[lang] || {};
+          
+          Object.entries(translatedMap).forEach(([id, translatedVal]) => {
+            const originalStr = idToString.get(id);
+            if (originalStr && typeof translatedVal === 'string') {
+              staticTranslations[lang][originalStr] = translatedVal;
+            }
+          });
+        } catch (langErr: any) {
+          console.error(`Error translating to ${targetLanguageName}:`, langErr.message || langErr);
+        }
+      }
+      
+      data.staticTranslations = staticTranslations;
+      await saveData(data);
+      
+      res.json({ success: true, data });
+    } catch (err: any) {
+      console.error('Error in translate-all:', err);
+      res.status(500).json({ error: err.message || 'Internal Server Error' });
+    }
+  });
+
+  app.post('/api/acp/artists/translate-all', express.json(), async (req: any, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    const { username } = req.body;
+    if (!username) {
+      return res.status(400).json({ error: 'Thiếu username của nghệ sĩ!' });
+    }
+
+    try {
+      const data = await loadData(username);
+      
+      // Collect all unique strings that can be translated, EXCLUDING title, lyrics, composer, singer
+      const stringsToTranslate = Array.from(new Set([
+        data.pageTitle,
+        data.artistBio,
+        data.tab1Name,
+        data.tab2Name,
+        data.tab3Name,
+        ...(data.demos || []).flatMap((d: any) => [d.brandBrief, d.brandName]),
+        ...(data.playlists || []).flatMap((p: any) => [p.name, p.title, p.description, p.desc])
+      ].filter(s => s && typeof s === 'string' && s.trim().length > 0).map(s => s.trim())));
+      
+      if (stringsToTranslate.length === 0) {
+        return res.json({ success: true, message: 'Không có dữ liệu nào cần dịch.', data });
+      }
+      
+      const stringToId = new Map<string, string>();
+      const idToString = new Map<string, string>();
+      let counter = 1;
+      stringsToTranslate.forEach(str => {
+        const id = String(counter++);
+        stringToId.set(str, id);
+        idToString.set(id, str);
+      });
+      
+      const geminiInput: Record<string, string> = {};
+      stringToId.forEach((id, str) => {
+        geminiInput[id] = str;
+      });
+      
+      const targetLangs = ['en', 'ko', 'ja', 'th', 'zh'];
+      const staticTranslations: any = data.staticTranslations || {};
+      
+      const ai = new GoogleGenAI({
+        apiKey: process.env.GEMINI_API_KEY,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          }
+        }
+      });
+      
+      for (const lang of targetLangs) {
+        const targetLanguageName = lang === 'en' ? 'English' : 
+                                   lang === 'ko' ? 'Korean' : 
+                                   lang === 'ja' ? 'Japanese' : 
+                                   lang === 'th' ? 'Thai' : 'Chinese';
+                                   
+        try {
+          const prompt = `Translate the following Vietnamese texts into ${targetLanguageName}.
+These are music catalog fields like titles, bios, and descriptions.
+The input is a JSON map where the keys are ID numbers and the values are the Vietnamese texts to translate.
+Translate each value to ${targetLanguageName}, keeping the exact same ID key.
+Maintain exact line breaks (\\n), formatting, and emojis for each translated string.
+Return ONLY a valid JSON object of the translated map. Do not wrap in markdown \`\`\`json blocks.
+
+Input:
+${JSON.stringify(geminiInput, null, 2)}`;
+
+          const response = await generateContentWithRetry(
+            ai,
+            'gemini-2.5-flash',
+            prompt
+          );
+
+          const text = response.text?.trim() || "{}";
+          let cleanText = text;
+          if (cleanText.startsWith("```")) {
+            cleanText = cleanText.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+          }
+          
+          let translatedMap: Record<string, string> = {};
+          try {
+            translatedMap = JSON.parse(cleanText);
+          } catch (jsonErr) {
+            console.error(`Failed to parse translation for ${targetLanguageName}:`, cleanText);
+          }
+          
+          staticTranslations[lang] = staticTranslations[lang] || {};
+          
+          Object.entries(translatedMap).forEach(([id, translatedVal]) => {
+            const originalStr = idToString.get(id);
+            if (originalStr && typeof translatedVal === 'string') {
+              staticTranslations[lang][originalStr] = translatedVal;
+            }
+          });
+        } catch (langErr: any) {
+          console.error(`Error translating to ${targetLanguageName}:`, langErr.message || langErr);
+        }
+      }
+      
+      data.staticTranslations = staticTranslations;
+      await saveData(username, data);
+      
+      res.json({ success: true, data });
+    } catch (err: any) {
+      console.error('Error in translate-all:', err);
+      res.status(500).json({ error: err.message || 'Internal Server Error' });
     }
   });
 

@@ -16,6 +16,8 @@ interface Artist {
   hasExternalWebsite?: boolean;
   externalWebsiteUrl?: string;
   customDomain?: string;
+  defaultLanguage?: string;
+  artistBio?: string;
 }
 
 export default function ACPControlPanel() {
@@ -56,7 +58,8 @@ export default function ACPControlPanel() {
       });
     });
   };
-  const [activeTab, setActiveTab] = useState<'artists' | 'landing' | 'tickets' | 'compose-mail'>('artists');
+  const [activeTab, setActiveTab] = useState<'artists' | 'landing' | 'tickets'>('artists');
+  const [showComposeModal, setShowComposeModal] = useState(false);
   const [artistCurrentPage, setArtistCurrentPage] = useState(0);
   const [artistPageSize, setArtistPageSize] = useState<number>(20); // 20, 50, 100
 
@@ -102,6 +105,9 @@ export default function ACPControlPanel() {
   const [artistHasExternalWebsite, setArtistHasExternalWebsite] = useState(false);
   const [artistExternalWebsiteUrl, setArtistExternalWebsiteUrl] = useState('');
   const [formErr, setFormErr] = useState('');
+  const [artistDefaultLanguage, setArtistDefaultLanguage] = useState('vi');
+  const [isTranslatingArtist, setIsTranslatingArtist] = useState(false);
+  const [artistBio, setArtistBio] = useState('');
 
   // Form states (Landing Config)
   const [landingTagline, setLandingTagline] = useState('');
@@ -132,8 +138,10 @@ export default function ACPControlPanel() {
   const [feature4Desc, setFeature4Desc] = useState('');
   const [featuresTitle, setFeaturesTitle] = useState('');
   const [featuresSub, setFeaturesSub] = useState('');
+  const [statusBadge, setStatusBadge] = useState('');
 
   const [isSavingLanding, setIsSavingLanding] = useState(false);
+  const [isTranslatingLanding, setIsTranslatingLanding] = useState(false);
   const [landingSuccessMsg, setLandingSuccessMsg] = useState('');
   const [subscribers, setSubscribers] = useState<string[]>([]);
 
@@ -176,10 +184,10 @@ export default function ACPControlPanel() {
   }, [token]);
 
   useEffect(() => {
-    if (token && activeTab === 'compose-mail') {
+    if (token && showComposeModal) {
       fetchSentMails();
     }
-  }, [token, activeTab]);
+  }, [token, showComposeModal]);
 
   useEffect(() => {
     setArtistCurrentPage(0);
@@ -257,6 +265,9 @@ export default function ACPControlPanel() {
         setLandingPageTitle(data.pageTitle || '');
         setLandingOgImageUrl(data.ogImageUrl || '');
         setLandingFaviconUrl(data.faviconUrl || '');
+        setStatusBadge(data.statusBadge || '');
+        setFeaturesTitle(data.featuresTitle || 'Được thiết kế cho trải nghiệm đỉnh cao');
+        setFeaturesSub(data.featuresSub || 'Tích hợp những công nghệ hiện đại nhất để tối ưu hóa quy trình phân phối và lưu trữ nội bộ.');
         setFeature1Title(data.feature1Title || 'Bảo mật demo & tuyển tập');
         setFeature1Desc(data.feature1Desc || 'Thiết lập mật mã cho từng tác phẩm chưa công bố, ngăn chặn nghe trộm hoặc chia sẻ trái phép. Gửi link demo bảo mật cho ca sĩ, nhạc sĩ phối khí và các đối tác đáng tin cậy.');
         setFeature2Title(data.feature2Title || 'Dịch thuật thông minh (AI Translation)');
@@ -519,7 +530,9 @@ export default function ACPControlPanel() {
           isPublic: artistIsPublic,
           dbConfig: artistDbConfig,
           hasExternalWebsite: artistHasExternalWebsite,
-          externalWebsiteUrl: artistExternalWebsiteUrl
+          externalWebsiteUrl: artistExternalWebsiteUrl,
+          defaultLanguage: artistDefaultLanguage,
+          artistBio
         })
       });
 
@@ -539,6 +552,39 @@ export default function ACPControlPanel() {
       }
     } catch (err) {
       setFormErr('Lỗi kết nối máy chủ!');
+    }
+  };
+
+  const handleAITranslateArtist = async () => {
+    if (!editingArtist) return;
+    if (!(await showConfirm('Hệ thống sẽ sử dụng AI (Gemini) để dịch phần Bio, tiêu đề trang, tên các tabs, thông tin brief/thương hiệu, tên & mô tả các danh sách phát của nghệ sĩ này sang 5 ngôn ngữ khác (Anh, Hàn, Nhật, Thái, Trung).\n\nLưu ý: Để giữ nguyên bản sắc nghệ thuật, hệ thống sẽ KHÔNG DỊCH tên bài hát, lời bài hát, tên ca sĩ và tác giả.\n\nBạn có muốn tiếp tục?', 'Dịch thuật AI', 'confirm'))) {
+      return;
+    }
+
+    setIsTranslatingArtist(true);
+    setFormErr('');
+    try {
+      const res = await fetch('/api/acp/artists/translate-all', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          username: editingArtist.username
+        })
+      });
+
+      const result = await res.json();
+      if (res.ok && result.success) {
+        await showConfirm('Dịch thuật thành công! Toàn bộ các thông tin hỗ trợ đã được dịch sang 5 ngôn ngữ và lưu trên máy chủ.', 'Thành công', 'success');
+      } else {
+        setFormErr(result.error || 'Có lỗi xảy ra khi thực hiện dịch thuật AI.');
+      }
+    } catch (err: any) {
+      setFormErr('Lỗi kết nối máy chủ: ' + err.message);
+    } finally {
+      setIsTranslatingArtist(false);
     }
   };
 
@@ -564,7 +610,9 @@ export default function ACPControlPanel() {
           isPublic: artistIsPublic,
           dbConfig: artistDbConfig,
           hasExternalWebsite: artistHasExternalWebsite,
-          externalWebsiteUrl: artistExternalWebsiteUrl
+          externalWebsiteUrl: artistExternalWebsiteUrl,
+          defaultLanguage: artistDefaultLanguage,
+          artistBio
         })
       });
 
@@ -777,6 +825,9 @@ export default function ACPControlPanel() {
           pageTitle: landingPageTitle,
           ogImageUrl: landingOgImageUrl,
           faviconUrl: landingFaviconUrl,
+          statusBadge,
+          featuresTitle,
+          featuresSub,
           feature1Title,
           feature1Desc,
           feature2Title,
@@ -803,6 +854,33 @@ export default function ACPControlPanel() {
     }
   };
 
+  const handleTranslateLanding = async () => {
+    setIsTranslatingLanding(true);
+    setLandingSuccessMsg('');
+    try {
+      const res = await fetch('/api/acp/landing-config/translate-all', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        setLandingSuccessMsg('Đã dịch tự động toàn bộ trang chủ & các thành phần chung thành công!');
+        setTimeout(() => setLandingSuccessMsg(''), 5000);
+        fetchLandingConfig();
+      } else {
+        const data = await res.json();
+        alert('Lỗi biên dịch: ' + (data.error || 'Vui lòng thử lại sau.'));
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Lỗi kết nối máy chủ!');
+    } finally {
+      setIsTranslatingLanding(false);
+    }
+  };
+
   const openEditModal = (artist: Artist) => {
     setEditingArtist(artist);
     setArtistName(artist.artistName);
@@ -814,6 +892,8 @@ export default function ACPControlPanel() {
     setArtistDbConfig(artist.dbConfig || '');
     setArtistHasExternalWebsite(!!artist.hasExternalWebsite);
     setArtistExternalWebsiteUrl(artist.externalWebsiteUrl || '');
+    setArtistDefaultLanguage(artist.defaultLanguage || 'vi');
+    setArtistBio(artist.artistBio || '');
     setShowEditModal(true);
   };
 
@@ -827,6 +907,8 @@ export default function ACPControlPanel() {
     setArtistDbConfig('');
     setArtistHasExternalWebsite(false);
     setArtistExternalWebsiteUrl('');
+    setArtistDefaultLanguage('vi');
+    setArtistBio('');
     setFormErr('');
   };
 
@@ -964,17 +1046,6 @@ export default function ACPControlPanel() {
             {tickets.filter(t => t.type === 'remove' && t.status === 'open').length > 0 && (
               <span className="flex h-2 w-2 rounded-full bg-red-500 animate-pulse" />
             )}
-          </button>
-          <button
-            onClick={() => setActiveTab('compose-mail')}
-            className={`py-4 px-6 text-sm font-black border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === 'compose-mail'
-                ? 'border-purple-500 text-white'
-                : 'border-transparent text-neutral-400 hover:text-white'
-            }`}
-          >
-            <Mail className="w-4 h-4 text-purple-400" />
-            <span>Soạn thư</span>
           </button>
         </div>
 
@@ -1306,18 +1377,32 @@ export default function ACPControlPanel() {
               </div>
 
               <form onSubmit={handleSaveLandingConfig} className="space-y-6">
-                <div>
-                  <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400 mb-1.5">
-                    Dòng giới thiệu nhỏ nổi bật (Tagline)
-                  </label>
-                  <input 
-                    type="text" 
-                    required
-                    value={landingTagline}
-                    onChange={(e) => setLandingTagline(e.target.value)}
-                    className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
-                    placeholder="Kho lưu trữ và chia sẻ âm nhạc"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400 mb-1.5">
+                      Huy hiệu trạng thái góc phải (Status Badge)
+                    </label>
+                    <input 
+                      type="text" 
+                      value={statusBadge}
+                      onChange={(e) => setStatusBadge(e.target.value)}
+                      className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
+                      placeholder="Đang hoạt động thử nghiệm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400 mb-1.5">
+                      Dòng giới thiệu nhỏ nổi bật (Tagline)
+                    </label>
+                    <input 
+                      type="text" 
+                      value={landingTagline}
+                      onChange={(e) => setLandingTagline(e.target.value)}
+                      className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
+                      placeholder="Kho lưu trữ và chia sẻ âm nhạc"
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1586,11 +1671,45 @@ export default function ACPControlPanel() {
 
                 {/* Edit fields for the 4 features */}
                 <div className="border-t border-white/10 pt-6 mt-6 space-y-6">
-                  <h3 className="text-sm font-extrabold text-purple-400 uppercase tracking-widest">
-                    Cấu hình 4 tính năng nổi bật ở Trang chủ
-                  </h3>
+                  <div className="flex flex-col gap-1">
+                    <h3 className="text-sm font-extrabold text-purple-400 uppercase tracking-widest">
+                      Cấu hình các tính năng nổi bật ở Trang chủ
+                    </h3>
+                    <p className="text-neutral-400 text-xs">
+                      Tùy chỉnh tiêu đề chính và phụ đề cho phần tính năng nổi bật trên trang chủ (Ảnh 2).
+                    </p>
+                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400 mb-1.5">
+                        Tiêu đề khu vực tính năng
+                      </label>
+                      <input 
+                        type="text" 
+                        required
+                        value={featuresTitle}
+                        onChange={(e) => setFeaturesTitle(e.target.value)}
+                        className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
+                        placeholder="Được thiết kế cho trải nghiệm đỉnh cao"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400 mb-1.5">
+                        Dòng phụ đề tính năng
+                      </label>
+                      <input 
+                        type="text" 
+                        required
+                        value={featuresSub}
+                        onChange={(e) => setFeaturesSub(e.target.value)}
+                        className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
+                        placeholder="Tích hợp những công nghệ hiện đại nhất..."
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                     {/* Feature 1 */}
                     <div className="bg-white/5 border border-white/5 rounded-2xl p-4 space-y-4">
                       <div className="font-extrabold text-xs text-neutral-300">TÍNH NĂNG 1</div>
@@ -1704,10 +1823,19 @@ export default function ACPControlPanel() {
                   </div>
                 )}
 
-                <div className="flex justify-end pt-2">
+                <div className="flex justify-end gap-3 pt-2">
+                  <button 
+                    type="button"
+                    disabled={isTranslatingLanding || isSavingLanding}
+                    onClick={handleTranslateLanding}
+                    className="bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 font-extrabold py-3.5 px-6 rounded-xl text-xs flex items-center gap-2 cursor-pointer border border-purple-500/20 active:scale-95 transition-all disabled:opacity-50"
+                  >
+                    <Globe className="w-4 h-4" />
+                    <span>{isTranslatingLanding ? 'Đang dịch thuật...' : 'Biên dịch trang chủ & phần chung (AI)'}</span>
+                  </button>
                   <button 
                     type="submit"
-                    disabled={isSavingLanding}
+                    disabled={isSavingLanding || isTranslatingLanding}
                     className="bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 hover:opacity-90 text-white font-extrabold py-3.5 px-8 rounded-xl text-xs flex items-center gap-2 cursor-pointer shadow-lg active:scale-95 transition-all"
                   >
                     <Save className="w-4 h-4" />
@@ -1768,235 +1896,27 @@ export default function ACPControlPanel() {
               )}
             </div>
           </div>
-        ) : activeTab === 'compose-mail' ? (
-          /* Compose Mail Tab */
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 bg-neutral-900/30 border border-white/5 rounded-3xl p-6 sm:p-8 backdrop-blur-md">
-              <div className="mb-6">
-                <h2 className="text-xl font-black flex items-center gap-2">
-                  <Mail className="w-5.5 h-5.5 text-purple-400" />
-                  <span>Soạn Thư Hệ Thống</span>
-                </h2>
-                <p className="text-neutral-400 text-xs mt-1">
-                  Gửi thông báo điện tử đến các nhóm nghệ sĩ trên hệ thống Chorus.vn.
-                </p>
-              </div>
-
-              <form 
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  setMailError('');
-                  setMailSuccess('');
-                  setMailSending(true);
-                  try {
-                    const res = await fetch('/api/acp/send-mail', {
-                      method: 'POST',
-                      headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                      },
-                      body: JSON.stringify({
-                        recipientType: mailRecipientType,
-                        registeredAfter: mailRecipientType === 'registered_after' ? mailRegisteredAfterDate : undefined,
-                        title: mailTitle,
-                        content: mailContent
-                      })
-                    });
-                    const data = await res.json();
-                    if (res.ok) {
-                      setMailSuccess(data.message || 'Gửi thư thành công!');
-                      setMailTitle('');
-                      setMailContent('');
-                      fetchSentMails(); // Refresh history
-                    } else {
-                      setMailError(data.error || 'Có lỗi xảy ra khi gửi thư!');
-                    }
-                  } catch (err) {
-                    setMailError('Lỗi kết nối máy chủ!');
-                  } finally {
-                    setMailSending(false);
-                  }
-                }}
-                className="space-y-6"
-              >
-                {mailSuccess && (
-                  <div className="p-4 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
-                    {mailSuccess}
-                  </div>
-                )}
-                {mailError && (
-                  <div className="p-4 rounded-2xl bg-red-500/10 text-red-400 border border-red-500/20 text-xs font-semibold">
-                    {mailError}
-                  </div>
-                )}
-
-                <div className="space-y-3">
-                  <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400">
-                    Đối tượng nhận thư
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setMailRecipientType('all')}
-                      className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
-                        mailRecipientType === 'all'
-                          ? 'bg-purple-500/10 border-purple-500 text-white font-black'
-                          : 'bg-black/20 border-white/5 text-neutral-400 hover:text-white hover:border-white/15'
-                      }`}
-                    >
-                      <div className="text-xs font-bold mb-0.5">Toàn bộ nghệ sĩ</div>
-                      <div className="text-[10px] text-neutral-400 font-medium">Gửi đến tất cả tài khoản nghệ sĩ</div>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setMailRecipientType('verified')}
-                      className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
-                        mailRecipientType === 'verified'
-                          ? 'bg-purple-500/10 border-purple-500 text-white font-black'
-                          : 'bg-black/20 border-white/5 text-neutral-400 hover:text-white hover:border-white/15'
-                      }`}
-                    >
-                      <div className="text-xs font-bold mb-0.5">Đã xác thực Email</div>
-                      <div className="text-[10px] text-neutral-400 font-medium">Chỉ nghệ sĩ đã xác minh địa chỉ email</div>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setMailRecipientType('unverified')}
-                      className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
-                        mailRecipientType === 'unverified'
-                          ? 'bg-purple-500/10 border-purple-500 text-white font-black'
-                          : 'bg-black/20 border-white/5 text-neutral-400 hover:text-white hover:border-white/15'
-                      }`}
-                    >
-                      <div className="text-xs font-bold mb-0.5">Chưa xác thực Email</div>
-                      <div className="text-[10px] text-neutral-400 font-medium">Nghệ sĩ đăng ký nhưng chưa xác minh email</div>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setMailRecipientType('registered_after')}
-                      className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
-                        mailRecipientType === 'registered_after'
-                          ? 'bg-purple-500/10 border-purple-500 text-white font-black'
-                          : 'bg-black/20 border-white/5 text-neutral-400 hover:text-white hover:border-white/15'
-                      }`}
-                    >
-                      <div className="text-xs font-bold mb-0.5">Đăng ký sau ngày</div>
-                      <div className="text-[10px] text-neutral-400 font-medium">Lọc nghệ sĩ theo mốc thời gian đăng ký</div>
-                    </button>
-                  </div>
-                </div>
-
-                {mailRecipientType === 'registered_after' && (
-                  <div className="space-y-2 bg-black/20 border border-white/5 p-4 rounded-2xl">
-                    <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400">
-                      Chọn ngày đăng ký sau mốc
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={mailRegisteredAfterDate}
-                      onChange={(e) => setMailRegisteredAfterDate(e.target.value)}
-                      className="bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-xs font-bold font-mono"
-                    />
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400">
-                    Tiêu đề thư
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={mailTitle}
-                    onChange={(e) => setMailTitle(e.target.value)}
-                    placeholder="Nhập tiêu đề email thông báo..."
-                    className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-xs font-bold"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400">
-                    Nội dung thư (Hỗ trợ định dạng văn bản thường)
-                  </label>
-                  <textarea
-                    required
-                    rows={10}
-                    value={mailContent}
-                    onChange={(e) => setMailContent(e.target.value)}
-                    placeholder="Nhập nội dung thư gửi..."
-                    className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-xs leading-relaxed font-sans"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={mailSending}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-extrabold py-3.5 px-6 rounded-xl text-xs transition-all cursor-pointer shadow-md tracking-wider uppercase flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  <Send className="w-4 h-4" />
-                  {mailSending ? 'Đang gửi...' : 'GỬI THƯ HỆ THỐNG'}
-                </button>
-              </form>
-            </div>
-
-            {/* Sent Emails History Column */}
-            <div className="bg-neutral-900/30 border border-white/5 rounded-3xl p-6 backdrop-blur-md flex flex-col h-full max-h-[800px]">
-              <h3 className="text-sm font-black text-neutral-200 mb-4 pb-2 border-b border-white/5 flex items-center gap-2">
-                <Mail className="w-4 h-4 text-pink-400" />
-                <span>Lịch Sử Thư Đã Gửi</span>
-                <span className="ml-auto text-[10px] bg-white/5 px-2 py-0.5 rounded-full text-neutral-400 font-mono">
-                  {sentMails.length}
-                </span>
-              </h3>
-
-              {sentMails.length === 0 ? (
-                <div className="py-24 text-center text-neutral-500 flex flex-col items-center justify-center flex-grow">
-                  <Database className="w-10 h-10 mb-2 opacity-10" />
-                  <p className="text-xs font-bold">Chưa gửi thư nào.</p>
-                </div>
-              ) : (
-                <div className="overflow-y-auto custom-scrollbar space-y-3 flex-grow pr-1">
-                  {sentMails.map((mail, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-black/30 border border-white/5 p-4 rounded-2xl space-y-2 hover:border-pink-500/20 transition-all text-left"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-black uppercase tracking-wider text-neutral-400 font-mono">
-                          {mail.recipientType === 'all' && 'Toàn bộ nghệ sĩ'}
-                          {mail.recipientType === 'verified' && 'Đã xác thực email'}
-                          {mail.recipientType === 'unverified' && 'Chưa xác thực email'}
-                          {mail.recipientType === 'registered_after' && `Đăng ký sau ${mail.registeredAfter}`}
-                        </span>
-                        <span className="text-[9px] text-neutral-500 font-mono">
-                          {new Date(mail.sentAt).toLocaleDateString('vi-VN')}
-                        </span>
-                      </div>
-                      <h4 className="text-xs font-black text-white truncate">{mail.title}</h4>
-                      <p className="text-[11px] text-neutral-400 line-clamp-3 leading-relaxed whitespace-pre-wrap font-medium">
-                        {mail.content}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
         ) : (
           /* Tickets (Inbox) Tab */
           <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-black flex items-center gap-2">
-                <MessageSquare className="w-6 h-6 text-purple-400" />
-                <span>Hộp Thư Yêu Cầu Gỡ Bài</span>
-              </h2>
-              <p className="text-sm text-neutral-400 mt-1">
-                Xem xét, trao đổi và ra quyết định xử lý các tranh chấp bản quyền hoặc yêu cầu gỡ sản phẩm âm nhạc.
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-black flex items-center gap-2 text-white">
+                  <MessageSquare className="w-6 h-6 text-purple-400" />
+                  <span>Hộp Thư Yêu Cầu Gỡ Bài</span>
+                </h2>
+                <p className="text-sm text-neutral-400 mt-1">
+                  Xem xét, trao đổi và ra quyết định xử lý các tranh chấp bản quyền hoặc yêu cầu gỡ sản phẩm âm nhạc.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowComposeModal(true)}
+                className="bg-purple-600 hover:bg-purple-500 text-white font-extrabold py-3 px-5 rounded-2xl text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md tracking-wider uppercase transition-all duration-200 shrink-0 self-start sm:self-center active:scale-95 border border-purple-500/20"
+              >
+                <Mail className="w-4 h-4 text-purple-200" />
+                <span>Soạn Thư Hệ Thống</span>
+              </button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[650px]">
@@ -2364,6 +2284,17 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                 />
               </div>
 
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Mô tả ngắn / Tagline (Bio) - Để trống để tự động hiển thị mặc định</label>
+                <input 
+                  type="text" 
+                  value={artistBio}
+                  onChange={(e) => setArtistBio(e.target.value)}
+                  className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
+                  placeholder="vd: Thiên đường nhạc của..."
+                />
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Username (Đăng nhập) *</label>
@@ -2434,6 +2365,22 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                     Hiển thị trên Trang chủ
                   </label>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Ngôn ngữ mặc định *</label>
+                <select 
+                  value={artistDefaultLanguage}
+                  onChange={(e) => setArtistDefaultLanguage(e.target.value)}
+                  className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none font-sans"
+                >
+                  <option value="vi" className="bg-neutral-900">Tiếng Việt</option>
+                  <option value="en" className="bg-neutral-900">English</option>
+                  <option value="ko" className="bg-neutral-900">한국어</option>
+                  <option value="ja" className="bg-neutral-900">日本語</option>
+                  <option value="th" className="bg-neutral-900">ไทย</option>
+                  <option value="zh" className="bg-neutral-900">中文</option>
+                </select>
               </div>
 
               <div className="bg-neutral-900/40 p-4 rounded-xl border border-white/5 space-y-3">
@@ -2519,6 +2466,17 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                 />
               </div>
 
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Mô tả ngắn / Tagline (Bio) - Để trống để tự động hiển thị mặc định</label>
+                <input 
+                  type="text" 
+                  value={artistBio}
+                  onChange={(e) => setArtistBio(e.target.value)}
+                  className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
+                  placeholder="vd: Thiên đường nhạc của..."
+                />
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5 opacity-50">Username (Đăng nhập) *</label>
@@ -2590,6 +2548,22 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                 </div>
               </div>
 
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Ngôn ngữ mặc định *</label>
+                <select 
+                  value={artistDefaultLanguage}
+                  onChange={(e) => setArtistDefaultLanguage(e.target.value)}
+                  className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none font-sans"
+                >
+                  <option value="vi" className="bg-neutral-900">Tiếng Việt</option>
+                  <option value="en" className="bg-neutral-900">English</option>
+                  <option value="ko" className="bg-neutral-900">한국어</option>
+                  <option value="ja" className="bg-neutral-900">日本語</option>
+                  <option value="th" className="bg-neutral-900">ไทย</option>
+                  <option value="zh" className="bg-neutral-900">中文</option>
+                </select>
+              </div>
+
               <div className="bg-neutral-900/40 p-4 rounded-xl border border-white/5 space-y-3">
                 <div className="flex items-center gap-3">
                   <input 
@@ -2632,6 +2606,38 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                   className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none font-mono text-xs h-24"
                   placeholder='{ "apiKey": "AIza...", "projectId": "...", "storageBucket": "..." }'
                 />
+              </div>
+
+              <div className="bg-purple-950/20 border border-purple-500/20 p-4 rounded-xl space-y-3">
+                <div className="flex items-start gap-3">
+                  <Sparkles className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
+                  <div>
+                    <h4 className="font-bold text-white text-xs uppercase tracking-wider">Biên dịch tự động bằng AI (Gemini)</h4>
+                    <p className="text-[10px] text-neutral-400 mt-1 leading-relaxed">
+                      Tự động dịch phần giới thiệu (Bio), tiêu đề trang, tên các danh mục (Tabs), và thông tin Brief/Tên thương hiệu nhạc, tên/mô tả danh sách phát sang 5 ngôn ngữ khác (Anh, Hàn, Nhật, Thái, Trung).
+                      <br />
+                      <span className="text-amber-350">Không biên dịch:</span> Tên bài hát, lời bài hát, tên ca sĩ và tác giả để giữ nguyên tác gốc.
+                    </p>
+                  </div>
+                </div>
+                <button
+                   type="button"
+                   onClick={handleAITranslateArtist}
+                   disabled={isTranslatingArtist}
+                   className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-neutral-850 text-white font-bold py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer text-xs"
+                >
+                   {isTranslatingArtist ? (
+                     <>
+                       <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                       <span>Đang tiến hành dịch thuật bằng AI...</span>
+                     </>
+                   ) : (
+                     <>
+                       <Globe className="w-3.5 h-3.5" />
+                       <span>Biên dịch hồ sơ nghệ sĩ này</span>
+                     </>
+                   )}
+                </button>
               </div>
 
               {formErr && (
@@ -2723,6 +2729,240 @@ Admin Password: ${newArtistCreatedInfo.password}`;
           </div>
         </div>
       )}
+
+      {/* Compose Mail Modal */}
+      {showComposeModal && (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-neutral-900 border border-white/5 rounded-[2.5rem] w-full max-w-6xl p-6 sm:p-8 relative max-h-[92vh] overflow-y-auto shadow-2xl custom-scrollbar flex flex-col">
+            <button 
+              onClick={() => setShowComposeModal(false)}
+              className="absolute top-6 right-6 text-neutral-400 hover:text-white bg-white/5 p-2 rounded-xl transition-all cursor-pointer hover:bg-white/10"
+              title="Đóng"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="mb-6">
+              <h2 className="text-xl font-black flex items-center gap-2 text-white">
+                <Mail className="w-5.5 h-5.5 text-purple-400" />
+                <span>Soạn Thư Hệ Thống</span>
+              </h2>
+              <p className="text-neutral-400 text-xs mt-1">
+                Gửi thông báo điện tử đến các nhóm nghệ sĩ trên hệ thống Chorus.vn.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+              {/* Left Column: Compose Form */}
+              <div className="lg:col-span-3 bg-black/20 border border-white/5 rounded-3xl p-6">
+                <form 
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    setMailError('');
+                    setMailSuccess('');
+                    setMailSending(true);
+                    try {
+                      const res = await fetch('/api/acp/send-mail', {
+                        method: 'POST',
+                        headers: { 
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                          recipientType: mailRecipientType,
+                          registeredAfter: mailRecipientType === 'registered_after' ? mailRegisteredAfterDate : undefined,
+                          title: mailTitle,
+                          content: mailContent
+                        })
+                      });
+                      const data = await res.json();
+                      if (res.ok) {
+                        setMailSuccess(data.message || 'Gửi thư thành công!');
+                        setMailTitle('');
+                        setMailContent('');
+                        fetchSentMails(); // Refresh history
+                      } else {
+                        setMailError(data.error || 'Có lỗi xảy ra khi gửi thư!');
+                      }
+                    } catch (err) {
+                      setMailError('Lỗi kết nối máy chủ!');
+                    } finally {
+                      setMailSending(false);
+                    }
+                  }}
+                  className="space-y-6"
+                >
+                  {mailSuccess && (
+                    <div className="p-4 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
+                      {mailSuccess}
+                    </div>
+                  )}
+                  {mailError && (
+                    <div className="p-4 rounded-2xl bg-red-500/10 text-red-400 border border-red-500/20 text-xs font-semibold">
+                      {mailError}
+                    </div>
+                  )}
+
+                  <div className="space-y-3">
+                    <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400">
+                      Đối tượng nhận thư
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setMailRecipientType('all')}
+                        className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                          mailRecipientType === 'all'
+                            ? 'bg-purple-500/10 border-purple-500 text-white font-black'
+                            : 'bg-black/20 border-white/5 text-neutral-400 hover:text-white hover:border-white/15'
+                        }`}
+                      >
+                        <div className="text-xs font-bold mb-0.5">Toàn bộ nghệ sĩ</div>
+                        <div className="text-[10px] text-neutral-400 font-medium">Gửi đến tất cả tài khoản nghệ sĩ</div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setMailRecipientType('verified')}
+                        className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                          mailRecipientType === 'verified'
+                            ? 'bg-purple-500/10 border-purple-500 text-white font-black'
+                            : 'bg-black/20 border-white/5 text-neutral-400 hover:text-white hover:border-white/15'
+                        }`}
+                      >
+                        <div className="text-xs font-bold mb-0.5">Đã xác thực Email</div>
+                        <div className="text-[10px] text-neutral-400 font-medium">Chỉ nghệ sĩ đã xác minh địa chỉ email</div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setMailRecipientType('unverified')}
+                        className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                          mailRecipientType === 'unverified'
+                            ? 'bg-purple-500/10 border-purple-500 text-white font-black'
+                            : 'bg-black/20 border-white/5 text-neutral-400 hover:text-white hover:border-white/15'
+                        }`}
+                      >
+                        <div className="text-xs font-bold mb-0.5">Chưa xác thực Email</div>
+                        <div className="text-[10px] text-neutral-400 font-medium">Nghệ sĩ đăng ký nhưng chưa xác minh email</div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setMailRecipientType('registered_after')}
+                        className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                          mailRecipientType === 'registered_after'
+                            ? 'bg-purple-500/10 border-purple-500 text-white font-black'
+                            : 'bg-black/20 border-white/5 text-neutral-400 hover:text-white hover:border-white/15'
+                        }`}
+                      >
+                        <div className="text-xs font-bold mb-0.5">Đăng ký sau ngày</div>
+                        <div className="text-[10px] text-neutral-400 font-medium">Lọc nghệ sĩ theo mốc thời gian đăng ký</div>
+                      </button>
+                    </div>
+                  </div>
+
+                  {mailRecipientType === 'registered_after' && (
+                    <div className="space-y-2 bg-black/20 border border-white/5 p-4 rounded-2xl">
+                      <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400">
+                        Chọn ngày đăng ký sau mốc
+                      </label>
+                      <input
+                        type="date"
+                        required
+                        value={mailRegisteredAfterDate}
+                        onChange={(e) => setMailRegisteredAfterDate(e.target.value)}
+                        className="bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-xs font-bold font-mono"
+                      />
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400">
+                      Tiêu đề thư
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={mailTitle}
+                      onChange={(e) => setMailTitle(e.target.value)}
+                      placeholder="Nhập tiêu đề email thông báo..."
+                      className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-xs font-bold"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400">
+                      Nội dung thư (Hỗ trợ định dạng văn bản thường)
+                    </label>
+                    <textarea
+                      required
+                      rows={8}
+                      value={mailContent}
+                      onChange={(e) => setMailContent(e.target.value)}
+                      placeholder="Nhập nội dung thư gửi..."
+                      className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-xs leading-relaxed font-sans"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={mailSending}
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-extrabold py-3.5 px-6 rounded-xl text-xs transition-all cursor-pointer shadow-md tracking-wider uppercase flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    <Send className="w-4 h-4" />
+                    {mailSending ? 'Đang gửi...' : 'GỬI THƯ HỆ THỐNG'}
+                  </button>
+                </form>
+              </div>
+
+              {/* Right Column: Sent Emails History */}
+              <div className="lg:col-span-2 bg-black/20 border border-white/5 rounded-3xl p-6 flex flex-col max-h-[650px] overflow-hidden">
+                <h3 className="text-sm font-black text-neutral-200 mb-4 pb-2 border-b border-white/5 flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-pink-400" />
+                  <span>Lịch Sử Thư Đã Gửi</span>
+                  <span className="ml-auto text-[10px] bg-white/5 px-2 py-0.5 rounded-full text-neutral-400 font-mono">
+                    {sentMails.length}
+                  </span>
+                </h3>
+
+                {sentMails.length === 0 ? (
+                  <div className="py-24 text-center text-neutral-500 flex flex-col items-center justify-center flex-grow">
+                    <Database className="w-10 h-10 mb-2 opacity-10" />
+                    <p className="text-xs font-bold">Chưa gửi thư nào.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-y-auto custom-scrollbar space-y-3 flex-grow pr-1">
+                    {sentMails.map((mail, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-black/30 border border-white/5 p-4 rounded-2xl space-y-2 hover:border-pink-500/20 transition-all text-left"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] font-black uppercase tracking-wider text-neutral-400 font-mono">
+                            {mail.recipientType === 'all' && 'Toàn bộ nghệ sĩ'}
+                            {mail.recipientType === 'verified' && 'Đã xác thực email'}
+                            {mail.recipientType === 'unverified' && 'Chưa xác thực email'}
+                            {mail.recipientType === 'registered_after' && `Đăng ký sau ${mail.registeredAfter}`}
+                          </span>
+                          <span className="text-[9px] text-neutral-500 font-mono">
+                            {new Date(mail.sentAt).toLocaleDateString('vi-VN')}
+                          </span>
+                        </div>
+                        <h4 className="text-xs font-black text-white truncate">{mail.title}</h4>
+                        <p className="text-[11px] text-neutral-400 line-clamp-3 leading-relaxed whitespace-pre-wrap font-medium">
+                          {mail.content}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {toast && (
         <div className="fixed bottom-4 right-4 bg-emerald-500 text-white px-6 py-3 rounded-xl shadow-2xl font-medium animate-in slide-in-from-bottom-5 z-50 flex items-center gap-2">
           <CheckCircle2 className="w-5 h-5" />

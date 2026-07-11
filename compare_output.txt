@@ -1,0 +1,375 @@
+Original lines 7840 to 8025 in backup:
+  7840:                     <Link to={getAdminLink('/new')} className="w-10 h-10 flex items-center justify-center bg-stone-900 text-white rounded-xl hover:bg-stone-800 transition-colors shadow-sm" title={t("Thêm bài hát mới")}>
+  7841:                       <Plus className="w-5 h-5" />
+  7842:                     </Link>
+  7843:                   ) : null}
+  7844:                 </div>
+  7845: 
+  7846:                   <button
+  7847:                     type="button"
+  7848:                     onClick={() => setDemosSubTab('brands')}
+  7849:                     className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all relative ${
+  7850:                       demosSubTab === 'brands'
+  7851:                         ? 'text-stone-900'
+  7852:                         : 'text-stone-500 hover:text-stone-900'
+  7853:                     }`}
+  7854:                   >
+  7855:                     {demosSubTab === 'brands' && (
+  7856:                       <motion.span
+  7857:                         layoutId="adminSubTabActiveBg"
+  7858:                         className="absolute inset-0 bg-white rounded-lg shadow-xs z-0 border border-stone-200/30"
+  7859:                         transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+  7860:                       />
+  7861:                     )}
+  7862:                     <BadgeCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-500 relative z-10" />
+  7863:                     <span className="relative z-10">{t("Mạng Xã Hội")}</span>
+  7864:                     <span className={`px-1.5 py-0.5 rounded text-xs relative z-10 font-bold ${demosSubTab === 'brands' ? 'bg-indigo-50 text-indigo-700' : 'bg-stone-200/70 text-stone-600'}`}>
+  7865:                       {data.demos?.filter(d => d.isBrand && !d.deleted)
+  7866:                         .filter(d => !adminSearchQuery.trim() || d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}</span>
+  7867:                   </button>
+  7868: 
+  7869:                   <button
+  7870:                     type="button"
+  7871:                     onClick={() => setDemosSubTab('playlists')}
+  7872:                     className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all relative ${
+  7873:                       demosSubTab === 'playlists'
+  7874:                         ? 'text-stone-900'
+  7875:                         : 'text-stone-500 hover:text-stone-900'
+  7876:                     }`}
+  7877:                   >
+  7878:                     {demosSubTab === 'playlists' && (
+  7879:                       <motion.span
+  7880:                         layoutId="adminSubTabActiveBg"
+  7881:                         className="absolute inset-0 bg-white rounded-lg shadow-xs z-0 border border-stone-200/30"
+  7882:                         transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+  7883:                       />
+  7884:                     )}
+  7885:                     <ListMusic className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-500 relative z-10" />
+  7886:                     <span className="relative z-10">{t("Playlist")}</span>
+  7887:                     <span className={`px-1.5 py-0.5 rounded text-xs relative z-10 font-bold ${demosSubTab === 'playlists' ? 'bg-purple-50 text-purple-700' : 'bg-stone-200/70 text-stone-600'}`}>
+  7888:                       {(data.playlists || []).filter(p => !p.deleted)
+  7889:                         .filter(p => !adminSearchQuery.trim() || p.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}</span>
+  7890:                   </button>
+  7891: 
+  7892:                   <button
+  7893:                     type="button"
+  7894:                     onClick={() => setDemosSubTab('trash')}
+  7895:                     className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all relative ${
+  7896:                       demosSubTab === 'trash'
+  7897:                         ? 'text-stone-900'
+  7898:                         : 'text-stone-500 hover:text-stone-900'
+  7899:                     }`}
+  7900:                   >
+  7901:                     {demosSubTab === 'trash' && (
+  7902:                       <motion.span
+  7903:                         layoutId="adminSubTabActiveBg"
+  7904:                         className="absolute inset-0 bg-white rounded-lg shadow-xs z-0 border border-stone-200/30"
+  7905:                         transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+  7906:                       />
+  7907:                     )}
+  7908:                     <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-500 relative z-10" />
+  7909:                     <span className="relative z-10">{t("Thùng rác")}</span>
+  7910:                     <span className={`px-1.5 py-0.5 rounded text-xs relative z-10 font-bold ${demosSubTab === 'trash' ? 'bg-stone-200 text-stone-750' : 'bg-stone-200/70 text-stone-600'}`}>
+  7911:                       {((data.demos?.filter(d => d.deleted).filter(d => !adminSearchQuery.trim() || d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0) +
+  7912:                        ((data.playlists || []).filter(p => p.deleted).filter(p => !adminSearchQuery.trim() || p.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0))}</span>
+  7913:                   </button>
+  7914:                 </div>
+  7915: 
+  7916:                 <div className="flex items-center gap-2 self-end md:self-auto">
+  7917:                   {/* Collapsible Admin Search */}
+  7918:                   <div className="relative flex items-center">
+  7919:                     <AnimatePresence initial={false}>
+  7920:                       {isAdminSearchExpanded ? (
+  7921:                         <motion.div
+  7922:                           initial={{ width: 0, opacity: 0 }}
+  7923:                           animate={{ width: 180, opacity: 1 }}
+  7924:                           exit={{ width: 0, opacity: 0 }}
+  7925:                           transition={{ duration: 0.2 }}
+  7926:                           className="overflow-hidden relative flex items-center"
+  7927:                         >
+  7928:                           <input
+  7929:                             type="text"
+  7930:                             id="admin-search-input"
+  7931:                             value={adminSearchQuery}
+  7932:                             onChange={handleAdminSearchChange}
+  7933:                             placeholder="Tìm kiếm..."
+  7934:                             className="w-full bg-stone-50 border border-stone-200 rounded-xl pl-9 pr-8 py-2 text-xs text-stone-800 focus:outline-none focus:ring-1 focus:ring-stone-400 placeholder:text-stone-400 font-medium"
+  7935:                             autoFocus
+  7936:                           />
+  7937:                           <span className="absolute left-3 text-stone-400"></span>
+  7938:                             <Search className="w-3.5 h-3.5" />
+  7939: 
+  7940:                           {adminSearchQuery && (
+  7941:                             <button
+  7942:                               onClick={() => setAdminSearchQuery('')}
+  7943:                               className="absolute right-3 text-stone-400 hover:text-stone-800"
+  7944:                             >
+  7945:                               <X className="w-3.5 h-3.5" />
+  7946:                             </button>
+  7947:                           )}
+  7948:                         </motion.div>
+  7949:                       ) : null}
+  7950:                     </AnimatePresence>
+  7951: 
+  7952:                     <button
+  7953:                       type="button"
+  7954:                       onClick={() => {
+  7955:                         if (isAdminSearchExpanded) {
+  7956:                           setIsAdminSearchExpanded(false);
+  7957:                           setAdminSearchQuery('');
+  7958:                         } else {
+  7959:                           setIsAdminSearchExpanded(true);
+  7960:                         }
+  7961:                       }}
+  7962:                       className={`p-2 rounded-xl transition-all border ${
+  7963:                         isAdminSearchExpanded
+  7964:                           ? 'text-stone-400 hover:text-stone-800 border-transparent ml-2'
+  7965:                           : 'bg-white border-stone-200 hover:bg-stone-50 hover:border-stone-300 text-stone-500 hover:text-stone-800'
+  7966:                       }`}
+  7967:                       title={isAdminSearchExpanded ? "Đóng tìm kiếm" : "Tìm kiếm..."}
+  7968:                     >
+  7969:                       {isAdminSearchExpanded ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+  7970:                     </button>
+  7971:                   </div>
+  7972: 
+  7973:                   <select
+  7974:                     value={itemsPerPage}
+  7975:                     onChange={e => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+  7976:                     className="bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm font-bold text-stone-700 outline-none hover:border-stone-300 transition-colors cursor-pointer"
+  7977:                   >
+  7978:                     <option value={10}>10 bài</option>
+  7979:                     <option value={20}>20 bài</option>
+  7980:                     <option value={50}>50 bài</option>
+  7981:                     <option value={100}>100 bài</option>
+  7982:                   </select>
+  7983:                   {demosSubTab === 'playlists' ? (
+  7984:                     <button
+  7985:                       type="button"
+  7986:                       onClick={async () => {
+  7987:                         const title = prompt("Nhập tên playlist mới:");
+  7988:                         if (!title) return;
+  7989:                         const res = await fetch('/api/playlists', {
+  7990:                           method: 'POST',
+  7991:                           headers: {
+  7992:         'x-artist-extension': getArtistExtensionFromUrl(),
+  7993: 
+  7994:                             'Content-Type': 'application/json',
+  7995:                             'Authorization': `Bearer ${getAdminToken()}`
+  7996:                           },
+  7997:                           body: JSON.stringify({ title })
+  7998:                         });
+  7999:                         if (res.ok) {
+  8000:                            setToast('Tạo playlist thành công!');
+  8001:                            setTimeout(() => setToast(''), 3000);
+  8002:                            loadData();
+  8003:                         }
+  8004:                       }}
+  8005:                       className="w-10 h-10 flex items-center justify-center bg-stone-900 text-white rounded-xl hover:bg-stone-800 transition-colors shadow-sm"
+  8006:                       title="Tạo Playlist"
+  8007:                     >
+  8008:                       <Plus className="w-5 h-5" />
+  8009:                     </button>
+  8010:                   ) : demosSubTab !== 'trash' ? (
+  8011:                     <Link to={getAdminLink('/new')} className="w-10 h-10 flex items-center justify-center bg-stone-900 text-white rounded-xl hover:bg-stone-800 transition-colors shadow-sm" title="Tạo mới bài viết">
+  8012:                       <Plus className="w-5 h-5" />
+  8013:                     </Link>
+  8014:                   ) : null}
+  8015:                 </div>
+  8016:               </div>
+  8017: 
+  8018:               {/* Action area for selected subtab */}
+  8019:               <div className="overflow-x-auto min-h-[300px]">
+  8020:                 {demosSubTab === 'landing_pages' && (() => {
+  8021:                   let landingList = data.demos?.filter(d => d.linkType === 'indirect' && !d.deleted) || [];
+  8022:                   if (adminSearchQuery.trim()) {
+  8023:                     landingList = landingList.filter(d => d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase()));
+  8024:                   }
+  8025:                   if (landingList.length === 0) {
+
+Edited lines 8175 to 8360 in edited:
+  8175:                     </button>
+  8176:                   ) : demosSubTab !== 'trash' ? (
+  8177:                     <Link to={getAdminLink('/new')} className="w-10 h-10 flex items-center justify-center bg-stone-900 text-white rounded-xl hover:bg-stone-800 transition-colors shadow-sm" title={t("Thêm bài hát mới")}>
+  8178:                       <Plus className="w-5 h-5" />
+  8179:                     </Link>
+  8180:                   ) : null}
+  8181:                 </div>
+  8182: 
+  8183:                   <button
+  8184:                     type="button"
+  8185:                     onClick={() => setDemosSubTab('brands')}
+  8186:                     className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all relative ${
+  8187:                       demosSubTab === 'brands'
+  8188:                         ? 'text-stone-900'
+  8189:                         : 'text-stone-500 hover:text-stone-900'
+  8190:                     }`}
+  8191:                   >
+  8192:                     {demosSubTab === 'brands' && (
+  8193:                       <motion.span
+  8194:                         layoutId="adminSubTabActiveBg"
+  8195:                         className="absolute inset-0 bg-white rounded-lg shadow-xs z-0 border border-stone-200/30"
+  8196:                         transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+  8197:                       />
+  8198:                     )}
+  8199:                     <BadgeCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-500 relative z-10" />
+  8200:                     <span className="relative z-10">{t("Mạng Xã Hội")}</span>
+  8201:                     <span className={`px-1.5 py-0.5 rounded text-xs relative z-10 font-bold ${demosSubTab === 'brands' ? 'bg-indigo-50 text-indigo-700' : 'bg-stone-200/70 text-stone-600'}`}>
+  8202:                       {data.demos?.filter(d => d.isBrand && !d.deleted)
+  8203:                         .filter(d => !adminSearchQuery.trim() || d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}</span>
+  8204:                   </button>
+  8205: 
+  8206:                   <button
+  8207:                     type="button"
+  8208:                     onClick={() => setDemosSubTab('playlists')}
+  8209:                     className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all relative ${
+  8210:                       demosSubTab === 'playlists'
+  8211:                         ? 'text-stone-900'
+  8212:                         : 'text-stone-500 hover:text-stone-900'
+  8213:                     }`}
+  8214:                   >
+  8215:                     {demosSubTab === 'playlists' && (
+  8216:                       <motion.span
+  8217:                         layoutId="adminSubTabActiveBg"
+  8218:                         className="absolute inset-0 bg-white rounded-lg shadow-xs z-0 border border-stone-200/30"
+  8219:                         transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+  8220:                       />
+  8221:                     )}
+  8222:                     <ListMusic className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-500 relative z-10" />
+  8223:                     <span className="relative z-10">{t("Playlist")}</span>
+  8224:                     <span className={`px-1.5 py-0.5 rounded text-xs relative z-10 font-bold ${demosSubTab === 'playlists' ? 'bg-purple-50 text-purple-700' : 'bg-stone-200/70 text-stone-600'}`}>
+  8225:                       {(data.playlists || []).filter(p => !p.deleted)
+  8226:                         .filter(p => !adminSearchQuery.trim() || p.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0}</span>
+  8227:                   </button>
+  8228: 
+  8229:                   <button
+  8230:                     type="button"
+  8231:                     onClick={() => setDemosSubTab('trash')}
+  8232:                     className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all relative ${
+  8233:                       demosSubTab === 'trash'
+  8234:                         ? 'text-stone-900'
+  8235:                         : 'text-stone-500 hover:text-stone-900'
+  8236:                     }`}
+  8237:                   >
+  8238:                     {demosSubTab === 'trash' && (
+  8239:                       <motion.span
+  8240:                         layoutId="adminSubTabActiveBg"
+  8241:                         className="absolute inset-0 bg-white rounded-lg shadow-xs z-0 border border-stone-200/30"
+  8242:                         transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+  8243:                       />
+  8244:                     )}
+  8245:                     <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-500 relative z-10" />
+  8246:                     <span className="relative z-10">{t("Thùng rác")}</span>
+  8247:                     <span className={`px-1.5 py-0.5 rounded text-xs relative z-10 font-bold ${demosSubTab === 'trash' ? 'bg-stone-200 text-stone-750' : 'bg-stone-200/70 text-stone-600'}`}>
+  8248:                       {((data.demos?.filter(d => d.deleted).filter(d => !adminSearchQuery.trim() || d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0) +
+  8249:                        ((data.playlists || []).filter(p => p.deleted).filter(p => !adminSearchQuery.trim() || p.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase())).length || 0))}</span>
+  8250:                   </button>
+  8251:                 </div>
+  8252: 
+  8253:                 <div className="flex items-center gap-2 self-end md:self-auto">
+  8254:                   {/* Collapsible Admin Search */}
+  8255:                   <div className="relative flex items-center">
+  8256:                     <AnimatePresence initial={false}>
+  8257:                       {isAdminSearchExpanded ? (
+  8258:                         <motion.div
+  8259:                           initial={{ width: 0, opacity: 0 }}
+  8260:                           animate={{ width: 180, opacity: 1 }}
+  8261:                           exit={{ width: 0, opacity: 0 }}
+  8262:                           transition={{ duration: 0.2 }}
+  8263:                           className="overflow-hidden relative flex items-center"
+  8264:                         >
+  8265:                           <input
+  8266:                             type="text"
+  8267:                             id="admin-search-input"
+  8268:                             value={adminSearchQuery}
+  8269:                             onChange={handleAdminSearchChange}
+  8270:                             placeholder={t("Tìm kiếm...")}
+  8271:                             className="w-full bg-stone-50 border border-stone-200 rounded-xl pl-9 pr-8 py-2 text-xs text-stone-800 focus:outline-none focus:ring-1 focus:ring-stone-400 placeholder:text-stone-400 font-medium"
+  8272:                             autoFocus
+  8273:                           />
+  8274:                           <span className="absolute left-3 text-stone-400"></span>
+  8275:                             <Search className="w-3.5 h-3.5" />
+  8276: 
+  8277:                           {adminSearchQuery && (
+  8278:                             <button
+  8279:                               onClick={() => setAdminSearchQuery('')}
+  8280:                               className="absolute right-3 text-stone-400 hover:text-stone-800"
+  8281:                             >
+  8282:                               <X className="w-3.5 h-3.5" />
+  8283:                             </button>
+  8284:                           )}
+  8285:                         </motion.div>
+  8286:                       ) : null}
+  8287:                     </AnimatePresence>
+  8288: 
+  8289:                     <button
+  8290:                       type="button"
+  8291:                       onClick={() => {
+  8292:                         if (isAdminSearchExpanded) {
+  8293:                           setIsAdminSearchExpanded(false);
+  8294:                           setAdminSearchQuery('');
+  8295:                         } else {
+  8296:                           setIsAdminSearchExpanded(true);
+  8297:                         }
+  8298:                       }}
+  8299:                       className={`p-2 rounded-xl transition-all border ${
+  8300:                         isAdminSearchExpanded
+  8301:                           ? 'text-stone-400 hover:text-stone-800 border-transparent ml-2'
+  8302:                           : 'bg-white border-stone-200 hover:bg-stone-50 hover:border-stone-300 text-stone-500 hover:text-stone-800'
+  8303:                       }`}
+  8304:                       title={isAdminSearchExpanded ? t("Đóng tìm kiếm") : t("Tìm kiếm...")}
+  8305:                     >
+  8306:                       {isAdminSearchExpanded ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+  8307:                     </button>
+  8308:                   </div>
+  8309: 
+  8310:                   <select
+  8311:                     value={itemsPerPage}
+  8312:                     onChange={e => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+  8313:                     className="bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm font-bold text-stone-700 outline-none hover:border-stone-300 transition-colors cursor-pointer"
+  8314:                   >
+  8315:                     <option value={10}>{t("10 bài")}</option>
+  8316:                     <option value={20}>{t("20 bài")}</option>
+  8317:                     <option value={50}>{t("50 bài")}</option>
+  8318:                     <option value={100}>{t("100 bài")}</option>
+  8319:                   </select>
+  8320:                   {demosSubTab === 'playlists' ? (
+  8321:                     <button
+  8322:                       type="button"
+  8323:                       onClick={async () => {
+  8324:                         const title = prompt(t("Nhập tên playlist mới:"));
+  8325:                         if (!title) return;
+  8326:                         const res = await fetch('/api/playlists', {
+  8327:                           method: 'POST',
+  8328:                           headers: {
+  8329:         'x-artist-extension': getArtistExtensionFromUrl(),
+  8330: 
+  8331:                             'Content-Type': 'application/json',
+  8332:                             'Authorization': `Bearer ${getAdminToken()}`
+  8333:                           },
+  8334:                           body: JSON.stringify({ title })
+  8335:                         });
+  8336:                         if (res.ok) {
+  8337:                            setToast(t("Tạo playlist thành công!"));
+  8338:                            setTimeout(() => setToast(''), 3000);
+  8339:                            loadData();
+  8340:                         }
+  8341:                       }}
+  8342:                       className="w-10 h-10 flex items-center justify-center bg-stone-900 text-white rounded-xl hover:bg-stone-800 transition-colors shadow-sm"
+  8343:                       title={t("Tạo Playlist")}
+  8344:                     >
+  8345:                       <Plus className="w-5 h-5" />
+  8346:                     </button>
+  8347:                   ) : demosSubTab !== 'trash' ? (
+  8348:                     <Link to={getAdminLink('/new')} className="w-10 h-10 flex items-center justify-center bg-stone-900 text-white rounded-xl hover:bg-stone-800 transition-colors shadow-sm" title={t("Tạo mới bài viết")}>
+  8349:                       <Plus className="w-5 h-5" />
+  8350:                     </Link>
+  8351:                   ) : null}
+  8352:                 </div>
+  8353:               </div>
+  8354: 
+  8355:               {/* Action area for selected subtab */}
+  8356:               <div className="overflow-x-auto min-h-[300px]">
+  8357:                 {demosSubTab === 'landing_pages' && (() => {
+  8358:                   let landingList = data.demos?.filter(d => d.linkType === 'indirect' && !d.deleted) || [];
+  8359:                   if (adminSearchQuery.trim()) {
+  8360:                     landingList = landingList.filter(d => d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase()));
