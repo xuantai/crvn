@@ -335,47 +335,57 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false }: Indirec
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="relative z-10 w-full max-w-[420px] bg-stone-950/60 backdrop-blur-3xl border border-white/10 rounded-[40px] p-8 shadow-2xl flex flex-col items-center my-auto"
+        className="relative z-10 w-full max-w-[420px] bg-stone-950/60 backdrop-blur-3xl border border-white/10 rounded-[40px] shadow-2xl flex flex-col items-center my-auto overflow-hidden"
       >
-        {/* Cover Art Accent */}
+        {/* Windows-like Header */}
         <motion.div 
           variants={itemVariants}
-          className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-3xl overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-10 select-none flex-shrink-0"
+          className="w-full bg-white/10 border-b border-white/10 px-6 py-4 flex items-center justify-start backdrop-blur-md"
         >
-          <motion.img 
-            src={bgImage} 
-            onError={() => setBgImage(defaultImage)}
-            className="w-full h-full object-cover pointer-events-none" 
-            alt={demo.title}
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-            whileHover={{ scale: 1.1 }}
-          />
-        </motion.div>
-
-        {/* Info */}
-        <motion.div 
-          variants={itemVariants}
-          className="relative z-10 text-center mt-8 w-full"
-        >
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight leading-snug text-white drop-shadow-lg px-2">
-            {demo.title}
-          </h1>
-          <p className="text-[16px] font-bold text-rose-400 mt-3 flex items-center justify-center gap-2 drop-shadow-md">
-            {renderArtistLinks(demo.singer, 'A.C Xuân Tài')}
-          </p>
-          {demo.composer && demo.composer !== (demo.singer || 'A.C Xuân Tài') && (
-            <p className="text-[12px] text-white/80 mt-2 tracking-widest font-mono uppercase drop-shadow-md flex items-center justify-center gap-1">
-               Sáng tác: {renderArtistLinks(demo.composer)}
+          <div className="flex flex-col min-w-0 text-left">
+            <h1 className="text-sm font-bold tracking-tight text-white drop-shadow-md truncate max-w-full">
+              {demo.title}
+            </h1>
+            <p className="text-[11px] text-white/70 font-mono truncate max-w-full mt-0.5">
+              {demo.singer || 'A.C Xuân Tài'}
             </p>
-          )}
+          </div>
         </motion.div>
 
-        {/* Playlist/Streaming Service Options */}
-        <motion.div 
-          variants={itemVariants}
-          className="mt-10 w-full space-y-3"
-        >
+        <div className="w-full p-8 flex flex-col items-center">
+          {/* Cover Art Accent */}
+          <motion.div 
+            variants={itemVariants}
+            className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-3xl overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-10 select-none flex-shrink-0"
+          >
+            <motion.img 
+              src={bgImage} 
+              onError={() => setBgImage(defaultImage)}
+              className="w-full h-full object-cover pointer-events-none" 
+              alt={demo.title}
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+              whileHover={{ scale: 1.1 }}
+            />
+          </motion.div>
+
+          {/* Info */}
+          <motion.div 
+            variants={itemVariants}
+            className="relative z-10 text-center mt-6 w-full"
+          >
+            {demo.composer && demo.composer !== (demo.singer || 'A.C Xuân Tài') && (
+              <p className="text-[12px] text-white/80 tracking-widest font-mono uppercase drop-shadow-md flex items-center justify-center gap-1">
+                 Sáng tác: {renderArtistLinks(demo.composer)}
+              </p>
+            )}
+          </motion.div>
+
+          {/* Playlist/Streaming Service Options */}
+          <motion.div 
+            variants={itemVariants}
+            className="mt-6 w-full space-y-3"
+          >
           {links.length > 0 ? (
             links.map((link) => (
               <motion.a 
@@ -408,6 +418,7 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false }: Indirec
             </div>
           )}
         </motion.div>
+        </div>
       </motion.div>
       
       {/* Admin Edit Button */}

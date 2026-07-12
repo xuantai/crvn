@@ -136,6 +136,11 @@ export default function ACPControlPanel() {
   const [feature3Desc, setFeature3Desc] = useState('');
   const [feature4Title, setFeature4Title] = useState('');
   const [feature4Desc, setFeature4Desc] = useState('');
+  
+  // Interface labels
+  const [menuVaultVi, setMenuVaultVi] = useState('Kho Nhạc');
+  const [menuAboutVi, setMenuAboutVi] = useState('Về Tôi');
+  const [menuBioVi, setMenuBioVi] = useState('Tiểu Sử');
   const [featuresTitle, setFeaturesTitle] = useState('');
   const [featuresSub, setFeaturesSub] = useState('');
   const [statusBadge, setStatusBadge] = useState('');
@@ -276,6 +281,9 @@ export default function ACPControlPanel() {
         setFeature3Desc(data.feature3Desc || 'Lưu trữ dữ liệu kép trên Cloud Firestore chất lượng cao kết hợp cơ chế dự phòng cục bộ. Cam kết phát nhạc ổn định, tốc độ load nhanh ngay cả khi internet quốc tế gặp sự cố.');
         setFeature4Title(data.feature4Title || 'Bố cục mang đậm dấu ấn cá nhân');
         setFeature4Desc(data.feature4Desc || 'Tùy chỉnh ảnh bìa đại diện, màu sắc chủ đạo, ảnh đại diện, viết bio, cập nhật danh sách mạng xã hội. Trang cá nhân hoạt động độc lập như một website thu nhỏ của riêng bạn.');
+        setMenuVaultVi(data.menuVaultVi || 'Kho Nhạc');
+        setMenuAboutVi(data.menuAboutVi || 'Về Tôi');
+        setMenuBioVi(data.menuBioVi || 'Tiểu Sử');
       }
     } catch (err) {
       console.error(err);
@@ -836,6 +844,9 @@ export default function ACPControlPanel() {
           feature3Desc,
           feature4Title,
           feature4Desc,
+          menuVaultVi,
+          menuAboutVi,
+          menuBioVi,
           cloudSyncEnabled
         })
       });
@@ -1812,6 +1823,48 @@ export default function ACPControlPanel() {
                           placeholder="Tùy chỉnh ảnh bìa đại diện..."
                         />
                       </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="border-t border-white/10 pt-6 mt-6">
+                  <h3 className="text-lg font-black mb-4">Tên Giao Diện (Tiếng Việt mặc định)</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400 mb-1.5">
+                        Tab 1 (Kho Nhạc)
+                      </label>
+                      <input 
+                        type="text" 
+                        value={menuVaultVi}
+                        onChange={(e) => setMenuVaultVi(e.target.value)}
+                        className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
+                        placeholder="Kho Nhạc"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400 mb-1.5">
+                        Tab 2 (Về Tôi)
+                      </label>
+                      <input 
+                        type="text" 
+                        value={menuAboutVi}
+                        onChange={(e) => setMenuAboutVi(e.target.value)}
+                        className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
+                        placeholder="Về Tôi"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400 mb-1.5">
+                        Tab 3 (Tiểu Sử)
+                      </label>
+                      <input 
+                        type="text" 
+                        value={menuBioVi}
+                        onChange={(e) => setMenuBioVi(e.target.value)}
+                        className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
+                        placeholder="Tiểu Sử"
+                      />
                     </div>
                   </div>
                 </div>

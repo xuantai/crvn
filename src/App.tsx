@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
 import { ChorusLogo } from './components/ChorusLogo';
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
@@ -7,6 +8,12 @@ import { AppData, DemoSong, TemplateConfig, Achievement } from './types';
 import { motion, AnimatePresence } from 'motion/react';
 import { IndirectBioCard } from './components/IndirectBioCard';
 import { LoadingScreen } from './components/LoadingScreen';
+
+
+function Portal({ children }: { children: React.ReactNode }) {
+  if (typeof document === 'undefined') return null;
+  return createPortal(children, document.body);
+}
 
 let globalShowConfirm: any = null;
 
@@ -356,7 +363,7 @@ const translations: Record<string, Record<string, string>> = {
       "Ngày Sinh": "Ngày Sinh",
       "Địa Chỉ": "Địa Chỉ",
       "Công Ty": "Công Ty",
-      "Vai Trò": "Vai Trò",
+      "Danh Xưng": "Danh Xưng", "Ca nhạc sĩ, producer...": "Ca nhạc sĩ, producer...",
       "Email": "Email",
       "SĐT": "SĐT",
       "Học Vấn": "Học Vấn",
@@ -368,6 +375,8 @@ const translations: Record<string, Record<string, string>> = {
       "Tiêu Đề Menu": "Tiêu Đề Menu",
       "Đường Dẫn": "Đường Dẫn",
       "Thêm giai đoạn": "Thêm giai đoạn",
+    "Danh Mục": "Danh Mục",
+    "Kho Nhạc": "Kho Nhạc",
     "Quay lại": "Quay lại",
     "Danh sách Playlist": "Danh sách Playlist",
     "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc",
@@ -395,6 +404,14 @@ const translations: Record<string, Record<string, string>> = {
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn",
     "Tab 3 (Album/EP)": "Tab 3 (Album/EP)", dDesc: "Thiên đường âm nhạc của", btnSpot: "Nghe trên Spotify", lDemos: "Đề Mô", lReleased: "Ra Rồi", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Cần Mật Khẩu", pNow: "Nghe Ngay", nDemo: "Chưa có demo nào.", rMv: "MV Đã Phát Hành", nMv: "Chưa có MV nào.", lMore: "Hiển thị thêm", mList: "người nghe hàng tháng", load: "Đang tải trang...", back: "Trở về", adm: "AdminCP", edit: "Chỉnh sửa", pPrompt: "Cần mật khẩu", pPrompt2: "Nhập mật khẩu để nghe demo này", unlock: "Mở khóa", wPass: "Sai mật khẩu", lyric: "Lời bài hát", nLyric: "Chưa cập nhật lời bài hát", sAuth: "Sáng tác:", lang: "Tiếng Việt", lDemosMobile: "Đề mô", lReleasedMobile: "Ra Rồi", searchSong: "Tìm kiếm bài hát...", noSongs: "Chưa có bài hát nào", noSongsDesc: "Danh sách đang được cập nhật, bạn vui lòng quay lại sau nhé!", closeSearch: "Đóng tìm kiếm", searchTitle: "Tìm kiếm bài hát", noDemoFound: "Không tìm thấy demo", mVault: "Kho Nhạc", "Hiển thị": "Hiển thị", "bài / trang": "bài / trang", "Tổng": "Tổng", "Trước": "Trước", "Sau": "Sau", pPartner: "Đối tác:", pAutoNext: "Sẽ tự động chuyển bài nếu không nhập mật khẩu", vRef: "Video Tham Khảo", nArtist: "Nghệ sĩ" },
   en: {
+    "Kho Nhạc": "Music Vault",
+
+    "Quản lý Menu": "Manage Menu",
+
+    "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "Drag and drop to reorder. The first tab will be the default page. Supports up to 3 custom tabs.", "Lưu Menu": "Save Menu",
+
+    "Về Tôi": "About Me", "Tiểu Sử": "Biography", "Giới thiệu nghệ sĩ": "Artist Introduction", "Tên Thật": "Real Name", "Ngày Sinh": "Date of Birth", "Địa Chỉ": "Address", "Công Ty": "Company", "Danh Xưng": "Title/Role", "Ca nhạc sĩ, producer...": "Singer, producer...", "Email": "Email", "SĐT": "Phone", "Học Vấn": "Education", "Kinh nghiệm": "Experience", "Thời gian": "Time/Period", "Sự Kiện": "Event", "Thêm giai đoạn": "Add Period", "Danh Mục": "Categories", "Thêm Menu Mới": "Add New Menu", "Tiêu Đề Menu": "Menu Title", "Đường Dẫn": "URL",
+ 
     "Quay lại": "Back",
     "Danh sách Playlist": "Playlist List",
     "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Create, arrange priority, and edit playlists",
@@ -422,6 +439,14 @@ const translations: Record<string, Record<string, string>> = {
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "Hide from artist list on Chorus.vn homepage",
     "Tab 3 (Album/EP)": "Tab 3 (Album/EP)", dDesc: "Music paradise of", btnSpot: "Listen on Spotify", lDemos: "Demo", lReleased: "Release", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Password", pNow: "Play Now", nDemo: "No demos yet.", rMv: "Released Music Videos", nMv: "No MVs yet.", lMore: "Load more", mList: "monthly listeners", load: "Loading...", back: "Back", adm: "Admin", edit: "Edit", pPrompt: "Password required", pPrompt2: "Enter password to listen to this demo", unlock: "Unlock", wPass: "Wrong password", lyric: "Lyrics", nLyric: "No lyrics yet", sAuth: "Composer:", lang: "English", searchSong: "Search songs...", noSongs: "No songs available", noSongsDesc: "The list is being updated, please come back later!", closeSearch: "Close search", searchTitle: "Search songs", noDemoFound: "Demo not found", mVault: "Music Vault", "Hiển thị": "Show", "bài / trang": "songs / page", "Tổng": "Total", "Trước": "Prev", "Sau": "Next", pPartner: "Partner:", pAutoNext: "Will auto skip if password not entered", vRef: "Reference Video", nArtist: "Artist" },
   ko: {
+    "Kho Nhạc": "음악 보관함",
+
+    "Quản lý Menu": "메뉴 관리",
+
+    "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "드래그 앤 드롭으로 순서를 변경하세요. 첫 번째 탭이 기본 페이지가 됩니다. 최대 3개의 사용자 지정 탭을 지원합니다.", "Lưu Menu": "메뉴 저장",
+
+    "Về Tôi": "내 소개", "Tiểu Sử": "약력", "Giới thiệu nghệ sĩ": "아티스트 소개", "Tên Thật": "본명", "Ngày Sinh": "생년월일", "Địa Chỉ": "주소", "Công Ty": "회사", "Danh Xưng": "직함/역할", "Ca nhạc sĩ, producer...": "가수, 프로듀서...", "Email": "이메일", "SĐT": "전화번호", "Học Vấn": "학력", "Kinh nghiệm": "경력", "Thời gian": "기간", "Sự Kiện": "이벤트", "Thêm giai đoạn": "기간 추가",
+ 
     "Quay lại": "Quay lại",
     "Danh sách Playlist": "Danh sách Playlist",
     "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc",
@@ -449,6 +474,14 @@ const translations: Record<string, Record<string, string>> = {
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "Chorus.vn \ud648\ud398\uc774\uc9c0\uc758 \uc544\ud2f0\uc2a4\ud2b8 \ubaa9\ub85d\uc5d0\uc11c \uc228\uae30\uae30",
     "Tab 3 (Album/EP)": "\ud0ed 3 (Album/EP)", dDesc: "데모 파라다이스", btnSpot: "Spotify에서 듣기", lDemos: "최신 데모", lReleased: "발매된 음악", lDemoMark: "데모", lReleasedMark: "발매됨", pReq: "비밀번호", pNow: "지금 듣기", nDemo: "데모 없음", rMv: "발매된 뮤직비디오", nMv: "MV 없음", lMore: "더 보기", mList: "월간 청취자", load: "로딩 중...", back: "뒤로", adm: "관리자", edit: "편집", pPrompt: "비밀번호 필요", pPrompt2: "이 데모를 들으려면 비밀번호를 입력하세요", unlock: "잠금 해제", wPass: "잘못된 비밀번호", lyric: "가사", nLyric: "가사 없음", sAuth: "작곡가:", lang: "한국어", searchSong: "노래 검색...", noSongs: "등록된 곡이 없습니다", noSongsDesc: "목록이 업데이트 중입니다. 나중에 다시 방문해 주세요!", closeSearch: "검색 닫기", searchTitle: "노래 검색", noDemoFound: "데모를 찾을 수 없습니다", mVault: "음악 보관함", "Hiển thị": "표시", "bài / trang": "곡 / 페이지", "Tổng": "총", "Trước": "이전", "Sau": "다음", pPartner: "파트너:", pAutoNext: "비밀번호 미입력 시 자동 다음 곡", vRef: "참조 비디오", nArtist: "아티스트" },
   ja: {
+    "Kho Nhạc": "ミュージックボルト",
+
+    "Quản lý Menu": "メニュー管理",
+
+    "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "ドラッグ＆ドロップで並べ替えます。最初のタブがデフォルトページになります。最大3つのカスタムタブをサポートします。", "Lưu Menu": "メニューを保存",
+
+    "Về Tôi": "自己紹介", "Tiểu Sử": "経歴", "Giới thiệu nghệ sĩ": "アーティスト紹介", "Tên Thật": "本名", "Ngày Sinh": "生年月日", "Địa Chỉ": "住所", "Công Ty": "会社", "Danh Xưng": "役職", "Ca nhạc sĩ, producer...": "歌手、プロデューサー...", "Email": "Eメール", "SĐT": "電話番号", "Học Vấn": "学歴", "Kinh nghiệm": "経験", "Thời gian": "期間", "Sự Kiện": "イベント", "Thêm giai đoạn": "期間を追加",
+ 
     "Quay lại": "Quay lại",
     "Danh sách Playlist": "Danh sách Playlist",
     "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc",
@@ -476,6 +509,14 @@ const translations: Record<string, Record<string, string>> = {
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "Chorus.vn \u30db\u30fc\u30e0\u30da\u30fc\u30b8\u306e\u30a2\u30fc\u30c6\u30a3\u30b9\u30c8\u30ea\u30b9\u30c8\u304b\u3089\u975e\u8868\u793a",
     "Tab 3 (Album/EP)": "\u30bf\u30d6 3 (Album/EP)", dDesc: "デモパラダイス", btnSpot: "Spotifyで聴く", lDemos: "最新のデモ", lReleased: "リリースされた音楽", lDemoMark: "デモ", lReleasedMark: "リリース済", pReq: "パスワード", pNow: "今すぐ聴く", nDemo: "デモなし", rMv: "リリースされたMV", nMv: "MVなし", lMore: "もっと見る", mList: "月間リスナー", load: "読み込み中...", back: "戻る", adm: "管理者", edit: "編集", pPrompt: "パスワードが必要", pPrompt2: "このデモを聴くにはパスワードを入力してください", unlock: "ロック解除", wPass: "パスワードが間違っています", lyric: "歌詞", nLyric: "歌詞なし", sAuth: "作曲:", lang: "日本語", searchSong: "曲名で検索...", noSongs: "登録された曲はありません", noSongsDesc: "リストは更新中です。後で戻ってきてください！", closeSearch: "検索を閉じる", searchTitle: "曲名で検索", noDemoFound: "デモが見つかりません", mVault: "ミュージックボルト", "Hiển thị": "表示", "bài / trang": "曲 / ページ", "Tổng": "合計", "Trước": "前へ", "Sau": "次へ", pPartner: "パートナー:", pAutoNext: "パスワード未入力で自動スキップ", vRef: "参考動画", nArtist: "アーティスト" },
   th: {
+    "Kho Nhạc": "คลังเพลง",
+
+    "Quản lý Menu": "จัดการเมนู",
+
+    "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "ลากและวางเพื่อจัดเรียงลำดับ แท็บแรกจะเป็นหน้าเริ่มต้น รองรับแท็บกำหนดเองสูงสุด 3 แท็บ", "Lưu Menu": "บันทึกเมนู",
+
+    "Về Tôi": "เกี่ยวกับฉัน", "Tiểu Sử": "ประวัติส่วนตัว", "Giới thiệu nghệ sĩ": "แนะนำศิลปิน", "Tên Thật": "ชื่อจริง", "Ngày Sinh": "วันเกิด", "Địa Chỉ": "ที่อยู่", "Công Ty": "บริษัท", "Danh Xưng": "ตำแหน่ง", "Ca nhạc sĩ, producer...": "นักร้อง, โปรดิวเซอร์...", "Email": "อีเมล", "SĐT": "เบอร์โทรศัพท์", "Học Vấn": "การศึกษา", "Kinh nghiệm": "ประสบการณ์", "Thời gian": "เวลา/ช่วงเวลา", "Sự Kiện": "เหตุการณ์", "Thêm giai đoạn": "เพิ่มช่วงเวลา",
+ 
     "Quay lại": "Quay lại",
     "Danh sách Playlist": "Danh sách Playlist",
     "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc",
@@ -503,6 +544,14 @@ const translations: Record<string, Record<string, string>> = {
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "\u0e0b\u0e48\u0e2d\u0e19\u0e08\u0e32\u0e01\u0e23\u0e32\u0e22\u0e0a\u0e37\u0e48\u0e2d\u0e28\u0e34\u0e25\u0e1b\u0e34\u0e19\u0e43\u0e19\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e23\u0e01\u0e02\u0e2d\u0e07 Chorus.vn",
     "Tab 3 (Album/EP)": "\u0e41\u0e17\u0e47\u0e1a 3 (Album/EP)", dDesc: "สวรรค์แห่งเพลงเดโม่ของ", btnSpot: "ฟังบน Spotify", lDemos: "ตัวอย่างล่าสุด", lReleased: "เพลงที่ปล่อยแล้ว", lDemoMark: "เดโม่", lReleasedMark: "ปล่อยแล้ว", pReq: "รหัสผ่าน", pNow: "ฟังเลย", nDemo: "ไม่มีตัวอย่าง", rMv: "มิวสิควิดีโอ", nMv: "ไม่มี MV", lMore: "โหลดเพิ่ม", mList: "ผู้ฟังรายเดือน", load: "กำลังโหลด...", back: "กลับ", adm: "แอดมิน", edit: "แก้ไข", pPrompt: "ต้องใช้รหัสผ่าน", pPrompt2: "ใส่รหัสผ่านเพื่อฟังเดโม่นี้", unlock: "ปลดล็อค", wPass: "รหัสผ่านผิด", lyric: "เนื้อเพลง", nLyric: "ไม่มีเนื้อเพลง", sAuth: "แต่งโดย:", lang: "ไทย", searchSong: "ค้นหาเพลง...", noSongs: "ยังไม่มีเพลง", noSongsDesc: "กำลังอัปเดตรายการ โปรดกลับมาใหม่อีกครั้งในภายหลัง!", closeSearch: "ปิดการค้นหา", searchTitle: "ค้นหาเพลง", noDemoFound: "ไม่พบเดโม", mVault: "คลังเพลง", "Hiển thị": "แสดง", "bài / trang": "เพลง / หน้า", "Tổng": "ทั้งหมด", "Trước": "ก่อนหน้า", "Sau": "ถัดไป", pPartner: "พาร์ทเนอร์:", pAutoNext: "จะข้ามอัตโนมัติหากไม่ใส่รหัส", vRef: "วิดีโออ้างอิง", nArtist: "ศิลปิน" },
   zh: {
+    "Kho Nhạc": "音乐库",
+
+    "Quản lý Menu": "菜单管理",
+
+    "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "拖放以重新排序。第一个选项卡将作为默认页面。最多支持3个自定义选项卡。", "Lưu Menu": "保存菜单",
+
+    "Về Tôi": "关于我", "Tiểu Sử": "个人简介", "Giới thiệu nghệ sĩ": "艺术家介绍", "Tên Thật": "真实姓名", "Ngày Sinh": "出生日期", "Địa Chỉ": "地址", "Công Ty": "公司", "Danh Xưng": "职位/角色", "Ca nhạc sĩ, producer...": "歌手、制作人...", "Email": "电子邮件", "SĐT": "电话号码", "Học Vấn": "教育", "Kinh nghiệm": "经验", "Thời gian": "时间/期间", "Sự Kiện": "事件", "Thêm giai đoạn": "添加时期",
+ 
     "Quay lại": "Quay lại",
     "Danh sách Playlist": "Danh sách Playlist",
     "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc",
@@ -541,7 +590,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
       "Ngày Sinh": "Ngày Sinh",
       "Địa Chỉ": "Địa Chỉ",
       "Công Ty": "Công Ty",
-      "Vai Trò": "Vai Trò",
+      "Danh Xưng": "Danh Xưng", "Ca nhạc sĩ, producer...": "Ca nhạc sĩ, producer...",
       "Email": "Email",
       "SĐT": "SĐT",
       "Học Vấn": "Học Vấn",
@@ -553,6 +602,8 @@ const adminTranslations: Record<string, Record<string, string>> = {
       "Tiêu Đề Menu": "Tiêu Đề Menu",
       "Đường Dẫn": "Đường Dẫn",
       "Thêm giai đoạn": "Thêm giai đoạn",
+      "Danh Mục": "Danh Mục",
+      "Kho Nhạc": "Kho Nhạc",
     "Bài hát Preview": "Bài hát Preview",
     "Tên hiển thị": "Tên hiển thị",
     "Màu nền tùy chỉnh": "Màu nền tùy chỉnh",
@@ -1030,6 +1081,14 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Có lỗi xảy ra khi kết nối máy chủ.": "Có lỗi xảy ra khi kết nối máy chủ.",
   },
   en: {
+    "Kho Nhạc": "Music Vault",
+
+    "Quản lý Menu": "Manage Menu",
+
+    "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "Drag and drop to reorder. The first tab will be the default page. Supports up to 3 custom tabs.", "Lưu Menu": "Save Menu",
+
+    "Về Tôi": "About Me", "Tiểu Sử": "Biography", "Giới thiệu nghệ sĩ": "Artist Introduction", "Tên Thật": "Real Name", "Ngày Sinh": "Date of Birth", "Địa Chỉ": "Address", "Công Ty": "Company", "Danh Xưng": "Title/Role", "Ca nhạc sĩ, producer...": "Singer, producer...", "Email": "Email", "SĐT": "Phone", "Học Vấn": "Education", "Kinh nghiệm": "Experience", "Thời gian": "Time/Period", "Sự Kiện": "Event", "Thêm giai đoạn": "Add Period", "Danh Mục": "Categories", "Thêm Menu Mới": "Add New Menu", "Tiêu Đề Menu": "Menu Title", "Đường Dẫn": "URL",
+ 
     "Bài hát Preview": "Preview Song",
     "Tên hiển thị": "Display Name",
     "Màu nền tùy chỉnh": "Custom Background Color",
@@ -1227,7 +1286,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Lỗi: ${err.error}": "Error: ${err.error}",
     "Lời bài hát": "Lyrics",
     "MB). Vui lòng tải lên file nhạc dưới 100MB để đảm bảo tốc độ xử lý của server.": "MB). Please upload music files under 100MB to ensure server processing speed.",
-    "Mô tả": "Description",
+    "Mô tả": "Description", "Hình ảnh minh họa (Tùy chọn)": "Illustration Image (Optional)", "Xóa ảnh": "Remove image",
     "Mô tả cụ thể lý do yêu cầu (ví dụ: Vi phạm bản quyền, sai thông tin ca sĩ, nhạc sĩ...)": "Specifically describe the reason for the request (e.g., Copyright violation, incorrect artist/songwriter info...)",
     "Mô tả cụ thể và chi tiết ý kiến hoặc lỗi bạn gặp phải...": "Specifically and detailedly describe the feedback or error you encountered...",
     "Mô tả lý do / Nội dung chi tiết": "Describe Reason / Detailed Content",
@@ -1505,6 +1564,14 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Có lỗi xảy ra khi kết nối máy chủ.": "An error occurred while connecting to the server.",
   },
   ko: {
+    "Kho Nhạc": "음악 보관함",
+
+    "Quản lý Menu": "메뉴 관리",
+
+    "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "드래그 앤 드롭으로 순서를 변경하세요. 첫 번째 탭이 기본 페이지가 됩니다. 최대 3개의 사용자 지정 탭을 지원합니다.", "Lưu Menu": "메뉴 저장",
+
+    "Về Tôi": "내 소개", "Tiểu Sử": "약력", "Giới thiệu nghệ sĩ": "아티스트 소개", "Tên Thật": "본명", "Ngày Sinh": "생년월일", "Địa Chỉ": "주소", "Công Ty": "회사", "Danh Xưng": "직함/역할", "Ca nhạc sĩ, producer...": "가수, 프로듀서...", "Email": "이메일", "SĐT": "전화번호", "Học Vấn": "학력", "Kinh nghiệm": "경력", "Thời gian": "기간", "Sự Kiện": "이벤트", "Thêm giai đoạn": "기간 추가",
+ 
     "Bài hát Preview": "프리뷰 곡",
     "Tên hiển thị": "표시 이름",
     "Màu nền tùy chỉnh": "사용자 지정 배경색",
@@ -1702,7 +1769,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Lỗi: ${err.error}": "오류: ${err.error}",
     "Lời bài hát": "가사",
     "MB). Vui lòng tải lên file nhạc dưới 100MB để đảm bảo tốc độ xử lý của server.": "MB). 서버 처리 속도를 위해 100MB 미만의 음악 파일을 업로드해주세요.",
-    "Mô tả": "설명",
+    "Mô tả": "설명", "Hình ảnh minh họa (Tùy chọn)": "일러스트레이션 이미지 (선택 사항)", "Xóa ảnh": "이미지 삭제",
     "Mô tả cụ thể lý do yêu cầu (ví dụ: Vi phạm bản quyền, sai thông tin ca sĩ, nhạc sĩ...)": "요청 사유를 구체적으로 설명해주세요 (예: 저작권 위반, 가수/작곡가 정보 오류 등...)",
     "Mô tả cụ thể và chi tiết ý kiến hoặc lỗi bạn gặp phải...": "겪고 계신 의견이나 오류를 구체적이고 상세하게 설명해주세요...",
     "Mô tả lý do / Nội dung chi tiết": "사유 설명 / 상세 내용",
@@ -1980,6 +2047,14 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Có lỗi xảy ra khi kết nối máy chủ.": "서버에 연결하는 동안 오류가 발생했습니다.",
   },
   ja: {
+    "Kho Nhạc": "ミュージックボルト",
+
+    "Quản lý Menu": "メニュー管理",
+
+    "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "ドラッグ＆ドロップで並べ替えます。最初のタブがデフォルトページになります。最大3つのカスタムタブをサポートします。", "Lưu Menu": "メニューを保存",
+
+    "Về Tôi": "自己紹介", "Tiểu Sử": "経歴", "Giới thiệu nghệ sĩ": "アーティスト紹介", "Tên Thật": "本名", "Ngày Sinh": "生年月日", "Địa Chỉ": "住所", "Công Ty": "会社", "Danh Xưng": "役職", "Ca nhạc sĩ, producer...": "歌手、プロデューサー...", "Email": "Eメール", "SĐT": "電話番号", "Học Vấn": "学歴", "Kinh nghiệm": "経験", "Thời gian": "期間", "Sự Kiện": "イベント", "Thêm giai đoạn": "期間を追加",
+ 
     "Bài hát Preview": "プレビュー曲",
     "Tên hiển thị": "表示名",
     "Màu nền tùy chỉnh": "カスタム背景色",
@@ -2177,7 +2252,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Lỗi: ${err.error}": "エラー: ${err.error}",
     "Lời bài hát": "歌詞",
     "MB). Vui lòng tải lên file nhạc dưới 100MB để đảm bảo tốc độ xử lý của server.": "MB）。サーバーの処理速度を維持するため、100MB以下の音楽ファイルをアップロードしてください。",
-    "Mô tả": "説明",
+    "Mô tả": "説明", "Hình ảnh minh họa (Tùy chọn)": "イラスト画像（オプション）", "Xóa ảnh": "画像を削除",
     "Mô tả cụ thể lý do yêu cầu (ví dụ: Vi phạm bản quyền, sai thông tin ca sĩ, nhạc sĩ...)": "リクエストの理由を具体的に記述してください（例：著作権侵害、歌手/作曲家の情報誤りなど...）",
     "Mô tả cụ thể và chi tiết ý kiến hoặc lỗi bạn gặp phải...": "ご意見や遭遇したエラーについて、具体的かつ詳細に記述してください...",
     "Mô tả lý do / Nội dung chi tiết": "理由の説明 / 詳細内容",
@@ -2455,6 +2530,14 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Có lỗi xảy ra khi kết nối máy chủ.": "サーバーへの接続中にエラーが発生しました。",
   },
   th: {
+    "Kho Nhạc": "คลังเพลง",
+
+    "Quản lý Menu": "จัดการเมนู",
+
+    "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "ลากและวางเพื่อจัดเรียงลำดับ แท็บแรกจะเป็นหน้าเริ่มต้น รองรับแท็บกำหนดเองสูงสุด 3 แท็บ", "Lưu Menu": "บันทึกเมนู",
+
+    "Về Tôi": "เกี่ยวกับฉัน", "Tiểu Sử": "ประวัติส่วนตัว", "Giới thiệu nghệ sĩ": "แนะนำศิลปิน", "Tên Thật": "ชื่อจริง", "Ngày Sinh": "วันเกิด", "Địa Chỉ": "ที่อยู่", "Công Ty": "บริษัท", "Danh Xưng": "ตำแหน่ง", "Ca nhạc sĩ, producer...": "นักร้อง, โปรดิวเซอร์...", "Email": "อีเมล", "SĐT": "เบอร์โทรศัพท์", "Học Vấn": "การศึกษา", "Kinh nghiệm": "ประสบการณ์", "Thời gian": "เวลา/ช่วงเวลา", "Sự Kiện": "เหตุการณ์", "Thêm giai đoạn": "เพิ่มช่วงเวลา",
+ 
     "Bài hát Preview": "ตัวอย่างเพลง",
     "Tên hiển thị": "ชื่อที่แสดง",
     "Màu nền tùy chỉnh": "สีพื้นหลังที่กำหนดเอง",
@@ -2652,7 +2735,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Lỗi: ${err.error}": "ข้อผิดพลาด: ${err.error}",
     "Lời bài hát": "เนื้อเพลง",
     "MB). Vui lòng tải lên file nhạc dưới 100MB để đảm bảo tốc độ xử lý của server.": "MB) โปรดอัปโหลดไฟล์เพลงที่ต่ำกว่า 100MB เพื่อรับรองความเร็วในการประมวลผลของเซิร์ฟเวอร์",
-    "Mô tả": "คำอธิบาย",
+    "Mô tả": "คำอธิบาย", "Hình ảnh minh họa (Tùy chọn)": "ภาพประกอบ (ทางเลือก)", "Xóa ảnh": "ลบรูปภาพ",
     "Mô tả cụ thể lý do yêu cầu (ví dụ: Vi phạm bản quyền, sai thông tin ca sĩ, nhạc sĩ...)": "อธิบายเหตุผลของคำขอให้ชัดเจน (เช่น การละเมิดลิขสิทธิ์, ข้อมูลศิลปิน/นักแต่งเพลงไม่ถูกต้อง...)",
     "Mô tả cụ thể và chi tiết ý kiến hoặc lỗi bạn gặp phải...": "อธิบายความคิดเห็นหรือข้อผิดพลาดที่คุณพบให้ชัดเจนและละเอียด...",
     "Mô tả lý do / Nội dung chi tiết": "อธิบายเหตุผล / รายละเอียดเนื้อหา",
@@ -2931,6 +3014,14 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Tất cả bài hát đều đã ở trong playlist nàyแล้ว.": "เพลงทั้งหมดอยู่ในเพลย์ลิสต์นี้แล้ว"
   },
   zh: {
+    "Kho Nhạc": "音乐库",
+
+    "Quản lý Menu": "菜单管理",
+
+    "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "拖放以重新排序。第一个选项卡将作为默认页面。最多支持3个自定义选项卡。", "Lưu Menu": "保存菜单",
+
+    "Về Tôi": "关于我", "Tiểu Sử": "个人简介", "Giới thiệu nghệ sĩ": "艺术家介绍", "Tên Thật": "真实姓名", "Ngày Sinh": "出生日期", "Địa Chỉ": "地址", "Công Ty": "公司", "Danh Xưng": "职位/角色", "Ca nhạc sĩ, producer...": "歌手、制作人...", "Email": "电子邮件", "SĐT": "电话号码", "Học Vấn": "教育", "Kinh nghiệm": "经验", "Thời gian": "时间/期间", "Sự Kiện": "事件", "Thêm giai đoạn": "添加时期",
+ 
     "Bài hát Preview": "预览歌曲",
     "Tên hiển thị": "显示名称",
     "Màu nền tùy chỉnh": "自定义背景颜色",
@@ -3128,7 +3219,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Lỗi: ${err.error}": "错误：${err.error}",
     "Lời bài hát": "歌词",
     "MB). Vui lòng tải lên file nhạc dưới 100MB để đảm bảo tốc độ xử lý của server.": "MB）。为确保服务器处理速度，请上传100MB以下的音乐文件。",
-    "Mô tả": "描述",
+    "Mô tả": "描述", "Hình ảnh minh họa (Tùy chọn)": "插图 (可选)", "Xóa ảnh": "删除图片",
     "Mô tả cụ thể lý do yêu cầu (ví dụ: Vi phạm bản quyền, sai thông tin ca sĩ, nhạc sĩ...)": "请具体描述请求原因（例如：版权侵犯、歌手/词曲作者信息错误等...）",
     "Mô tả cụ thể và chi tiết ý kiến hoặc lỗi bạn gặp phải...": "请具体且详细地描述您遇到的意见或错误...",
     "Mô tả lý do / Nội dung chi tiết": "原因描述 / 详细内容",
@@ -3599,6 +3690,65 @@ const formatFileName = (name: string, maxLen = 22) => {
   const start = baseName.slice(0, half);
   const end = baseName.slice(-half);
   return `${start}...${end}${ext}`;
+};
+
+const compressImageToJPG = (file: File, maxWidth = 1200): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const img = new window.Image();
+      img.src = e.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return resolve(file);
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => {
+          if (!blob) return resolve(file);
+          resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: 'image/jpeg' }));
+        }, 'image/jpeg', 0.85);
+      };
+      img.onerror = () => resolve(file);
+    };
+    reader.onerror = () => resolve(file);
+  });
+};
+
+const uploadGlobal = async (file: File, setProgress?: (p: number) => void): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/upload', true);
+    xhr.setRequestHeader('Authorization', `Bearer ${getAdminToken() || ''}`);
+    xhr.setRequestHeader('x-artist-extension', getArtistExtensionFromUrl());
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && setProgress) {
+        setProgress(Math.round((e.loaded / e.total) * 100));
+      }
+    };
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        try {
+          const res = JSON.parse(xhr.responseText);
+          resolve(res.url);
+        } catch (e) {
+          reject(e);
+        }
+      } else reject(new Error('Upload failed'));
+    };
+    xhr.onerror = () => reject(new Error('Upload failed'));
+    xhr.send(formData);
+  });
 };
 
 import ACPControlPanel from './components/ACPControlPanel';
@@ -4247,10 +4397,14 @@ const LanguageSwitcher = ({ isRelative = false, pushDown = false }: { isRelative
   const langs = ['vi', 'en', 'ko', 'ja', 'th', 'zh'];
 
   return (
-    <div className={isRelative ? "relative" : `fixed right-6 z-50 transition-all duration-500 ease-in-out ${pushDown ? 'top-20' : 'top-6'}`}>
+    <div className={isRelative ? "relative z-[9999]" : `fixed right-6 z-[9999] pointer-events-auto transition-all duration-500 ease-in-out ${pushDown ? 'top-20' : 'top-6'}`}>
       <div 
         className={`flex items-center gap-2 ${isRelative ? 'bg-stone-100 hover:bg-stone-200 border border-stone-300 text-stone-850 h-10 px-3.5' : 'bg-black/30 hover:bg-black/50 border border-white/20 text-white px-4 py-2 shadow-lg'} rounded-full backdrop-blur-xl cursor-pointer transition-all hover:pr-5 group`}
-        onClick={() => setOpen(!open)}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setOpen(!open);
+        }}
       >
         <Globe className={`w-4 h-4 ${isRelative ? 'text-stone-600 group-hover:text-stone-850' : 'text-white/90 group-hover:text-white'} transition-colors`} />
         <span className={`font-bold uppercase text-xs tracking-wider ${isRelative ? 'text-stone-800' : 'text-white'}`}>{lang}</span>
@@ -4263,7 +4417,7 @@ const LanguageSwitcher = ({ isRelative = false, pushDown = false }: { isRelative
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className={`absolute right-0 top-full mt-3 flex flex-col ${isRelative ? 'bg-white border border-stone-200 text-stone-800 shadow-xl' : 'bg-neutral-950/90 border border-white/10 text-white shadow-2xl'} rounded-2xl overflow-hidden origin-top-right z-50`}
+            className={`absolute right-0 top-full mt-3 flex flex-col ${isRelative ? 'bg-white border border-stone-200 text-stone-800 shadow-xl' : 'bg-neutral-950/90 border border-white/10 text-white shadow-2xl'} rounded-2xl overflow-hidden origin-top-right z-[10000]`}
           >
             {langs.map(l => (
               <button 
@@ -4304,7 +4458,7 @@ function AchievementBadge({ achievement, align = 'right' }: { achievement: Achie
       "Ngày Sinh": "Ngày Sinh",
       "Địa Chỉ": "Địa Chỉ",
       "Công Ty": "Công Ty",
-      "Vai Trò": "Vai Trò",
+      "Danh Xưng": "Danh Xưng", "Ca nhạc sĩ, producer...": "Ca nhạc sĩ, producer...",
       "Email": "Email",
       "SĐT": "SĐT",
       "Học Vấn": "Học Vấn",
@@ -4321,31 +4475,31 @@ function AchievementBadge({ achievement, align = 'right' }: { achievement: Achie
       streams: "Lượt nghe",
       viral: "Lan truyền"
     },
-    en: {
+    en: { 
       trending: "Trending",
       views: "Views",
       streams: "Streams",
       viral: "Viral"
     },
-    ko: {
+    ko: { 
       trending: "인기 급상승",
       views: "조회수",
       streams: "스트리밍",
       viral: "바이럴"
     },
-    ja: {
+    ja: { 
       trending: "急上昇",
       views: "視聴回数",
       streams: "再生回数",
       viral: "バイラル"
     },
-    th: {
+    th: { 
       trending: "มาแรง",
       views: "ยอดวิว",
       streams: "สตรีม",
       viral: "ไวรัล"
     },
-    zh: {
+    zh: { 
       trending: "热门趋势",
       views: "播放量",
       streams: "播放量",
@@ -4904,11 +5058,9 @@ function Home() {
                 >
                   <AutoTranslate text={(!data.artistBio || ["Thiên đường demo của", "Thiên đường âm nhạc của"].includes(data.artistBio?.trim() || '')) ? t.dDesc : data.artistBio} />
                 </motion.p>
-                <AnimatePresence>
-                  {showArtist && (
                     <motion.h1 
                       initial={{ scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
-                      animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
+                      animate={showArtist ? { scale: 1, opacity: 1, filter: 'blur(0px)' } : { scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
                       transition={{ duration: 1.5, ease: "easeOut" }}
                       className="text-4xl sm:text-6xl md:text-[6rem] lg:text-[7rem] font-black mb-4 tracking-tighter text-white drop-shadow-2xl leading-[1.15] text-center max-w-full mt-3 sm:mt-4"
                     >
@@ -4918,7 +5070,9 @@ function Home() {
                             <span key={index} className="whitespace-nowrap">
                               {word}
                               <div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
-                                <BadgeCheck className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 text-blue-500 fill-blue-500/20 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)] shrink-0 cursor-pointer" />
+                                <motion.div animate={{ rotateY: [0, 360], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", repeatDelay: 3 }} className="flex items-center justify-center">
+                                  <BadgeCheck className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 text-blue-500 fill-blue-500/20 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)] shrink-0 cursor-pointer" />
+                                </motion.div>
                                 <div className="absolute bottom-full mb-2 hidden group-hover:block bg-neutral-900 border border-white/10 text-white text-[11px] sm:text-xs font-bold py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none z-50 tracking-normal normal-case leading-none">
                                   Nghệ sĩ đã xác thực
                                   <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-neutral-900" />
@@ -4930,8 +5084,6 @@ function Home() {
                         return word + ' ';
                       })}
                     </motion.h1>
-                  )}
-                </AnimatePresence>
               </div>
             ) : (
               <div 
@@ -4946,11 +5098,9 @@ function Home() {
                 >
                   <AutoTranslate text={(!data.artistBio || ["Thiên đường demo của", "Thiên đường âm nhạc của"].includes(data.artistBio?.trim() || '')) ? t.dDesc : data.artistBio} />
                 </motion.p>
-                <AnimatePresence>
-                  {showArtist && (
                     <motion.h1 
                       initial={{ scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
-                      animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
+                      animate={showArtist ? { scale: 1, opacity: 1, filter: 'blur(0px)' } : { scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
                       transition={{ duration: 1.5, ease: "easeOut" }}
                       className="text-3xl sm:text-5xl md:text-6xl font-black mb-0 tracking-tight leading-[1.15] text-center max-w-full mt-2 sm:mt-3"
                     >
@@ -4960,7 +5110,9 @@ function Home() {
                             <span key={index} className="whitespace-nowrap">
                               <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-rose-300">{word}
                               <div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 -mt-0 sm:-mt-1 md:-mt-1">
-                                <BadgeCheck className="w-3 h-3 sm:w-5 sm:h-5 md:w-6 md:h-6 text-blue-500 fill-blue-500/20 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)] shrink-0 cursor-pointer" />
+                                <motion.div animate={{ rotateY: [0, 360], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", repeatDelay: 3 }} className="flex items-center justify-center">
+                                  <BadgeCheck className="w-3 h-3 sm:w-5 sm:h-5 md:w-6 md:h-6 text-blue-500 fill-blue-500/20 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)] shrink-0 cursor-pointer" />
+                                </motion.div>
                                 <div className="absolute bottom-full mb-2 hidden group-hover:block bg-neutral-900 border border-white/10 text-white text-[11px] sm:text-xs font-bold py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none z-50 tracking-normal normal-case leading-none">
                                   Nghệ sĩ đã xác thực
                                   <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-neutral-900" />
@@ -4972,8 +5124,6 @@ function Home() {
                         return <span key={index} className="bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-rose-300">{word + ' '}</span>;
                       })}
                     </motion.h1>
-                  )}
-                </AnimatePresence>
               </div>
             )}
           </div>
@@ -5235,7 +5385,7 @@ function Home() {
                   <motion.div 
                     key={activeListTab}
                     variants={{
-                      hidden: { opacity: 0, y: 15 },
+                      hidden: {  opacity: 0, y: 15 },
                       show: {
                         opacity: 1, y: 0,
                         transition: {
@@ -5264,7 +5414,7 @@ function Home() {
                           <motion.div
                             key={playlist.id}
                             variants={{
-                              hidden: { opacity: 0, y: 15 },
+                              hidden: {  opacity: 0, y: 15 },
                               show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
                             }}
                           >
@@ -5319,7 +5469,7 @@ function Home() {
                           {(activeBrandColors) => (
                             <motion.div
                               variants={{
-                                hidden: { opacity: 0, y: 15 },
+                                hidden: {  opacity: 0, y: 15 },
                                 show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
                               }}
                             >
@@ -5750,8 +5900,8 @@ function Home() {
 
           </>
         )}
-        {isAbout && <PublicAboutView aboutMe={data.aboutMe} data={data} t={t} onGoToVault={() => setActiveMenuTab(data.menus?.find((m: any) => m.type === 'vault')?.id || 'm1')} />}
-        {isBio && <PublicBioView biography={data.biography} t={t} />}
+        {isAbout && <PublicAboutView aboutMe={data.aboutMe} data={data} t={t} onGoToVault={() => setActiveMenuTab(data.menus?.find((m: any) => m.type === 'vault')?.id || 'm1')} isAdmin={!!getAdminToken()} artistExtension={getArtistExtensionFromUrl()} />}
+        {isBio && <PublicBioView biography={data.biography} t={t} isAdmin={!!getAdminToken()} artistExtension={getArtistExtensionFromUrl()} />}
       </main>
 
       <footer className="py-8 text-center text-sm border-t border-white/10 relative z-10">
@@ -8777,7 +8927,7 @@ function SocialCarousel({ data, pushDown = false }: { data: AppData, pushDown?: 
             animate="visible"
             exit="hidden"
             variants={{
-              hidden: { opacity: 0, transition: { staggerChildren: 0.05, staggerDirection: -1 } },
+              hidden: {  opacity: 0, transition: { staggerChildren: 0.05, staggerDirection: -1 } },
               visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
             }}
             className="flex flex-col gap-3"
@@ -8791,7 +8941,7 @@ function SocialCarousel({ data, pushDown = false }: { data: AppData, pushDown?: 
                   target="_blank"
                   rel="noopener noreferrer"
                   variants={{
-                    hidden: { opacity: 0, y: -10, scale: 0.8 },
+                    hidden: {  opacity: 0, y: -10, scale: 0.8 },
                     visible: { opacity: 1, y: 0, scale: 1 }
                   }}
                   className={`flex items-center justify-center w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white ${social.color} hover:scale-110 shadow-lg transition-all`}
@@ -9398,7 +9548,9 @@ function AdminDashboard() {
   const { t } = useAdminTranslation();
   const [data, setData] = useState<AppData | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState<'demos'|'playlists'|'profile'|'about'|'bio'|'menus'|'socials'|'security'|'templates'|'database'|'reposts'|'tickets'>('demos');
+  const [activeTab, setActiveTab] = useState<'demos'|'playlists'|'profile'|'about'|'bio'|'menus'|'socials'|'security'|'templates'|'database'|'reposts'|'tickets'>(
+    (window.location.hash ? window.location.hash.replace('#', '') : 'demos') as any
+  );
   const [demosSubTab, setDemosSubTab] = useState<'released' | 'demos' | 'drafts' | 'playlists' | 'trash' | 'landing_pages' | 'brands'>('released');
   
   // Chorus Repost & Ticket States
@@ -10419,6 +10571,7 @@ function AdminDashboard() {
             const isSecurityActive = activeTab === 'security';
             const isAboutActive = activeTab === 'about';
             const isBioActive = activeTab === 'bio';
+            const isMenusActive = activeTab === 'menus';
 
             return (
               <>
@@ -10713,6 +10866,39 @@ function AdminDashboard() {
                       <BookOpen className={`w-5 h-5 transition-colors ${isBioActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
                     </motion.div>
                     {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Tiểu Sử")}</span>}
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('menus')}
+                    className={`flex items-center transition-all relative group ${
+                      effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
+                    } ${
+                      isMenusActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                    }`}
+                    title={t("Danh Mục")}
+                  >
+                    {isMenusActive && (
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 bg-stone-900/95 rounded-xl z-0 shadow-[inset_0_2px_4px_rgba(255,255,255,0.1),inset_0_-2px_6px_rgba(0,0,0,0.8),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-md border border-stone-800 group-hover:bg-stone-800/95"
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    <motion.div
+                      animate={isMenusActive ? {
+                        rotate: [-6, 6, -6],
+                        y: [-0.8, 0.8, -0.8]
+                      } : { rotate: 0, y: 0 }}
+                      transition={isMenusActive ? {
+                        repeat: Infinity,
+                        duration: 2.3,
+                        ease: "easeInOut"
+                      } : { duration: 0.2 }}
+                      className="relative z-10 flex items-center justify-center"
+                    >
+                      <ListMusic className={`w-5 h-5 transition-colors ${isMenusActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                    </motion.div>
+                    {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Danh Mục")}</span>}
                   </button>
 
                   <button
@@ -11589,10 +11775,18 @@ function AdminDashboard() {
 
           
           {activeTab === 'about' && (
-             <AdminAboutEdit data={data} t={t} onSave={handleCustomSave} />
+             <AdminAboutEdit data={data} t={t} onSave={handleCustomSave} uploadWithProgress={uploadWithProgress} getPreviewUrl={getPreviewUrl} />
           )}
           {activeTab === 'bio' && (
              <AdminBioEdit data={data} t={t} onSave={handleCustomSave} />
+          )}
+
+          {activeTab === 'menus' && (
+            <motion.div key="menus" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+              <div className="max-w-2xl py-1">
+                <AdminMenuEdit data={data} t={t} onSave={handleCustomSave} />
+              </div>
+            </motion.div>
           )}
 
           {activeTab === 'profile' && (
@@ -11667,71 +11861,10 @@ function AdminDashboard() {
                   </select>
                   <p className="text-xs text-stone-500 mt-1.5">{t("Ngôn ngữ mặc định ban đầu khi khách truy cập vào trang cá nhân của bạn.")}</p>
                 </div>
+                <div>
 
 
 
-<div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">{t("Avatar Nghệ Sĩ")}</label>
-                  <div 
-                    className="flex items-center gap-4 p-4 rounded-3xl border-2 border-dashed border-stone-200 bg-stone-50/50 hover:border-stone-300 transition-colors"
-                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                    onDrop={async (e) => {
-                        e.preventDefault(); e.stopPropagation();
-                        const file = e.dataTransfer.files?.[0];
-                        if (file) {
-                            try {
-                                const url = await uploadWithProgress(file, setHomeCoverProgress);
-                                setHomeCoverUrlPreview(url);
-                            } catch (err) {
-                                alert(t("Lỗi upload"));
-                                setHomeCoverProgress(0);
-                            }
-                        }
-                    }}
-                  >
-                    {homeCoverUrlPreview ? (
-                      <img src={getPreviewUrl(homeCoverUrlPreview)} className="w-20 h-20 rounded-2xl object-cover border border-stone-200 shadow-sm" />
-                    ) : (
-                      <div className="w-20 h-20 rounded-2xl border border-stone-200 bg-stone-100/50 flex items-center justify-center text-stone-400 shadow-inner shrink-0">
-                        <Image className="w-8 h-8" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-[150px]">
-                      <div className="flex items-center gap-2">
-                        <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${homeCoverProgress === 100 || homeCoverUrlPreview ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('homeCoverUpload')?.click()}>
-                            <Upload className="w-4 h-4"/>
-                            <span className="max-w-[150px] truncate">{homeCoverProgress > 0 && homeCoverProgress < 100 ? `Đang tải ${homeCoverProgress}%` : (homeCoverUrlPreview ? t("Thay đổi") : t("Chọn ảnh"))}</span>
-                        </button>
-                        {homeCoverProgress > 0 && homeCoverProgress < 100 ? (
-                          <button type="button" onClick={() => setHomeCoverProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
-                        ) : (homeCoverUrlPreview ? (
-                          <button type="button" onClick={() => { setHomeCoverUrlPreview(''); setHomeCoverProgress(0); (document.getElementById('homeCoverUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
-                        ) : null)}
-                      </div>
-                      {homeCoverProgress > 0 && homeCoverProgress < 100 && (
-                        <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-2">
-                          <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${homeCoverProgress}%` }} />
-                        </div>
-                      )}
-                      <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
-                        {t("Kéo thả ảnh trực tiếp vào ô này")}
-                      </p>
-                    </div>
-                    <input type="hidden" name="homeCoverUrl" value={homeCoverUrlPreview} />
-                    <input type="file" id="homeCoverUpload" className="hidden" accept="image/*" onChange={async (e) => {
-                      if (!e.target.files?.[0]) return;
-                      try {
-                        const url = await uploadWithProgress(e.target.files[0], setHomeCoverProgress);
-                        setHomeCoverUrlPreview(url);
-                      } catch (err) {
-                        alert(t("Lỗi upload"));
-                        setHomeCoverProgress(0);
-                      }
-                    }} />
-                  </div>
-                  <p className="text-xs text-stone-500 mt-2">{t("Dùng đại diện cho kho nhạc, nên chọn ảnh vuông.")}</p>
-                </div>
-<div>
                   <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ảnh nền trang chủ ( Chọn nhiều ảnh để chạy slideshow )")}</label>
                   <div className="flex flex-col gap-3">
                     <div className="flex flex-wrap gap-3">
@@ -16110,8 +16243,9 @@ function AdminPlaylistEdit() {
 }
 
 
-function AdminAboutEdit({ data, t, onSave }: any) {
+function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl }: any) {
   const [aboutData, setAboutData] = useState(data.aboutMe || {});
+  const [avatarProgress, setAvatarProgress] = useState(0);
   
   const handleSave = (e: any) => {
     e.preventDefault();
@@ -16130,6 +16264,69 @@ function AdminAboutEdit({ data, t, onSave }: any) {
       <div className="max-w-2xl pb-10">
         <h2 className="text-2xl font-bold mb-8">{t("Về Tôi")}</h2>
         <form onSubmit={handleSave} className="space-y-6">
+          <div>
+            <label className="block text-sm font-bold text-stone-700 mb-2">{t("Avatar Nghệ Sĩ")}</label>
+            <div 
+              className="flex items-center gap-4 p-4 rounded-3xl border-2 border-dashed border-stone-200 bg-stone-50/50 hover:border-stone-300 transition-colors"
+              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+              onDrop={async (e) => {
+                  e.preventDefault(); e.stopPropagation();
+                  const file = e.dataTransfer.files?.[0];
+                  if (file) {
+                      try {
+                          const url = await uploadWithProgress(file, setAvatarProgress);
+                          setAboutData({ ...aboutData, avatarUrl: url });
+                      } catch (err) {
+                          alert(t("Lỗi upload"));
+                          setAvatarProgress(0);
+                      }
+                  }
+              }}
+            >
+              {aboutData.avatarUrl ? (
+                <img src={getPreviewUrl(aboutData.avatarUrl)} className="w-20 h-20 rounded-2xl object-cover border border-stone-200 shadow-sm" />
+              ) : (
+                <div className="w-20 h-20 rounded-2xl border border-stone-200 bg-stone-100/50 flex items-center justify-center text-stone-400 shadow-inner shrink-0">
+                  <Image className="w-8 h-8" />
+                </div>
+              )}
+              <div className="flex-1 min-w-[150px]">
+                <div className="flex items-center gap-2">
+                  <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${avatarProgress === 100 || aboutData.avatarUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('aboutAvatarUpload')?.click()}>
+                      <Upload className="w-4 h-4"/>
+                      <span className="max-w-[150px] truncate">{avatarProgress > 0 && avatarProgress < 100 ? `Đang tải ${avatarProgress}%` : (aboutData.avatarUrl ? t("Thay đổi") : t("Chọn ảnh"))}</span>
+                  </button>
+                  {avatarProgress > 0 && avatarProgress < 100 ? (
+                    <button type="button" onClick={() => setAvatarProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
+                  ) : (aboutData.avatarUrl ? (
+                    <button type="button" onClick={() => { setAboutData({ ...aboutData, avatarUrl: '' }); setAvatarProgress(0); (document.getElementById('aboutAvatarUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                  ) : null)}
+                </div>
+                {avatarProgress > 0 && avatarProgress < 100 && (
+                  <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-2">
+                    <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${avatarProgress}%` }} />
+                  </div>
+                )}
+                <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
+                  {t("Kéo thả ảnh trực tiếp vào ô này")}
+                </p>
+              </div>
+              <input type="file" id="aboutAvatarUpload" className="hidden" accept="image/*" onChange={async (e) => {
+                if (!e.target.files?.[0]) return;
+                try {
+                  const url = await uploadWithProgress(e.target.files[0], setAvatarProgress);
+                  setAboutData({ ...aboutData, avatarUrl: url });
+                } catch (err) {
+                  alert(t("Lỗi upload"));
+                  setAvatarProgress(0);
+                }
+              }} />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-stone-700 mb-2">{t("Danh Xưng")}</label>
+            <input value={aboutData.role || ''} onChange={handleChange('role')} placeholder={t("Ca nhạc sĩ, producer...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
+          </div>
           <div>
             <label className="block text-sm font-bold text-stone-700 mb-2">{t("Giới thiệu nghệ sĩ")}</label>
             <textarea value={aboutData.intro || ''} onChange={handleChange('intro')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 min-h-[100px]" />
@@ -16152,10 +16349,6 @@ function AdminAboutEdit({ data, t, onSave }: any) {
               <input value={aboutData.company || ''} onChange={handleChange('company')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
             </div>
             <div>
-              <label className="block text-sm font-bold text-stone-700 mb-2">{t("Vai Trò")}</label>
-              <input value={aboutData.role || ''} onChange={handleChange('role')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
-            </div>
-            <div>
               <label className="block text-sm font-bold text-stone-700 mb-2">{t("Email")}</label>
               <input value={aboutData.email || ''} onChange={handleChange('email')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
             </div>
@@ -16167,10 +16360,63 @@ function AdminAboutEdit({ data, t, onSave }: any) {
           
           <button type="submit" className="bg-stone-900 text-white font-bold py-3 px-6 rounded-xl hover:bg-stone-800 transition-colors w-full cursor-pointer">{t("Lưu cài đặt")}</button>
         </form>
-              <AdminMenuEdit data={data} t={t} onSave={onSave} />
 
       </div>
     </motion.div>
+  );
+}
+
+function ImageDropzone({ value, onChange, onRemove, t }: any) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  
+  const handleDrag = (e: any) => { 
+    e.preventDefault(); e.stopPropagation(); 
+    if (e.type === 'dragenter' || e.type === 'dragover') setIsDragging(true); 
+    else setIsDragging(false); 
+  };
+  
+  const handleDrop = async (e: any) => { 
+    e.preventDefault(); e.stopPropagation(); setIsDragging(false); 
+    const file = e.dataTransfer.files?.[0]; 
+    if (file) {
+      setIsUploading(true);
+      await onChange(file);
+      setIsUploading(false);
+    }
+  };
+
+  const handleChange = async (e: any) => {
+    const file = e.target.files?.[0]; 
+    if (file) {
+      setIsUploading(true);
+      await onChange(file);
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <div onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop} className={`flex items-center gap-4 p-3 rounded-2xl border-2 transition-all ${isDragging ? 'border-indigo-500 bg-indigo-50/50 border-dashed scale-[1.01]' : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'}`}>
+      {value ? (
+        <>
+          <img src={value} className="w-16 h-16 rounded-xl object-cover shadow-sm shrink-0" />
+          <div className="flex-1 min-w-0 flex items-center justify-between">
+             <span className="text-sm text-stone-500 truncate max-w-[150px] sm:max-w-[200px]">Đã tải lên</span>
+             <button type="button" onClick={onRemove} className="text-red-500 text-sm font-bold px-3 py-2 bg-red-50 rounded-xl hover:bg-red-100 transition-colors w-auto">{t("Xóa ảnh")}</button>
+          </div>
+        </>
+      ) : (
+        <label className="flex-1 flex flex-col items-center justify-center cursor-pointer py-2">
+          {isUploading ? (
+            <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mb-2" />
+          ) : (
+            <Upload className="w-5 h-5 text-stone-400 mb-2" />
+          )}
+          <span className="text-xs text-stone-500 font-medium">{isUploading ? t('Đang tải...') || 'Đang tải...' : t("Kéo thả hoặc Click để tải ảnh (JPG/PNG)")}</span>
+          <input type="file" accept="image/*" className="hidden" onChange={handleChange} disabled={isUploading} />
+        </label>
+      )}
+    </div>
   );
 }
 
@@ -16240,6 +16486,21 @@ function AdminBioEdit({ data, t, onSave }: any) {
                       <label className="block text-xs font-bold text-stone-500 mb-1">{t("Mô tả")}</label>
                       <textarea value={edu.description} onChange={(e) => updateEdu(idx, 'description', e.target.value)} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-stone-400 min-h-[60px]" />
                     </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-500 mb-2">{t("Hình ảnh minh họa (Tùy chọn)")}</label>
+                      <ImageDropzone 
+                        value={edu.imageUrl} 
+                        onChange={async (file: any) => {
+                          try {
+                            const jpg = await compressImageToJPG(file, 800);
+                            const url = await uploadGlobal(jpg);
+                            updateEdu(idx, 'imageUrl', url);
+                          } catch (e) { alert("Error uploading"); }
+                        }} 
+                        onRemove={() => updateEdu(idx, 'imageUrl', '')} 
+                        t={t} 
+                      />
+                    </div>
                   </div>
                   <button type="button" onClick={() => removeEdu(idx)} className="text-stone-400 hover:text-red-500 self-start p-2 cursor-pointer">
                     <Trash2 className="w-5 h-5" />
@@ -16275,6 +16536,21 @@ function AdminBioEdit({ data, t, onSave }: any) {
                       <label className="block text-xs font-bold text-stone-500 mb-1">{t("Mô tả")}</label>
                       <textarea value={exp.description} onChange={(e) => updateExp(idx, 'description', e.target.value)} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-stone-400 min-h-[60px]" />
                     </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-500 mb-2">{t("Hình ảnh minh họa (Tùy chọn)")}</label>
+                      <ImageDropzone 
+                        value={exp.imageUrl} 
+                        onChange={async (file: any) => {
+                          try {
+                            const jpg = await compressImageToJPG(file, 800);
+                            const url = await uploadGlobal(jpg);
+                            updateExp(idx, 'imageUrl', url);
+                          } catch (e) { alert("Error uploading"); }
+                        }} 
+                        onRemove={() => updateExp(idx, 'imageUrl', '')} 
+                        t={t} 
+                      />
+                    </div>
                   </div>
                   <button type="button" onClick={() => removeExp(idx)} className="text-stone-400 hover:text-red-500 self-start p-2 cursor-pointer">
                     <Trash2 className="w-5 h-5" />
@@ -16292,6 +16568,14 @@ function AdminBioEdit({ data, t, onSave }: any) {
 }
 
 function AdminMenuEdit({ data, t, onSave }: any) {
+  const { landingConfig } = useContext(LanguageContext);
+  const getMenuTitle = (m: any) => {
+    if (m.type === 'vault') return landingConfig?.menuVaultVi || "Kho Nhạc";
+    if (m.type === 'about') return landingConfig?.menuAboutVi || "Về Tôi";
+    if (m.type === 'bio') return landingConfig?.menuBioVi || "Tiểu Sử";
+    return m.title;
+  };
+
   const [menus, setMenus] = useState<any[]>(data.menus || [
     { id: 'm1', type: 'vault', title: 'Kho Nhạc', isVisible: true },
     { id: 'm2', type: 'about', title: 'Về Tôi', isVisible: true },
@@ -16335,9 +16619,9 @@ function AdminMenuEdit({ data, t, onSave }: any) {
   };
 
   return (
-    <div className="mt-10 border-t border-stone-200 pt-8">
-      <h3 className="text-xl font-bold mb-4">{t("Quản lý Menu")}</h3>
-      <p className="text-sm text-stone-500 mb-6">Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.</p>
+    <div className="py-1">
+      <h2 className="text-2xl font-bold mb-8">{t("Quản lý Menu")}</h2>
+      <p className="text-sm text-stone-500 mb-6">{t("Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.")}</p>
       
       <div className="space-y-3 mb-6">
         {menus.map((m: any, i: number) => (
@@ -16351,12 +16635,18 @@ function AdminMenuEdit({ data, t, onSave }: any) {
           >
             <GripVertical className="text-stone-400 w-5 h-5 shrink-0" />
             <div className="flex-1 flex gap-4 items-center">
-              <input 
-                value={m.title} 
-                onChange={(e) => updateMenu(i, 'title', e.target.value)} 
-                className="font-bold bg-white border border-stone-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
-                placeholder={t("Tiêu Đề Menu")}
-              />
+              {m.type === 'custom' ? (
+                <input 
+                  value={m.title} 
+                  onChange={(e) => updateMenu(i, 'title', e.target.value)} 
+                  className="font-bold bg-white border border-stone-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
+                  placeholder={t("Tiêu Đề Menu")}
+                />
+              ) : (
+                <div className="font-bold bg-stone-100 text-stone-600 border border-stone-200 rounded-lg px-3 py-1.5 text-sm cursor-not-allowed select-none">
+                  {t(getMenuTitle(m))}
+                </div>
+              )}
               {m.type === 'custom' && (
                 <input 
                   value={m.link || ''} 
@@ -16369,7 +16659,7 @@ function AdminMenuEdit({ data, t, onSave }: any) {
             <div className="flex items-center gap-3">
                <label className="flex items-center gap-2 text-sm text-stone-600 cursor-pointer">
                  <input type="checkbox" checked={m.isVisible} onChange={(e) => updateMenu(i, 'isVisible', e.target.checked)} className="rounded text-stone-900 focus:ring-stone-900" />
-                 Hiển thị
+                 {t("Hiển thị")}
                </label>
                {m.type === 'custom' && (
                  <button type="button" onClick={() => removeMenu(i)} className="text-stone-400 hover:text-red-500 p-1">
@@ -16395,9 +16685,17 @@ function AdminMenuEdit({ data, t, onSave }: any) {
 
 
 function PublicNavbar({ menus, activeTab, setActiveTab, t }: any) {
+  const { landingConfig } = useContext(LanguageContext);
   if (!menus || menus.length === 0) return null;
   const visibleMenus = menus.filter((m: any) => m.isVisible);
   if (visibleMenus.length <= 1) return null;
+
+  const getMenuTitle = (m: any) => {
+    if (m.type === 'vault') return landingConfig?.menuVaultVi || "Kho Nhạc";
+    if (m.type === 'about') return landingConfig?.menuAboutVi || "Về Tôi";
+    if (m.type === 'bio') return landingConfig?.menuBioVi || "Tiểu Sử";
+    return m.title;
+  };
 
   return (
     <div className="w-full max-w-5xl mx-auto px-6 sm:px-12 mb-12 flex items-center justify-center gap-6 sm:gap-10 border-b border-white/10 pb-4">
@@ -16412,10 +16710,10 @@ function PublicNavbar({ menus, activeTab, setActiveTab, t }: any) {
             }
           }}
           className={`font-bold transition-all relative text-sm sm:text-base ${
-            activeTab === m.id ? 'text-white' : 'text-neutral-500 hover:text-neutral-300'
+            activeTab === m.id ? 'text-white' : 'text-white/80 hover:text-white'
           }`}
         >
-          {m.title}
+          {t(getMenuTitle(m))}
           {activeTab === m.id && (
             <motion.div layoutId="nav-indicator" className="absolute -bottom-[17px] left-0 right-0 h-[2px] bg-emerald-500" />
           )}
@@ -16425,51 +16723,48 @@ function PublicNavbar({ menus, activeTab, setActiveTab, t }: any) {
   );
 }
 
-function PublicAboutView({ aboutMe, data, t, onGoToVault }: any) {
+function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtension }: any) {
   if (!aboutMe) return null;
   
   const avatar = aboutMe.avatarUrl || data?.homeCoverUrl;
   
   return (
-    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-5xl mx-auto bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] p-8 sm:p-12 mt-24 mb-20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] relative z-10 text-white">
-      <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center lg:items-start">
-        {/* Left Side: Avatar with blue offset */}
-        {avatar && (
-          <div className="w-full max-w-sm lg:w-1/2 shrink-0 relative group">
-            {/* Animated Gradient Background Frame */}
-            <motion.div 
-              animate={{ 
-                rotate: [0, 5, -5, 0], 
-                scale: [1, 1.02, 1] 
-              }} 
-              transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }} 
-              className="absolute inset-0 bg-gradient-to-tr from-blue-600 via-purple-500 to-emerald-400 rounded-[2.5rem] translate-x-4 translate-y-4 sm:translate-x-6 sm:translate-y-6 -z-10 opacity-70 blur-md group-hover:blur-lg transition-all duration-700"
-            ></motion.div>
-            
-            <motion.div 
-              animate={{ 
-                rotate: [0, -5, 5, 0],
-                scale: [1, 1.02, 1]
-              }} 
-              transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }} 
-              className="absolute inset-0 bg-gradient-to-br from-rose-500 via-orange-400 to-amber-300 rounded-[2.5rem] translate-x-3 translate-y-3 sm:translate-x-5 sm:translate-y-5 -z-10 opacity-60"
-            ></motion.div>
+    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="w-full mx-auto bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] p-6 sm:p-10 mt-24 mb-20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] relative z-10 text-white max-w-6xl flex flex-col lg:flex-row gap-10 lg:gap-16 items-center lg:items-start">
+      {isAdmin && (
+        <a href={artistExtension ? `/${artistExtension}/admin#about` : '/admin#about'} className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white/70 hover:text-white z-20" title={t("Chỉnh sửa")}>
+          <Edit3 className="w-5 h-5 sm:w-6 sm:h-6" />
+        </a>
+      )}
 
-            {/* Main Image Frame */}
-            <motion.div 
-              animate={{ y: [0, -10, 0] }} 
-              transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }} 
-              className="aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-black/50 border border-white/20 shadow-2xl relative z-10"
-            >
-              <img src={avatar} alt="Profile" className="w-full h-full object-cover hover:scale-110 transition-transform duration-1000" />
-            </motion.div>
-          </div>
-        )}
-        
-        {/* Right Side: Details */}
-        <div className={`w-full ${avatar ? 'lg:w-1/2' : 'max-w-3xl mx-auto'} flex flex-col justify-center`}>
-          <span className="text-[#06b6d4] font-bold text-lg mb-2 tracking-wide">Profile Card</span>
-          <h2 className="text-4xl sm:text-5xl font-black text-white drop-shadow-md mb-6">{data?.artistName || t('Về Tôi') || 'Về Tôi'}</h2>
+      {/* Left Side: Avatar floating */}
+      {avatar && (
+        <div className="w-full max-w-[16rem] sm:max-w-xs lg:max-w-[22rem] shrink-0 relative group mx-auto lg:mx-0 mt-2 lg:mt-0">
+          <motion.div 
+            animate={{ rotate: [0, 5, -5, 0], scale: [1, 1.02, 1] }}
+            transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
+            className="absolute inset-0 bg-gradient-to-tr from-blue-600 via-purple-500 to-emerald-400 rounded-[2.5rem] translate-x-4 translate-y-4 sm:translate-x-5 sm:translate-y-5 -z-10 opacity-70 blur-md group-hover:blur-lg transition-all duration-700"
+          ></motion.div>
+          <motion.div 
+            animate={{ rotate: [0, -5, 5, 0], scale: [1, 1.02, 1] }}
+            transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
+            className="absolute inset-0 bg-gradient-to-br from-rose-500 via-orange-400 to-amber-300 rounded-[2.5rem] translate-x-3 translate-y-3 sm:translate-x-4 sm:translate-y-4 -z-10 opacity-60"
+          ></motion.div>
+          <motion.div 
+            animate={{ y: [0, -10, 0] }}
+            transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+            className="aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-black/50 border border-white/20 shadow-2xl relative z-10"
+          >
+            <img src={avatar} alt="Profile" className="w-full h-full object-cover hover:scale-110 transition-transform duration-1000" />
+          </motion.div>
+        </div>
+      )}
+      
+      {/* Details */}
+      <div className={`w-full ${avatar ? "lg:flex-1" : "max-w-3xl mx-auto"} flex flex-col justify-center space-y-1 sm:space-y-2 z-10 relative mt-6 lg:mt-0`}>
+        <span className="text-[#06b6d4] font-bold text-sm sm:text-base mb-1 tracking-wide uppercase inline-block text-center lg:text-left">{aboutMe.role || 'Profile Card'}</span>
+        <h2 className="text-[clamp(1.5rem,3.5vw,2.25rem)] font-black text-white drop-shadow-md mb-4 sm:mb-6 leading-tight text-center lg:text-left break-words">
+          {data?.artistName || t('Về Tôi') || 'Về Tôi'}
+        </h2>
           
           {aboutMe.intro && (
             <div className="mb-6 text-white/90 text-xl leading-relaxed whitespace-pre-line font-medium drop-shadow-sm">
@@ -16482,7 +16777,6 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault }: any) {
             {aboutMe.dob && <InfoField label={t("Ngày Sinh") || "Ngày Sinh"} value={aboutMe.dob} />}
             {aboutMe.address && <InfoField label={t("Địa Chỉ") || "Địa Chỉ"} value={aboutMe.address} />}
             {aboutMe.company && <InfoField label={t("Công Ty") || "Công Ty"} value={aboutMe.company} />}
-            {aboutMe.role && <InfoField label={t("Vai Trò") || "Vai Trò"} value={aboutMe.role} />}
             {aboutMe.email && <InfoField label={t("Email") || "Email"} value={aboutMe.email} />}
             {aboutMe.phone && <InfoField label={t("SĐT") || "SĐT"} value={aboutMe.phone} />}
           </div>
@@ -16515,28 +16809,32 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault }: any) {
             )}
           </div>
           
-          <div>
-             <button onClick={onGoToVault} className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:via-indigo-500 hover:to-purple-500 text-white font-bold py-3 px-10 rounded-full shadow-[0_8px_20px_rgba(79,70,229,0.4)] transition-all hover:scale-105 active:scale-95 text-lg cursor-pointer border border-white/20">
+          <div className="flex justify-end pt-8 mt-auto w-full">
+             <motion.button 
+                animate={{ backgroundPosition: ["0% 50%", "200% 50%"] }}
+                transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+                onClick={onGoToVault} 
+                className="bg-[linear-gradient(110deg,#4f46e5,45%,#818cf8,55%,#4f46e5)] bg-[length:200%_100%] text-white font-bold py-3 px-10 rounded-full shadow-[0_8px_20px_rgba(79,70,229,0.4)] transition-all hover:scale-105 active:scale-95 text-lg cursor-pointer border border-white/20"
+             >
                 {t("Kho Nhạc")}
-             </button>
+             </motion.button>
           </div>
         </div>
-      </div>
     </motion.div>
   );
 }
 
 function InfoField({ label, value }: { label: string, value: string }) {
   return (
-    <div className="flex font-medium text-white/90 drop-shadow-sm">
-      <span className="font-bold w-28 shrink-0 text-white">{label}</span>
-      <span className="mx-2">:</span>
-      <span className="text-white/80 flex-1">{value}</span>
+    <div className="flex items-center font-medium text-white/90 drop-shadow-sm text-[clamp(0.75rem,3.5vw,1.125rem)] w-full">
+      <span className="font-bold w-[35%] max-w-[160px] shrink-0 text-white whitespace-nowrap overflow-hidden text-ellipsis">{label}</span>
+      <span className="mx-1 sm:mx-2 shrink-0">:</span>
+      <span className="text-white/80 flex-1 whitespace-nowrap overflow-hidden text-ellipsis">{value}</span>
     </div>
   );
 }
 
-function PublicBioView({ biography, t }: any) {
+function PublicBioView({ biography, t, isAdmin, artistExtension }: any) {
   if (!biography) return null;
   
   const hasEdu = biography.education?.length > 0;
@@ -16545,11 +16843,18 @@ function PublicBioView({ biography, t }: any) {
   if (!hasEdu && !hasExp) return null;
   
   return (
-    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto mt-24 mb-20 relative z-10 px-6 sm:px-12 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] py-12 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] text-white ${hasEdu && hasExp ? 'max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24' : 'max-w-4xl space-y-20'}`}>
+    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto mt-24 mb-20 relative z-10 px-4 sm:px-8 lg:px-12 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] py-12 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] text-white max-w-7xl ${hasEdu && hasExp ? 'grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16' : 'flex flex-col'}`}>
+      {isAdmin && (
+        <a href={artistExtension ? `/${artistExtension}/admin#bio` : '/admin#bio'} className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white/70 hover:text-white z-20" title={t("Chỉnh sửa")}>
+          <Edit3 className="w-5 h-5 sm:w-6 sm:h-6" />
+        </a>
+      )}
       {hasEdu && (
-        <div>
-          <h2 className="text-3xl font-black text-white drop-shadow-md mb-10 text-center tracking-tight">{t('Học Vấn') || 'Học Vấn'}</h2>
-          <div className={`space-y-8 relative before:absolute before:inset-0 before:ml-[1.125rem] before:-translate-x-px before:h-full before:w-0.5 before:bg-white/20 md:before:ml-[1.125rem] md:before:-translate-x-px`}>
+        <div className="w-full">
+          <h2 className="text-2xl sm:text-3xl font-black text-white drop-shadow-md mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-10 sm:pl-12 lg:pl-14">
+            {t('Học Vấn') || 'Học Vấn'}
+          </h2>
+          <div className={`space-y-8 relative before:absolute before:inset-0 before:ml-[0.5rem] sm:before:ml-[0.25rem] before:-translate-x-px before:h-full before:w-0.5 before:bg-white/20`}>
             {biography.education.map((item: any, idx: number) => (
               <TimelineItem key={idx} item={item} isSplit={true} color="emerald" />
             ))}
@@ -16558,9 +16863,11 @@ function PublicBioView({ biography, t }: any) {
       )}
       
       {hasExp && (
-        <div>
-          <h2 className="text-3xl font-black text-white drop-shadow-md mb-10 text-center tracking-tight">{t('Kinh nghiệm') || 'Kinh nghiệm'}</h2>
-          <div className={`space-y-8 relative before:absolute before:inset-0 before:ml-[1.125rem] before:-translate-x-px before:h-full before:w-0.5 before:bg-white/20 md:before:ml-[1.125rem] md:before:-translate-x-px`}>
+        <div className="w-full">
+          <h2 className="text-2xl sm:text-3xl font-black text-white drop-shadow-md mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-10 sm:pl-12 lg:pl-14">
+            {t('Kinh nghiệm') || 'Kinh nghiệm'}
+          </h2>
+          <div className={`space-y-8 relative before:absolute before:inset-0 before:ml-[0.5rem] sm:before:ml-[0.25rem] before:-translate-x-px before:h-full before:w-0.5 before:bg-white/20`}>
             {biography.experience.map((item: any, idx: number) => (
               <TimelineItem key={idx} item={item} isSplit={true} color="blue" />
             ))}
@@ -16571,30 +16878,118 @@ function PublicBioView({ biography, t }: any) {
   );
 }
 
-function TimelineItem({ item, isSplit = false, color = "emerald" }: { item: any, isSplit?: boolean, color?: "emerald" | "blue" }) {
+function TimelineItem({ item, isSplit = false, color = "emerald" }: { item: any, isSplit?: boolean, color?: "emerald" | "blue", key?: number | string }) {
   const isEmerald = color === "emerald";
+  const [isImgOpen, setIsImgOpen] = useState(false);
   
   return (
-    <div className={`relative flex items-center justify-between md:justify-normal ${!isSplit ? 'md:odd:flex-row-reverse' : ''} group is-active`}>
-      {/* Timeline dot */}
-      <div className={`flex items-center justify-center w-10 h-10 rounded-full border-[3px] border-white/30 backdrop-blur-md ${isEmerald ? 'bg-[#059669]' : 'bg-[#2563eb]'} text-white shadow-md shrink-0 relative z-10 ${!isSplit ? 'md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2' : 'ml-0'}`}>
-        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          {isEmerald ? (
-            <><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></>
-          ) : (
-            <><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>
-          )}
-        </svg>
-      </div>
-      
-      {/* Content box */}
-      <div className={`w-[calc(100%-4rem)] p-4 sm:p-6 transition-colors ${!isSplit ? 'md:w-[calc(50%-2.5rem)] text-left md:group-odd:text-right' : 'ml-4 sm:ml-6'}`}>
-        <div className={`flex flex-col mb-2 ${!isSplit ? 'md:group-odd:items-end' : ''}`}>
-          <span className={`text-sm font-bold mb-1 ${isEmerald ? 'text-[#059669]' : 'text-[#2563eb]'}`}>{item.time}</span>
-          <h3 className="font-bold text-white drop-shadow-sm text-lg sm:text-xl">{item.title}</h3>
+    <>
+      <div className={`relative flex items-start justify-between md:justify-normal ${!isSplit ? 'md:odd:flex-row-reverse' : ''} group is-active`}>
+        {/* Timeline dot */}
+        <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-[3px] border-white/30 backdrop-blur-md ${isEmerald ? 'bg-[#059669]' : 'bg-[#0ea5e9]'} text-white shadow-md shrink-0 relative z-10 ${!isSplit ? 'md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2' : '-ml-2 sm:-ml-4 mt-1 sm:mt-0'}`}>
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {isEmerald ? (
+              <><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></>
+            ) : (
+              <><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>
+            )}
+          </svg>
         </div>
-        <p className="text-white/80 text-sm sm:text-base leading-relaxed whitespace-pre-line">{item.description}</p>
+        
+        {/* Content box */}
+        <div className={`flex-1 pt-0 pb-8 transition-colors ${!isSplit ? 'md:flex-none md:w-[calc(50%-2.5rem)] text-left md:group-odd:text-right' : 'ml-3 sm:ml-4'} relative flex flex-row items-start justify-between gap-0 sm:gap-2 md:gap-0`}>
+          <div className={`w-[85%] md:w-[96%] relative z-0 md:pr-4`}>
+            <div className={`flex flex-col mb-1 ${!isSplit ? 'md:group-odd:items-end' : ''}`}>
+              <span className={`text-xs sm:text-sm font-bold mb-1 ${isEmerald ? 'text-[#34d399]' : 'text-[#38bdf8]'}`}>{item.time}</span>
+              <h3 className="font-bold text-white drop-shadow-sm text-base sm:text-lg leading-snug">{item.title}</h3>
+            </div>
+            <p className="text-white/80 text-sm leading-relaxed whitespace-pre-line">{item.description}</p>
+          </div>
+          {item.imageUrl && (
+            <motion.div 
+              animate={{ rotate: !isSplit ? [-2, 3, -1, 2, -2] : [2, -3, 1, -2, 2] }}
+              transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
+              style={{ transformOrigin: 'top center' }}
+              className={`shrink-0 absolute top-0 -right-2 sm:-right-4 md:-right-10 bg-[#fdfbf7] p-1.5 pb-5 sm:p-2.5 sm:pb-8 shadow-[2px_4px_15px_rgba(0,0,0,0.15)] border border-stone-200/80 rounded-sm cursor-pointer hover:z-20 hover:scale-105 transition-transform z-10 ${!isSplit ? 'md:group-odd:left-auto md:group-odd:right-auto md:group-odd:-left-10 lg:group-odd:-left-12' : ''}`}
+              onClick={() => setIsImgOpen(true)}
+            >
+              {/* Tape effect */}
+              <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-6 sm:w-8 h-3 sm:h-4 bg-white/60 backdrop-blur-sm shadow-sm rotate-[4deg] z-10 border border-white/40"></div>
+              <img 
+                src={item.imageUrl} 
+                className={`w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 object-cover rounded-sm border border-stone-200/50`}
+                alt={item.title}
+              />
+            </motion.div>
+          )}
+        </div>
       </div>
-    </div>
+
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {isImgOpen && (
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              className="fixed inset-0 z-[999999] flex items-center justify-center p-4 sm:p-8 bg-black/40 backdrop-blur-sm" 
+              onClick={() => setIsImgOpen(false)}
+            >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 20, rotate: -2 }} 
+              animate={{ scale: 1, opacity: 1, y: 0, rotate: 0 }} 
+              exit={{ scale: 0.95, opacity: 0, y: 20, rotate: 2 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative inline-flex flex-col bg-[#fdfbf7] p-3 sm:p-5 pb-14 sm:pb-20 shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-stone-200/80 rounded-sm cursor-auto max-w-[95vw] sm:max-w-[90vw]" 
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Tape effect */}
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-12 sm:w-16 h-5 sm:h-6 bg-white/60 backdrop-blur-sm shadow-sm rotate-[3deg] z-10 border border-white/40"></div>
+              
+              {/* Close Button */}
+              <div className="absolute -top-4 -right-4 z-20">
+                <button 
+                  type="button" 
+                  onClick={() => setIsImgOpen(false)} 
+                  className="text-stone-500 hover:text-stone-800 transition-colors p-2 bg-white hover:bg-stone-50 border border-stone-200 rounded-full shadow-md"
+                >
+                  <X className="w-5 h-5 sm:w-6 sm:h-6" />
+                </button>
+              </div>
+
+              {/* Image */}
+              <div className="flex items-center justify-center overflow-hidden border border-stone-200/50">
+                <div className="relative inline-block leading-none">
+                  <img 
+                    src={item.imageUrl} 
+                    className="w-[280px] h-[280px] sm:w-[400px] sm:h-[400px] md:w-[500px] md:h-[500px] max-w-[85vw] max-h-[70vh] object-cover shadow-sm cursor-pointer" 
+                    alt={item.title} 
+                    onClick={() => setIsImgOpen(false)} 
+                  />
+                  
+                  {/* Vintage Date Overlay */}
+                  <div 
+                    className="absolute bottom-4 left-5 z-10 text-[#ffb800] text-xl sm:text-2xl font-bold tracking-widest opacity-90 pointer-events-none" 
+                    style={{ 
+                      fontFamily: '"Courier New", Courier, monospace', 
+                      textShadow: '2px 2px 4px rgba(0,0,0,0.8), -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' 
+                    }}
+                  >
+                    {item.time}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Handwriting Caption */}
+              <div className="absolute bottom-4 sm:bottom-5 left-0 w-full px-6 text-center">
+                <h3 className="text-xl sm:text-2xl text-stone-800 font-medium italic -rotate-1">{item.title}</h3>
+              </div>
+            </motion.div>
+          </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+    </>
   );
 }

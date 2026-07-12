@@ -1,0 +1,22 @@
+[
+  {
+    "artistName": "A.C Xuân Tài",
+    "username": "acxuantai",
+    "extension": "acxuantai",
+    "password": "XuanTaiDepTrai",
+    "verified": true,
+    "dbConfig": "",
+    "id": "yulpe483qq"
+  },
+  {
+    "id": "05ld1sirzmik",
+    "artistName": "Mai Xuân Thứ",
+    "username": "mxt",
+    "extension": "mxt",
+    "password": "tttttttt",
+    "verified": true,
+    "dbConfig": "",
+    "memberPassword": "",
+    "isPublic": true
+  }
+]
