@@ -4917,6 +4917,8 @@ function Home() {
   const isAbout = hasNavbar && activeMenuObj?.type === 'about';
   const isBio = hasNavbar && activeMenuObj?.type === 'bio';
   const pushDown = hasNavbar && !isScrolled;
+  const effectiveCoverUrl = data.homeCoverUrl || data.aboutMe?.avatarUrl;
+
   return (
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
@@ -4945,9 +4947,9 @@ function Home() {
             />
           </AnimatePresence>
         </div>
-      ) : data.homeCoverUrl ? (
+      ) : effectiveCoverUrl ? (
         <div className="fixed inset-0 z-[-1] pointer-events-none relative_mask bg-neutral-950">
-          <div className="absolute inset-0 bg-cover bg-center opacity-80" style={{ backgroundImage: `url(${data.homeCoverUrl})`, backgroundPosition: 'center 20%', maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)', WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)' }}></div>
+          <div className="absolute inset-0 bg-cover bg-center opacity-80" style={{ backgroundImage: `url(${effectiveCoverUrl})`, backgroundPosition: 'center 20%', maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)', WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)' }}></div>
         </div>
       ) : (
         <div className="fixed inset-0 z-[-1] pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-900 via-neutral-950 to-neutral-950"></div>
@@ -4969,11 +4971,11 @@ function Home() {
                     backgroundPosition: 'center 20%'
                   }}
                 />
-              ) : data && data.homeCoverUrl ? (
+              ) : data && effectiveCoverUrl ? (
                 <div 
                   className="absolute inset-0 bg-cover bg-center"
                   style={{ 
-                    backgroundImage: `url(${data.homeCoverUrl})`,
+                    backgroundImage: `url(${effectiveCoverUrl})`,
                     backgroundPosition: 'center 20%'
                   }}
                 />
@@ -5052,12 +5054,12 @@ function Home() {
       {isVault && (
         <>
       {/* Hero Section */}
-      <section className="relative pt-4 md:pt-8 pb-20 px-6 sm:px-12 flex flex-col items-center justify-center text-center min-h-[400px]">
+      <section className="relative pt-24 sm:pt-28 md:pt-36 pb-20 px-6 sm:px-12 flex flex-col items-center justify-center text-center min-h-[400px]">
 
         
         <div className="relative z-10 w-full max-w-5xl flex flex-col items-center mt-12">
           <div className="w-full text-center">
-            {data.homeCoverUrl ? (
+            {effectiveCoverUrl ? (
               <div>
                 <motion.p 
                   initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
@@ -5077,7 +5079,7 @@ function Home() {
                       {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
                         if (index === array.length - 1) {
                           return (
-                            <span key={index} className="whitespace-nowrap"><span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-stone-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
+                            <span key={index} className="whitespace-nowrap"><span className="animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
                                 <motion.div animate={{ rotateY: [0, 360], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", repeatDelay: 3 }} className="flex items-center justify-center">
                                   <BadgeCheck className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 text-blue-500 fill-blue-500/20 shrink-0 cursor-pointer" />
                                 </motion.div>
@@ -5089,7 +5091,7 @@ function Home() {
                             </span>
                           );
                         }
-                        return <span key={index} className="bg-clip-text text-transparent bg-gradient-to-r from-white to-stone-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{word + " "}</span>;
+                        return <span key={index} className="animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{word + " "}</span>;
                       })}
                     </motion.h1>
               </div>
@@ -5110,27 +5112,9 @@ function Home() {
                       initial={{ scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
                       animate={showArtist ? { scale: 1, opacity: 1, filter: 'blur(0px)' } : { scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
                       transition={{ duration: 1.5, ease: "easeOut" }}
-                      className="text-3xl sm:text-5xl md:text-6xl font-black mb-0 tracking-tight leading-[1.15] text-center max-w-full mt-2 sm:mt-3"
+                      className="text-3xl sm:text-5xl md:text-6xl font-black mb-0 tracking-tight leading-[1.15] text-center max-w-full mt-2 sm:mt-3 animate-text-shine"
                     >
-                      {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
-                        if (index === array.length - 1) {
-                          return (
-                            <span key={index} className="whitespace-nowrap">
-                              <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-stone-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{word}
-                              <div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 -mt-0 sm:-mt-1 md:-mt-1">
-                                <motion.div animate={{ rotateY: [0, 360], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", repeatDelay: 3 }} className="flex items-center justify-center">
-                                  <BadgeCheck className="w-3 h-3 sm:w-5 sm:h-5 md:w-6 md:h-6 text-blue-500 fill-blue-500/20 shrink-0 cursor-pointer" />
-                                </motion.div>
-                                <div className="absolute bottom-full mb-2 hidden group-hover:block bg-neutral-900 border border-white/10 text-white text-[11px] sm:text-xs font-bold py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none z-50 tracking-normal normal-case leading-none">
-                                  Nghệ sĩ đã xác thực
-                                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-neutral-900" />
-                                </div>
-                              </div>
-                              </span></span>
-                          );
-                        }
-                        return <span key={index} className="bg-clip-text text-transparent bg-gradient-to-r from-white to-stone-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{word + ' '}</span>;
-                      })}
+                      {data.artistName || ''}
                     </motion.h1>
               </div>
             )}

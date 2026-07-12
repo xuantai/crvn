@@ -564,3 +564,30 @@
 .animate-rotate-border {
   animation: rotate-border 4s linear infinite;
 }
+
+@keyframes text-shine {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.animate-text-shine {
+  background: linear-gradient(
+    to right,
+    #ffffff 20%,
+    #e9d5ff 40%,
+    #f472b6 50%,
+    #e9d5ff 60%,
+    #ffffff 80%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: text-shine 4s linear infinite;
+  display: inline-block;
+}
+

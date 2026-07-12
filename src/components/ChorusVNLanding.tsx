@@ -1241,7 +1241,7 @@ export default function ChorusVNLanding() {
             )}
 
             {/* Language Selection Segmented Bar */}
-            <div className="flex items-center gap-0.5 bg-neutral-200/50 border border-neutral-200/50 p-1 rounded-xl">
+            <div className="flex items-center gap-0.5 bg-neutral-200/50 border border-neutral-200/50 p-1 rounded-xl relative">
               {(['vi', 'en', 'ko'] as const).map((l) => (
                 <button
                   key={l}
@@ -1249,12 +1249,19 @@ export default function ChorusVNLanding() {
                     setLang(l);
                     localStorage.setItem('preferredLang', l);
                   }}
-                  className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold uppercase transition-all cursor-pointer ${
+                  className={`px-3.5 py-1.5 rounded-lg text-[10px] font-extrabold uppercase transition-all cursor-pointer relative z-10 ${
                     lang === l
-                      ? 'bg-black text-white shadow-sm'
+                      ? 'text-white'
                       : 'text-neutral-500 hover:text-black hover:bg-neutral-200/30'
                   }`}
                 >
+                  {lang === l && (
+                    <motion.span
+                      layoutId="activeLangBg"
+                      className="absolute inset-0 bg-black rounded-lg -z-10"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
                   {l}
                 </button>
               ))}
