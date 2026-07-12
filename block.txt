@@ -1,0 +1,16 @@
+  
+  
+  const defaultMenus = [
+    { id: 'm1', type: 'vault', title: 'Kho Nhạc', isVisible: true },
+    { id: 'm2', type: 'about', title: 'Về Tôi', isVisible: true },
+    { id: 'm3', type: 'bio', title: 'Tiểu Sử', isVisible: true }
+  ];
+  const currentMenus = data.menus && data.menus.length > 0 ? data.menus : defaultMenus;
+  const activeMenuObj = currentMenus.find((m: any) => m.id === activeMenuTab);
+
+  const hasAbout = Boolean(data.aboutMe && Object.values(data.aboutMe).some(v => v));
+  const hasBio = Boolean(data.biography && ((data.biography.education && data.biography.education.length > 0) ||||||
+  return (
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}

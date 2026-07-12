@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Music, BadgeCheck, Lock, Globe, ArrowRight, Sparkles, Disc3, CheckCircle2, ListMusic, X, AlertCircle, Mail, ChevronLeft, ChevronRight, UserPlus, RefreshCw, Search } from 'lucide-react';
+import { Eye, EyeOff, Music, BadgeCheck, Lock, Globe, ArrowRight, Sparkles, Disc3, CheckCircle2, ListMusic, X, AlertCircle, Mail, ChevronLeft, ChevronRight, UserPlus, RefreshCw, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChorusLogo } from './ChorusLogo';
 
@@ -41,6 +41,13 @@ interface LandingConfig {
 
 const dict = {
   vi: {
+    registerSuccessApproval: "Sau khi được duyệt, thông tin quản trị của bạn sẽ là:",
+    registerSuccessInfoTitle: "Thông tin kho nhạc nghệ sĩ {artistName}",
+    registerSuccessArtistName: "Nghệ danh",
+    registerSuccessUsername: "Username",
+    registerSuccessWebsite: "Website",
+    registerSuccessAdmin: "Admin",
+    registerSuccessAdminUser: "Admin User",
     statusBadge: 'Đang hoạt động thử nghiệm',
     tagline: '✧ SẮP RA MẮT',
     heroSubTitle: 'Nơi những ca khúc khởi đầu.',
@@ -104,6 +111,13 @@ const dict = {
     captchaReloadTooltip: 'Tải lại Captcha'
   },
   en: {
+    registerSuccessApproval: "Once approved, your administration details will be:",
+    registerSuccessInfoTitle: "Music Vault Info for {artistName}",
+    registerSuccessArtistName: "Artist Name",
+    registerSuccessUsername: "Username",
+    registerSuccessWebsite: "Website",
+    registerSuccessAdmin: "Admin",
+    registerSuccessAdminUser: "Admin User",
     statusBadge: 'IN DEVELOPMENT',
     tagline: '✧ COMING SOON',
     heroSubTitle: 'Where melodies begin.',
@@ -167,6 +181,13 @@ const dict = {
     captchaReloadTooltip: 'Reload Captcha'
   },
   ko: {
+    registerSuccessApproval: "승인되면 관리 세부 정보는 다음과 같습니다:",
+    registerSuccessInfoTitle: "{artistName}의 음악 보관소 정보",
+    registerSuccessArtistName: "아티스트 이름",
+    registerSuccessUsername: "사용자 이름",
+    registerSuccessWebsite: "웹사이트",
+    registerSuccessAdmin: "관리자",
+    registerSuccessAdminUser: "관리자 사용자",
     statusBadge: '개발 중',
     tagline: '✧ 출시 예정',
     heroSubTitle: '노래가 시작되는 곳.',
@@ -639,6 +660,26 @@ const cleanForSearch = (str: string) => {
     .replace(/Đ/g, 'd')
     .toLowerCase()
     .trim();
+};
+
+
+const PasswordInput = (props: any) => {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative w-full">
+      <input
+        {...props}
+        type={show ? "text" : "password"}
+      />
+      <button
+        type="button"
+        onClick={() => setShow(!show)}
+        className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 focus:outline-none flex items-center justify-center z-10"
+      >
+        {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+      </button>
+    </div>
+  );
 };
 
 export default function ChorusVNLanding() {
@@ -1635,14 +1676,22 @@ export default function ChorusVNLanding() {
                     <div className="w-16 h-16 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center mx-auto text-emerald-600 animate-bounce">
                       <CheckCircle2 className="w-8 h-8" />
                     </div>
-                    <div className="space-y-2">
-                      <h4 className="text-base font-bold text-neutral-900">{t('registerSuccessTitle')}</h4>
-                      <p className="text-neutral-600 text-xs sm:text-sm leading-relaxed">
-                        {t('registerSuccessDesc1').replace('{username}', regUsername)}
+                                        <div className="space-y-4 text-left bg-neutral-50 p-6 rounded-2xl border border-neutral-100">
+                      <h4 className="text-base font-bold text-neutral-900 text-center mb-2">{t('registerSuccessTitle')}</h4>
+                      <p className="text-neutral-600 text-sm leading-relaxed text-center mb-4">
+                        {t('registerSuccessApproval')}
                       </p>
-                      <p className="text-neutral-500 text-xs leading-relaxed max-w-sm mx-auto">
-                        {t('registerSuccessDesc2').replace('{extension}', regExtension)}
-                      </p>
+                      
+                      <div className="space-y-2 text-sm text-neutral-700 bg-white p-4 rounded-xl border border-neutral-200 text-left">
+                        <p className="font-bold text-emerald-700 text-center border-b border-neutral-100 pb-2 mb-3">
+                          {t('registerSuccessInfoTitle').replace('{artistName}', regArtistName)}
+                        </p>
+                        <p><span className="font-medium">{t('registerSuccessArtistName')}:</span> {regArtistName}</p>
+                        <p><span className="font-medium">{t('registerSuccessUsername')}:</span> {regUsername}</p>
+                        <p><span className="font-medium">{t('registerSuccessWebsite')}:</span> <span className="font-mono text-emerald-600">{regExtension}.chorus.vn</span></p>
+                        <p><span className="font-medium">{t('registerSuccessAdmin')}:</span> <span className="font-mono text-blue-600">{regExtension}.chorus.vn/admin</span></p>
+                        <p><span className="font-medium">{t('registerSuccessAdminUser')}:</span> {regUsername}</p>
+                      </div>
                     </div>
                     <button
                       onClick={() => setShowRegisterModal(false)}
@@ -1799,14 +1848,13 @@ export default function ChorusVNLanding() {
                       <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block">
                         {t('passwordLabel')}
                       </label>
-                      <input
-                        type="password"
+                                            <PasswordInput
                         required
                         disabled={regSubmitting}
                         value={regPassword}
-                        onChange={(e) => setRegPassword(e.target.value)}
+                        onChange={(e: any) => setRegPassword(e.target.value)}
                         placeholder={t('passwordPlaceholder')}
-                        className="w-full bg-neutral-50 border border-neutral-200/80 rounded-xl px-4 py-3 text-neutral-800 text-xs font-medium focus:outline-none focus:border-neutral-400 focus:bg-white transition-all font-sans"
+                        className="w-full bg-neutral-50 border border-neutral-200/80 rounded-xl px-4 py-3 pr-12 text-neutral-800 text-xs font-medium focus:outline-none focus:border-neutral-400 focus:bg-white transition-all font-sans"
                       />
                     </div>
 

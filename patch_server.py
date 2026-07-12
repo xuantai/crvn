@@ -1,25 +1,46 @@
 import re
 
 with open('server.ts', 'r') as f:
-    code = f.read()
+    content = f.read()
 
-# For lines 1938-1939: composer & singer default
-code = code.replace("composer: req.body.composer || 'A.C Xuân Tài',", "composer: req.body.composer || data.artistName || 'Nghệ sĩ',")
-code = code.replace("singer: req.body.singer || 'A.C Xuân Tài',", "singer: req.body.singer || data.artistName || 'Nghệ sĩ',")
+# I will add handling for aboutMe, biography, menus
+patch_str = """
+    data.aboutMe = req.body.aboutMe ?? data.aboutMe;
+    data.biography = req.body.biography ?? data.biography;
+    data.menus = req.body.menus ?? data.menus;
+"""
 
-# For lines 2033-2036
-code = code.replace("updatedData.composer = 'A.C Xuân Tài';", "updatedData.composer = data.artistName || 'Nghệ sĩ';")
-code = code.replace("updatedData.singer = 'A.C Xuân Tài';", "updatedData.singer = data.artistName || 'Nghệ sĩ';")
+content = content.replace("data.youtubePlaylistUrl = req.body.youtubePlaylistUrl ?? data.youtubePlaylistUrl;", patch_str + "\n    data.youtubePlaylistUrl = req.body.youtubePlaylistUrl ?? data.youtubePlaylistUrl;")
 
-# For index.html injection lines 2776, 2777, 2785
-code = code.replace("data.artistName || 'A.C Xuân Tài'", "data.artistName || 'Nghệ sĩ'")
+# Also in defaultData we can initialize them
+defaultDataReplacement = """
+      playlists: [],
+      menus: [
+        { id: 'm1', type: 'vault', title: 'Kho Nhạc', isVisible: true },
+        { id: 'm2', type: 'about', title: 'Về Tôi', isVisible: true },
+        { id: 'm3', type: 'bio', title: 'Tiểu Sử', isVisible: true }
+      ],
+      aboutMe: {},
+      biography: { education: [], experience: [] },
+      adminPassword: newArtist.password,
+"""
+content = re.sub(r'playlists: \[\],\s*adminPassword: newArtist.password,', defaultDataReplacement.strip() + ',', content)
 
-# For line 2814
-code = code.replace("activeSong.composer || 'A.C Xuân Tài';", "activeSong.composer || data.artistName || 'Nghệ sĩ';")
-
-# For line 2843
-code = code.replace("ogTitle = `${playlist.title} - A.C Xuân Tài`;", "ogTitle = `${playlist.title} - ${data.artistName || 'Nghệ sĩ'}`;")
+# same in firebase wipe
+defaultDataReplacement2 = """
+        playlists: [],
+        menus: [
+          { id: 'm1', type: 'vault', title: 'Kho Nhạc', isVisible: true },
+          { id: 'm2', type: 'about', title: 'Về Tôi', isVisible: true },
+          { id: 'm3', type: 'bio', title: 'Tiểu Sử', isVisible: true }
+        ],
+        aboutMe: {},
+        biography: { education: [], experience: [] },
+        adminPassword: currentAdminPassword,
+"""
+content = re.sub(r'playlists: \[\],\s*adminPassword: currentAdminPassword,', defaultDataReplacement2.strip() + ',', content)
 
 with open('server.ts', 'w') as f:
-    f.write(code)
+    f.write(content)
 
+print("server.ts patched")

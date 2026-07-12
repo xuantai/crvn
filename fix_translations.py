@@ -3,31 +3,38 @@ import re
 with open('src/App.tsx', 'r') as f:
     content = f.read()
 
-translations_to_inject = {
-    "bài nhạc": "songs",
-    "Bài nhạc": "Songs",
-    "Hiển Thị": "Visibility",
-    "Quay lại": "Back"
+# I need to add some admin translation keys
+keys_to_add = {
+    'Về Tôi': 'Về Tôi',
+    'Tiểu Sử': 'Tiểu Sử',
+    'Quản lý Menu': 'Quản lý Menu',
+    'Giới thiệu nghệ sĩ': 'Giới thiệu nghệ sĩ',
+    'Tên Thật': 'Tên Thật',
+    'Ngày Sinh': 'Ngày Sinh',
+    'Địa Chỉ': 'Địa Chỉ',
+    'Công Ty': 'Công Ty',
+    'Vai Trò': 'Vai Trò',
+    'Email': 'Email',
+    'SĐT': 'SĐT',
+    'Học Vấn': 'Học Vấn',
+    'Kinh nghiệm': 'Kinh nghiệm',
+    'Thời gian': 'Thời gian',
+    'Sự Kiện': 'Sự Kiện',
+    'Mô tả': 'Mô tả',
+    'Thêm Menu Mới': 'Thêm Menu Mới',
+    'Tiêu Đề Menu': 'Tiêu Đề Menu',
+    'Đường Dẫn': 'Đường Dẫn',
+    'Thêm giai đoạn': 'Thêm giai đoạn'
 }
 
-new_content = content
-for lang in ['vi', 'en', 'ko', 'ja', 'th', 'zh']:
-    # The regex to find each block inside adminTranslations
-    # Let's find `lang: {`
-    pattern = rf"(?m)^  {lang}: {{"
-    
-    # We will inject right after `lang: {`
-    extra = []
-    for k, v in translations_to_inject.items():
-        k = k.replace('"', '\\"')
-        v_to_use = v if lang == 'en' else k  # For now just map to same or known for EN
-        extra.append(f'    "{k}": "{v_to_use}",')
-        
-    replacement = f"  {lang}: {{\n" + "\n".join(extra)
-    new_content = re.sub(pattern, replacement, new_content, count=1)
+# The easiest way to inject is to just add it at the top of the 'vi' block in adminTranslations
+# wait, what if I just use English as default? Let's just put it in `adminTranslations`
+vi_injection = ""
+for k, v in keys_to_add.items():
+    vi_injection += f'      "{k}": "{v}",\n'
 
-# Now fix the hardcoded "Quay lại" in line 15606
-new_content = new_content.replace('<ArrowLeft className="w-4 h-4" /> Quay lại', '<ArrowLeft className="w-4 h-4" /> {t("Quay lại")}')
+content = content.replace("vi: {\n", "vi: {\n" + vi_injection)
 
 with open('src/App.tsx', 'w') as f:
-    f.write(new_content)
+    f.write(content)
+

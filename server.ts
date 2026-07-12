@@ -923,6 +923,13 @@ async function loadData(explicitUsername?: string) {
     releasedSongs: [],
     demos: [],
     playlists: [],
+    menus: [
+      { id: 'm1', type: 'vault', title: 'Kho Nhạc', isVisible: true },
+      { id: 'm2', type: 'about', title: 'Về Tôi', isVisible: true },
+      { id: 'm3', type: 'bio', title: 'Tiểu Sử', isVisible: true }
+    ],
+    aboutMe: {},
+    biography: { education: [], experience: [] },
     adminPassword: currentAdminPasswordLocal,
     memberPassword: currentMemberPasswordLocal
   };
@@ -1537,6 +1544,13 @@ function generateCaptchaSvg(text: string) {
       releasedSongs: [],
       demos: [],
       playlists: [],
+      menus: [
+        { id: 'm1', type: 'vault', title: 'Kho Nhạc', isVisible: true },
+        { id: 'm2', type: 'about', title: 'Về Tôi', isVisible: true },
+        { id: 'm3', type: 'bio', title: 'Tiểu Sử', isVisible: true }
+      ],
+      aboutMe: {},
+      biography: { education: [], experience: [] },
       adminPassword: newArtist.password,
       memberPassword: ""
     };
@@ -2543,6 +2557,13 @@ ${JSON.stringify(geminiInput, null, 2)}`;
         releasedSongs: [],
         demos: [],
         playlists: [],
+        menus: [
+          { id: 'm1', type: 'vault', title: 'Kho Nhạc', isVisible: true },
+          { id: 'm2', type: 'about', title: 'Về Tôi', isVisible: true },
+          { id: 'm3', type: 'bio', title: 'Tiểu Sử', isVisible: true }
+        ],
+        aboutMe: {},
+        biography: { education: [], experience: [] },
         adminPassword: currentAdminPassword,
         memberPassword: currentMemberPassword
       };
@@ -2654,6 +2675,11 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       data.ogImageUrl = req.body.ogImageUrl;
       if (oldUrl) await deleteFileByUrl(oldUrl);
     }
+
+    
+    data.aboutMe = req.body.aboutMe ?? data.aboutMe;
+    data.biography = req.body.biography ?? data.biography;
+    data.menus = req.body.menus ?? data.menus;
 
     data.youtubePlaylistUrl = req.body.youtubePlaylistUrl ?? data.youtubePlaylistUrl;
     data.spotifyUrl = req.body.spotifyUrl ?? data.spotifyUrl;

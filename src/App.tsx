@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
 import { ChorusLogo } from './components/ChorusLogo';
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { Settings, Play, Music, Lock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, Palette} from 'lucide-react';
+import { UserCircle, BookOpen, User, Settings, Play, Music, Lock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, Palette} from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { AppData, DemoSong, TemplateConfig, Achievement } from './types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -348,9 +348,26 @@ function renderArtistNameWithLinks(text: string | null | undefined, systemArtist
 
 const translations: Record<string, Record<string, string>> = {
   vi: {
-    "bài nhạc": "bài nhạc",
-    "Bài nhạc": "Bài nhạc",
-    "Hiển Thị": "Hiển Thị",
+      "Về Tôi": "Về Tôi",
+      "Tiểu Sử": "Tiểu Sử",
+      "Quản lý Menu": "Quản lý Menu",
+      "Giới thiệu nghệ sĩ": "Giới thiệu nghệ sĩ",
+      "Tên Thật": "Tên Thật",
+      "Ngày Sinh": "Ngày Sinh",
+      "Địa Chỉ": "Địa Chỉ",
+      "Công Ty": "Công Ty",
+      "Vai Trò": "Vai Trò",
+      "Email": "Email",
+      "SĐT": "SĐT",
+      "Học Vấn": "Học Vấn",
+      "Kinh nghiệm": "Kinh nghiệm",
+      "Thời gian": "Thời gian",
+      "Sự Kiện": "Sự Kiện",
+      
+      "Thêm Menu Mới": "Thêm Menu Mới",
+      "Tiêu Đề Menu": "Tiêu Đề Menu",
+      "Đường Dẫn": "Đường Dẫn",
+      "Thêm giai đoạn": "Thêm giai đoạn",
     "Quay lại": "Quay lại",
     "Danh sách Playlist": "Danh sách Playlist",
     "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc",
@@ -362,7 +379,6 @@ const translations: Record<string, Record<string, string>> = {
     "20 bài": "20 bài",
     "50 bài": "50 bài",
     "100 bài": "100 bài",
-    "Hiển thị": "Hiển thị",
     "Tìm kiếm...": "Tìm kiếm...",
     "Chào Mừng Thành Viên!": "Chào Mừng Thành Viên!",
     "Khu Vực Thành Viên": "Khu Vực Thành Viên",
@@ -379,9 +395,6 @@ const translations: Record<string, Record<string, string>> = {
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn",
     "Tab 3 (Album/EP)": "Tab 3 (Album/EP)", dDesc: "Thiên đường âm nhạc của", btnSpot: "Nghe trên Spotify", lDemos: "Đề Mô", lReleased: "Ra Rồi", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Cần Mật Khẩu", pNow: "Nghe Ngay", nDemo: "Chưa có demo nào.", rMv: "MV Đã Phát Hành", nMv: "Chưa có MV nào.", lMore: "Hiển thị thêm", mList: "người nghe hàng tháng", load: "Đang tải trang...", back: "Trở về", adm: "AdminCP", edit: "Chỉnh sửa", pPrompt: "Cần mật khẩu", pPrompt2: "Nhập mật khẩu để nghe demo này", unlock: "Mở khóa", wPass: "Sai mật khẩu", lyric: "Lời bài hát", nLyric: "Chưa cập nhật lời bài hát", sAuth: "Sáng tác:", lang: "Tiếng Việt", lDemosMobile: "Đề mô", lReleasedMobile: "Ra Rồi", searchSong: "Tìm kiếm bài hát...", noSongs: "Chưa có bài hát nào", noSongsDesc: "Danh sách đang được cập nhật, bạn vui lòng quay lại sau nhé!", closeSearch: "Đóng tìm kiếm", searchTitle: "Tìm kiếm bài hát", noDemoFound: "Không tìm thấy demo", mVault: "Kho Nhạc", "Hiển thị": "Hiển thị", "bài / trang": "bài / trang", "Tổng": "Tổng", "Trước": "Trước", "Sau": "Sau", pPartner: "Đối tác:", pAutoNext: "Sẽ tự động chuyển bài nếu không nhập mật khẩu", vRef: "Video Tham Khảo", nArtist: "Nghệ sĩ" },
   en: {
-    "bài nhạc": "songs",
-    "Bài nhạc": "Songs",
-    "Hiển Thị": "Visibility",
     "Quay lại": "Back",
     "Danh sách Playlist": "Playlist List",
     "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Create, arrange priority, and edit playlists",
@@ -393,7 +406,6 @@ const translations: Record<string, Record<string, string>> = {
     "20 bài": "20 songs",
     "50 bài": "50 songs",
     "100 bài": "100 songs",
-    "Hiển thị": "Show",
     "Tìm kiếm...": "Search...",
     "Chào Mừng Thành Viên!": "Welcome Member!",
     "Khu Vực Thành Viên": "Member Area",
@@ -410,9 +422,6 @@ const translations: Record<string, Record<string, string>> = {
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "Hide from artist list on Chorus.vn homepage",
     "Tab 3 (Album/EP)": "Tab 3 (Album/EP)", dDesc: "Music paradise of", btnSpot: "Listen on Spotify", lDemos: "Demo", lReleased: "Release", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Password", pNow: "Play Now", nDemo: "No demos yet.", rMv: "Released Music Videos", nMv: "No MVs yet.", lMore: "Load more", mList: "monthly listeners", load: "Loading...", back: "Back", adm: "Admin", edit: "Edit", pPrompt: "Password required", pPrompt2: "Enter password to listen to this demo", unlock: "Unlock", wPass: "Wrong password", lyric: "Lyrics", nLyric: "No lyrics yet", sAuth: "Composer:", lang: "English", searchSong: "Search songs...", noSongs: "No songs available", noSongsDesc: "The list is being updated, please come back later!", closeSearch: "Close search", searchTitle: "Search songs", noDemoFound: "Demo not found", mVault: "Music Vault", "Hiển thị": "Show", "bài / trang": "songs / page", "Tổng": "Total", "Trước": "Prev", "Sau": "Next", pPartner: "Partner:", pAutoNext: "Will auto skip if password not entered", vRef: "Reference Video", nArtist: "Artist" },
   ko: {
-    "bài nhạc": "bài nhạc",
-    "Bài nhạc": "Bài nhạc",
-    "Hiển Thị": "Hiển Thị",
     "Quay lại": "Quay lại",
     "Danh sách Playlist": "Danh sách Playlist",
     "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc",
@@ -424,7 +433,6 @@ const translations: Record<string, Record<string, string>> = {
     "20 bài": "20 bài",
     "50 bài": "50 bài",
     "100 bài": "100 bài",
-    "Hiển thị": "Hiển thị",
     "Tìm kiếm...": "Tìm kiếm...",
     "Chào Mừng Thành Viên!": "Chào Mừng Thành Viên!",
     "Khu Vực Thành Viên": "Khu Vực Thành Viên",
@@ -441,9 +449,6 @@ const translations: Record<string, Record<string, string>> = {
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "Chorus.vn \ud648\ud398\uc774\uc9c0\uc758 \uc544\ud2f0\uc2a4\ud2b8 \ubaa9\ub85d\uc5d0\uc11c \uc228\uae30\uae30",
     "Tab 3 (Album/EP)": "\ud0ed 3 (Album/EP)", dDesc: "데모 파라다이스", btnSpot: "Spotify에서 듣기", lDemos: "최신 데모", lReleased: "발매된 음악", lDemoMark: "데모", lReleasedMark: "발매됨", pReq: "비밀번호", pNow: "지금 듣기", nDemo: "데모 없음", rMv: "발매된 뮤직비디오", nMv: "MV 없음", lMore: "더 보기", mList: "월간 청취자", load: "로딩 중...", back: "뒤로", adm: "관리자", edit: "편집", pPrompt: "비밀번호 필요", pPrompt2: "이 데모를 들으려면 비밀번호를 입력하세요", unlock: "잠금 해제", wPass: "잘못된 비밀번호", lyric: "가사", nLyric: "가사 없음", sAuth: "작곡가:", lang: "한국어", searchSong: "노래 검색...", noSongs: "등록된 곡이 없습니다", noSongsDesc: "목록이 업데이트 중입니다. 나중에 다시 방문해 주세요!", closeSearch: "검색 닫기", searchTitle: "노래 검색", noDemoFound: "데모를 찾을 수 없습니다", mVault: "음악 보관함", "Hiển thị": "표시", "bài / trang": "곡 / 페이지", "Tổng": "총", "Trước": "이전", "Sau": "다음", pPartner: "파트너:", pAutoNext: "비밀번호 미입력 시 자동 다음 곡", vRef: "참조 비디오", nArtist: "아티스트" },
   ja: {
-    "bài nhạc": "bài nhạc",
-    "Bài nhạc": "Bài nhạc",
-    "Hiển Thị": "Hiển Thị",
     "Quay lại": "Quay lại",
     "Danh sách Playlist": "Danh sách Playlist",
     "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc",
@@ -455,7 +460,6 @@ const translations: Record<string, Record<string, string>> = {
     "20 bài": "20 bài",
     "50 bài": "50 bài",
     "100 bài": "100 bài",
-    "Hiển thị": "Hiển thị",
     "Tìm kiếm...": "Tìm kiếm...",
     "Chào Mừng Thành Viên!": "Chào Mừng Thành Viên!",
     "Khu Vực Thành Viên": "Khu Vực Thành Viên",
@@ -472,9 +476,6 @@ const translations: Record<string, Record<string, string>> = {
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "Chorus.vn \u30db\u30fc\u30e0\u30da\u30fc\u30b8\u306e\u30a2\u30fc\u30c6\u30a3\u30b9\u30c8\u30ea\u30b9\u30c8\u304b\u3089\u975e\u8868\u793a",
     "Tab 3 (Album/EP)": "\u30bf\u30d6 3 (Album/EP)", dDesc: "デモパラダイス", btnSpot: "Spotifyで聴く", lDemos: "最新のデモ", lReleased: "リリースされた音楽", lDemoMark: "デモ", lReleasedMark: "リリース済", pReq: "パスワード", pNow: "今すぐ聴く", nDemo: "デモなし", rMv: "リリースされたMV", nMv: "MVなし", lMore: "もっと見る", mList: "月間リスナー", load: "読み込み中...", back: "戻る", adm: "管理者", edit: "編集", pPrompt: "パスワードが必要", pPrompt2: "このデモを聴くにはパスワードを入力してください", unlock: "ロック解除", wPass: "パスワードが間違っています", lyric: "歌詞", nLyric: "歌詞なし", sAuth: "作曲:", lang: "日本語", searchSong: "曲名で検索...", noSongs: "登録された曲はありません", noSongsDesc: "リストは更新中です。後で戻ってきてください！", closeSearch: "検索を閉じる", searchTitle: "曲名で検索", noDemoFound: "デモが見つかりません", mVault: "ミュージックボルト", "Hiển thị": "表示", "bài / trang": "曲 / ページ", "Tổng": "合計", "Trước": "前へ", "Sau": "次へ", pPartner: "パートナー:", pAutoNext: "パスワード未入力で自動スキップ", vRef: "参考動画", nArtist: "アーティスト" },
   th: {
-    "bài nhạc": "bài nhạc",
-    "Bài nhạc": "Bài nhạc",
-    "Hiển Thị": "Hiển Thị",
     "Quay lại": "Quay lại",
     "Danh sách Playlist": "Danh sách Playlist",
     "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc",
@@ -486,7 +487,6 @@ const translations: Record<string, Record<string, string>> = {
     "20 bài": "20 bài",
     "50 bài": "50 bài",
     "100 bài": "100 bài",
-    "Hiển thị": "Hiển thị",
     "Tìm kiếm...": "Tìm kiếm...",
     "Chào Mừng Thành Viên!": "Chào Mừng Thành Viên!",
     "Khu Vực Thành Viên": "Khu Vực Thành Viên",
@@ -503,9 +503,6 @@ const translations: Record<string, Record<string, string>> = {
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "\u0e0b\u0e48\u0e2d\u0e19\u0e08\u0e32\u0e01\u0e23\u0e32\u0e22\u0e0a\u0e37\u0e48\u0e2d\u0e28\u0e34\u0e25\u0e1b\u0e34\u0e19\u0e43\u0e19\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e23\u0e01\u0e02\u0e2d\u0e07 Chorus.vn",
     "Tab 3 (Album/EP)": "\u0e41\u0e17\u0e47\u0e1a 3 (Album/EP)", dDesc: "สวรรค์แห่งเพลงเดโม่ของ", btnSpot: "ฟังบน Spotify", lDemos: "ตัวอย่างล่าสุด", lReleased: "เพลงที่ปล่อยแล้ว", lDemoMark: "เดโม่", lReleasedMark: "ปล่อยแล้ว", pReq: "รหัสผ่าน", pNow: "ฟังเลย", nDemo: "ไม่มีตัวอย่าง", rMv: "มิวสิควิดีโอ", nMv: "ไม่มี MV", lMore: "โหลดเพิ่ม", mList: "ผู้ฟังรายเดือน", load: "กำลังโหลด...", back: "กลับ", adm: "แอดมิน", edit: "แก้ไข", pPrompt: "ต้องใช้รหัสผ่าน", pPrompt2: "ใส่รหัสผ่านเพื่อฟังเดโม่นี้", unlock: "ปลดล็อค", wPass: "รหัสผ่านผิด", lyric: "เนื้อเพลง", nLyric: "ไม่มีเนื้อเพลง", sAuth: "แต่งโดย:", lang: "ไทย", searchSong: "ค้นหาเพลง...", noSongs: "ยังไม่มีเพลง", noSongsDesc: "กำลังอัปเดตรายการ โปรดกลับมาใหม่อีกครั้งในภายหลัง!", closeSearch: "ปิดการค้นหา", searchTitle: "ค้นหาเพลง", noDemoFound: "ไม่พบเดโม", mVault: "คลังเพลง", "Hiển thị": "แสดง", "bài / trang": "เพลง / หน้า", "Tổng": "ทั้งหมด", "Trước": "ก่อนหน้า", "Sau": "ถัดไป", pPartner: "พาร์ทเนอร์:", pAutoNext: "จะข้ามอัตโนมัติหากไม่ใส่รหัส", vRef: "วิดีโออ้างอิง", nArtist: "ศิลปิน" },
   zh: {
-    "bài nhạc": "bài nhạc",
-    "Bài nhạc": "Bài nhạc",
-    "Hiển Thị": "Hiển Thị",
     "Quay lại": "Quay lại",
     "Danh sách Playlist": "Danh sách Playlist",
     "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc",
@@ -517,7 +514,6 @@ const translations: Record<string, Record<string, string>> = {
     "20 bài": "20 bài",
     "50 bài": "50 bài",
     "100 bài": "100 bài",
-    "Hiển thị": "Hiển thị",
     "Tìm kiếm...": "Tìm kiếm...",
     "Chào Mừng Thành Viên!": "Chào Mừng Thành Viên!",
     "Khu Vực Thành Viên": "Khu Vực Thành Viên",
@@ -537,6 +533,26 @@ const translations: Record<string, Record<string, string>> = {
 
 const adminTranslations: Record<string, Record<string, string>> = {
   vi: {
+      "Về Tôi": "Về Tôi",
+      "Tiểu Sử": "Tiểu Sử",
+      "Quản lý Menu": "Quản lý Menu",
+      "Giới thiệu nghệ sĩ": "Giới thiệu nghệ sĩ",
+      "Tên Thật": "Tên Thật",
+      "Ngày Sinh": "Ngày Sinh",
+      "Địa Chỉ": "Địa Chỉ",
+      "Công Ty": "Công Ty",
+      "Vai Trò": "Vai Trò",
+      "Email": "Email",
+      "SĐT": "SĐT",
+      "Học Vấn": "Học Vấn",
+      "Kinh nghiệm": "Kinh nghiệm",
+      "Thời gian": "Thời gian",
+      "Sự Kiện": "Sự Kiện",
+      
+      "Thêm Menu Mới": "Thêm Menu Mới",
+      "Tiêu Đề Menu": "Tiêu Đề Menu",
+      "Đường Dẫn": "Đường Dẫn",
+      "Thêm giai đoạn": "Thêm giai đoạn",
     "Bài hát Preview": "Bài hát Preview",
     "Tên hiển thị": "Tên hiển thị",
     "Màu nền tùy chỉnh": "Màu nền tùy chỉnh",
@@ -734,7 +750,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Lỗi: ${err.error}": "Lỗi: ${err.error}",
     "Lời bài hát": "Lời bài hát",
     "MB). Vui lòng tải lên file nhạc dưới 100MB để đảm bảo tốc độ xử lý của server.": "MB). Vui lòng tải lên file nhạc dưới 100MB để đảm bảo tốc độ xử lý của server.",
-    "Mô tả": "Mô tả",
+    
     "Mô tả cụ thể lý do yêu cầu (ví dụ: Vi phạm bản quyền, sai thông tin ca sĩ, nhạc sĩ...)": "Mô tả cụ thể lý do yêu cầu (ví dụ: Vi phạm bản quyền, sai thông tin ca sĩ, nhạc sĩ...)",
     "Mô tả cụ thể và chi tiết ý kiến hoặc lỗi bạn gặp phải...": "Mô tả cụ thể và chi tiết ý kiến hoặc lỗi bạn gặp phải...",
     "Mô tả lý do / Nội dung chi tiết": "Mô tả lý do / Nội dung chi tiết",
@@ -3589,6 +3605,26 @@ import ACPControlPanel from './components/ACPControlPanel';
 import ChorusVNLanding from './components/ChorusVNLanding';
 
 // ---- ADMIN LOGIN & REQUIRE ADMIN ----
+
+const PasswordInput = (props: any) => {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative w-full">
+      <input
+        {...props}
+        type={show ? "text" : "password"}
+      />
+      <button
+        type="button"
+        onClick={() => setShow(!show)}
+        className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 focus:outline-none flex items-center justify-center z-10"
+      >
+        {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+      </button>
+    </div>
+  );
+};
+
 function AdminLogin() {
   const { t } = useAdminTranslation();
   const ext = getArtistExtensionFromUrl();
@@ -3651,13 +3687,12 @@ function AdminLogin() {
           
           <div>
             <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-1">Password</label>
-            <input 
-              type="password" 
+            <PasswordInput 
               required
               autoFocus
               value={pwd}
-              onChange={(e) => setPwd(e.target.value)}
-              className="w-full border border-stone-300 px-4 py-3 rounded-xl focus:border-stone-900 focus:outline-none"
+              onChange={(e: any) => setPwd(e.target.value)}
+              className="w-full border border-stone-300 px-4 py-3 rounded-xl pr-12 focus:border-stone-900 focus:outline-none"
             />
           </div>
 
@@ -3774,12 +3809,11 @@ function MemberLogin() {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div className="relative">
-            <input 
-              type="password" 
+            <PasswordInput 
               autoFocus
               value={pwd}
-              onChange={(e) => setPwd(e.target.value)}
-              className="w-full bg-black/40 text-white border border-white/10 px-5 py-3.5 rounded-2xl focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-center tracking-widest font-mono text-lg transition-all"
+              onChange={(e: any) => setPwd(e.target.value)}
+              className="w-full bg-black/40 text-white border border-white/10 px-5 py-3.5 rounded-2xl focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-center tracking-widest font-mono text-lg transition-all pr-12"
               placeholder="••••••••"
             />
           </div>
@@ -3859,6 +3893,15 @@ function AdminFloatingControls({ onLogout }: { onLogout: () => void }) {
   const isAdmin = !!getAdminToken();
   const location = useLocation();
   const [isPageLoading, setIsPageLoading] = useState(true);
+  const { artistData } = useContext(LanguageContext);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     // Reset to loading state on path change
@@ -3906,6 +3949,25 @@ function AdminFloatingControls({ onLogout }: { onLogout: () => void }) {
   if (isListeningPage) return null;
   if (isPageLoading) return null;
 
+  let pushDown = false;
+  if (artistData) {
+    const defaultMenus = [
+      { id: 'm1', type: 'vault', title: 'Kho Nhạc', isVisible: true },
+      { id: 'm2', type: 'about', title: 'Về Tôi', isVisible: true },
+      { id: 'm3', type: 'bio', title: 'Tiểu Sử', isVisible: true }
+    ];
+    const currentMenus = artistData.menus && artistData.menus.length > 0 ? artistData.menus : defaultMenus;
+    const hasAbout = Boolean(artistData.aboutMe && Object.values(artistData.aboutMe).some(v => v));
+    const hasBio = Boolean(artistData.biography && ((artistData.biography.education && artistData.biography.education.length > 0) || (artistData.biography.experience && artistData.biography.experience.length > 0)));
+    const finalMenus = currentMenus.filter((m: any) => {
+      if (m.type === 'about' && !hasAbout) return false;
+      if (m.type === 'bio' && !hasBio) return false;
+      return true;
+    });
+    const hasNavbar = finalMenus.filter((m: any) => m.isVisible).length > 1;
+    pushDown = hasNavbar && !isScrolled;
+  }
+
   return (
     <AnimatePresence>
       <motion.div 
@@ -3917,7 +3979,7 @@ function AdminFloatingControls({ onLogout }: { onLogout: () => void }) {
         className={
           isListeningPage
             ? "hidden md:flex md:fixed md:left-6 md:top-1/2 md:-translate-y-1/2 z-[100] md:flex-col md:gap-4 md:translate-x-0"
-            : "fixed top-6 mt-[env(safe-area-inset-top,0px)] left-1/2 -translate-x-1/2 z-[100] flex flex-row gap-4"
+            : `fixed transition-all duration-500 ease-in-out ${pushDown ? 'top-20' : 'top-6'} mt-[env(safe-area-inset-top,0px)] left-1/2 -translate-x-1/2 z-[100] flex flex-row gap-4`
         }
       >
          {isAdminPage ? (
@@ -4179,13 +4241,13 @@ const ZingIcon = ({ className }: { className?: string }) => (
   />
 );
 
-const LanguageSwitcher = ({ isRelative = false }: { isRelative?: boolean }) => {
+const LanguageSwitcher = ({ isRelative = false, pushDown = false }: { isRelative?: boolean, pushDown?: boolean }) => {
   const { lang, setLang } = useContext(LanguageContext);
   const [open, setOpen] = useState(false);
   const langs = ['vi', 'en', 'ko', 'ja', 'th', 'zh'];
 
   return (
-    <div className={isRelative ? "relative" : "fixed top-6 right-6 z-50"}>
+    <div className={isRelative ? "relative" : `fixed right-6 z-50 transition-all duration-500 ease-in-out ${pushDown ? 'top-20' : 'top-6'}`}>
       <div 
         className={`flex items-center gap-2 ${isRelative ? 'bg-stone-100 hover:bg-stone-200 border border-stone-300 text-stone-850 h-10 px-3.5' : 'bg-black/30 hover:bg-black/50 border border-white/20 text-white px-4 py-2 shadow-lg'} rounded-full backdrop-blur-xl cursor-pointer transition-all hover:pr-5 group`}
         onClick={() => setOpen(!open)}
@@ -4234,6 +4296,26 @@ function AchievementBadge({ achievement, align = 'right' }: { achievement: Achie
   const { lang } = useContext(LanguageContext);
   const dict: Record<string, Record<string, string>> = {
     vi: {
+      "Về Tôi": "Về Tôi",
+      "Tiểu Sử": "Tiểu Sử",
+      "Quản lý Menu": "Quản lý Menu",
+      "Giới thiệu nghệ sĩ": "Giới thiệu nghệ sĩ",
+      "Tên Thật": "Tên Thật",
+      "Ngày Sinh": "Ngày Sinh",
+      "Địa Chỉ": "Địa Chỉ",
+      "Công Ty": "Công Ty",
+      "Vai Trò": "Vai Trò",
+      "Email": "Email",
+      "SĐT": "SĐT",
+      "Học Vấn": "Học Vấn",
+      "Kinh nghiệm": "Kinh nghiệm",
+      "Thời gian": "Thời gian",
+      "Sự Kiện": "Sự Kiện",
+      
+      "Thêm Menu Mới": "Thêm Menu Mới",
+      "Tiêu Đề Menu": "Tiêu Đề Menu",
+      "Đường Dẫn": "Đường Dẫn",
+      "Thêm giai đoạn": "Thêm giai đoạn",
       trending: "Thịnh hành",
       views: "Lượt xem",
       streams: "Lượt nghe",
@@ -4420,7 +4502,7 @@ function Home() {
       }
       result[key] = customTr || baseDict[key] || originalValue;
     });
-    return result;
+    return (k: string) => result[k] || k;
   }, [lang, landingConfig, artistData]);
   const [data, setData] = useState<AppData | null>(null);
   const [ytVideos, setYtVideos] = useState<any[]>([]);
@@ -4437,8 +4519,20 @@ function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [toast, setToast] = useState('');
   const [activeBioSong, setActiveBioSong] = useState<any | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   const [searchQuery, setSearchQuery] = useState('');
   const [isHomeSearchExpanded, setIsHomeSearchExpanded] = useState(false);
+
+  const [activeMenuTab, setActiveMenuTab] = useState<string>('');
+
   const observer = useRef<IntersectionObserver>();
   const [showBrandState, setShowBrandState] = useState(false);
   useEffect(() => {
@@ -4579,6 +4673,16 @@ function Home() {
         if (!preferred && data.defaultLanguage && setLang) {
           setLang(data.defaultLanguage);
         }
+        
+        // Determine default menu tab
+        if (data.menus && data.menus.length > 0) {
+          const visibleMenus = data.menus.filter((m: any) => m.isVisible);
+          if (visibleMenus.length > 0) {
+            setActiveMenuTab(visibleMenus[0].id);
+          }
+        } else {
+          setActiveMenuTab('m1'); // default to vault
+        }
         document.title = data.pageTitle || `${t.dDesc} ${data.artistName || 'Nghệ sĩ'}`;
         if (data.faviconUrl) {
           let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
@@ -4626,6 +4730,29 @@ function Home() {
 
   if (!data) return <LoadingScreen text={t.load} />;
 
+  
+  
+  const defaultMenus = [
+    { id: 'm1', type: 'vault', title: 'Kho Nhạc', isVisible: true },
+    { id: 'm2', type: 'about', title: 'Về Tôi', isVisible: true },
+    { id: 'm3', type: 'bio', title: 'Tiểu Sử', isVisible: true }
+  ];
+  const currentMenus = data.menus && data.menus.length > 0 ? data.menus : defaultMenus;
+  const activeMenuObj = currentMenus.find((m: any) => m.id === activeMenuTab);
+
+  const hasAbout = Boolean(data.aboutMe && Object.values(data.aboutMe).some(v => v));
+  const hasBio = Boolean(data.biography && ((data.biography.education && data.biography.education.length > 0) || (data.biography.experience && data.biography.experience.length > 0)));
+  
+  const finalMenus = currentMenus.filter((m: any) => {
+    if (m.type === 'about' && !hasAbout) return false;
+    if (m.type === 'bio' && !hasBio) return false;
+    return true;
+  });
+  const hasNavbar = finalMenus.filter((m: any) => m.isVisible).length > 1;
+  const isVault = !hasNavbar || !activeMenuObj || activeMenuObj.type === 'vault';
+  const isAbout = hasNavbar && activeMenuObj?.type === 'about';
+  const isBio = hasNavbar && activeMenuObj?.type === 'bio';
+  const pushDown = hasNavbar && !isScrolled;
   return (
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
@@ -4634,7 +4761,7 @@ function Home() {
       transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       className="min-h-screen flex flex-col bg-neutral-950 text-white font-sans selection:bg-rose-500 selection:text-white relative z-0 bg-notebook-dark"
     >
-      <SocialCarousel data={data} />
+      <SocialCarousel data={data} pushDown={pushDown} />
       {data.slideshowImages && data.slideshowImages.length > 0 ? (
         <div className="fixed inset-0 z-[-1] pointer-events-none bg-neutral-950">
           <AnimatePresence mode="popLayout">
@@ -4661,7 +4788,7 @@ function Home() {
       ) : (
         <div className="fixed inset-0 z-[-1] pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-900 via-neutral-950 to-neutral-950"></div>
       )}
-      <LanguageSwitcher />
+      <LanguageSwitcher pushDown={pushDown} />
       {playingVideo && (() => {
         const activeSong = ytVideos.find(song => song.videoId === playingVideo);
         const activeTitle = activeSong ? activeSong.title : "MV / Video";
@@ -4753,8 +4880,15 @@ function Home() {
         );
       })()}
 
+      {/* Top Navbar */}
+      <div className="absolute top-0 left-0 right-0 z-50 pt-6 sm:pt-8">
+        {hasNavbar && <PublicNavbar menus={finalMenus} activeTab={activeMenuTab} setActiveTab={setActiveMenuTab} t={t} />}
+      </div>
+
+      {isVault && (
+        <>
       {/* Hero Section */}
-      <section className="relative pt-32 md:pt-48 pb-20 px-6 sm:px-12 flex flex-col items-center justify-center text-center min-h-[500px]">
+      <section className="relative pt-4 md:pt-8 pb-20 px-6 sm:px-12 flex flex-col items-center justify-center text-center min-h-[400px]">
 
         
         <div className="relative z-10 w-full max-w-5xl flex flex-col items-center mt-12">
@@ -4912,10 +5046,14 @@ function Home() {
           )}
         </div>
       </section>
+      </>
+      )}
 
       {/* Main Content */}
       <main className="flex-1 w-full max-w-5xl mx-auto px-6 sm:px-12 pb-32 space-y-12 sm:space-y-16">
         
+        {isVault && (
+          <>
         {/* Demos Section */}
         <section id="music-tabs-section" className="scroll-mt-24">
           {/* Header Row with compact Search Box */}
@@ -4998,7 +5136,7 @@ function Home() {
                   />
                 )}
                 <Music className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 relative z-10 ${activeListTab === 'released' ? 'text-emerald-400' : 'text-neutral-400'}`} />
-                <span className="whitespace-nowrap relative z-10">{data?.tab1Name || t.lReleasedMobile || t.lReleased}</span>
+                <span className="whitespace-nowrap relative z-10">{data?.tab1Name?.trim() || t.lReleasedMobile || t.lReleased || "Ra Rồi"}</span>
              </button>
              
              <button 
@@ -5013,7 +5151,7 @@ function Home() {
                   />
                 )}
                 <Disc3 className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 relative z-10 ${activeListTab === 'demos' ? 'text-rose-400' : 'text-neutral-400'}`} />
-                <span className="whitespace-nowrap relative z-10">{data?.tab2Name || t.lDemosMobile || t.lDemos}</span>
+                <span className="whitespace-nowrap relative z-10">{data?.tab2Name?.trim() || t.lDemosMobile || t.lDemos || "Đề Mô"}</span>
              </button>
              
              {data?.playlists && data.playlists.length > 0 && (
@@ -5398,7 +5536,7 @@ function Home() {
                 {totalItems > 0 && (
                   <div className="col-span-full flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-white/10">
                     <div className="flex items-center gap-2 text-xs sm:text-sm text-neutral-300">
-                      <span>{t["Hiển thị"]}</span>
+                      <span>{t("Hiển thị")}</span>
                       <select 
                         value={pageSize} 
                         onChange={(e) => {
@@ -5411,7 +5549,7 @@ function Home() {
                         <option value={50} className="bg-neutral-900 text-white">50</option>
                         <option value={100} className="bg-neutral-900 text-white">100</option>
                       </select>
-                      <span>{t["bài / trang"]} ({t["Tổng"]}: {totalItems})</span>
+                      <span>{t("bài / trang")} ({t("Tổng")}: {totalItems})</span>
                     </div>
                     
                     {totalPages > 1 && (
@@ -5429,7 +5567,7 @@ function Home() {
                               : `bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 ${activeHoverBorderColor}`
                           }`}
                         >
-                          {t["Trước"]}
+                          {t("Trước")}
                         </button>
                         
                         {(() => {
@@ -5477,7 +5615,7 @@ function Home() {
                               : `bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 ${activeHoverBorderColor}`
                           }`}
                         >
-                          {t["Sau"]}
+                          {t("Sau")}
                         </button>
                       </div>
                     )}
@@ -5521,7 +5659,7 @@ function Home() {
               {mvTotalItems > 0 && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 mt-6 border-t border-white/10">
                   <div className="flex items-center gap-2 text-xs sm:text-sm text-neutral-300">
-                    <span>{t["Hiển thị"]}</span>
+                    <span>{t("Hiển thị")}</span>
                     <select 
                       value={mvPageSize} 
                       onChange={(e) => {
@@ -5534,7 +5672,7 @@ function Home() {
                       <option value={20} className="bg-neutral-900 text-white">20</option>
                       <option value={50} className="bg-neutral-900 text-white">50</option>
                     </select>
-                    <span>{t["bài / trang"]} ({t["Tổng"]}: {mvTotalItems})</span>
+                    <span>{t("bài / trang")} ({t("Tổng")}: {mvTotalItems})</span>
                   </div>
 
                   {mvTotalPages > 1 && (
@@ -5552,7 +5690,7 @@ function Home() {
                             : 'bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 hover:border-emerald-500/50'
                         }`}
                       >
-                        {t["Trước"]}
+                        {t("Trước")}
                       </button>
                       
                       {(() => {
@@ -5600,7 +5738,7 @@ function Home() {
                             : 'bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 hover:border-emerald-500/50'
                         }`}
                       >
-                        {t["Sau"]}
+                        {t("Sau")}
                       </button>
                     </div>
                   )}
@@ -5610,6 +5748,10 @@ function Home() {
           );
         })()}
 
+          </>
+        )}
+        {isAbout && <PublicAboutView aboutMe={data.aboutMe} data={data} t={t} onGoToVault={() => setActiveMenuTab(data.menus?.find((m: any) => m.type === 'vault')?.id || 'm1')} />}
+        {isBio && <PublicBioView biography={data.biography} t={t} />}
       </main>
 
       <footer className="py-8 text-center text-sm border-t border-white/10 relative z-10">
@@ -6815,7 +6957,7 @@ function PlaylistPlayer() {
       }
       result[key] = customTr || baseDict[key] || originalValue;
     });
-    return result;
+    return (k: string) => result[k] || k;
   }, [lang, landingConfig, artistData]);
   const { id } = useParams();
   const navigate = useNavigate();
@@ -7046,7 +7188,7 @@ function PlaylistPlayer() {
           {protectedInfo.title && <p className="text-stone-400 text-sm text-center mb-6">{protectedInfo.title}</p>}
           <form onSubmit={verifyPassword} className="space-y-4">
              <div>
-                <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Nhập mật khẩu playlist..." autoFocus className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-stone-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-center" />
+                <PasswordInput value={password} onChange={(e: any) => setPassword(e.target.value)} placeholder="Nhập mật khẩu playlist..." autoFocus className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-stone-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-center pr-12" />
              </div>
              <button type="submit" disabled={verifying || !password} className="w-full bg-white text-black font-bold py-3 rounded-xl disabled:opacity-50 hover:bg-stone-200 transition-colors">
                 {verifying ? 'Đang kiểm tra...' : 'Truy cập'}
@@ -7189,7 +7331,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
       }
       result[key] = customTr || baseDict[key] || originalValue;
     });
-    return result;
+    return (k: string) => result[k] || k;
   }, [lang, landingConfig, artistData]);
   const paramsId = useParams().id;
   const id = songIdP || paramsId;
@@ -7756,7 +7898,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
     accentClass = "bg-gradient-to-r from-yellow-400 via-pink-400 via-purple-500 to-indigo-500 hover:from-yellow-300 hover:via-pink-300 hover:via-purple-400 hover:to-indigo-450 text-white font-black tracking-widest uppercase rounded-2xl shadow-[0_0_30px_rgba(236,72,153,0.5)] border border-pink-500/20";
   } else if (templateType === '17') {
     themeClasses = "bg-sky-300 text-stone-900 font-sans";
-    accentClass = "bg-yellow-400 hover:bg-yellow-300 text-stone-900 rounded-full font-black border-[3px] border-white shadow-[0_0_20px_rgba(250,204,21,0.6)]";
+    accentClass = "bg-yellow-400 hover:bg-yellow-300 text-stone-900 rounded-full font-black border-[3px] border-white/30 backdrop-blur-md shadow-[0_0_20px_rgba(250,204,21,0.6)]";
   } else if (templateType === '18') {
     themeClasses = "bg-slate-900 text-amber-50 font-sans";
     accentClass = "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-full font-bold shadow-[0_0_30px_rgba(245,158,11,0.5)]";
@@ -7865,16 +8007,15 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
           </p>
           
           <form onSubmit={handleUnlock} onClick={(e) => e.stopPropagation()} className="space-y-4">
-            <input 
-              type="password" 
+                        <PasswordInput 
               placeholder="***" 
               value={password}
               onFocus={() => { pwdTouchedRef.current = true; }}
-              onChange={e => {
+              onChange={(e: any) => {
                 setPassword(e.target.value);
                 pwdTouchedRef.current = true;
               }}
-              className={`w-full ${isLight ? 'bg-white/60 focus:bg-white text-stone-900 placeholder:text-stone-400' : 'bg-black/40 focus:bg-black/60 text-white placeholder:text-stone-500'} border-none px-4 py-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-white/50 transition-all text-center tracking-widest font-mono text-lg shadow-inner`}
+              className={`w-full ${isLight ? 'bg-white/60 focus:bg-white text-stone-900 placeholder:text-stone-400' : 'bg-black/40 focus:bg-black/60 text-white placeholder:text-stone-500'} border-none px-4 py-3.5 pr-12 rounded-xl focus:outline-none focus:ring-2 focus:ring-white/50 transition-all text-center tracking-widest font-mono text-lg shadow-inner`}
             />
             {error && <p className="text-red-500 text-sm text-center font-bold drop-shadow-sm">{error}</p>}
             <button type="submit" className={`w-full ${isLight ? 'bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] hover:bg-stone-800' : 'bg-white text-black hover:bg-stone-200'} font-bold py-3.5 rounded-xl transition-colors shadow-lg`}>
@@ -8543,7 +8684,7 @@ const FollowIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-function SocialCarousel({ data }: { data: AppData }) {
+function SocialCarousel({ data, pushDown = false }: { data: AppData, pushDown?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentIconIdx, setCurrentIconIdx] = useState(-1);
 
@@ -8589,7 +8730,7 @@ function SocialCarousel({ data }: { data: AppData }) {
   if (socials.length === 0) return null;
 
   return (
-    <div className="fixed top-6 left-6 z-50 flex flex-col items-center gap-3">
+    <div className={`fixed left-6 z-50 flex flex-col items-center gap-3 transition-all duration-500 ease-in-out ${pushDown ? 'top-20' : 'top-6'}`}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
         className="relative flex items-center justify-center w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 hover:scale-110 shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all cursor-pointer"
@@ -9257,7 +9398,7 @@ function AdminDashboard() {
   const { t } = useAdminTranslation();
   const [data, setData] = useState<AppData | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState<'demos'|'playlists'|'profile'|'socials'|'security'|'templates'|'database'|'reposts'|'tickets'>('demos');
+  const [activeTab, setActiveTab] = useState<'demos'|'playlists'|'profile'|'about'|'bio'|'menus'|'socials'|'security'|'templates'|'database'|'reposts'|'tickets'>('demos');
   const [demosSubTab, setDemosSubTab] = useState<'released' | 'demos' | 'drafts' | 'playlists' | 'trash' | 'landing_pages' | 'brands'>('released');
   
   // Chorus Repost & Ticket States
@@ -10038,6 +10179,32 @@ function AdminDashboard() {
     }
   };
 
+  const handleCustomSave = async (payload: any) => {
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'POST',
+        headers: {
+          'x-artist-extension': getArtistExtensionFromUrl(),
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getAdminToken() || ''}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        const updatedData = await res.json();
+        setData(updatedData);
+        setToast(t("Đã lưu thông tin thành công!"));
+        setTimeout(() => setToast(''), 3000);
+      } else {
+        setToast(t("Lỗi khi lưu thông tin!"));
+        setTimeout(() => setToast(''), 3000);
+      }
+    } catch (e) {
+      setToast(t("Lỗi kết nối máy chủ!"));
+      setTimeout(() => setToast(''), 3000);
+    }
+  };
+
   const handleProfileSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -10250,6 +10417,8 @@ function AdminDashboard() {
             const isProfileActive = activeTab === 'profile';
             const isSocialsActive = activeTab === 'socials';
             const isSecurityActive = activeTab === 'security';
+            const isAboutActive = activeTab === 'about';
+            const isBioActive = activeTab === 'bio';
 
             return (
               <>
@@ -10478,6 +10647,72 @@ function AdminDashboard() {
                       <Settings className={`w-5 h-5 transition-colors ${isProfileActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
                     </motion.div>
                     {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Cài Đặt")}</span>}
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('about')}
+                    className={`flex items-center transition-all relative group ${
+                      effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
+                    } ${
+                      isAboutActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                    }`}
+                    title={t("Về Tôi")}
+                  >
+                    {isAboutActive && (
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 bg-stone-900/95 rounded-xl z-0 shadow-[inset_0_2px_4px_rgba(255,255,255,0.1),inset_0_-2px_6px_rgba(0,0,0,0.8),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-md border border-stone-800 group-hover:bg-stone-800/95"
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    <motion.div
+                      animate={isAboutActive ? {
+                        rotate: [-6, 6, -6],
+                        y: [-0.8, 0.8, -0.8]
+                      } : { rotate: 0, y: 0 }}
+                      transition={isAboutActive ? {
+                        repeat: Infinity,
+                        duration: 2.3,
+                        ease: "easeInOut"
+                      } : { duration: 0.2 }}
+                      className="relative z-10 flex items-center justify-center"
+                    >
+                      <UserCircle className={`w-5 h-5 transition-colors ${isAboutActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                    </motion.div>
+                    {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Về Tôi")}</span>}
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('bio')}
+                    className={`flex items-center transition-all relative group ${
+                      effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
+                    } ${
+                      isBioActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                    }`}
+                    title={t("Tiểu Sử")}
+                  >
+                    {isBioActive && (
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 bg-stone-900/95 rounded-xl z-0 shadow-[inset_0_2px_4px_rgba(255,255,255,0.1),inset_0_-2px_6px_rgba(0,0,0,0.8),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-md border border-stone-800 group-hover:bg-stone-800/95"
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    <motion.div
+                      animate={isBioActive ? {
+                        rotate: [-6, 6, -6],
+                        y: [-0.8, 0.8, -0.8]
+                      } : { rotate: 0, y: 0 }}
+                      transition={isBioActive ? {
+                        repeat: Infinity,
+                        duration: 2.3,
+                        ease: "easeInOut"
+                      } : { duration: 0.2 }}
+                      className="relative z-10 flex items-center justify-center"
+                    >
+                      <BookOpen className={`w-5 h-5 transition-colors ${isBioActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                    </motion.div>
+                    {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Tiểu Sử")}</span>}
                   </button>
 
                   <button
@@ -11352,6 +11587,14 @@ function AdminDashboard() {
             </motion.div>
           )}
 
+          
+          {activeTab === 'about' && (
+             <AdminAboutEdit data={data} t={t} onSave={handleCustomSave} />
+          )}
+          {activeTab === 'bio' && (
+             <AdminBioEdit data={data} t={t} onSave={handleCustomSave} />
+          )}
+
           {activeTab === 'profile' && (
             <motion.div key="profile" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
             <div className="max-w-2xl">
@@ -11879,11 +12122,10 @@ function AdminDashboard() {
                 <form onSubmit={handleAdminPasswordChange} className="space-y-4 max-w-md">
                   <div>
                     <label className="block text-sm font-bold text-stone-700 mb-2">{t("Mật khẩu cũ")}</label>
-                    <input 
-                      type="password"
+                    <PasswordInput 
                       value={oldAdminPass}
-                      onChange={(e) => setOldAdminPass(e.target.value)}
-                      className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono"
+                      onChange={(e: any) => setOldAdminPass(e.target.value)}
+                      className="w-full border border-stone-300 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono"
                       placeholder={t("Nhập mật khẩu hiện tại")}
                     />
                   </div>
@@ -11892,21 +12134,19 @@ function AdminDashboard() {
                       <label className="block text-sm font-bold text-stone-700">{t("Mật khẩu mới")}</label>
                       <button type="button" onClick={() => { const p = Math.random().toString(36).slice(-8); setNewAdminPass(p); setConfirmAdminPass(p); }} className="text-xs text-rose-500 hover:text-rose-600 font-bold flex items-center gap-1"><Sparkles className="w-3 h-3" />{t("Tự sinh Ngẫu Nhiên")}</button>
                     </div>
-                    <input 
-                      type="password"
+                    <PasswordInput 
                       value={newAdminPass}
-                      onChange={(e) => setNewAdminPass(e.target.value)}
-                      className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono"
+                      onChange={(e: any) => setNewAdminPass(e.target.value)}
+                      className="w-full border border-stone-300 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono"
                       placeholder={t("Mật khẩu mới (tối thiểu 4 ký tự)")}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-stone-700 mb-2">{t("Xác nhận mật khẩu mới")}</label>
-                    <input 
-                      type="password"
+                    <PasswordInput 
                       value={confirmAdminPass}
-                      onChange={(e) => setConfirmAdminPass(e.target.value)}
-                      className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono"
+                      onChange={(e: any) => setConfirmAdminPass(e.target.value)}
+                      className="w-full border border-stone-300 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono"
                       placeholder={t("Nhập lại mật khẩu mới")}
                     />
                   </div>
@@ -11941,11 +12181,10 @@ function AdminDashboard() {
                     <div className="flex items-center justify-end mb-2">
                       <button type="button" onClick={() => setMemberPassInput(Math.random().toString(36).slice(-8))} className="text-xs text-rose-500 hover:text-rose-600 font-bold flex items-center gap-1"><Sparkles className="w-3 h-3" />{t("Tự sinh Ngẫu Nhiên")}</button>
                     </div>
-                    <input 
-                      type="password"
+                    <PasswordInput 
                       value={memberPassInput}
-                      onChange={(e) => setMemberPassInput(e.target.value)}
-                      className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono"
+                      onChange={(e: any) => setMemberPassInput(e.target.value)}
+                      className="w-full border border-stone-300 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono"
                       placeholder={t("Mật khẩu thành viên")}
                     />
                   </div>
@@ -12638,7 +12877,7 @@ function AdminDashboard() {
             </div>
           )}
           </AnimatePresence>
-        </main>
+  </main>
       </div>
 
       {/* Custom Delete Confirmation Modal */}
@@ -15866,6 +16105,496 @@ function AdminPlaylistEdit() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+
+function AdminAboutEdit({ data, t, onSave }: any) {
+  const [aboutData, setAboutData] = useState(data.aboutMe || {});
+  
+  const handleSave = (e: any) => {
+    e.preventDefault();
+    onSave({ aboutMe: aboutData });
+  };
+
+  const handleChange = (field: string) => (e: any) => {
+    setAboutData({ ...aboutData, [field]: e.target.value });
+  };
+
+  
+  
+  
+  return (
+    <motion.div key="about" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar">
+      <div className="max-w-2xl pb-10">
+        <h2 className="text-2xl font-bold mb-8">{t("Về Tôi")}</h2>
+        <form onSubmit={handleSave} className="space-y-6">
+          <div>
+            <label className="block text-sm font-bold text-stone-700 mb-2">{t("Giới thiệu nghệ sĩ")}</label>
+            <textarea value={aboutData.intro || ''} onChange={handleChange('intro')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 min-h-[100px]" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-stone-700 mb-2">{t("Tên Thật")}</label>
+              <input value={aboutData.realName || ''} onChange={handleChange('realName')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ngày Sinh")}</label>
+              <input value={aboutData.dob || ''} onChange={handleChange('dob')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-stone-700 mb-2">{t("Địa Chỉ")}</label>
+              <input value={aboutData.address || ''} onChange={handleChange('address')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-stone-700 mb-2">{t("Công Ty")}</label>
+              <input value={aboutData.company || ''} onChange={handleChange('company')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-stone-700 mb-2">{t("Vai Trò")}</label>
+              <input value={aboutData.role || ''} onChange={handleChange('role')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-stone-700 mb-2">{t("Email")}</label>
+              <input value={aboutData.email || ''} onChange={handleChange('email')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-stone-700 mb-2">{t("SĐT")}</label>
+              <input value={aboutData.phone || ''} onChange={handleChange('phone')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
+            </div>
+          </div>
+          
+          <button type="submit" className="bg-stone-900 text-white font-bold py-3 px-6 rounded-xl hover:bg-stone-800 transition-colors w-full cursor-pointer">{t("Lưu cài đặt")}</button>
+        </form>
+              <AdminMenuEdit data={data} t={t} onSave={onSave} />
+
+      </div>
+    </motion.div>
+  );
+}
+
+function AdminBioEdit({ data, t, onSave }: any) {
+  const [education, setEducation] = useState<any[]>(data.biography?.education || []);
+  const [experience, setExperience] = useState<any[]>(data.biography?.experience || []);
+
+  const handleSave = (e: any) => {
+    e.preventDefault();
+    onSave({ biography: { education, experience } });
+  };
+
+  const addEdu = () => {
+    if (education.length < 20) setEducation([...education, { time: '', title: '', description: '' }]);
+  };
+  const addExp = () => {
+    if (experience.length < 20) setExperience([...experience, { time: '', title: '', description: '' }]);
+  };
+
+  const updateEdu = (idx: number, field: string, val: string) => {
+    const newEdu = [...education];
+    newEdu[idx][field] = val;
+    setEducation(newEdu);
+  };
+  
+  const updateExp = (idx: number, field: string, val: string) => {
+    const newExp = [...experience];
+    newExp[idx][field] = val;
+    setExperience(newExp);
+  };
+
+  const removeEdu = (idx: number) => setEducation(education.filter((_, i) => i !== idx));
+  const removeExp = (idx: number) => setExperience(experience.filter((_, i) => i !== idx));
+
+  
+  
+  
+  return (
+    <motion.div key="bio" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar">
+      <div className="max-w-4xl pb-10">
+        <h2 className="text-2xl font-bold mb-8">{t("Tiểu Sử")}</h2>
+        <form onSubmit={handleSave} className="space-y-10">
+          
+          {/* Education section */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-stone-800">{t('Học Vấn')}</h3>
+              <button type="button" onClick={addEdu} className="flex items-center gap-1 text-sm bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-1.5 rounded-lg cursor-pointer">
+                <Plus className="w-4 h-4" /> {t("Thêm giai đoạn")}
+              </button>
+            </div>
+            <div className="space-y-4">
+              {education.map((edu, idx) => (
+                <div key={idx} className="bg-white border border-stone-200 rounded-xl p-4 flex gap-4">
+                  <div className="flex-1 space-y-3">
+                    <div className="flex gap-4">
+                      <div className="w-1/3">
+                        <label className="block text-xs font-bold text-stone-500 mb-1">{t("Thời gian")}</label>
+                        <input value={edu.time} onChange={(e) => updateEdu(idx, 'time', e.target.value)} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-stone-400" placeholder="VD: 2009-2012" />
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-xs font-bold text-stone-500 mb-1">{t("Sự Kiện")}</label>
+                        <input value={edu.title} onChange={(e) => updateEdu(idx, 'title', e.target.value)} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-stone-400" placeholder="VD: THPT Chuyên..." />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-500 mb-1">{t("Mô tả")}</label>
+                      <textarea value={edu.description} onChange={(e) => updateEdu(idx, 'description', e.target.value)} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-stone-400 min-h-[60px]" />
+                    </div>
+                  </div>
+                  <button type="button" onClick={() => removeEdu(idx)} className="text-stone-400 hover:text-red-500 self-start p-2 cursor-pointer">
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Experience section */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-stone-800">{t('Kinh nghiệm')}</h3>
+              <button type="button" onClick={addExp} className="flex items-center gap-1 text-sm bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-1.5 rounded-lg cursor-pointer">
+                <Plus className="w-4 h-4" /> {t("Thêm giai đoạn")}
+              </button>
+            </div>
+            <div className="space-y-4">
+              {experience.map((exp, idx) => (
+                <div key={idx} className="bg-white border border-stone-200 rounded-xl p-4 flex gap-4">
+                  <div className="flex-1 space-y-3">
+                    <div className="flex gap-4">
+                      <div className="w-1/3">
+                        <label className="block text-xs font-bold text-stone-500 mb-1">{t("Thời gian")}</label>
+                        <input value={exp.time} onChange={(e) => updateExp(idx, 'time', e.target.value)} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-stone-400" placeholder="VD: 2025" />
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-xs font-bold text-stone-500 mb-1">{t("Sự Kiện")}</label>
+                        <input value={exp.title} onChange={(e) => updateExp(idx, 'title', e.target.value)} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-stone-400" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-500 mb-1">{t("Mô tả")}</label>
+                      <textarea value={exp.description} onChange={(e) => updateExp(idx, 'description', e.target.value)} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-stone-400 min-h-[60px]" />
+                    </div>
+                  </div>
+                  <button type="button" onClick={() => removeExp(idx)} className="text-stone-400 hover:text-red-500 self-start p-2 cursor-pointer">
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button type="submit" className="bg-stone-900 text-white font-bold py-3 px-6 rounded-xl hover:bg-stone-800 transition-colors w-full cursor-pointer">{t("Lưu cài đặt")}</button>
+        </form>
+      </div>
+    </motion.div>
+  );
+}
+
+function AdminMenuEdit({ data, t, onSave }: any) {
+  const [menus, setMenus] = useState<any[]>(data.menus || [
+    { id: 'm1', type: 'vault', title: 'Kho Nhạc', isVisible: true },
+    { id: 'm2', type: 'about', title: 'Về Tôi', isVisible: true },
+    { id: 'm3', type: 'bio', title: 'Tiểu Sử', isVisible: true }
+  ]);
+
+  const handleDragStart = (e: any, index: number) => {
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
+  const handleDrop = (e: any, dropIndex: number) => {
+    const dragIndex = parseInt(e.dataTransfer.getData('text/plain'));
+    if (dragIndex === dropIndex) return;
+    const newMenus = [...menus];
+    const draggedItem = newMenus[dragIndex];
+    newMenus.splice(dragIndex, 1);
+    newMenus.splice(dropIndex, 0, draggedItem);
+    setMenus(newMenus);
+  };
+
+  const handleSave = () => {
+    onSave({ menus });
+  };
+  
+  const addCustomMenu = () => {
+    const customCount = menus.filter((m: any) => m.type === 'custom').length;
+    if (customCount >= 3) {
+      alert("Tối đa 3 custom tab");
+      return;
+    }
+    setMenus([...menus, { id: 'c' + Date.now(), type: 'custom', title: 'Tab Mới', link: '', isVisible: true }]);
+  };
+
+  const updateMenu = (idx: number, field: string, val: any) => {
+    const newMenus = [...menus];
+    newMenus[idx][field] = val;
+    setMenus(newMenus);
+  };
+
+  const removeMenu = (idx: number) => {
+    setMenus(menus.filter((_, i) => i !== idx));
+  };
+
+  return (
+    <div className="mt-10 border-t border-stone-200 pt-8">
+      <h3 className="text-xl font-bold mb-4">{t("Quản lý Menu")}</h3>
+      <p className="text-sm text-stone-500 mb-6">Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.</p>
+      
+      <div className="space-y-3 mb-6">
+        {menus.map((m: any, i: number) => (
+          <div 
+            key={m.id} 
+            draggable 
+            onDragStart={(e) => handleDragStart(e, i)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => handleDrop(e, i)}
+            className="flex items-center gap-4 bg-stone-50 border border-stone-200 rounded-xl p-3 cursor-grab active:cursor-grabbing"
+          >
+            <GripVertical className="text-stone-400 w-5 h-5 shrink-0" />
+            <div className="flex-1 flex gap-4 items-center">
+              <input 
+                value={m.title} 
+                onChange={(e) => updateMenu(i, 'title', e.target.value)} 
+                className="font-bold bg-white border border-stone-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
+                placeholder={t("Tiêu Đề Menu")}
+              />
+              {m.type === 'custom' && (
+                <input 
+                  value={m.link || ''} 
+                  onChange={(e) => updateMenu(i, 'link', e.target.value)} 
+                  className="flex-1 bg-white border border-stone-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
+                  placeholder={t("Đường Dẫn (URL)")}
+                />
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+               <label className="flex items-center gap-2 text-sm text-stone-600 cursor-pointer">
+                 <input type="checkbox" checked={m.isVisible} onChange={(e) => updateMenu(i, 'isVisible', e.target.checked)} className="rounded text-stone-900 focus:ring-stone-900" />
+                 Hiển thị
+               </label>
+               {m.type === 'custom' && (
+                 <button type="button" onClick={() => removeMenu(i)} className="text-stone-400 hover:text-red-500 p-1">
+                   <Trash2 className="w-4 h-4" />
+                 </button>
+               )}
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      <div className="flex gap-4">
+        <button type="button" onClick={addCustomMenu} className="bg-stone-100 hover:bg-stone-200 text-stone-700 px-4 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 cursor-pointer">
+          <Plus className="w-4 h-4" /> {t("Thêm Menu Mới")}
+        </button>
+        <button type="button" onClick={handleSave} className="bg-stone-900 hover:bg-stone-800 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer">
+          {t("Lưu Menu")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
+function PublicNavbar({ menus, activeTab, setActiveTab, t }: any) {
+  if (!menus || menus.length === 0) return null;
+  const visibleMenus = menus.filter((m: any) => m.isVisible);
+  if (visibleMenus.length <= 1) return null;
+
+  return (
+    <div className="w-full max-w-5xl mx-auto px-6 sm:px-12 mb-12 flex items-center justify-center gap-6 sm:gap-10 border-b border-white/10 pb-4">
+      {visibleMenus.map((m: any) => (
+        <button
+          key={m.id}
+          onClick={() => {
+            if (m.type === 'custom' && m.link) {
+              window.open(m.link, '_blank');
+            } else {
+              setActiveTab(m.id);
+            }
+          }}
+          className={`font-bold transition-all relative text-sm sm:text-base ${
+            activeTab === m.id ? 'text-white' : 'text-neutral-500 hover:text-neutral-300'
+          }`}
+        >
+          {m.title}
+          {activeTab === m.id && (
+            <motion.div layoutId="nav-indicator" className="absolute -bottom-[17px] left-0 right-0 h-[2px] bg-emerald-500" />
+          )}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function PublicAboutView({ aboutMe, data, t, onGoToVault }: any) {
+  if (!aboutMe) return null;
+  
+  const avatar = aboutMe.avatarUrl || data?.homeCoverUrl;
+  
+  return (
+    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-5xl mx-auto bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] p-8 sm:p-12 mt-24 mb-20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] relative z-10 text-white">
+      <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center lg:items-start">
+        {/* Left Side: Avatar with blue offset */}
+        {avatar && (
+          <div className="w-full max-w-sm lg:w-1/2 shrink-0 relative group">
+            {/* Animated Gradient Background Frame */}
+            <motion.div 
+              animate={{ 
+                rotate: [0, 5, -5, 0], 
+                scale: [1, 1.02, 1] 
+              }} 
+              transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }} 
+              className="absolute inset-0 bg-gradient-to-tr from-blue-600 via-purple-500 to-emerald-400 rounded-[2.5rem] translate-x-4 translate-y-4 sm:translate-x-6 sm:translate-y-6 -z-10 opacity-70 blur-md group-hover:blur-lg transition-all duration-700"
+            ></motion.div>
+            
+            <motion.div 
+              animate={{ 
+                rotate: [0, -5, 5, 0],
+                scale: [1, 1.02, 1]
+              }} 
+              transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }} 
+              className="absolute inset-0 bg-gradient-to-br from-rose-500 via-orange-400 to-amber-300 rounded-[2.5rem] translate-x-3 translate-y-3 sm:translate-x-5 sm:translate-y-5 -z-10 opacity-60"
+            ></motion.div>
+
+            {/* Main Image Frame */}
+            <motion.div 
+              animate={{ y: [0, -10, 0] }} 
+              transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }} 
+              className="aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-black/50 border border-white/20 shadow-2xl relative z-10"
+            >
+              <img src={avatar} alt="Profile" className="w-full h-full object-cover hover:scale-110 transition-transform duration-1000" />
+            </motion.div>
+          </div>
+        )}
+        
+        {/* Right Side: Details */}
+        <div className={`w-full ${avatar ? 'lg:w-1/2' : 'max-w-3xl mx-auto'} flex flex-col justify-center`}>
+          <span className="text-[#06b6d4] font-bold text-lg mb-2 tracking-wide">Profile Card</span>
+          <h2 className="text-4xl sm:text-5xl font-black text-white drop-shadow-md mb-6">{data?.artistName || t('Về Tôi') || 'Về Tôi'}</h2>
+          
+          {aboutMe.intro && (
+            <div className="mb-6 text-white/90 text-xl leading-relaxed whitespace-pre-line font-medium drop-shadow-sm">
+              {aboutMe.intro}
+            </div>
+          )}
+          
+          <div className="space-y-3 mb-6 text-lg">
+            {aboutMe.realName && <InfoField label={t("Tên Thật") || "Tên Thật"} value={aboutMe.realName} />}
+            {aboutMe.dob && <InfoField label={t("Ngày Sinh") || "Ngày Sinh"} value={aboutMe.dob} />}
+            {aboutMe.address && <InfoField label={t("Địa Chỉ") || "Địa Chỉ"} value={aboutMe.address} />}
+            {aboutMe.company && <InfoField label={t("Công Ty") || "Công Ty"} value={aboutMe.company} />}
+            {aboutMe.role && <InfoField label={t("Vai Trò") || "Vai Trò"} value={aboutMe.role} />}
+            {aboutMe.email && <InfoField label={t("Email") || "Email"} value={aboutMe.email} />}
+            {aboutMe.phone && <InfoField label={t("SĐT") || "SĐT"} value={aboutMe.phone} />}
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-4 mb-6">
+            {data?.socialFacebook && (
+               <a href={data.socialFacebook} target="_blank" rel="noreferrer" className="w-10 h-10 bg-[#1877F2] text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform">
+                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+               </a>
+            )}
+            {data?.socialYoutube && (
+               <a href={data.socialYoutube} target="_blank" rel="noreferrer" className="w-10 h-10 bg-[#FF0000] text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform">
+                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+               </a>
+            )}
+            {data?.socialTiktok && (
+               <a href={data.socialTiktok} target="_blank" rel="noreferrer" className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform">
+                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.12-3.44-3.17-3.64-5.46-.22-2.39.81-4.78 2.62-6.19 1.83-1.47 4.31-1.84 6.54-1.16l-.1 4.18c-1.3-.23-2.67-.18-3.79.52-1.07.69-1.67 1.92-1.57 3.18.11 1.4 1.16 2.61 2.53 2.94 1.34.33 2.82.02 3.86-.88.94-.8 1.4-2.01 1.43-3.26.04-4.8.01-9.61.02-14.41z"/></svg>
+               </a>
+            )}
+            {data?.socialInstagram && (
+               <a href={data.socialInstagram} target="_blank" rel="noreferrer" className="w-10 h-10 text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform overflow-hidden" style={{ background: 'radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%)' }}>
+                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+               </a>
+            )}
+            {data?.socialSoundcloud && (
+               <a href={data.socialSoundcloud} target="_blank" rel="noreferrer" className="w-10 h-10 bg-[#ff5500] text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform">
+                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M11.758 15.864V8.895c.27-.058.536-.089.8-.089.704 0 1.258.219 1.663.655.405.436.608 1.054.608 1.854v4.549h-3.071zm9.896-1.503c0 1.139-.395 2.112-1.187 2.918-.792.807-1.748 1.21-2.868 1.21H15.11v-7.616c0-.987-.272-1.792-.816-2.414-.544-.622-1.267-.933-2.171-.933-.427 0-.822.062-1.186.187v-1.12c0-.521-.141-1.042-.423-1.564-.282-.522-.72-1.002-1.314-1.441-1.116-.838-2.39-1.258-3.82-1.258-1.517 0-2.809.537-3.879 1.611-1.07 1.074-1.605 2.366-1.605 3.875 0 .204.015.421.044.653-.787.218-1.439.638-1.956 1.26-.518.622-.777 1.348-.777 2.179 0 .91.319 1.685.956 2.325.637.639 1.411.959 2.322.959h10.963c.691 0 1.285-.245 1.78-.735.495-.49.743-1.082.743-1.776z"/></svg>
+               </a>
+            )}
+          </div>
+          
+          <div>
+             <button onClick={onGoToVault} className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:via-indigo-500 hover:to-purple-500 text-white font-bold py-3 px-10 rounded-full shadow-[0_8px_20px_rgba(79,70,229,0.4)] transition-all hover:scale-105 active:scale-95 text-lg cursor-pointer border border-white/20">
+                {t("Kho Nhạc")}
+             </button>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function InfoField({ label, value }: { label: string, value: string }) {
+  return (
+    <div className="flex font-medium text-white/90 drop-shadow-sm">
+      <span className="font-bold w-28 shrink-0 text-white">{label}</span>
+      <span className="mx-2">:</span>
+      <span className="text-white/80 flex-1">{value}</span>
+    </div>
+  );
+}
+
+function PublicBioView({ biography, t }: any) {
+  if (!biography) return null;
+  
+  const hasEdu = biography.education?.length > 0;
+  const hasExp = biography.experience?.length > 0;
+  
+  if (!hasEdu && !hasExp) return null;
+  
+  return (
+    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto mt-24 mb-20 relative z-10 px-6 sm:px-12 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] py-12 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] text-white ${hasEdu && hasExp ? 'max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24' : 'max-w-4xl space-y-20'}`}>
+      {hasEdu && (
+        <div>
+          <h2 className="text-3xl font-black text-white drop-shadow-md mb-10 text-center tracking-tight">{t('Học Vấn') || 'Học Vấn'}</h2>
+          <div className={`space-y-8 relative before:absolute before:inset-0 before:ml-[1.125rem] before:-translate-x-px before:h-full before:w-0.5 before:bg-white/20 md:before:ml-[1.125rem] md:before:-translate-x-px`}>
+            {biography.education.map((item: any, idx: number) => (
+              <TimelineItem key={idx} item={item} isSplit={true} color="emerald" />
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {hasExp && (
+        <div>
+          <h2 className="text-3xl font-black text-white drop-shadow-md mb-10 text-center tracking-tight">{t('Kinh nghiệm') || 'Kinh nghiệm'}</h2>
+          <div className={`space-y-8 relative before:absolute before:inset-0 before:ml-[1.125rem] before:-translate-x-px before:h-full before:w-0.5 before:bg-white/20 md:before:ml-[1.125rem] md:before:-translate-x-px`}>
+            {biography.experience.map((item: any, idx: number) => (
+              <TimelineItem key={idx} item={item} isSplit={true} color="blue" />
+            ))}
+          </div>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+function TimelineItem({ item, isSplit = false, color = "emerald" }: { item: any, isSplit?: boolean, color?: "emerald" | "blue" }) {
+  const isEmerald = color === "emerald";
+  
+  return (
+    <div className={`relative flex items-center justify-between md:justify-normal ${!isSplit ? 'md:odd:flex-row-reverse' : ''} group is-active`}>
+      {/* Timeline dot */}
+      <div className={`flex items-center justify-center w-10 h-10 rounded-full border-[3px] border-white/30 backdrop-blur-md ${isEmerald ? 'bg-[#059669]' : 'bg-[#2563eb]'} text-white shadow-md shrink-0 relative z-10 ${!isSplit ? 'md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2' : 'ml-0'}`}>
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          {isEmerald ? (
+            <><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></>
+          ) : (
+            <><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>
+          )}
+        </svg>
+      </div>
+      
+      {/* Content box */}
+      <div className={`w-[calc(100%-4rem)] p-4 sm:p-6 transition-colors ${!isSplit ? 'md:w-[calc(50%-2.5rem)] text-left md:group-odd:text-right' : 'ml-4 sm:ml-6'}`}>
+        <div className={`flex flex-col mb-2 ${!isSplit ? 'md:group-odd:items-end' : ''}`}>
+          <span className={`text-sm font-bold mb-1 ${isEmerald ? 'text-[#059669]' : 'text-[#2563eb]'}`}>{item.time}</span>
+          <h3 className="font-bold text-white drop-shadow-sm text-lg sm:text-xl">{item.title}</h3>
+        </div>
+        <p className="text-white/80 text-sm sm:text-base leading-relaxed whitespace-pre-line">{item.description}</p>
+      </div>
     </div>
   );
 }
