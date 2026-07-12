@@ -4192,13 +4192,16 @@ const AdminFloatingAddButton = () => {
       <AnimatePresence>
         {showTooltip && (
           <motion.div
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 10 }}
-            className="relative bg-stone-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap pointer-events-none"
+            initial={{ opacity: 0, x: 15, scale: 0.9, filter: 'blur(4px)' }}
+            animate={{ opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, x: 15, scale: 0.9, filter: 'blur(4px)' }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            className="relative bg-stone-950/95 backdrop-blur-md border border-white/15 text-white text-xs font-black tracking-wider px-4 py-2.5 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.5),0_0_15px_rgba(168,85,247,0.15)] whitespace-nowrap pointer-events-none uppercase"
           >
             {t("Đăng Bài Hát Mới")}
-            <div className="absolute top-1/2 -right-1 -translate-y-1/2 w-2 h-2 bg-stone-900 rotate-45"></div>
+            {/* Liquid-glass subtle glow gradient inside tooltip */}
+            <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl -z-10 animate-pulse" />
+            <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 w-3 h-3 bg-stone-950/95 border-r border-t border-white/15 rotate-45"></div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -4207,19 +4210,49 @@ const AdminFloatingAddButton = () => {
         to={getAdminLink('/new')}
       >
         <motion.div 
-          className="relative flex items-center justify-center w-14 h-14 bg-stone-900 text-white rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:bg-stone-800 transition-colors cursor-pointer group"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          className="relative flex items-center justify-center w-16 h-16 rounded-full cursor-pointer group overflow-hidden border border-white/50 backdrop-blur-xl bg-purple-950/10 shadow-[inset_0_2px_4px_rgba(255,255,255,0.75),0_16px_40px_rgba(219,39,119,0.5),0_0_24px_rgba(168,85,247,0.35)]"
+          whileHover={{ scale: 1.1, rotate: 90 }}
+          whileTap={{ scale: 0.9 }}
+          animate={{
+            scale: [1, 1.05, 1],
+            boxShadow: [
+              "inset 0 2px 4px rgba(255,255,255,0.75), 0 16px 40px rgba(219,39,119,0.5), 0 0 24px rgba(168,85,247,0.35)",
+              "inset 0 2px 4px rgba(255,255,255,0.9), 0 24px 56px rgba(236,72,153,0.75), 0 0 36px rgba(139,92,246,0.6)",
+              "inset 0 2px 4px rgba(255,255,255,0.75), 0 16px 40px rgba(219,39,119,0.5), 0 0 24px rgba(168,85,247,0.35)"
+            ]
+          }}
+          transition={{
+            scale: { repeat: Infinity, duration: 2.5, ease: "easeInOut" },
+            boxShadow: { repeat: Infinity, duration: 2.5, ease: "easeInOut" }
+          }}
           onMouseEnter={() => setShowTooltip(true)}
           onMouseLeave={() => setShowTooltip(false)}
         >
-          {/* Vòng tròn phập phồng (pulse) */}
+          {/* Saturated and vivid liquid gradient rotating background */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600 via-fuchsia-600 via-pink-600 to-rose-500 opacity-100 animate-rotate-border -z-10" style={{ transform: 'scale(1.2)' }} />
+          
+          {/* Breathing inner overlay for deep shifting colors */}
+          <div className="absolute inset-0 bg-gradient-to-bl from-pink-500 via-purple-600 to-indigo-700 opacity-60 mix-blend-overlay animate-[pulse_3s_ease-in-out_infinite] -z-10" />
+
+          {/* Spheroid volumetric radial highlight */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.45)_0%,transparent_60%)] pointer-events-none mix-blend-overlay" />
+
+          {/* Shiny glass glare top overlay */}
+          <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/45 to-transparent rounded-t-full pointer-events-none" />
+          
+          {/* Saturated glowing concentric concentric breathing ring lines */}
           <motion.div 
-            className="absolute inset-0 rounded-full bg-stone-900/30 -z-10"
-            animate={{ scale: [1, 1.4, 1], opacity: [0.7, 0, 0.7] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-0 rounded-full border border-pink-500/40 -z-20"
+            animate={{ scale: [1, 1.6, 1], opacity: [0.7, 0, 0.7] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
           />
-          <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
+          <motion.div 
+            className="absolute inset-0 rounded-full border border-purple-600/30 -z-20"
+            animate={{ scale: [1, 2.2, 1], opacity: [0.5, 0, 0.5] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
+          />
+
+          <Plus className="w-8 h-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)] transition-transform duration-500" />
         </motion.div>
       </Link>
     </div>
@@ -5054,10 +5087,10 @@ function Home() {
       {isVault && (
         <>
       {/* Hero Section */}
-      <section className="relative pt-24 sm:pt-28 md:pt-36 pb-20 px-6 sm:px-12 flex flex-col items-center justify-center text-center min-h-[400px]">
+      <section className="relative pt-36 sm:pt-40 md:pt-48 pb-20 px-6 sm:px-12 flex flex-col items-center justify-center text-center min-h-[400px]">
 
         
-        <div className="relative z-10 w-full max-w-5xl flex flex-col items-center mt-12">
+        <div className="relative z-10 w-full max-w-5xl flex flex-col items-center mt-20 sm:mt-24 md:mt-28">
           <div className="w-full text-center">
             {effectiveCoverUrl ? (
               <div>
@@ -13923,7 +13956,13 @@ function AdminCreateDemo() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-100 text-stone-900 font-sans py-12 px-4">
+    <motion.div 
+      initial={{ clipPath: 'circle(0% at 92% 92%)', opacity: 0 }}
+      animate={{ clipPath: 'circle(150% at 92% 92%)', opacity: 1 }}
+      exit={{ clipPath: 'circle(0% at 92% 92%)', opacity: 0 }}
+      transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
+      className="min-h-screen bg-stone-100 text-stone-900 font-sans py-12 px-4 origin-bottom-right"
+    >
       <div className="max-w-2xl mx-auto">
         <Link to={getAdminLink()} className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-900 font-medium mb-8 transition-colors">
           <ArrowLeft className="w-5 h-5" /> {t("Trở về Dashboard")}
@@ -14566,7 +14605,7 @@ function AdminCreateDemo() {
           </motion.div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
 
