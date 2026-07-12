@@ -11,6 +11,7 @@ interface LandingArtist {
   pageTitle: string;
   artistBio: string;
   homeCoverUrl: string;
+  avatarUrl?: string;
   demoCount: number;
   trackCount?: number;
   playlistCount: number;
@@ -324,7 +325,7 @@ function ArtistLandingCard({ artist, t }: { artist: any; t: any; key?: any }) {
     <motion.div
       whileHover={{ y: -6, scale: 1.01 }}
       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      className="group relative h-[480px] rounded-[2.5rem] overflow-hidden border border-neutral-200/40 shadow-lg hover:shadow-2xl transition-all duration-300 bg-neutral-950 flex flex-col justify-between"
+      className="group relative h-[420px] rounded-[2.5rem] overflow-hidden border border-neutral-200/40 shadow-lg hover:shadow-2xl transition-all duration-300 bg-neutral-950 flex flex-col justify-between"
     >
       {/* Slideshow background with cross-fade & Ken Burns zoom transition */}
       <div className="absolute inset-0 z-0">
@@ -448,7 +449,21 @@ function ArtistLandingCard({ artist, t }: { artist: any; t: any; key?: any }) {
       </div>
 
       {/* Card Header Row */}
-      <div className="p-8 relative z-20 flex justify-between items-center w-full">
+      <div className="p-6 relative z-20 flex justify-between items-start w-full">
+        {/* Frosted domain badge */}
+        <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md border border-white/10 px-3.5 py-1.5 rounded-xl text-[10px] font-extrabold tracking-wider text-neutral-200 shadow-sm uppercase mt-1">
+          <Globe className="w-3.5 h-3.5 text-rose-450 shrink-0 animate-spin" style={{ animationDuration: '8s' }} />
+          <span>
+            {artist.hasExternalWebsite && artist.externalWebsiteUrl ? (
+              artist.externalWebsiteUrl.trim().replace(/^https?:\/\//i, '').replace(/^www\./i, '')
+            ) : artist.customDomain ? (
+              artist.customDomain.trim().replace(/^https?:\/\//i, '').replace(/^www\./i, '')
+            ) : (
+              `${artist.extension}.chorus.vn`
+            )}
+          </span>
+        </div>
+
         {/* Pulsing ring around the circular avatar */}
         <div className="relative">
           <motion.div 
@@ -461,9 +476,9 @@ function ArtistLandingCard({ artist, t }: { artist: any; t: any; key?: any }) {
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             className="w-16 h-16 rounded-full border-2 border-white bg-white/15 backdrop-blur-md shadow-lg overflow-hidden shrink-0 flex items-center justify-center"
           >
-            {artist.homeCoverUrl ? (
+            {artist.avatarUrl || artist.homeCoverUrl ? (
               <img
-                src={artist.homeCoverUrl}
+                src={artist.avatarUrl || artist.homeCoverUrl}
                 alt={artist.artistName}
                 className="w-full h-full object-cover rounded-full"
                 referrerPolicy="no-referrer"
@@ -477,38 +492,28 @@ function ArtistLandingCard({ artist, t }: { artist: any; t: any; key?: any }) {
             <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
           </span>
         </div>
-
-        {/* Frosted domain badge */}
-        <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-md border border-white/10 px-3.5 py-1.5 rounded-xl text-[10px] font-extrabold tracking-wider text-neutral-200 shadow-sm uppercase">
-          <Globe className="w-3.5 h-3.5 text-rose-450 shrink-0 animate-spin" style={{ animationDuration: '8s' }} />
-          <span>
-            {artist.hasExternalWebsite && artist.externalWebsiteUrl ? (
-              artist.externalWebsiteUrl.trim().replace(/^https?:\/\//i, '').replace(/^www\./i, '')
-            ) : artist.customDomain ? (
-              artist.customDomain.trim().replace(/^https?:\/\//i, '').replace(/^www\./i, '')
-            ) : (
-              `${artist.extension}.chorus.vn`
-            )}
-          </span>
-        </div>
       </div>
 
       {/* Overlaid Info - text over cover, optimized vertical footprint, elegant typography */}
-      <div className="p-8 relative z-20 w-full flex flex-col justify-end space-y-6">
+      <div className="p-6 relative z-20 w-full flex flex-col justify-end space-y-4">
         <div className="space-y-1">
-          <p className="text-neutral-200 text-xs line-clamp-1 font-serif italic tracking-wide drop-shadow-sm mb-2">
+          <p className="text-neutral-200 text-xs line-clamp-1 font-serif italic tracking-wide drop-shadow-sm mb-1">
             {artist.artistBio || `Thiên đường nhạc của`}
           </p>
-          <h3 className={`font-black tracking-tight text-white drop-shadow-md min-w-0 pt-0.5 leading-[1.35] ${artist.artistName.length > 15 ? 'text-2xl' : 'text-3xl'}`}>
+          <h3 className={`font-black tracking-tight text-white drop-shadow-md min-w-0 pt-0.5 leading-[1.35] min-h-[2.7em] ${artist.artistName.length > 15 ? 'text-2xl' : 'text-3xl'}`}>
             {artist.artistName.split(' ').map((word, index, array) => {
               if (index === array.length - 1) {
                 return (
                   <span key={index} className="whitespace-nowrap">
                     {word}
                     {artist.verified && (
-                      <span className="inline-flex items-center align-baseline ml-2 bg-white/10 backdrop-blur-md border border-white/20 p-1 rounded-full shadow-sm shrink-0 relative top-[2px]">
+                      <motion.span 
+                        animate={{ rotateY: [0, 180, 360], scale: [1, 1.1, 1] }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", repeatDelay: 2 }}
+                        className="inline-flex items-center align-baseline ml-2 bg-white/10 backdrop-blur-md border border-white/20 p-1 rounded-full shadow-sm shrink-0 relative top-[2px]"
+                      >
                         <BadgeCheck className="w-5 h-5 text-sky-400 fill-sky-450 shrink-0" title="Tài khoản xác thực" />
-                      </span>
+                      </motion.span>
                     )}
                   </span>
                 );
@@ -518,49 +523,54 @@ function ArtistLandingCard({ artist, t }: { artist: any; t: any; key?: any }) {
           </h3>
         </div>
 
-        {/* Count Pill badges */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/15">
-          <div className="flex flex-wrap items-center gap-2 text-[10px] font-extrabold text-neutral-200">
-            <div className="flex items-center gap-1 bg-white/10 backdrop-blur-md border border-white/10 px-3 py-1 rounded-lg">
-              <Music className="w-3.5 h-3.5 text-neutral-300" />
-              <span>{artist.trackCount || 0} {t('totalTracks')}</span>
-            </div>
-            
-            <div className="flex items-center gap-1 bg-white/10 backdrop-blur-md border border-white/10 px-3 py-1 rounded-lg">
-              <Sparkles className="w-3.5 h-3.5 text-rose-300 animate-pulse" />
-              <span>{artist.demoCount || 0} Demo</span>
-            </div>
-
-            {artist.playlistCount > 0 && (
+        {/* Count Pill badges & Action Button */}
+        <div className="flex items-end justify-between gap-3 pt-3 border-t border-white/15">
+          <div className="flex flex-col gap-2.5">
+            <div className="flex flex-wrap items-center gap-2 text-[10px] font-extrabold text-neutral-200">
               <div className="flex items-center gap-1 bg-white/10 backdrop-blur-md border border-white/10 px-3 py-1 rounded-lg">
-                <ListMusic className="w-3.5 h-3.5 text-purple-300" />
-                <span>{artist.playlistCount} {t('totalPlaylists')}</span>
+                <Music className="w-3.5 h-3.5 text-neutral-300" />
+                <span>{artist.trackCount || 0} {t('totalTracks')}</span>
               </div>
+              
+              <div className="flex items-center gap-1 bg-white/10 backdrop-blur-md border border-white/10 px-3 py-1 rounded-lg">
+                <Sparkles className="w-3.5 h-3.5 text-rose-300 animate-pulse" />
+                <span>{artist.demoCount || 0} Demo</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Solid elegant action button (Bottom Right) */}
+          <div className="shrink-0 relative group/btn">
+            {isExternal ? (
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative overflow-hidden inline-flex items-center justify-center bg-white text-black hover:bg-black hover:text-white font-black py-2.5 px-4 rounded-2xl transition-all duration-300 border border-white/20 shadow-lg active:scale-95 z-10"
+              >
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent z-0 pointer-events-none"
+                  animate={{ x: ['-200%', '200%'] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: "linear", delay: 2 }}
+                />
+                <span className="text-[10px] uppercase tracking-wider relative z-10">{t('accessStore')}</span>
+                <ArrowRight className="w-3.5 h-3.5 ml-2 transform group-hover/btn:translate-x-1 transition-transform stroke-[2.5] relative z-10" />
+              </a>
+            ) : (
+              <Link
+                to={href}
+                className="relative overflow-hidden inline-flex items-center justify-center bg-white text-black hover:bg-black hover:text-white font-black py-2.5 px-4 rounded-2xl transition-all duration-300 border border-white/20 shadow-lg active:scale-95 z-10"
+              >
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent z-0 pointer-events-none"
+                  animate={{ x: ['-200%', '200%'] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: "linear", delay: 2 }}
+                />
+                <span className="text-[10px] uppercase tracking-wider relative z-10">{t('accessStore')}</span>
+                <ArrowRight className="w-3.5 h-3.5 ml-2 transform group-hover/btn:translate-x-1 transition-transform stroke-[2.5] relative z-10" />
+              </Link>
             )}
           </div>
-        </div>
-
-        {/* Solid elegant action button */}
-        <div>
-          {isExternal ? (
-            <a
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full flex items-center justify-between bg-white text-black hover:bg-black hover:text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 border border-white/20 shadow-lg active:scale-95"
-            >
-              <span className="text-[10px] uppercase tracking-wider">{t('accessStore')}</span>
-              <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1.5 transition-transform stroke-[2.5]" />
-            </a>
-          ) : (
-            <Link
-              to={href}
-              className="w-full flex items-center justify-between bg-white text-black hover:bg-black hover:text-white font-black py-4 px-6 rounded-2xl transition-all duration-300 border border-white/20 shadow-lg active:scale-95"
-            >
-              <span className="text-[10px] uppercase tracking-wider">{t('accessStore')}</span>
-              <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1.5 transition-transform stroke-[2.5]" />
-            </Link>
-          )}
         </div>
       </div>
     </motion.div>
@@ -1344,7 +1354,7 @@ export default function ChorusVNLanding() {
               transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
             />
             <span className="relative z-10">
-              {lang === 'vi' ? 'TẠO KHO NHẠC CÁ NHÂN NGAY.' : (lang === 'ko' ? '지금 나만의 음악 보관소 만들기' : 'CREATE PERSONAL MUSIC REPOSITORY NOW')}
+              {lang === 'vi' ? 'TẠO KHO NHẠC CÁ NHÂN NGAY.' : (lang === 'ko' ? '지금 나만의 음악 보관소 만들기' : 'CREATE PERSONAL MUSIC VAULT NOW')}
             </span>
             <ArrowRight className="w-4 h-4 stroke-[2.5] relative z-10 group-hover:translate-x-1 transition-transform" />
           </motion.button>

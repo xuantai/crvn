@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChorusLogo } from './ChorusLogo';
-import { Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X, LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home, Upload, MessageSquare, Send, AlertTriangle, Disc3, Bell, ChevronLeft, Mail } from 'lucide-react';
+import { Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X, LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home, Upload, MessageSquare, Send, AlertTriangle, Disc3, Bell, ChevronLeft, Mail, Palette } from 'lucide-react';
 
 
 interface Artist {
@@ -20,6 +20,27 @@ interface Artist {
   artistBio?: string;
 }
 
+const DEFAULT_TEMPLATE_NAMES: Record<string, string> = {
+  "1": "Cheerful (Warm)",
+  "2": "Energetic (Vibrant)",
+  "3": "Sad (Deep)",
+  "4": "Relaxed (Gentle)",
+  "5": "Cute (Red, dancing)",
+  "6": "Happy (Pink, falling petals)",
+  "7": "School (White, falling yellow leaves)",
+  "8": "Vietnam ( Red, waving flag )",
+  "9": "Rainbow",
+  "10": "Hip Hop (Street)",
+  "11": "Mysterious (Black-Gold, Moon-Smoke-Rain)",
+  "12": "Classic (Brown, retro)",
+  "13": "Indie (Warm, vintage)",
+  "14": "Party (Neon, disco)",
+  "15": "Acoustic (Wood, natural)",
+  "16": "Lo-Fi (Purple, chill)",
+  "17": "Pop (Bright, modern)",
+  "18": "Rock (Dark, intense)"
+};
+
 export default function ACPControlPanel() {
   const [token, setToken] = useState<string | null>(localStorage.getItem('masterToken'));
   const [username, setUsername] = useState('');
@@ -27,6 +48,7 @@ export default function ACPControlPanel() {
   const [loginErr, setLoginErr] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState('');
+  const [landingConfig, setLandingConfig] = useState<any>({});
 
   // ACP Navigation / Tab system
   const [actionConfirm, setActionConfirm] = useState<{
@@ -58,7 +80,7 @@ export default function ACPControlPanel() {
       });
     });
   };
-  const [activeTab, setActiveTab] = useState<'artists' | 'landing' | 'tickets'>('artists');
+  const [activeTab, setActiveTab] = useState<'artists' | 'landing' | 'tickets' | 'templates'>('artists');
   const [showComposeModal, setShowComposeModal] = useState(false);
   const [artistCurrentPage, setArtistCurrentPage] = useState(0);
   const [artistPageSize, setArtistPageSize] = useState<number>(20); // 20, 50, 100
@@ -119,6 +141,7 @@ export default function ACPControlPanel() {
   const [adminUsername, setAdminUsername] = useState('acxuantai');
   const [adminPassword, setAdminPassword] = useState('MatKhauDay123');
   const [cloudSyncEnabled, setCloudSyncEnabled] = useState(true);
+  const [templateNames, setTemplateNames] = useState<Record<string, string>>({});
 
   // Metadata & Custom sharing states
   const [landingPageTitle, setLandingPageTitle] = useState('');
@@ -147,6 +170,7 @@ export default function ACPControlPanel() {
 
   const [isSavingLanding, setIsSavingLanding] = useState(false);
   const [isTranslatingLanding, setIsTranslatingLanding] = useState(false);
+  const [isTranslatingTemplates, setIsTranslatingTemplates] = useState(false);
   const [landingSuccessMsg, setLandingSuccessMsg] = useState('');
   const [subscribers, setSubscribers] = useState<string[]>([]);
 
@@ -267,6 +291,7 @@ export default function ACPControlPanel() {
         setAdminUsername(data.adminUsername || 'acxuantai');
         setAdminPassword(data.adminPassword || 'MatKhauDay123');
         setCloudSyncEnabled(data.cloudSyncEnabled !== false);
+        setTemplateNames(data.templateNames || {});
         setLandingPageTitle(data.pageTitle || '');
         setLandingOgImageUrl(data.ogImageUrl || '');
         setLandingFaviconUrl(data.faviconUrl || '');
@@ -847,7 +872,8 @@ export default function ACPControlPanel() {
           menuVaultVi,
           menuAboutVi,
           menuBioVi,
-          cloudSyncEnabled
+          cloudSyncEnabled,
+          templateNames
         })
       });
       if (res.ok) {
@@ -889,6 +915,33 @@ export default function ACPControlPanel() {
       alert('Lỗi kết nối máy chủ!');
     } finally {
       setIsTranslatingLanding(false);
+    }
+  };
+
+  const handleTranslateTemplates = async () => {
+    setIsTranslatingTemplates(true);
+    setLandingSuccessMsg('');
+    try {
+      const res = await fetch('/api/acp/landing-config/translate-templates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        setLandingSuccessMsg('Đã tự động dịch thuật và cập nhật tên giao diện mới cho các ngôn ngữ khác thành công!');
+        setTimeout(() => setLandingSuccessMsg(''), 5000);
+        fetchLandingConfig();
+      } else {
+        const data = await res.json();
+        alert('Lỗi biên dịch: ' + (data.error || 'Vui lòng thử lại sau.'));
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Lỗi kết nối máy chủ!');
+    } finally {
+      setIsTranslatingTemplates(false);
     }
   };
 
@@ -1057,6 +1110,17 @@ export default function ACPControlPanel() {
             {tickets.filter(t => t.type === 'remove' && t.status === 'open').length > 0 && (
               <span className="flex h-2 w-2 rounded-full bg-red-500 animate-pulse" />
             )}
+          </button>
+          <button
+            onClick={() => setActiveTab('templates')}
+            className={`py-4 px-6 text-sm font-black border-b-2 transition-all flex items-center gap-2 cursor-pointer relative ${
+              activeTab === 'templates'
+                ? 'border-purple-500 text-white'
+                : 'border-transparent text-neutral-400 hover:text-white'
+            }`}
+          >
+            <Palette className="w-4 h-4" />
+            <span>Giao Diện</span>
           </button>
         </div>
 
@@ -1828,7 +1892,6 @@ export default function ACPControlPanel() {
                 </div>
                 
                 <div className="border-t border-white/10 pt-6 mt-6">
-                  <h3 className="text-lg font-black mb-4">Tên Giao Diện (Tiếng Việt mặc định)</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400 mb-1.5">
@@ -1949,7 +2012,7 @@ export default function ACPControlPanel() {
               )}
             </div>
           </div>
-        ) : (
+        ) : activeTab === 'tickets' ? (
           /* Tickets (Inbox) Tab */
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -2255,7 +2318,59 @@ export default function ACPControlPanel() {
               </div>
             </div>
           </div>
-        )}
+        ) : activeTab === 'templates' ? (
+          <div className="bg-neutral-900/30 border border-white/5 rounded-3xl p-6 sm:p-8 backdrop-blur-md">
+              <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-black flex items-center gap-2">
+                    <Palette className="w-5 h-5 text-purple-400" />
+                    Quản lý tên Giao Diện
+                  </h2>
+                  <p className="text-sm text-neutral-400 mt-1">Đổi tên hiển thị cho các giao diện và dịch tự động.</p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleTranslateTemplates}
+                    disabled={isTranslatingTemplates || isSavingLanding}
+                    className="bg-neutral-800 hover:bg-neutral-700 disabled:opacity-50 text-purple-300 border border-purple-500/20 font-bold px-4 py-2 rounded-xl text-sm transition-colors flex items-center gap-2 cursor-pointer"
+                  >
+                    <Globe className="w-4 h-4 text-purple-400" />
+                    {isTranslatingTemplates ? 'Đang dịch...' : 'Dịch tên giao diện (AI)'}
+                  </button>
+                  <button
+                    onClick={handleSaveLandingConfig}
+                    disabled={isSavingLanding || isTranslatingTemplates}
+                    className="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors flex items-center gap-2 cursor-pointer"
+                  >
+                    <Save className="w-4 h-4" />
+                    {isSavingLanding ? 'Đang lưu...' : 'Lưu cài đặt'}
+                  </button>
+                </div>
+              </div>
+              {landingSuccessMsg && (
+                <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-2 text-emerald-400">
+                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                  <p className="text-sm font-medium">{landingSuccessMsg}</p>
+                </div>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {Array.from({length: 18}).map((_, i) => {
+                  const id = String(i + 1);
+                  return (
+                    <div key={id} className="bg-neutral-800/50 p-4 rounded-xl border border-white/5">
+                      <label className="block text-xs font-bold text-neutral-400 mb-2">Giao diện #{id} - {templateNames[id] || DEFAULT_TEMPLATE_NAMES[id]}</label>
+                      <input 
+                        value={templateNames[id] || ''} 
+                        onChange={(e) => setTemplateNames({...templateNames, [id]: e.target.value})} 
+                        className="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500" 
+                        placeholder={DEFAULT_TEMPLATE_NAMES[id] || `Tên giao diện ${id}`} 
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+          </div>
+        ) : null}
       </main>
 
       {/* New Artist Info Modal */}

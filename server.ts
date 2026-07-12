@@ -1648,6 +1648,7 @@ function generateCaptchaSvg(text: string) {
         let pageTitle = `Kho nhạc của ${artist.artistName}`;
         let artistBio = `Thiên đường nhạc của ${artist.artistName}`;
         let homeCoverUrl = '';
+        let avatarUrl = '';
         let trackCount = 0;
         let demoCount = 0;
         let playlistCount = 0;
@@ -1687,6 +1688,12 @@ function generateCaptchaSvg(text: string) {
               extHomeCoverUrl = `${usedProto}://${cleanUrl}${extHomeCoverUrl.startsWith('/') ? '' : '/'}${extHomeCoverUrl}`;
             }
             homeCoverUrl = extHomeCoverUrl;
+            
+            let extAvatarUrl = extData.aboutMe?.avatarUrl || '';
+            if (extAvatarUrl && !extAvatarUrl.startsWith('http')) {
+              extAvatarUrl = `${usedProto}://${cleanUrl}${extAvatarUrl.startsWith('/') ? '' : '/'}${extAvatarUrl}`;
+            }
+            avatarUrl = extAvatarUrl;
 
             const allDemos = extData.demos || [];
             const nonDeletedDemos = allDemos.filter((d: any) => !d.deleted);
@@ -1712,6 +1719,7 @@ function generateCaptchaSvg(text: string) {
             playlistCount = (data.playlists || []).filter((p: any) => !p.deleted && !p.isDraft).length;
             pageTitle = data.pageTitle || pageTitle;
             artistBio = data.artistBio || artistBio;
+            avatarUrl = data.aboutMe?.avatarUrl || '';
             
             let extHomeCoverUrl = data.homeCoverUrl || '';
             const extBaseUrl = data.globalBaseUrl || '';
@@ -1719,6 +1727,10 @@ function generateCaptchaSvg(text: string) {
               extHomeCoverUrl = `${extBaseUrl.endsWith('/') && extHomeCoverUrl.startsWith('/') ? extBaseUrl.slice(0, -1) : extBaseUrl}${extHomeCoverUrl.startsWith('/') ? '' : '/'}${extHomeCoverUrl}`;
             }
             homeCoverUrl = extHomeCoverUrl;
+            
+            if (avatarUrl && !avatarUrl.startsWith('http') && extBaseUrl) {
+              avatarUrl = `${extBaseUrl.endsWith('/') && avatarUrl.startsWith('/') ? extBaseUrl.slice(0, -1) : extBaseUrl}${avatarUrl.startsWith('/') ? '' : '/'}${avatarUrl}`;
+            }
 
             let extSlideshowImages = data.slideshowImages || [];
             extSlideshowImages = extSlideshowImages.map((s: string) => {
@@ -1739,6 +1751,7 @@ function generateCaptchaSvg(text: string) {
           playlistCount = (data.playlists || []).filter((p: any) => !p.deleted && !p.isDraft).length;
           pageTitle = data.pageTitle || pageTitle;
           artistBio = data.artistBio || artistBio;
+          avatarUrl = data.aboutMe?.avatarUrl || '';
           
           let localHomeCoverUrl = data.homeCoverUrl || '';
           const localBaseUrl = data.globalBaseUrl || '';
@@ -1746,6 +1759,10 @@ function generateCaptchaSvg(text: string) {
             localHomeCoverUrl = `${localBaseUrl.endsWith('/') && localHomeCoverUrl.startsWith('/') ? localBaseUrl.slice(0, -1) : localBaseUrl}${localHomeCoverUrl.startsWith('/') ? '' : '/'}${localHomeCoverUrl}`;
           }
           homeCoverUrl = localHomeCoverUrl;
+          
+          if (avatarUrl && !avatarUrl.startsWith('http') && localBaseUrl) {
+            avatarUrl = `${localBaseUrl.endsWith('/') && avatarUrl.startsWith('/') ? localBaseUrl.slice(0, -1) : localBaseUrl}${avatarUrl.startsWith('/') ? '' : '/'}${avatarUrl}`;
+          }
 
           let localSlideshowImages = data.slideshowImages || [];
           localSlideshowImages = localSlideshowImages.map((s: string) => {
@@ -1765,6 +1782,7 @@ function generateCaptchaSvg(text: string) {
           pageTitle: pageTitle,
           artistBio: artistBio,
           homeCoverUrl: homeCoverUrl,
+          avatarUrl: avatarUrl,
           demoCount: demoCount,
           trackCount: trackCount,
           playlistCount: playlistCount,
@@ -1827,8 +1845,12 @@ function generateCaptchaSvg(text: string) {
       feature3Title, feature3Desc, feature4Title, feature4Desc,
       featuresTitle, featuresSub,
       cloudSyncEnabled, systemIp,
-      pageTitle, ogImageUrl, faviconUrl, statusBadge
+      pageTitle, ogImageUrl, faviconUrl, statusBadge,
+      adminUsername, adminPassword,
+      menuVaultVi, menuAboutVi, menuBioVi,
+      templateNames
     } = req.body;
+
     await saveLandingConfig({ 
       tagline, heroTitle, heroSubtitle, heroDescription, footerText,
       feature1Title, feature1Desc, feature2Title, feature2Desc,
@@ -1840,8 +1862,15 @@ function generateCaptchaSvg(text: string) {
       pageTitle: pageTitle || '',
       ogImageUrl: ogImageUrl || '',
       faviconUrl: faviconUrl || '',
-      statusBadge: statusBadge || ''
+      statusBadge: statusBadge || '',
+      adminUsername: adminUsername || 'acxuantai',
+      adminPassword: adminPassword || 'MatKhauDay123',
+      menuVaultVi: menuVaultVi || 'Kho Nhạc',
+      menuAboutVi: menuAboutVi || 'Về Tôi',
+      menuBioVi: menuBioVi || 'Tiểu Sử',
+      templateNames: templateNames || {}
     });
+
     res.json({ success: true, landingConfig });
   });
 
@@ -1917,7 +1946,8 @@ function generateCaptchaSvg(text: string) {
 
       const stringsToTranslate = Array.from(new Set([
         ...landingFields,
-        ...commonStrings
+        ...commonStrings,
+        ...Object.values((config as any).templateNames || {})
       ].filter(s => s && typeof s === 'string' && s.trim().length > 0).map(s => s.trim())));
 
       if (stringsToTranslate.length === 0) {
@@ -2005,6 +2035,136 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       res.json({ success: true, landingConfig: config });
     } catch (err: any) {
       console.error('Error in translate-landing-config:', err);
+      res.status(500).json({ error: err.message || 'Internal Server Error' });
+    }
+  });
+
+  app.post('/api/acp/landing-config/translate-templates', express.json(), async (req: any, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+      const config = await loadLandingConfig();
+      const templateNames = (config as any).templateNames || {};
+      
+      const defaultViNames: Record<string, string> = {
+        '1': 'Vui vẻ (Ấm áp)',
+        '2': 'Căng Cực (Sôi động)',
+        '3': 'Buồn (Sâu lắng)',
+        '4': 'Thư giãn (Nhẹ nhàng)',
+        '5': 'Đáng yêu (Đỏ, Nhảy múa)',
+        '6': 'Hạnh Phúc (Hồng, Hoa rơi)',
+        '7': 'Học Đường (Trắng, Lá vàng rơi)',
+        '8': 'Tổ Quốc (Đỏ, Cờ phấp phới)',
+        '9': 'Cầu Vồng',
+        '10': 'Hip Hop (Đường phố)',
+        '11': 'Kỳ bí (Đen vàng, Trăng khói mưa)',
+        '12': 'Cổ điển (Nâu, retro)',
+        '13': 'Hoàng hôn (Cam đỏ trời chiều)',
+        '14': 'Đại Dương (Sóng biển)',
+        '15': 'Retro 8-Bit (Game)',
+        '16': 'Xếp hình Puzzle',
+        '17': 'Cổ vũ (Mây, mặt trời)',
+        '18': 'Pháo hoa (Năm mới)'
+      };
+
+      // Gather all strings to translate
+      const stringsToTranslateSet = new Set<string>();
+      for (let i = 1; i <= 18; i++) {
+        const id = String(i);
+        const name = templateNames[id] || defaultViNames[id];
+        if (name && typeof name === 'string' && name.trim().length > 0) {
+          stringsToTranslateSet.add(name.trim());
+        }
+      }
+
+      const stringsToTranslate = Array.from(stringsToTranslateSet);
+
+      if (stringsToTranslate.length === 0) {
+        return res.json({ success: true, message: 'Không có tên giao diện nào cần dịch.', config });
+      }
+
+      const stringToId = new Map<string, string>();
+      const idToString = new Map<string, string>();
+      let counter = 1;
+      stringsToTranslate.forEach(str => {
+        const id = String(counter++);
+        stringToId.set(str, id);
+        idToString.set(id, str);
+      });
+
+      const geminiInput: Record<string, string> = {};
+      stringToId.forEach((id, str) => {
+        geminiInput[id] = str;
+      });
+
+      const targetLangs = ['en', 'ko', 'ja', 'th', 'zh'];
+      const staticTranslations: any = (config as any).staticTranslations || {};
+
+      const ai = new GoogleGenAI({
+        apiKey: process.env.GEMINI_API_KEY,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          }
+        }
+      });
+
+      for (const lang of targetLangs) {
+        const targetLanguageName = lang === 'en' ? 'English' : 
+                                   lang === 'ko' ? 'Korean' : 
+                                   lang === 'ja' ? 'Japanese' : 
+                                   lang === 'th' ? 'Thai' : 'Chinese';
+                                   
+        try {
+          const prompt = `Translate the following Vietnamese music interface template names into ${targetLanguageName}.
+The input is a JSON map where the keys are ID numbers and the values are the Vietnamese template names (such as "Vui vẻ (Ấm áp)", "Căng Cực (Sôi động)").
+Translate each value to ${targetLanguageName}, keeping the exact same ID key.
+Maintain formatting and any emojis for each translated string.
+Return ONLY a valid JSON object of the translated map. Do not wrap in markdown \`\`\`json blocks.
+
+Input:
+${JSON.stringify(geminiInput, null, 2)}`;
+
+          const response = await generateContentWithRetry(
+            ai,
+            'gemini-3.5-flash',
+            prompt
+          );
+
+          const text = response.text?.trim() || "{}";
+          let cleanText = text;
+          if (cleanText.startsWith("```")) {
+            cleanText = cleanText.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+          }
+          
+          let translatedMap: Record<string, string> = {};
+          try {
+            translatedMap = JSON.parse(cleanText);
+          } catch (jsonErr) {
+            console.error(`Failed to parse template translation for ${targetLanguageName}:`, cleanText);
+          }
+          
+          staticTranslations[lang] = staticTranslations[lang] || {};
+          
+          Object.entries(translatedMap).forEach(([id, translatedVal]) => {
+            const originalStr = idToString.get(id);
+            if (originalStr && typeof translatedVal === 'string') {
+              staticTranslations[lang][originalStr] = translatedVal;
+            }
+          });
+        } catch (langErr: any) {
+          console.error(`Error translating templates to ${targetLanguageName}:`, langErr.message || langErr);
+        }
+      }
+
+      (config as any).staticTranslations = staticTranslations;
+      await saveLandingConfig(config);
+
+      res.json({ success: true, landingConfig: config });
+    } catch (err: any) {
+      console.error('Error in translate-templates:', err);
       res.status(500).json({ error: err.message || 'Internal Server Error' });
     }
   });

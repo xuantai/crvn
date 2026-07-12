@@ -2,7 +2,7 @@ import { createPortal } from "react-dom";
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
 import { ChorusLogo } from './components/ChorusLogo';
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { UserCircle, BookOpen, User, Settings, Play, Music, Lock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, Palette} from 'lucide-react';
+import { UserCircle, BookOpen, User, Settings, Play, Music, Lock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, List, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, Palette} from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { AppData, DemoSong, TemplateConfig, Achievement } from './types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -671,6 +671,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Chưa tải nhạc": "Chưa tải nhạc",
     "Chỉnh Sửa Demo": "Chỉnh Sửa Demo",
     "Chỉnh sửa": "Chỉnh sửa",
+    "Giao diện": "Giao diện",
     "Chỉnh sửa playlist": "Chỉnh sửa playlist",
     "Chọn": "Chọn",
     "Chọn Playlist": "Chọn Playlist",
@@ -1156,6 +1157,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Chưa tải nhạc": "Music Not Uploaded",
     "Chỉnh Sửa Demo": "Edit Demo",
     "Chỉnh sửa": "Edit",
+    "Giao diện": "Interface",
     "Chỉnh sửa playlist": "Edit Playlist",
     "Chọn": "Select",
     "Chọn Playlist": "Select Playlist",
@@ -1639,6 +1641,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Chưa tải nhạc": "음악 업로드 안 됨",
     "Chỉnh Sửa Demo": "데모 수정",
     "Chỉnh sửa": "수정",
+    "Giao diện": "인터페이스",
     "Chỉnh sửa playlist": "재생목록 수정",
     "Chọn": "선택",
     "Chọn Playlist": "재생목록 선택",
@@ -2122,6 +2125,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Chưa tải nhạc": "音楽がアップロードされていません",
     "Chỉnh Sửa Demo": "デモを編集",
     "Chỉnh sửa": "編集",
+    "Giao diện": "インターフェース",
     "Chỉnh sửa playlist": "プレイリストを編集",
     "Chọn": "選択",
     "Chọn Playlist": "プレイリストを選択",
@@ -2605,6 +2609,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Chưa tải nhạc": "ยังไม่ได้อัปโหลดเพลง",
     "Chỉnh Sửa Demo": "แก้ไขเดโม",
     "Chỉnh sửa": "แก้ไข",
+    "Giao diện": "อินเทอร์เฟซ",
     "Chỉnh sửa playlist": "แก้ไขเพลย์ลิสต์",
     "Chọn": "เลือก",
     "Chọn Playlist": "เลือกเพลย์ลิสต์",
@@ -3089,6 +3094,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Chưa tải nhạc": "未上传音乐",
     "Chỉnh Sửa Demo": "编辑演示",
     "Chỉnh sửa": "编辑",
+    "Giao diện": "界面",
     "Chỉnh sửa playlist": "编辑播放列表",
     "Chọn": "选择",
     "Chọn Playlist": "选择播放列表",
@@ -4656,7 +4662,11 @@ function Home() {
       }
       result[key] = customTr || baseDict[key] || originalValue;
     });
-    return (k: string) => result[k] || k;
+    const fn: any = (k: string) => result[k] || k;
+    Object.keys(result).forEach(key => {
+      fn[key] = result[key];
+    });
+    return fn;
   }, [lang, landingConfig, artistData]);
   const [data, setData] = useState<AppData | null>(null);
   const [ytVideos, setYtVideos] = useState<any[]>([]);
@@ -5054,7 +5064,7 @@ function Home() {
                   animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
                   onAnimationComplete={() => setShowArtist(true)}
-                  className="text-xl sm:text-2xl text-stone-200 font-medium max-w-3xl mx-auto drop-shadow-lg mb-6 sm:mb-8 md:mb-10"
+                  className="text-xl sm:text-2xl text-white font-medium max-w-3xl mx-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] mb-6 sm:mb-8 md:mb-10"
                 >
                   <AutoTranslate text={(!data.artistBio || ["Thiên đường demo của", "Thiên đường âm nhạc của"].includes(data.artistBio?.trim() || '')) ? t.dDesc : data.artistBio} />
                 </motion.p>
@@ -5062,16 +5072,14 @@ function Home() {
                       initial={{ scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
                       animate={showArtist ? { scale: 1, opacity: 1, filter: 'blur(0px)' } : { scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
                       transition={{ duration: 1.5, ease: "easeOut" }}
-                      className="text-4xl sm:text-6xl md:text-[6rem] lg:text-[7rem] font-black mb-4 tracking-tighter text-white drop-shadow-2xl leading-[1.15] text-center max-w-full mt-3 sm:mt-4"
+                      className="text-4xl sm:text-6xl md:text-[6rem] lg:text-[7rem] font-black mb-4 tracking-tighter text-white drop-shadow-lg leading-[1.15] text-center max-w-full mt-3 sm:mt-4"
                     >
                       {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
                         if (index === array.length - 1) {
                           return (
-                            <span key={index} className="whitespace-nowrap">
-                              {word}
-                              <div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
+                            <span key={index} className="whitespace-nowrap"><span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-stone-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
                                 <motion.div animate={{ rotateY: [0, 360], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", repeatDelay: 3 }} className="flex items-center justify-center">
-                                  <BadgeCheck className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 text-blue-500 fill-blue-500/20 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)] shrink-0 cursor-pointer" />
+                                  <BadgeCheck className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 text-blue-500 fill-blue-500/20 shrink-0 cursor-pointer" />
                                 </motion.div>
                                 <div className="absolute bottom-full mb-2 hidden group-hover:block bg-neutral-900 border border-white/10 text-white text-[11px] sm:text-xs font-bold py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none z-50 tracking-normal normal-case leading-none">
                                   Nghệ sĩ đã xác thực
@@ -5081,20 +5089,20 @@ function Home() {
                             </span>
                           );
                         }
-                        return word + ' ';
+                        return <span key={index} className="bg-clip-text text-transparent bg-gradient-to-r from-white to-stone-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{word + " "}</span>;
                       })}
                     </motion.h1>
               </div>
             ) : (
               <div 
-                className="w-full max-w-3xl border border-white/10 bg-white/5 backdrop-blur-md p-10 rounded-3xl shadow-2xl mx-auto mb-8"
+                className="w-full max-w-3xl p-10 mx-auto mb-8"
               >
                 <motion.p 
                   initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
                   animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
                   onAnimationComplete={() => setShowArtist(true)}
-                  className="text-lg text-neutral-400 font-medium mb-6 sm:mb-8"
+                  className="text-lg sm:text-xl text-white font-medium mb-6 sm:mb-8 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
                 >
                   <AutoTranslate text={(!data.artistBio || ["Thiên đường demo của", "Thiên đường âm nhạc của"].includes(data.artistBio?.trim() || '')) ? t.dDesc : data.artistBio} />
                 </motion.p>
@@ -5108,10 +5116,10 @@ function Home() {
                         if (index === array.length - 1) {
                           return (
                             <span key={index} className="whitespace-nowrap">
-                              <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-rose-300">{word}
+                              <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-stone-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{word}
                               <div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 -mt-0 sm:-mt-1 md:-mt-1">
                                 <motion.div animate={{ rotateY: [0, 360], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", repeatDelay: 3 }} className="flex items-center justify-center">
-                                  <BadgeCheck className="w-3 h-3 sm:w-5 sm:h-5 md:w-6 md:h-6 text-blue-500 fill-blue-500/20 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)] shrink-0 cursor-pointer" />
+                                  <BadgeCheck className="w-3 h-3 sm:w-5 sm:h-5 md:w-6 md:h-6 text-blue-500 fill-blue-500/20 shrink-0 cursor-pointer" />
                                 </motion.div>
                                 <div className="absolute bottom-full mb-2 hidden group-hover:block bg-neutral-900 border border-white/10 text-white text-[11px] sm:text-xs font-bold py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none z-50 tracking-normal normal-case leading-none">
                                   Nghệ sĩ đã xác thực
@@ -5121,7 +5129,7 @@ function Home() {
                               </span></span>
                           );
                         }
-                        return <span key={index} className="bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-rose-300">{word + ' '}</span>;
+                        return <span key={index} className="bg-clip-text text-transparent bg-gradient-to-r from-white to-stone-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{word + ' '}</span>;
                       })}
                     </motion.h1>
               </div>
@@ -5276,7 +5284,7 @@ function Home() {
           <div className="relative flex items-center gap-1 sm:gap-2 mb-6 bg-neutral-900/50 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-white/5 w-full flex-nowrap overflow-x-auto custom-scrollbar">
              <button 
                onClick={() => setActiveListTab('released')} 
-               className={`relative flex items-center justify-center flex-1 sm:flex-none gap-1 sm:gap-2 px-2 sm:px-4 md:px-6 py-2 md:py-3 rounded-lg sm:rounded-xl text-[11px] sm:text-base md:text-xl font-bold tracking-tight transition-all duration-300 ${activeListTab === 'released' ? 'text-emerald-400' : 'text-white/60 hover:text-white'}`}
+               className={`relative flex items-center justify-center flex-1 sm:flex-none gap-1 sm:gap-2 px-2 sm:px-4 md:px-6 py-2 md:py-3 rounded-lg sm:rounded-xl text-[11px] sm:text-base md:text-xl font-bold tracking-tight transition-all duration-300 ${activeListTab === 'released' ? 'text-white' : 'text-white/60 hover:text-white'}`}
              >
                 {activeListTab === 'released' && (
                   <motion.div
@@ -5286,12 +5294,12 @@ function Home() {
                   />
                 )}
                 <Music className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 relative z-10 ${activeListTab === 'released' ? 'text-emerald-400' : 'text-neutral-400'}`} />
-                <span className="whitespace-nowrap relative z-10">{data?.tab1Name?.trim() || t.lReleasedMobile || t.lReleased || "Ra Rồi"}</span>
+                <span className="whitespace-nowrap relative z-10">{data?.tab1Name?.trim() || t('lReleased') || "Ra Rồi"}</span>
              </button>
              
              <button 
                onClick={() => setActiveListTab('demos')} 
-               className={`relative flex items-center justify-center flex-1 sm:flex-none gap-1 sm:gap-2 px-2 sm:px-4 md:px-6 py-2 md:py-3 rounded-lg sm:rounded-xl text-[11px] sm:text-base md:text-xl font-bold tracking-tight transition-all duration-300 ${activeListTab === 'demos' ? 'text-rose-400' : 'text-white/60 hover:text-white'}`}
+               className={`relative flex items-center justify-center flex-1 sm:flex-none gap-1 sm:gap-2 px-2 sm:px-4 md:px-6 py-2 md:py-3 rounded-lg sm:rounded-xl text-[11px] sm:text-base md:text-xl font-bold tracking-tight transition-all duration-300 ${activeListTab === 'demos' ? 'text-white' : 'text-white/60 hover:text-white'}`}
              >
                 {activeListTab === 'demos' && (
                   <motion.div
@@ -5301,13 +5309,13 @@ function Home() {
                   />
                 )}
                 <Disc3 className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 relative z-10 ${activeListTab === 'demos' ? 'text-rose-400' : 'text-neutral-400'}`} />
-                <span className="whitespace-nowrap relative z-10">{data?.tab2Name?.trim() || t.lDemosMobile || t.lDemos || "Đề Mô"}</span>
+                <span className="whitespace-nowrap relative z-10">{data?.tab2Name?.trim() || t('lDemos') || "Đề Mô"}</span>
              </button>
              
              {data?.playlists && data.playlists.length > 0 && (
                <button 
                  onClick={() => setActiveListTab('albums')} 
-                 className={`relative flex items-center justify-center flex-1 sm:flex-none gap-1 sm:gap-2 px-2 sm:px-4 md:px-6 py-2 md:py-3 rounded-lg sm:rounded-xl text-[11px] sm:text-base md:text-xl font-bold tracking-tight transition-all duration-300 ${activeListTab === 'albums' ? 'text-purple-400' : 'text-white/60 hover:text-white'}`}
+                 className={`relative flex items-center justify-center flex-1 sm:flex-none gap-1 sm:gap-2 px-2 sm:px-4 md:px-6 py-2 md:py-3 rounded-lg sm:rounded-xl text-[11px] sm:text-base md:text-xl font-bold tracking-tight transition-all duration-300 ${activeListTab === 'albums' ? 'text-white' : 'text-white/60 hover:text-white'}`}
                >
                   {activeListTab === 'albums' && (
                     <motion.div
@@ -5317,7 +5325,7 @@ function Home() {
                     />
                   )}
                   <ListMusic className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 relative z-10 ${activeListTab === 'albums' ? 'text-purple-400' : 'text-neutral-400'}`} />
-                  <span className="whitespace-nowrap relative z-10">{data?.tab3Name || "Album/EP"}</span>
+                  <span className="whitespace-nowrap relative z-10">{data?.tab3Name || t('Tab 3 (Album/EP)') || "Album/EP"}</span>
                </button>
              )}
           </div>
@@ -7107,7 +7115,11 @@ function PlaylistPlayer() {
       }
       result[key] = customTr || baseDict[key] || originalValue;
     });
-    return (k: string) => result[k] || k;
+    const fn: any = (k: string) => result[k] || k;
+    Object.keys(result).forEach(key => {
+      fn[key] = result[key];
+    });
+    return fn;
   }, [lang, landingConfig, artistData]);
   const { id } = useParams();
   const navigate = useNavigate();
@@ -7481,7 +7493,11 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
       }
       result[key] = customTr || baseDict[key] || originalValue;
     });
-    return (k: string) => result[k] || k;
+    const fn: any = (k: string) => result[k] || k;
+    Object.keys(result).forEach(key => {
+      fn[key] = result[key];
+    });
+    return fn;
   }, [lang, landingConfig, artistData]);
   const paramsId = useParams().id;
   const id = songIdP || paramsId;
@@ -8958,6 +8974,27 @@ function SocialCarousel({ data, pushDown = false }: { data: AppData, pushDown?: 
 }
 
 // ---- ADMIN DASHBOARD ----
+const DEFAULT_VI_NAMES: Record<string, string> = {
+  '1': 'Vui vẻ (Ấm áp)',
+  '2': 'Căng Cực (Sôi động)',
+  '3': 'Buồn (Sâu lắng)',
+  '4': 'Thư giãn (Nhẹ nhàng)',
+  '5': 'Đáng yêu (Đỏ, Nhảy múa)',
+  '6': 'Hạnh Phúc (Hồng, Hoa rơi)',
+  '7': 'Học Đường (Trắng, Lá vàng rơi)',
+  '8': 'Tổ Quốc (Đỏ, Cờ phấp phới)',
+  '9': 'Cầu Vồng',
+  '10': 'Hip Hop (Đường phố)',
+  '11': 'Kỳ bí (Đen vàng, Trăng khói mưa)',
+  '12': 'Cổ điển (Nâu, retro)',
+  '13': 'Hoàng hôn (Cam đỏ trời chiều)',
+  '14': 'Đại Dương (Sóng biển)',
+  '15': 'Retro 8-Bit (Game)',
+  '16': 'Xếp hình Puzzle',
+  '17': 'Cổ vũ (Mây, mặt trời)',
+  '18': 'Pháo hoa (Năm mới)'
+};
+
 const translateTemplateName = (nameOrId: string) => {
   const map: Record<string, string> = {
     '1': 'Cheerful (Warm)',
@@ -9003,6 +9040,7 @@ const translateTemplateName = (nameOrId: string) => {
 
 function AdminTemplatesSettings({ isPCPreviewMode, setIsPCPreviewMode }: { isPCPreviewMode?: boolean, setIsPCPreviewMode?: (b: boolean) => void }) {
   const { t } = useAdminTranslation();
+  const { landingConfig } = useContext(LanguageContext);
   const [templateConfigs, setTemplateConfigs] = useState<TemplateConfig[]>([
     { id: '1', name: 'Cheerful (Warm)', order: 1 },
     { id: '2', name: 'Energetic (Vibrant)', order: 2 },
@@ -9116,6 +9154,7 @@ function AdminTemplatesSettings({ isPCPreviewMode, setIsPCPreviewMode }: { isPCP
     return <AdminTemplateEdit 
              config={templateConfigs.find(c => c.id === editingId)!} 
              demos={demos}
+             templateName={landingConfig?.templateNames?.[editingId]}
              onBack={() => {
                 setEditingId(null);
                 if (setIsPCPreviewMode) setIsPCPreviewMode(false);
@@ -9132,11 +9171,16 @@ function AdminTemplatesSettings({ isPCPreviewMode, setIsPCPreviewMode }: { isPCP
 
   return (
     <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm">
-      <div className="flex flex-wrap items-center justify-between mb-8 gap-4">
-        <h2 className="text-2xl font-black text-stone-900 tracking-tight">{t("Chỉnh Sửa Giao Diện")}</h2>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-stone-100 pb-4">
+        <div>
+          <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+            <Palette className="w-6 h-6 text-rose-500 animate-[pulse_2.5s_infinite]" />
+            {t("Chỉnh Sửa Giao Diện")}
+          </h2>
+          <p className="text-xs text-stone-500 mt-1">{t("Kéo thả để sắp xếp lại thứ tự hiển thị của giao diện khi chọn. Nhấn vào Giao Diện để chỉnh sửa chi tiết.")}</p>
+        </div>
         {toast && <span className="bg-emerald-100 text-emerald-700 font-bold px-4 py-2 rounded-xl text-sm animate-pulse">{toast}</span>}
       </div>
-      <p className="text-stone-500 mb-6 text-sm">{t("Kéo thả để sắp xếp lại thứ tự hiển thị của giao diện khi chọn. Nhấn vào Giao Diện để chỉnh sửa chi tiết.")}</p>
       
       <div className="space-y-3">
         {templateConfigs.map(config => {
@@ -9157,7 +9201,7 @@ function AdminTemplatesSettings({ isPCPreviewMode, setIsPCPreviewMode }: { isPCP
                  <GripVertical className="w-5 h-5" />
                </div>
                <span className="text-stone-500 font-mono font-bold text-xs sm:text-sm w-6 sm:w-7 tracking-tight flex items-center justify-center bg-stone-200/80 rounded-md h-6 sm:h-7 shrink-0">#{config.id}</span>
-               <span className="text-sm sm:text-base font-bold truncate">{config.name}</span>
+               <span className="text-sm sm:text-base font-bold truncate">{landingConfig?.templateNames?.[config.id] || (DEFAULT_VI_NAMES[config.id] ? t(DEFAULT_VI_NAMES[config.id]) : config.name)}</span>
             </div>
             <div 
               className="p-2 -mr-2 text-stone-400 hover:text-stone-800 transition-colors" 
@@ -9188,7 +9232,7 @@ function AdminTemplatesSettings({ isPCPreviewMode, setIsPCPreviewMode }: { isPCP
   );
 }
 
-function AdminTemplateEdit({ config, demos, onBack, onSave, isPCPreviewMode, setIsPCPreviewMode }: any) {
+function AdminTemplateEdit({ config, demos, onBack, onSave, isPCPreviewMode, setIsPCPreviewMode, templateName }: any) {
     const { t } = useAdminTranslation();
     const [name, setName] = useState(config.name);
     const [bgColor, setBgColor] = useState(config.bgColor || '');
@@ -9233,7 +9277,7 @@ function AdminTemplateEdit({ config, demos, onBack, onSave, isPCPreviewMode, set
     };
 
     return (
-      <div className={`flex flex-col fixed inset-0 md:relative md:inset-auto bg-zinc-900 z-50 ${isPCPreviewMode ? 'w-full h-full' : 'md:h-[calc(100vh-128px)] md:-m-8'}`}>
+      <div className={`flex flex-col fixed inset-0 md:relative md:inset-auto bg-zinc-900 z-[101] md:z-40 ${isPCPreviewMode ? 'w-full h-full' : 'md:h-[calc(100vh-128px)] md:-m-8'}`}>
          <div className="bg-white p-4 border-b flex justify-between items-center z-10 shrink-0">
              <button onClick={onBack} className="flex items-center gap-2 text-stone-600 hover:text-stone-900 font-medium font-sans">
                  <ArrowLeft className="w-5 h-5"/> {t("Trở về")}
@@ -9255,7 +9299,7 @@ function AdminTemplateEdit({ config, demos, onBack, onSave, isPCPreviewMode, set
              <div className={`w-full h-auto md:h-full ${isPCPreviewMode ? 'md:w-[260px] p-4 space-y-4' : 'md:w-[400px] p-6 md:p-8 space-y-6'} bg-white flex-shrink-0 border-b md:border-b-0 md:border-r overflow-visible md:overflow-y-auto custom-scrollbar`}>
                  <div>
                      <h3 className={`${isPCPreviewMode ? 'text-lg' : 'text-2xl'} font-black mb-1`}>{t("Chỉnh sửa")}</h3>
-                     <p className="inline-block bg-stone-100 text-stone-500 font-mono text-xs px-2 py-0.5 rounded-md mt-1">{t("Giao diện")} #{config.id}</p>
+                     <p className="inline-block bg-stone-100 text-stone-500 font-mono text-xs px-2 py-0.5 rounded-md mt-1">{t("Giao diện")} #{config.id} - {templateName || (DEFAULT_VI_NAMES[config.id] ? t(DEFAULT_VI_NAMES[config.id]) : config.name)}</p>
                  </div>
                  
                  <div>
@@ -9268,10 +9312,6 @@ function AdminTemplateEdit({ config, demos, onBack, onSave, isPCPreviewMode, set
                  </div>
 
                  <div className={`space-y-4 pt-4 border-t border-stone-200 ${isPCPreviewMode ? 'text-sm' : ''}`}>
-                    <div>
-                        <label className={`block font-bold text-stone-700 mb-1 ${isPCPreviewMode ? 'text-xs' : 'text-sm'}`}>{t("Tên hiển thị")}</label>
-                        <input value={name} onChange={e => setName(e.target.value)} className={`w-full border border-stone-300 rounded-xl px-4 ${isPCPreviewMode ? 'py-2' : 'py-3'}`} placeholder="VD: Mặc định 1" />
-                    </div>
                     {renderColorPickerField("Màu nền tùy chỉnh", bgColor, setBgColor, "VD: #111827")}
                     {renderColorPickerField("Màu chữ tiêu đề", titleColor, setTitleColor, "VD: #ffffff")}
                     {renderColorPickerField("Màu lời bài hát", lyricsColor, setLyricsColor, "VD: #eeeeee")}
@@ -9522,7 +9562,7 @@ function AdminDatabaseSettings() {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
-                    {c.name} {isActive && <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">{t("Đang dùng")}</span>}
+                    {t(c.name)} {isActive && <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">{t("Đang dùng")}</span>}
                   </h3>
                   <p className="text-sm text-stone-500 font-mono mt-1">{c.config.projectId}</p>
                 </div>
@@ -10509,7 +10549,7 @@ function AdminDashboard() {
           {toast}
         </div>
       )}
-      <header className="bg-white border-b border-stone-200 sticky top-0 z-20 shadow-xs">
+      <header className="bg-white border-b border-stone-200 sticky top-0 z-[100] shadow-xs">
         <div className="max-w-6xl mx-auto px-6 h-16 w-full flex items-center justify-between">
           <div className="flex items-center gap-3 font-bold text-lg select-none">
             <ChorusLogo className="w-9 h-9" />
@@ -10896,7 +10936,7 @@ function AdminDashboard() {
                       } : { duration: 0.2 }}
                       className="relative z-10 flex items-center justify-center"
                     >
-                      <ListMusic className={`w-5 h-5 transition-colors ${isMenusActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                      <List className={`w-5 h-5 transition-colors ${isMenusActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
                     </motion.div>
                     {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Danh Mục")}</span>}
                   </button>
@@ -11792,7 +11832,15 @@ function AdminDashboard() {
           {activeTab === 'profile' && (
             <motion.div key="profile" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
             <div className="max-w-2xl">
-              <h2 className="text-2xl font-bold mb-8">{t("Thông tin hồ sơ")}</h2>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-stone-100 pb-4">
+                <div>
+                  <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+                    <UserCircle className="w-6 h-6 text-teal-600 animate-[pulse_2.5s_infinite]" />
+                    {t("Thông tin hồ sơ")}
+                  </h2>
+                  <p className="text-xs text-stone-500 mt-1">{t("Cập nhật thông tin và cài đặt trang cá nhân của bạn")}</p>
+                </div>
+              </div>
               <form onSubmit={handleProfileSave} className="space-y-6">
 
                 <div>
@@ -12212,7 +12260,7 @@ function AdminDashboard() {
           {activeTab === 'socials' && (
             <motion.div key="socials" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
             <div className="max-w-2xl py-1">
-              <h2 className="text-2xl font-bold mb-8">{t("Mạng xã hội")}</h2>
+              <h2 className="text-2xl font-bold mb-8 flex items-center gap-2"><Globe className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />{t("Mạng xã hội")}</h2>
               <form onSubmit={handleProfileSave} className="space-y-6">
                 <div>
                   <label className="block text-sm font-bold text-stone-700 mb-2">Facebook</label>
@@ -12249,7 +12297,7 @@ function AdminDashboard() {
             <motion.div key="security" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
             <div className="max-w-2xl space-y-12 py-1">
               <div>
-                <h2 className="text-2xl font-bold mb-2 text-stone-900">{t("Đổi Mật Khẩu Quản Trị (Admin)")}</h2>
+                <h2 className="text-2xl font-bold mb-2 text-stone-900 flex items-center gap-2"><Lock className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />{t("Đổi Mật Khẩu Quản Trị (Admin)")}</h2>
                 <p className="text-sm text-stone-500 mb-6">{t("Bạn sẽ dùng mật khẩu này để đăng nhập vào trang quản trị AdminCP này.")}</p>
                 
                 <form onSubmit={handleAdminPasswordChange} className="space-y-4 max-w-md">
@@ -12300,7 +12348,7 @@ function AdminDashboard() {
               <hr className="border-stone-200" />
 
               <div>
-                <h2 className="text-2xl font-bold mb-2 text-stone-900">{t("Thiết Lập Mật Khẩu Thành Viên")}</h2>
+                <h2 className="text-2xl font-bold mb-2 text-stone-900 flex items-center gap-2"><Lock className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />{t("Thiết Lập Mật Khẩu Thành Viên")}</h2>
                 <p className="text-sm text-stone-500 mb-6">
                   {t("Người dùng nhập mật khẩu này tại trang")}{" "}
                   <code className="bg-stone-100 px-1.5 py-0.5 rounded font-mono text-red-600 font-bold">
@@ -12345,7 +12393,7 @@ function AdminDashboard() {
             <div className="space-y-6 py-1">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-stone-900">{t("Đăng lại")} ({otherSongs.length})</h2>
+                  <h2 className="text-2xl font-bold text-stone-900 flex items-center gap-2"><Share2 className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />{t("Đăng lại")} ({otherSongs.length})</h2>
                   <p className="text-sm text-stone-500 mt-1">{t("Danh sách các bài hát của bạn đang được các nghệ sĩ khác đăng tải lên kênh của họ hoặc liên kết từ URL ngoài.")}</p>
                 </div>
                 <button
@@ -12501,10 +12549,13 @@ function AdminDashboard() {
           {activeTab === 'tickets' && (
             <motion.div key="tickets" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
             <div className="space-y-6 py-1">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-stone-100 pb-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-stone-900">{t("Hộp thư Ticket")}</h2>
-                  <p className="text-sm text-stone-500 mt-1">{t("Nơi trao đổi và giải quyết các vấn đề bản quyền, yêu cầu gỡ hoặc chỉnh sửa thông tin bài hát.")}</p>
+                  <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+                    <MessageSquare className="w-6 h-6 text-amber-500 animate-[pulse_2.5s_infinite]" />
+                    {t("Hộp thư Ticket")}
+                  </h2>
+                  <p className="text-xs text-stone-500 mt-1">{t("Nơi trao đổi và giải quyết các vấn đề bản quyền, yêu cầu gỡ hoặc chỉnh sửa thông tin bài hát.")}</p>
                 </div>
                 <button
                   onClick={() => setShowCreateFeedbackModal(true)}
@@ -13208,6 +13259,7 @@ function TemplatePickerModal({
   defaultTemplateId?: string
 }) {
   const { t } = useAdminTranslation();
+  const { landingConfig } = useContext(LanguageContext);
   const [selectedId, setSelectedId] = useState(defaultTemplateId || configs[0]?.id || '1');
   const [isPCPreviewMode, setIsPCPreviewMode] = useState(false);
 
@@ -13235,7 +13287,7 @@ function TemplatePickerModal({
             <div className="space-y-2 pb-6">
                {configs.map(c => (
                   <button type="button" key={c.id} onClick={() => setSelectedId(c.id)} className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-colors ${selectedId === c.id ? 'border-stone-900 bg-stone-50 font-bold' : 'border-transparent bg-white hover:bg-stone-100'}`}>
-                      {c.name}
+                      {t(c.name)}
                   </button>
                ))}
             </div>
@@ -14246,7 +14298,7 @@ function AdminCreateDemo() {
                     <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 min-w-0">
                       <select name="templateCreate" value={template} onChange={(e) => setTemplate(e.target.value)} className="w-full min-w-0 border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white shadow-sm">
                         {templateConfigs.map((tc: any) => (
-                          <option key={tc.id} value={tc.id}>{tc.name}</option>
+                          <option key={tc.id} value={tc.id}>{t(tc.name)}</option>
                         ))}
                       </select>
                       <button 
@@ -15510,7 +15562,7 @@ function AdminEditDemo() {
                     <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 min-w-0">
                       <select name="template" value={template} onChange={(e) => setTemplate(e.target.value)} className="w-full min-w-0 border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white shadow-sm">
                         {templateConfigs.map((tc: any) => (
-                          <option key={tc.id} value={tc.id}>{tc.name}</option>
+                          <option key={tc.id} value={tc.id}>{t(tc.name)}</option>
                         ))}
                       </select>
                       <button 
@@ -16262,7 +16314,7 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl }: 
   return (
     <motion.div key="about" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar">
       <div className="max-w-2xl pb-10">
-        <h2 className="text-2xl font-bold mb-8">{t("Về Tôi")}</h2>
+        <h2 className="text-2xl font-bold mb-8 flex items-center gap-2"><User className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />{t("Về Tôi")}</h2>
         <form onSubmit={handleSave} className="space-y-6">
           <div>
             <label className="block text-sm font-bold text-stone-700 mb-2">{t("Avatar Nghệ Sĩ")}</label>
@@ -16457,7 +16509,7 @@ function AdminBioEdit({ data, t, onSave }: any) {
   return (
     <motion.div key="bio" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar">
       <div className="max-w-4xl pb-10">
-        <h2 className="text-2xl font-bold mb-8">{t("Tiểu Sử")}</h2>
+        <h2 className="text-2xl font-bold mb-8 flex items-center gap-2"><BookOpen className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />{t("Tiểu Sử")}</h2>
         <form onSubmit={handleSave} className="space-y-10">
           
           {/* Education section */}
@@ -16620,7 +16672,7 @@ function AdminMenuEdit({ data, t, onSave }: any) {
 
   return (
     <div className="py-1">
-      <h2 className="text-2xl font-bold mb-8">{t("Quản lý Menu")}</h2>
+      <h2 className="text-2xl font-bold mb-8 flex items-center gap-2"><List className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />{t("Quản lý Menu")}</h2>
       <p className="text-sm text-stone-500 mb-6">{t("Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.")}</p>
       
       <div className="space-y-3 mb-6">
@@ -16738,7 +16790,12 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
 
       {/* Left Side: Avatar floating */}
       {avatar && (
-        <div className="w-full max-w-[16rem] sm:max-w-xs lg:max-w-[22rem] shrink-0 relative group mx-auto lg:mx-0 mt-2 lg:mt-0">
+        <motion.div 
+          initial={{ opacity: 0, filter: 'blur(10px)' }}
+          animate={{ opacity: 1, filter: 'blur(0px)' }}
+          transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
+          className="w-full max-w-[16rem] sm:max-w-xs lg:max-w-[22rem] shrink-0 relative group mx-auto lg:mx-0 mt-2 lg:mt-0"
+        >
           <motion.div 
             animate={{ rotate: [0, 5, -5, 0], scale: [1, 1.02, 1] }}
             transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
@@ -16756,7 +16813,7 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
           >
             <img src={avatar} alt="Profile" className="w-full h-full object-cover hover:scale-110 transition-transform duration-1000" />
           </motion.div>
-        </div>
+        </motion.div>
       )}
       
       {/* Details */}
@@ -16767,7 +16824,7 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
         </h2>
           
           {aboutMe.intro && (
-            <div className="mb-6 text-white/90 text-xl leading-relaxed whitespace-pre-line font-medium drop-shadow-sm">
+            <div className="mb-6 text-white/90 text-[clamp(0.875rem,3.5vw,1.25rem)] leading-relaxed whitespace-pre-line font-medium drop-shadow-sm">
               {aboutMe.intro}
             </div>
           )}
@@ -16851,12 +16908,19 @@ function PublicBioView({ biography, t, isAdmin, artistExtension }: any) {
       )}
       {hasEdu && (
         <div className="w-full">
-          <h2 className="text-2xl sm:text-3xl font-black text-white drop-shadow-md mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-10 sm:pl-12 lg:pl-14">
+          <h2 className="text-2xl sm:text-3xl font-black text-white drop-shadow-md mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-4 sm:pl-6 lg:pl-8">
             {t('Học Vấn') || 'Học Vấn'}
           </h2>
-          <div className={`space-y-8 relative before:absolute before:inset-0 before:ml-[0.5rem] sm:before:ml-[0.25rem] before:-translate-x-px before:h-full before:w-0.5 before:bg-white/20`}>
+          <div className="space-y-8 relative">
+            <motion.div 
+              initial={{ height: 0 }} 
+              whileInView={{ height: '100%' }} 
+              viewport={{ once: true }} 
+              transition={{ duration: 1.5, ease: 'easeOut' }} 
+              className="absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 bg-white/20 origin-top z-0" 
+            />
             {biography.education.map((item: any, idx: number) => (
-              <TimelineItem key={idx} item={item} isSplit={true} color="emerald" />
+              <TimelineItem key={idx} item={item} isSplit={true} color="emerald" index={idx} />
             ))}
           </div>
         </div>
@@ -16864,12 +16928,19 @@ function PublicBioView({ biography, t, isAdmin, artistExtension }: any) {
       
       {hasExp && (
         <div className="w-full">
-          <h2 className="text-2xl sm:text-3xl font-black text-white drop-shadow-md mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-10 sm:pl-12 lg:pl-14">
+          <h2 className="text-2xl sm:text-3xl font-black text-white drop-shadow-md mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-4 sm:pl-6 lg:pl-8">
             {t('Kinh nghiệm') || 'Kinh nghiệm'}
           </h2>
-          <div className={`space-y-8 relative before:absolute before:inset-0 before:ml-[0.5rem] sm:before:ml-[0.25rem] before:-translate-x-px before:h-full before:w-0.5 before:bg-white/20`}>
+          <div className="space-y-8 relative">
+            <motion.div 
+              initial={{ height: 0 }} 
+              whileInView={{ height: '100%' }} 
+              viewport={{ once: true }} 
+              transition={{ duration: 1.5, ease: 'easeOut' }} 
+              className="absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 bg-white/20 origin-top z-0" 
+            />
             {biography.experience.map((item: any, idx: number) => (
-              <TimelineItem key={idx} item={item} isSplit={true} color="blue" />
+              <TimelineItem key={idx} item={item} isSplit={true} color="blue" index={idx} />
             ))}
           </div>
         </div>
@@ -16878,39 +16949,59 @@ function PublicBioView({ biography, t, isAdmin, artistExtension }: any) {
   );
 }
 
-function TimelineItem({ item, isSplit = false, color = "emerald" }: { item: any, isSplit?: boolean, color?: "emerald" | "blue", key?: number | string }) {
+function TimelineItem({ item, isSplit = false, color = "emerald", index = 0 }: { item: any, isSplit?: boolean, color?: "emerald" | "blue", key?: number | string, index?: number }) {
   const isEmerald = color === "emerald";
   const [isImgOpen, setIsImgOpen] = useState(false);
   
   return (
     <>
-      <div className={`relative flex items-start justify-between md:justify-normal ${!isSplit ? 'md:odd:flex-row-reverse' : ''} group is-active`}>
+      <div className={`relative flex items-start justify-between md:justify-normal ${!isSplit ? 'md:odd:flex-row-reverse' : ''} group is-active cursor-default`}>
         {/* Timeline dot */}
-        <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-[3px] border-white/30 backdrop-blur-md ${isEmerald ? 'bg-[#059669]' : 'bg-[#0ea5e9]'} text-white shadow-md shrink-0 relative z-10 ${!isSplit ? 'md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2' : '-ml-2 sm:-ml-4 mt-1 sm:mt-0'}`}>
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <motion.div 
+          initial={{ scale: 0, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: index * 0.2 + 0.3, type: 'spring' }}
+          className={`flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-white/30 backdrop-blur-md ${isEmerald ? 'bg-[#059669]' : 'bg-[#0ea5e9]'} text-white shadow-md shrink-0 relative z-10 ${!isSplit ? 'md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2' : '-ml-3 sm:-ml-[14px] mt-1 sm:mt-0.5'}`}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 sm:w-3.5 sm:h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             {isEmerald ? (
               <><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></>
             ) : (
               <><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>
             )}
           </svg>
-        </div>
+        </motion.div>
         
         {/* Content box */}
-        <div className={`flex-1 pt-0 pb-8 transition-colors ${!isSplit ? 'md:flex-none md:w-[calc(50%-2.5rem)] text-left md:group-odd:text-right' : 'ml-3 sm:ml-4'} relative flex flex-row items-start justify-between gap-0 sm:gap-2 md:gap-0`}>
-          <div className={`w-[85%] md:w-[96%] relative z-0 md:pr-4`}>
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: index * 0.2 + 0.4, duration: 0.5, ease: 'easeOut' }}
+          className={`flex-1 pt-0 pb-8 transition-colors ${!isSplit ? 'md:flex-none md:w-[calc(50%-2.5rem)] text-left md:group-odd:text-right' : 'ml-2 sm:ml-3'} relative flex flex-row items-start justify-between gap-0 sm:gap-2 md:gap-0 p-4 -mt-4 rounded-xl hover:bg-white/5 hover:scale-[1.02] duration-300 group`}
+        >
+          <div className={`w-[85%] md:w-[85%] lg:w-[82%] relative z-0 md:pr-6`}>
             <div className={`flex flex-col mb-1 ${!isSplit ? 'md:group-odd:items-end' : ''}`}>
-              <span className={`text-xs sm:text-sm font-bold mb-1 ${isEmerald ? 'text-[#34d399]' : 'text-[#38bdf8]'}`}>{item.time}</span>
+              <div className="mb-2">
+                <span className={`text-xs sm:text-sm font-bold inline-block px-3 py-1.5 rounded-lg border transition-all duration-300 shadow-sm ${isEmerald ? 'text-[#34d399] border-[#34d399]/10 bg-[#34d399]/5 group-hover:border-[#34d399]/40 group-hover:bg-[#34d399]/15' : 'text-[#38bdf8] border-[#38bdf8]/10 bg-[#38bdf8]/5 group-hover:border-[#38bdf8]/40 group-hover:bg-[#38bdf8]/15'}`}>{item.time}</span>
+              </div>
               <h3 className="font-bold text-white drop-shadow-sm text-base sm:text-lg leading-snug">{item.title}</h3>
             </div>
             <p className="text-white/80 text-sm leading-relaxed whitespace-pre-line">{item.description}</p>
           </div>
           {item.imageUrl && (
             <motion.div 
-              animate={{ rotate: !isSplit ? [-2, 3, -1, 2, -2] : [2, -3, 1, -2, 2] }}
-              transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
+              initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+              whileInView={{ opacity: 1, scale: 1, rotate: !isSplit ? [-2, 3, -1, 2, -2] : [2, -3, 1, -2, 2] }}
+              viewport={{ once: true }}
+              transition={{ 
+                opacity: { delay: index * 0.3 + 0.6, duration: 0.6 },
+                scale: { delay: index * 0.3 + 0.6, duration: 0.6 },
+                rotate: { repeat: Infinity, duration: 8, ease: "easeInOut" }
+              }}
               style={{ transformOrigin: 'top center' }}
-              className={`shrink-0 absolute top-0 -right-2 sm:-right-4 md:-right-10 bg-[#fdfbf7] p-1.5 pb-5 sm:p-2.5 sm:pb-8 shadow-[2px_4px_15px_rgba(0,0,0,0.15)] border border-stone-200/80 rounded-sm cursor-pointer hover:z-20 hover:scale-105 transition-transform z-10 ${!isSplit ? 'md:group-odd:left-auto md:group-odd:right-auto md:group-odd:-left-10 lg:group-odd:-left-12' : ''}`}
+              className={`shrink-0 absolute top-0 -right-2 sm:-right-4 md:-right-10 bg-[#fdfbf7] p-1 pb-3 sm:p-1.5 sm:pb-5 shadow-[2px_4px_15px_rgba(0,0,0,0.15)] border border-stone-200/80 rounded-sm cursor-pointer hover:z-20 hover:scale-105 transition-transform z-10 ${!isSplit ? 'md:group-odd:left-auto md:group-odd:right-auto md:group-odd:-left-10 lg:group-odd:-left-12' : ''}`}
               onClick={() => setIsImgOpen(true)}
             >
               {/* Tape effect */}
@@ -16922,7 +17013,7 @@ function TimelineItem({ item, isSplit = false, color = "emerald" }: { item: any,
               />
             </motion.div>
           )}
-        </div>
+        </motion.div>
       </div>
 
       {typeof document !== 'undefined' && createPortal(
@@ -16940,7 +17031,7 @@ function TimelineItem({ item, isSplit = false, color = "emerald" }: { item: any,
               animate={{ scale: 1, opacity: 1, y: 0, rotate: 0 }} 
               exit={{ scale: 0.95, opacity: 0, y: 20, rotate: 2 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative inline-flex flex-col bg-[#fdfbf7] p-3 sm:p-5 pb-14 sm:pb-20 shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-stone-200/80 rounded-sm cursor-auto max-w-[95vw] sm:max-w-[90vw]" 
+              className="relative inline-flex flex-col bg-[#fdfbf7] p-2.5 sm:p-4 pb-4 sm:pb-6 shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-stone-200/80 rounded-sm cursor-auto max-w-[95vw] sm:max-w-[90vw]" 
               onClick={e => e.stopPropagation()}
             >
               {/* Tape effect */}
@@ -16969,7 +17060,7 @@ function TimelineItem({ item, isSplit = false, color = "emerald" }: { item: any,
                   
                   {/* Vintage Date Overlay */}
                   <div 
-                    className="absolute bottom-4 left-5 z-10 text-[#ffb800] text-xl sm:text-2xl font-bold tracking-widest opacity-90 pointer-events-none" 
+                    className="absolute bottom-2 sm:bottom-4 left-3 sm:left-5 z-10 text-[#ffb800] text-[14px] sm:text-2xl font-bold tracking-widest opacity-90 pointer-events-none" 
                     style={{ 
                       fontFamily: '"Courier New", Courier, monospace', 
                       textShadow: '2px 2px 4px rgba(0,0,0,0.8), -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' 
@@ -16981,8 +17072,8 @@ function TimelineItem({ item, isSplit = false, color = "emerald" }: { item: any,
               </div>
               
               {/* Handwriting Caption */}
-              <div className="absolute bottom-4 sm:bottom-5 left-0 w-full px-6 text-center">
-                <h3 className="text-xl sm:text-2xl text-stone-800 font-medium italic -rotate-1">{item.title}</h3>
+              <div className="w-full px-2 mt-2 sm:mt-4 text-center flex items-center justify-center">
+                <h3 className="text-sm sm:text-xl text-stone-800 font-medium italic -rotate-1 line-clamp-2 leading-tight px-1 max-w-full">{item.title}</h3>
               </div>
             </motion.div>
           </motion.div>
