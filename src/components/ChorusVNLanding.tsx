@@ -1010,9 +1010,10 @@ export default function ChorusVNLanding() {
               </div>
 
               {/* Letter-spaced Title with smooth glow */}
-              <h2 className="text-xl font-black tracking-[0.25em] text-neutral-900 mb-3 font-sans">
-                CHORUS.VN
-              </h2>
+              <div className="flex items-baseline mb-3 gap-0.5 select-none justify-center">
+                <span className="font-sans font-black text-neutral-950 tracking-tight text-2xl leading-none">Chorus</span>
+                <span className="font-serif italic font-light text-neutral-400 text-2xl leading-none">.vn</span>
+              </div>
               
               <div className="flex items-center gap-2 text-neutral-500 text-xs font-serif italic">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-450 animate-ping" />
@@ -1223,11 +1224,12 @@ export default function ChorusVNLanding() {
       {/* Header / Navbar */}
       <header className="sticky top-0 z-40 backdrop-blur-md bg-[#faf9f6]/80 border-b border-neutral-200/40 px-6 sm:px-10 py-5">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3 group">
+          <Link to="/" className="flex items-center gap-2 group select-none">
             <ChorusLogo className="w-10 h-10 select-none group-hover:scale-105 transition-all duration-300" />
-            <span className="text-sm font-black tracking-[0.2em] font-sans text-black group-hover:text-neutral-700 transition-colors">
-              CHORUS.VN
-            </span>
+            <div className="flex items-baseline mt-0.5">
+              <span className="font-sans font-black text-neutral-950 tracking-tight text-xl leading-none group-hover:text-neutral-700 transition-colors">Chorus</span>
+              <span className="font-serif italic font-light text-neutral-400 text-xl leading-none group-hover:text-neutral-500 transition-colors">.vn</span>
+            </div>
           </Link>
 
           {/* Action Header: Status Badge & Language Segmented Toggler */}

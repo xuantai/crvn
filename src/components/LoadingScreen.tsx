@@ -1,5 +1,5 @@
 import React from 'react';
-import { Music } from 'lucide-react';
+import { ChorusLogo } from './ChorusLogo';
 import { motion } from 'motion/react';
 
 interface LoadingScreenProps {
@@ -32,8 +32,10 @@ export function LoadingScreen({ text = 'Đang tải trang...' }: LoadingScreenPr
             <div className="absolute inset-6 rounded-full border border-dashed border-neutral-150" />
             <div className="absolute inset-8 rounded-full border border-neutral-200" />
             
-            {/* Music icon */}
-            <Music className="w-8 h-8 text-neutral-800" />
+            {/* Custom turntable logo icon instead of music note */}
+            <div className="absolute inset-0 flex items-center justify-center p-4">
+              <ChorusLogo className="w-full h-full" />
+            </div>
           </motion.div>
           
           {/* Ambient glowing pulses */}

@@ -402,7 +402,7 @@ const translations: Record<string, Record<string, string>> = {
     ") thay v\u00ec s\u1eed d\u1ee5ng \u0111\u1ecba ch\u1ec9 m\u1eb7c \u0111\u1ecbnh c\u1ee7a h\u1ec7 th\u1ed1ng.": ") thay v\u00ec s\u1eed d\u1ee5ng \u0111\u1ecba ch\u1ec9 m\u1eb7c \u0111\u1ecbnh c\u1ee7a h\u1ec7 th\u1ed1ng.",
     "T\u1ef1 \u0111\u1ed9ng chuy\u1ec3n tab \u1edf trang ch\u1ee7 (Music / Demo / Playlist)": "T\u1ef1 \u0111\u1ed9ng chuy\u1ec3n tab \u1edf trang ch\u1ee7 (Music / Demo / Playlist)",
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn",
-    "Tab 3 (Album/EP)": "Tab 3 (Album/EP)", dDesc: "Thiên đường âm nhạc của", btnSpot: "Nghe trên Spotify", lDemos: "Đề Mô", lReleased: "Ra Rồi", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Cần Mật Khẩu", pNow: "Nghe Ngay", nDemo: "Chưa có demo nào.", rMv: "MV Đã Phát Hành", nMv: "Chưa có MV nào.", lMore: "Hiển thị thêm", mList: "người nghe hàng tháng", load: "Đang tải trang...", back: "Trở về", adm: "AdminCP", edit: "Chỉnh sửa", pPrompt: "Cần mật khẩu", pPrompt2: "Nhập mật khẩu để nghe demo này", unlock: "Mở khóa", wPass: "Sai mật khẩu", lyric: "Lời bài hát", nLyric: "Chưa cập nhật lời bài hát", sAuth: "Sáng tác:", lang: "Tiếng Việt", lDemosMobile: "Đề mô", lReleasedMobile: "Ra Rồi", searchSong: "Tìm kiếm bài hát...", noSongs: "Chưa có bài hát nào", noSongsDesc: "Danh sách đang được cập nhật, bạn vui lòng quay lại sau nhé!", closeSearch: "Đóng tìm kiếm", searchTitle: "Tìm kiếm bài hát", noDemoFound: "Không tìm thấy demo", mVault: "Kho Nhạc", "Hiển thị": "Hiển thị", "bài / trang": "bài / trang", "Tổng": "Tổng", "Trước": "Trước", "Sau": "Sau", pPartner: "Đối tác:", pAutoNext: "Sẽ tự động chuyển bài nếu không nhập mật khẩu", vRef: "Video Tham Khảo", nArtist: "Nghệ sĩ" },
+    "Tab 3 (Album/EP)": "Album/EP", dDesc: "Thiên đường âm nhạc của", btnSpot: "Nghe trên Spotify", lDemos: "Đề Mô", lReleased: "Ra Rồi", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Cần Mật Khẩu", pNow: "Nghe Ngay", nDemo: "Chưa có demo nào.", rMv: "MV Đã Phát Hành", nMv: "Chưa có MV nào.", lMore: "Hiển thị thêm", mList: "người nghe hàng tháng", load: "Đang tải trang...", back: "Trở về", adm: "AdminCP", edit: "Chỉnh sửa", pPrompt: "Cần mật khẩu", pPrompt2: "Nhập mật khẩu để nghe demo này", unlock: "Mở khóa", wPass: "Sai mật khẩu", lyric: "Lời bài hát", nLyric: "Chưa cập nhật lời bài hát", sAuth: "Sáng tác:", lang: "Tiếng Việt", lDemosMobile: "Đề mô", lReleasedMobile: "Ra Rồi", searchSong: "Tìm kiếm bài hát...", noSongs: "Chưa có bài hát nào", noSongsDesc: "Danh sách đang được cập nhật, bạn vui lòng quay lại sau nhé!", closeSearch: "Đóng tìm kiếm", searchTitle: "Tìm kiếm bài hát", noDemoFound: "Không tìm thấy demo", mVault: "Kho Nhạc", "Hiển thị": "Hiển thị", "bài / trang": "bài / trang", "Tổng": "Tổng", "Trước": "Trước", "Sau": "Sau", pPartner: "Đối tác:", pAutoNext: "Sẽ tự động chuyển bài nếu không nhập mật khẩu", vRef: "Video Tham Khảo", nArtist: "Nghệ sĩ" },
   en: {
     "Kho Nhạc": "Music Vault",
 
@@ -437,77 +437,185 @@ const translations: Record<string, Record<string, string>> = {
     ") thay v\u00ec s\u1eed d\u1ee5ng \u0111\u1ecba ch\u1ec9 m\u1eb7c \u0111\u1ecbnh c\u1ee7a h\u1ec7 th\u1ed1ng.": ") instead of using the system's default address.",
     "T\u1ef1 \u0111\u1ed9ng chuy\u1ec3n tab \u1edf trang ch\u1ee7 (Music / Demo / Playlist)": "Auto-switch tabs on homepage (Music / Demo / Playlist)",
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "Hide from artist list on Chorus.vn homepage",
-    "Tab 3 (Album/EP)": "Tab 3 (Album/EP)", dDesc: "Music paradise of", btnSpot: "Listen on Spotify", lDemos: "Demo", lReleased: "Release", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Password", pNow: "Play Now", nDemo: "No demos yet.", rMv: "Released Music Videos", nMv: "No MVs yet.", lMore: "Load more", mList: "monthly listeners", load: "Loading...", back: "Back", adm: "Admin", edit: "Edit", pPrompt: "Password required", pPrompt2: "Enter password to listen to this demo", unlock: "Unlock", wPass: "Wrong password", lyric: "Lyrics", nLyric: "No lyrics yet", sAuth: "Composer:", lang: "English", searchSong: "Search songs...", noSongs: "No songs available", noSongsDesc: "The list is being updated, please come back later!", closeSearch: "Close search", searchTitle: "Search songs", noDemoFound: "Demo not found", mVault: "Music Vault", "Hiển thị": "Show", "bài / trang": "songs / page", "Tổng": "Total", "Trước": "Prev", "Sau": "Next", pPartner: "Partner:", pAutoNext: "Will auto skip if password not entered", vRef: "Reference Video", nArtist: "Artist" },
+    "Tab 3 (Album/EP)": "Album/EP", dDesc: "Music paradise of", btnSpot: "Listen on Spotify", lDemos: "Demo", lReleased: "Release", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Password", pNow: "Play Now", nDemo: "No demos yet.", rMv: "Released Music Videos", nMv: "No MVs yet.", lMore: "Load more", mList: "monthly listeners", load: "Loading...", back: "Back", adm: "Admin", edit: "Edit", pPrompt: "Password required", pPrompt2: "Enter password to listen to this demo", unlock: "Unlock", wPass: "Wrong password", lyric: "Lyrics", nLyric: "No lyrics yet", sAuth: "Composer:", lang: "English", searchSong: "Search songs...", noSongs: "No songs available", noSongsDesc: "The list is being updated, please come back later!", closeSearch: "Close search", searchTitle: "Search songs", noDemoFound: "Demo not found", mVault: "Music Vault", "Hiển thị": "Show", "bài / trang": "songs / page", "Tổng": "Total", "Trước": "Prev", "Sau": "Next", pPartner: "Partner:", pAutoNext: "Will auto skip if password not entered", vRef: "Reference Video", nArtist: "Artist" },
   ko: {
     "Kho Nhạc": "음악 보관함",
-
     "Quản lý Menu": "메뉴 관리",
-
-    "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "드래그 앤 드롭으로 순서를 변경하세요. 첫 번째 탭이 기본 페이지가 됩니다. 최대 3개의 사용자 지정 탭을 지원합니다.", "Lưu Menu": "메뉴 저장",
-
-    "Về Tôi": "내 소개", "Tiểu Sử": "약력", "Giới thiệu nghệ sĩ": "아티스트 소개", "Tên Thật": "본명", "Ngày Sinh": "생년월일", "Địa Chỉ": "주소", "Công Ty": "회사", "Danh Xưng": "직함/역할", "Ca nhạc sĩ, producer...": "가수, 프로듀서...", "Email": "이메일", "SĐT": "전화번호", "Học Vấn": "학력", "Kinh nghiệm": "경력", "Thời gian": "기간", "Sự Kiện": "이벤트", "Thêm giai đoạn": "기간 추가",
- 
-    "Quay lại": "Quay lại",
-    "Danh sách Playlist": "Danh sách Playlist",
-    "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc",
-    "10 mục": "10 mục",
-    "20 mục": "20 mục",
-    "50 mục": "50 mục",
-    "100 mục": "100 mục",
-    "10 bài": "10 bài",
-    "20 bài": "20 bài",
-    "50 bài": "50 bài",
-    "100 bài": "100 bài",
-    "Tìm kiếm...": "Tìm kiếm...",
-    "Chào Mừng Thành Viên!": "Chào Mừng Thành Viên!",
-    "Khu Vực Thành Viên": "Khu Vực Thành Viên",
-    "Vui lòng nhập thông tin đăng nhập quản trị": "Vui lòng nhập thông tin đăng nhập quản trị",
-    "Bạn đã đăng nhập thành công dưới quyền": "Bạn đã đăng nhập thành công dưới quyền",
-    "Thành viên VIP": "Thành viên VIP",
-    "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của": "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của",
-    "mà không cần nhập passcode riêng biệt.": "mà không cần nhập passcode riêng biệt.",
-    "C\u1ea5u h\u00ecnh t\u00ean mi\u1ec1n ri\u00eang (Custom Domain)": "\uc0ac\uc6a9\uc790 \uc9c0\uc815 \ub3c4\uba54\uc778 \uad6c\uc131",
-    "S\u1eed d\u1ee5ng t\u00ean mi\u1ec1n ri\u00eang c\u1ee7a b\u1ea1n (v\u00ed d\u1ee5:": "\uc0ac\uc6a9\uc790 \uc9c0\uc815 \ub3c4\uba54\uc778 \uc0ac\uc6a9 (\uc608:",
-    "ho\u1eb7c": "\ub610\ub294",
-    ") thay v\u00ec s\u1eed d\u1ee5ng \u0111\u1ecba ch\u1ec9 m\u1eb7c \u0111\u1ecbnh c\u1ee7a h\u1ec7 th\u1ed1ng.": ") \uc2dc\uc2a4\ud15c \uae30\ubcf8 \uc8fc\uc18c \ub300\uc2e0 \uc0ac\uc6a9\ud558\uc2ed\uc2dc\uc624.",
-    "T\u1ef1 \u0111\u1ed9ng chuy\u1ec3n tab \u1edf trang ch\u1ee7 (Music / Demo / Playlist)": "\ud648\ud398\uc774\uc9c0 \ud0ed \uc790\ub3d9 \uc804\ud658 (Music / Demo / Playlist)",
-    "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "Chorus.vn \ud648\ud398\uc774\uc9c0\uc758 \uc544\ud2f0\uc2a4\ud2b8 \ubaa9\ub85d\uc5d0\uc11c \uc228\uae30\uae30",
-    "Tab 3 (Album/EP)": "\ud0ed 3 (Album/EP)", dDesc: "데모 파라다이스", btnSpot: "Spotify에서 듣기", lDemos: "최신 데모", lReleased: "발매된 음악", lDemoMark: "데모", lReleasedMark: "발매됨", pReq: "비밀번호", pNow: "지금 듣기", nDemo: "데모 없음", rMv: "발매된 뮤직비디오", nMv: "MV 없음", lMore: "더 보기", mList: "월간 청취자", load: "로딩 중...", back: "뒤로", adm: "관리자", edit: "편집", pPrompt: "비밀번호 필요", pPrompt2: "이 데모를 들으려면 비밀번호를 입력하세요", unlock: "잠금 해제", wPass: "잘못된 비밀번호", lyric: "가사", nLyric: "가사 없음", sAuth: "작곡가:", lang: "한국어", searchSong: "노래 검색...", noSongs: "등록된 곡이 없습니다", noSongsDesc: "목록이 업데이트 중입니다. 나중에 다시 방문해 주세요!", closeSearch: "검색 닫기", searchTitle: "노래 검색", noDemoFound: "데모를 찾을 수 없습니다", mVault: "음악 보관함", "Hiển thị": "표시", "bài / trang": "곡 / 페이지", "Tổng": "총", "Trước": "이전", "Sau": "다음", pPartner: "파트너:", pAutoNext: "비밀번호 미입력 시 자동 다음 곡", vRef: "참조 비디오", nArtist: "아티스트" },
+    "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "드래그 앤 드롭으로 순서를 정렬하세요. 첫 번째 탭이 기본 페이지가 됩니다. 최대 3개의 사용자 지정 탭을 지원합니다.",
+    "Lưu Menu": "메뉴 저장",
+    "Về Tôi": "내 소개",
+    "Tiểu Sử": "약력",
+    "Giới thiệu nghệ sĩ": "아티스트 소개",
+    "Tên Thật": "본명",
+    "Ngày Sinh": "생년월일",
+    "Địa Chỉ": "주소",
+    "Công Ty": "회사",
+    "Danh Xưng": "직함/역할",
+    "Ca nhạc sĩ, producer...": "가수, 프로듀서...",
+    "Email": "이메일",
+    "SĐT": "전화번호",
+    "Học Vấn": "학력",
+    "Kinh nghiệm": "경력",
+    "Thời gian": "기간",
+    "Sự Kiện": "이벤트",
+    "Thêm giai đoạn": "기간 추가",
+    "Quay lại": "뒤로 가기",
+    "Danh sách Playlist": "재생 목록 목록",
+    "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "재생 목록 생성, 정렬 및 편집",
+    "10 mục": "10개 항목",
+    "20 mục": "20개 항목",
+    "50 mục": "50개 항목",
+    "100 mục": "100개 항목",
+    "10 bài": "10곡",
+    "20 bài": "20곡",
+    "50 bài": "50곡",
+    "100 bài": "100곡",
+    "Tìm kiếm...": "검색...",
+    "Chào Mừng Thành Viên!": "회원 가입을 환영합니다!",
+    "Khu Vực Thành Viên": "회원 전용 구역",
+    "Vui lòng nhập thông tin đăng nhập quản trị": "관리자 로그인 정보를 입력하십시오",
+    "Bạn đã đăng nhập thành công dưới quyền": "성공적으로 로그인했습니다: ",
+    "Thành viên VIP": "VIP 회원",
+    "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của": "이제 다음 시스템의 모든 앨범, 재생 목록 및 보안 데모 반주를 즐길 수 있습니다: ",
+    "mà không cần nhập passcode riêng biệt.": "별도의 패스코드를 입력할 필요가 없습니다.",
+    "Cấu hình tên miền riêng (Custom Domain)": "개인 도메인 설정",
+    "Sử dụng tên miền riêng của bạn (ví dụ:": "개인 도메인 사용 (예: ",
+    "hoặc": "또는",
+    ") thay vì sử dụng địa chỉ mặc định của hệ thống.": "시스템 기본 주소 대신",
+    "Tự động chuyển tab ở trang chủ (Music / Demo / Playlist)": "홈페이지에서 탭 자동 전환 (Music / Demo / Playlist)",
+    "Ẩn khỏi danh sách nghệ sĩ trên trang chủ Chorus.vn": "Chorus.vn 홈페이지 아티스트 목록에서 숨기기",
+    "Tab 3 (Album/EP)": "Album/EP",
+    dDesc: "데모 뮤직 파라다이스",
+    btnSpot: "Spotify에서 듣기",
+    lDemos: "최근 데모",
+    lReleased: "발매된 곡",
+    lDemoMark: "데모",
+    lReleasedMark: "발매됨",
+    pReq: "비밀번호 필요",
+    pNow: "지금 듣기",
+    nDemo: "데모가 없습니다",
+    rMv: "발매된 뮤직비디오",
+    nMv: "MV가 없습니다",
+    lMore: "더 보기",
+    mList: "월별 리스너",
+    load: "로딩 중...",
+    back: "뒤로",
+    adm: "관리자",
+    edit: "편집",
+    pPrompt: "비밀번호 필요",
+    pPrompt2: "이 데모를 들으려면 비밀번호를 입력하세요",
+    unlock: "잠금 해제",
+    wPass: "비밀번호가 틀렸습니다",
+    lyric: "가사",
+    nLyric: "가사가 아직 없습니다",
+    sAuth: "작곡:",
+    lang: "한국어",
+    searchSong: "곡 검색...",
+    noSongs: "곡이 없습니다",
+    noSongsDesc: "목록을 업데이트 중입니다. 나중에 다시 시도해 주세요!",
+    closeSearch: "검색 닫기",
+    searchTitle: "곡 검색",
+    noDemoFound: "데모를 찾을 수 없습니다",
+    mVault: "음악 보관함",
+    "Hiển thị": "표시",
+    "bài / trang": "곡 / 페이지",
+    "Tổng": "합계",
+    "Trước": "이전",
+    "Sau": "다음",
+    pPartner: "파트너:",
+    pAutoNext: "비밀번호를 입력하지 않으면 자동으로 건너뜁니다",
+    vRef: "참고 비디오",
+    nArtist: "아티스트"
+  },
   ja: {
     "Kho Nhạc": "ミュージックボルト",
-
     "Quản lý Menu": "メニュー管理",
-
-    "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "ドラッグ＆ドロップで並べ替えます。最初のタブがデフォルトページになります。最大3つのカスタムタブをサポートします。", "Lưu Menu": "メニューを保存",
-
-    "Về Tôi": "自己紹介", "Tiểu Sử": "経歴", "Giới thiệu nghệ sĩ": "アーティスト紹介", "Tên Thật": "本名", "Ngày Sinh": "生年月日", "Địa Chỉ": "住所", "Công Ty": "会社", "Danh Xưng": "役職", "Ca nhạc sĩ, producer...": "歌手、プロデューサー...", "Email": "Eメール", "SĐT": "電話番号", "Học Vấn": "学歴", "Kinh nghiệm": "経験", "Thời gian": "期間", "Sự Kiện": "イベント", "Thêm giai đoạn": "期間を追加",
- 
-    "Quay lại": "Quay lại",
-    "Danh sách Playlist": "Danh sách Playlist",
-    "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc",
-    "10 mục": "10 mục",
-    "20 mục": "20 mục",
-    "50 mục": "50 mục",
-    "100 mục": "100 mục",
-    "10 bài": "10 bài",
-    "20 bài": "20 bài",
-    "50 bài": "50 bài",
-    "100 bài": "100 bài",
-    "Tìm kiếm...": "Tìm kiếm...",
-    "Chào Mừng Thành Viên!": "Chào Mừng Thành Viên!",
-    "Khu Vực Thành Viên": "Khu Vực Thành Viên",
-    "Vui lòng nhập thông tin đăng nhập quản trị": "Vui lòng nhập thông tin đăng nhập quản trị",
-    "Bạn đã đăng nhập thành công dưới quyền": "Bạn đã đăng nhập thành công dưới quyền",
-    "Thành viên VIP": "Thành viên VIP",
-    "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của": "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của",
-    "mà không cần nhập passcode riêng biệt.": "mà không cần nhập passcode riêng biệt.",
-    "C\u1ea5u h\u00ecnh t\u00ean mi\u1ec1n ri\u00eang (Custom Domain)": "\u30ab\u30b9\u30bf\u30e0\u30c9\u30e1\u30a4\u30f3\u69cb\u6210",
-    "S\u1eed d\u1ee5ng t\u00ean mi\u1ec1n ri\u00eang c\u1ee7a b\u1ea1n (v\u00ed d\u1ee5:": "\u30ab\u30b9\u30bf\u30e0\u30c9\u30e1\u30a4\u30f3\u3092\u4f7f\u7528\u3059\u308b\uff08\u4f8b\uff1a",
-    "ho\u1eb7c": "\u307e\u305f\u306f",
-    ") thay v\u00ec s\u1eed d\u1ee5ng \u0111\u1ecba ch\u1ec9 m\u1eb7c \u0111\u1ecbnh c\u1ee7a h\u1ec7 th\u1ed1ng.": ") \u30b7\u30b9\u30c6\u30e0\u306e\u30c7\u30d5\u30a9\u30eb\u30c8\u30a2\u30c9\u30ec\u30b9\u306e\u4ee3\u308f\u308a\u306b\u4f7f\u7528\u3057\u307e\u3059\u3002",
-    "T\u1ef1 \u0111\u1ed9ng chuy\u1ec3n tab \u1edf trang ch\u1ee7 (Music / Demo / Playlist)": "\u30db\u30fc\u30e0\u30da\u30fc\u30b8\u3067\u30bf\u30d6\u3092\u81ea\u52d5\u5207\u308a\u66ff\u3048 (Music / Demo / Playlist)",
-    "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "Chorus.vn \u30db\u30fc\u30e0\u30da\u30fc\u30b8\u306e\u30a2\u30fc\u30c6\u30a3\u30b9\u30c8\u30ea\u30b9\u30c8\u304b\u3089\u975e\u8868\u793a",
-    "Tab 3 (Album/EP)": "\u30bf\u30d6 3 (Album/EP)", dDesc: "デモパラダイス", btnSpot: "Spotifyで聴く", lDemos: "最新のデモ", lReleased: "リリースされた音楽", lDemoMark: "デモ", lReleasedMark: "リリース済", pReq: "パスワード", pNow: "今すぐ聴く", nDemo: "デモなし", rMv: "リリースされたMV", nMv: "MVなし", lMore: "もっと見る", mList: "月間リスナー", load: "読み込み中...", back: "戻る", adm: "管理者", edit: "編集", pPrompt: "パスワードが必要", pPrompt2: "このデモを聴くにはパスワードを入力してください", unlock: "ロック解除", wPass: "パスワードが間違っています", lyric: "歌詞", nLyric: "歌詞なし", sAuth: "作曲:", lang: "日本語", searchSong: "曲名で検索...", noSongs: "登録された曲はありません", noSongsDesc: "リストは更新中です。後で戻ってきてください！", closeSearch: "検索を閉じる", searchTitle: "曲名で検索", noDemoFound: "デモが見つかりません", mVault: "ミュージックボルト", "Hiển thị": "表示", "bài / trang": "曲 / ページ", "Tổng": "合計", "Trước": "前へ", "Sau": "次へ", pPartner: "パートナー:", pAutoNext: "パスワード未入力で自動スキップ", vRef: "参考動画", nArtist: "アーティスト" },
+    "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "ドラッグ＆ドロップで優先順位を並べ替えます。最初のタブがデフォルトの表示ページになります。最大3つのカスタムタブ作成をサポートします。",
+    "Lưu Menu": "メニュー保存",
+    "Về Tôi": "プロフィール",
+    "Tiểu Sử": "経歴",
+    "Giới thiệu nghệ sĩ": "アーティスト紹介",
+    "Tên Thật": "本名",
+    "Ngày Sinh": "生年月日",
+    "Địa Chỉ": "住所",
+    "Công Ty": "会社",
+    "Danh Xưng": "肩書",
+    "Ca nhạc sĩ, producer...": "シンガーソングライター、プロデューサー...",
+    "Email": "メールアドレス",
+    "SĐT": "電話番号",
+    "Học Vấn": "学歴",
+    "Kinh nghiệm": "経験",
+    "Thời gian": "期間",
+    "Sự Kiện": "出来事",
+    "Thêm giai đoạn": "期間を追加",
+    "Quay lại": "戻る",
+    "Danh sách Playlist": "プレイリスト一覧",
+    "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "プレイリストの作成、優先順位付け、編集",
+    "10 mục": "10項目",
+    "20 mục": "20項目",
+    "50 mục": "50項目",
+    "100 mục": "100項目",
+    "10 bài": "10曲",
+    "20 bài": "20曲",
+    "50 bài": "50曲",
+    "100 bài": "100曲",
+    "Tìm kiếm...": "検索...",
+    "Chào Mừng Thành Viên!": "メンバーを歓迎します！",
+    "Khu Vực Thành Viên": "メンバーエリア",
+    "Vui lòng nhập thông tin đăng nhập quản trị": "管理者ログイン情報を入力してください",
+    "Bạn đã đăng nhập thành công dưới quyền": "として正常にログインしました",
+    "Thành viên VIP": "VIPメンバー",
+    "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của": "システムのすべてのアルバム、プレイリスト、安全なデモ伴奏曲をお楽しみいただけます：",
+    "mà không cần nhập passcode riêng biệt.": "個別のパスコードを入力する必要はありません。",
+    "Cấu hình tên miền riêng (Custom Domain)": "カスタムドメイン設定",
+    "Sử dụng tên miền riêng của bạn (ví dụ:": "カスタムドメインを使用する（例：",
+    "hoặc": "または",
+    ") thay vì sử dụng địa chỉ mặc định của hệ thống.": "）システムのデフォルトアドレスを使用する代わりに。",
+    "Tự động chuyển tab ở trang chủ (Music / Demo / Playlist)": "ホームページでタブを自動的に切り替える (Music / Demo / Playlist)",
+    "Ẩn khỏi danh sách nghệ sĩ trên trang chủ Chorus.vn": "Chorus.vnホームページのアーティストリストから非表示にする",
+    "Tab 3 (Album/EP)": "Album/EP",
+    dDesc: "デモミュージックパラダイス",
+    btnSpot: "Spotifyで聴く",
+    lDemos: "最新デモ",
+    lReleased: "リリース曲",
+    lDemoMark: "デモ",
+    lReleasedMark: "リリース済",
+    pReq: "パスワード",
+    pNow: "今すぐ聴く",
+    nDemo: "デモはありません",
+    rMv: "リリース済ミュージックビデオ",
+    nMv: "MVはありません",
+    lMore: "もっと読み込む",
+    mList: "月間リスナー",
+    load: "読み込み中...",
+    back: "戻る",
+    adm: "管理者",
+    edit: "編集",
+    pPrompt: "パスワードが必要",
+    pPrompt2: "このデモを聴くにはパスワードを入力してください",
+    unlock: "ロック解除",
+    wPass: "パスワードが間違っています",
+    lyric: "歌詞",
+    nLyric: "歌詞はまだありません",
+    sAuth: "作曲:",
+    lang: "日本語",
+    searchSong: "曲を検索...",
+    noSongs: "曲はありません",
+    noSongsDesc: "リストは更新中です。後でもう一度アクセスしてください！",
+    closeSearch: "検索を閉じる",
+    searchTitle: "曲を検索",
+    noDemoFound: "デモが見つかりません",
+    mVault: "ミュージックボルト",
+    "Hiển thị": "表示",
+    "bài / trang": "曲 / ページ",
+    "Tổng": "合計",
+    "Trước": "前へ",
+    "Sau": "次へ",
+    pPartner: "パートナー:",
+    pAutoNext: "パスワードが入力されていない場合は自動的にスキップされます",
+    vRef: "参考ビデオ",
+    nArtist: "アーティスト"
+  },
   th: {
     "Kho Nhạc": "คลังเพลง",
 
@@ -515,34 +623,34 @@ const translations: Record<string, Record<string, string>> = {
 
     "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "ลากและวางเพื่อจัดเรียงลำดับ แท็บแรกจะเป็นหน้าเริ่มต้น รองรับแท็บกำหนดเองสูงสุด 3 แท็บ", "Lưu Menu": "บันทึกเมนู",
 
-    "Về Tôi": "เกี่ยวกับฉัน", "Tiểu Sử": "ประวัติส่วนตัว", "Giới thiệu nghệ sĩ": "แนะนำศิลปิน", "Tên Thật": "ชื่อจริง", "Ngày Sinh": "วันเกิด", "Địa Chỉ": "ที่อยู่", "Công Ty": "บริษัท", "Danh Xưng": "ตำแหน่ง", "Ca nhạc sĩ, producer...": "นักร้อง, โปรดิวเซอร์...", "Email": "อีเมล", "SĐT": "เบอร์โทรศัพท์", "Học Vấn": "การศึกษา", "Kinh nghiệm": "ประสบการณ์", "Thời gian": "เวลา/ช่วงเวลา", "Sự Kiện": "เหตุการณ์", "Thêm giai đoạn": "เพิ่มช่วงเวลา",
+    "Về Tôi": "เกี่ยวกับฉัน", "Tiểu Sử": "ประวัติส่วนตัว", "Giới thiệu nghệ sĩ": "แนะนำศิลปิน", "Tên Thật": "ชื่อจริง", "Ngày Sinh": "วันเกิด", "Địa Chỉ": "ที่อยู่", "Công Ty": "บริษัท", "Danh Xưng": "ตำแหน่ง", "Ca nhạc sĩ, producer...": "นักดนตรี นักแต่งเพลง โปรดิวเซอร์...", "Email": "อีเมล", "SĐT": "เบอร์โทรศัพท์", "Học Vấn": "การศึกษา", "Kinh nghiệm": "ประสบการณ์", "Thời gian": "ระยะเวลา", "Sự Kiện": "เหตุการณ์", "Thêm giai đoạn": "เพิ่มช่วงเวลา",
  
-    "Quay lại": "Quay lại",
-    "Danh sách Playlist": "Danh sách Playlist",
-    "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc",
-    "10 mục": "10 mục",
-    "20 mục": "20 mục",
-    "50 mục": "50 mục",
-    "100 mục": "100 mục",
-    "10 bài": "10 bài",
-    "20 bài": "20 bài",
-    "50 bài": "50 bài",
-    "100 bài": "100 bài",
-    "Tìm kiếm...": "Tìm kiếm...",
-    "Chào Mừng Thành Viên!": "Chào Mừng Thành Viên!",
-    "Khu Vực Thành Viên": "Khu Vực Thành Viên",
-    "Vui lòng nhập thông tin đăng nhập quản trị": "Vui lòng nhập thông tin đăng nhập quản trị",
-    "Bạn đã đăng nhập thành công dưới quyền": "Bạn đã đăng nhập thành công dưới quyền",
-    "Thành viên VIP": "Thành viên VIP",
-    "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của": "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của",
-    "mà không cần nhập passcode riêng biệt.": "mà không cần nhập passcode riêng biệt.",
-    "C\u1ea5u h\u00ecnh t\u00ean mi\u1ec1n ri\u00eang (Custom Domain)": "\u0e01\u0e32\u0e23\u0e01\u0e33\u0e2b\u0e19\u0e14\u0e04\u0e48\u0e32\u0e42\u0e14\u0e40\u0e21\u0e19\u0e17\u0e35\u0e48\u0e01\u0e33\u0e2b\u0e19\u0e14\u0e40\u0e2d\u0e07",
-    "S\u1eed d\u1ee5ng t\u00ean mi\u1ec1n ri\u00eang c\u1ee7a b\u1ea1n (v\u00ed d\u1ee5:": "\u0e43\u0e0a\u0e49\u0e42\u0e14\u0e40\u0e21\u0e19\u0e17\u0e35\u0e48\u0e01\u0e33\u0e2b\u0e19\u0e14\u0e40\u0e2d\u0e07\u0e02\u0e2d\u0e07\u0e04\u0e38\u0e13 (\u0e40\u0e0a\u0e48\u0e19",
-    "ho\u1eb7c": "\u0e2b\u0e23\u0e37\u0e2d",
-    ") thay v\u00ec s\u1eed d\u1ee5ng \u0111\u1ecba ch\u1ec9 m\u1eb7c \u0111\u1ecbnh c\u1ee7a h\u1ec7 th\u1ed1ng.": ") \u0e41\u0e17\u0e19\u0e17\u0e35\u0e48\u0e08\u0e30\u0e43\u0e0a\u0e49\u0e17\u0e35\u0e48\u0e2d\u0e22\u0e39\u0e48\u0e40\u0e23\u0e34\u0e48\u0e21\u0e15\u0e49\u0e19\u0e02\u0e2d\u0e07\u0e23\u0e30\u0e1a\u0e1a",
-    "T\u1ef1 \u0111\u1ed9ng chuy\u1ec3n tab \u1edf trang ch\u1ee7 (Music / Demo / Playlist)": "\u0e2a\u0e25\u0e31\u0e1a\u0e41\u0e17\u0e47\u0e1a\u0e2d\u0e31\u0e15\u0e42\u0e19\u0e21\u0e31\u0e15\u0e34\u0e43\u0e19\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e23\u0e01 (Music / Demo / Playlist)",
-    "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "\u0e0b\u0e48\u0e2d\u0e19\u0e08\u0e32\u0e01\u0e23\u0e32\u0e22\u0e0a\u0e37\u0e48\u0e2d\u0e28\u0e34\u0e25\u0e1b\u0e34\u0e19\u0e43\u0e19\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e23\u0e01\u0e02\u0e2d\u0e07 Chorus.vn",
-    "Tab 3 (Album/EP)": "\u0e41\u0e17\u0e47\u0e1a 3 (Album/EP)", dDesc: "สวรรค์แห่งเพลงเดโม่ของ", btnSpot: "ฟังบน Spotify", lDemos: "ตัวอย่างล่าสุด", lReleased: "เพลงที่ปล่อยแล้ว", lDemoMark: "เดโม่", lReleasedMark: "ปล่อยแล้ว", pReq: "รหัสผ่าน", pNow: "ฟังเลย", nDemo: "ไม่มีตัวอย่าง", rMv: "มิวสิควิดีโอ", nMv: "ไม่มี MV", lMore: "โหลดเพิ่ม", mList: "ผู้ฟังรายเดือน", load: "กำลังโหลด...", back: "กลับ", adm: "แอดมิน", edit: "แก้ไข", pPrompt: "ต้องใช้รหัสผ่าน", pPrompt2: "ใส่รหัสผ่านเพื่อฟังเดโม่นี้", unlock: "ปลดล็อค", wPass: "รหัสผ่านผิด", lyric: "เนื้อเพลง", nLyric: "ไม่มีเนื้อเพลง", sAuth: "แต่งโดย:", lang: "ไทย", searchSong: "ค้นหาเพลง...", noSongs: "ยังไม่มีเพลง", noSongsDesc: "กำลังอัปเดตรายการ โปรดกลับมาใหม่อีกครั้งในภายหลัง!", closeSearch: "ปิดการค้นหา", searchTitle: "ค้นหาเพลง", noDemoFound: "ไม่พบเดโม", mVault: "คลังเพลง", "Hiển thị": "แสดง", "bài / trang": "เพลง / หน้า", "Tổng": "ทั้งหมด", "Trước": "ก่อนหน้า", "Sau": "ถัดไป", pPartner: "พาร์ทเนอร์:", pAutoNext: "จะข้ามอัตโนมัติหากไม่ใส่รหัส", vRef: "วิดีโออ้างอิง", nArtist: "ศิลปิน" },
+    "Quay lại": "ย้อนกลับ",
+    "Danh sách Playlist": "รายการเพลงเล่น",
+    "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "สร้าง จัดลำดับความสำคัญ และแก้ไขเพลย์ลิสต์",
+    "10 mục": "10 รายการ",
+    "20 mục": "20 รายการ",
+    "50 mục": "50 รายการ",
+    "100 mục": "100 รายการ",
+    "10 bài": "10 เพลง",
+    "20 bài": "20 เพลง",
+    "50 bài": "50 เพลง",
+    "100 bài": "100 เพลง",
+    "Tìm kiếm...": "ค้นหา...",
+    "Chào Mừng Thành Viên!": "ยินดีต้อนรับสมาชิก!",
+    "Khu Vực Thành Viên": "พื้นที่สมาชิก",
+    "Vui lòng nhập thông tin đăng nhập quản trị": "โปรดป้อนข้อมูลเข้าสู่ระบบของผู้ดูแลระบบ",
+    "Bạn đã đăng nhập thành công dưới quyền": "คุณเข้าสู่ระบบสำเร็จในฐานะ",
+    "Thành viên VIP": "สมาชิก VIP",
+    "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của": "ตอนนี้คุณสามารถเพลิดเพลินกับอัลบั้ม เพลย์ลิสต์ และเดโมแบ็คกิ้งแทร็กที่ปลอดภัยทั้งหมดในระบบของ",
+    "mà không cần nhập passcode riêng biệt.": "โดยไม่ต้องป้อนรหัสผ่านแยกต่างหาก",
+    "Cấu hình tên miền riêng (Custom Domain)": "การตั้งค่าโดเมนที่กำหนดเอง",
+    "Sử dụng tên miền riêng của bạn (ví dụ:": "ใช้โดเมนที่กำหนดเองของคุณ (เช่น:",
+    "hoặc": "หรือ",
+    ") thay vì sử dụng địa chỉ mặc định của hệ thống.": ") แทนที่จะใช้ที่อยู่เริ่มต้นของระบบ",
+    "Tự động chuyển tab ở trang chủ (Music / Demo / Playlist)": "สลับแท็บอัตโนมัติบนหน้าแรก (Music / Demo / Playlist)",
+    "Ẩn khỏi danh sách nghệ sĩ trên trang chủ Chorus.vn": "ซ่อนจากรายการศิลปินบนหน้าแรก Chorus.vn",
+    "Tab 3 (Album/EP)": "Album/EP", dDesc: "สวรรค์แห่งเพลงเดโม่ของ", btnSpot: "ฟังบน Spotify", lDemos: "ตัวอย่างล่าสุด", lReleased: "เพลงที่ปล่อยแล้ว", lDemoMark: "เดโม่", lReleasedMark: "ปล่อยแล้ว", pReq: "รหัสผ่าน", pNow: "ฟังเลย", nDemo: "ไม่มีตัวอย่าง", rMv: "มิวสิควิดีโอ", nMv: "ไม่มี MV", lMore: "โหลดเพิ่ม", mList: "ผู้ฟังรายเดือน", load: "กำลังโหลด...", back: "กลับ", adm: "แอดมิน", edit: "แก้ไข", pPrompt: "ต้องใช้รหัสผ่าน", pPrompt2: "ใส่รหัสผ่านเพื่อฟังเดโม่นี้", unlock: "ปลดล็อค", wPass: "รหัสผ่านผิด", lyric: "เนื้อเพลง", nLyric: "ไม่มีเนื้อเพลง", sAuth: "แต่งโดย:", lang: "ไทย", searchSong: "ค้นหาเพลง...", noSongs: "ยังไม่มีเพลง", noSongsDesc: "กำลังอัปเดตรายการ โปรดกลับมาใหม่อีกครั้งในภายหลัง!", closeSearch: "ปิดการค้นหา", searchTitle: "ค้นหาเพลง", noDemoFound: "ไม่พบเดโม", mVault: "คลังเพลง", "Hiển thị": "แสดง", "bài / trang": "เพลง / หน้า", "Tổng": "ทั้งหมด", "Trước": "ก่อนหน้า", "Sau": "ถัดไป", pPartner: "พาร์ทเนอร์:", pAutoNext: "จะข้ามอัตโนมัติหากไม่ใส่รหัส", vRef: "วิดีโออ้างอิง", nArtist: "ศิลปิน" },
   zh: {
     "Kho Nhạc": "音乐库",
 
@@ -552,32 +660,32 @@ const translations: Record<string, Record<string, string>> = {
 
     "Về Tôi": "关于我", "Tiểu Sử": "个人简介", "Giới thiệu nghệ sĩ": "艺术家介绍", "Tên Thật": "真实姓名", "Ngày Sinh": "出生日期", "Địa Chỉ": "地址", "Công Ty": "公司", "Danh Xưng": "职位/角色", "Ca nhạc sĩ, producer...": "歌手、制作人...", "Email": "电子邮件", "SĐT": "电话号码", "Học Vấn": "教育", "Kinh nghiệm": "经验", "Thời gian": "时间/期间", "Sự Kiện": "事件", "Thêm giai đoạn": "添加时期",
  
-    "Quay lại": "Quay lại",
-    "Danh sách Playlist": "Danh sách Playlist",
-    "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc",
-    "10 mục": "10 mục",
-    "20 mục": "20 mục",
-    "50 mục": "50 mục",
-    "100 mục": "100 mục",
-    "10 bài": "10 bài",
-    "20 bài": "20 bài",
-    "50 bài": "50 bài",
-    "100 bài": "100 bài",
-    "Tìm kiếm...": "Tìm kiếm...",
-    "Chào Mừng Thành Viên!": "Chào Mừng Thành Viên!",
-    "Khu Vực Thành Viên": "Khu Vực Thành Viên",
-    "Vui lòng nhập thông tin đăng nhập quản trị": "Vui lòng nhập thông tin đăng nhập quản trị",
-    "Bạn đã đăng nhập thành công dưới quyền": "Bạn đã đăng nhập thành công dưới quyền",
-    "Thành viên VIP": "Thành viên VIP",
-    "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của": "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của",
-    "mà không cần nhập passcode riêng biệt.": "mà không cần nhập passcode riêng biệt.",
-    "C\u1ea5u h\u00ecnh t\u00ean mi\u1ec1n ri\u00eang (Custom Domain)": "\u81ea\u5b9a\u4e49\u57df\u540d\u914d\u7f6e",
-    "S\u1eed d\u1ee5ng t\u00ean mi\u1ec1n ri\u00eang c\u1ee7a b\u1ea1n (v\u00ed d\u1ee5:": "\u4f7f\u7528\u81ea\u5b9a\u4e49\u57df\u540d\uff08\u4f8b\u5982\uff1a",
-    "ho\u1eb7c": "\u6216",
-    ") thay v\u00ec s\u1eed d\u1ee5ng \u0111\u1ecba ch\u1ec9 m\u1eb7c \u0111\u1ecbnh c\u1ee7a h\u1ec7 th\u1ed1ng.": ") \u4ee3\u66ff\u7cfb\u7edf\u9ed8\u8ba4\u5730\u5740\u3002",
-    "T\u1ef1 \u0111\u1ed9ng chuy\u1ec3n tab \u1edf trang ch\u1ee7 (Music / Demo / Playlist)": "\u9996\u9875\u81ea\u52a8\u5207\u6362\u9009\u9879\u5361 (Music / Demo / Playlist)",
-    "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "\u4ece Chorus.vn \u9996\u9875\u7684\u827a\u672f\u5bb6\u5217\u8868\u4e2d\u9690\u85cf",
-    "Tab 3 (Album/EP)": "\u9009\u9879\u5361 3 (Album/EP)", dDesc: "的演示天堂", btnSpot: "在Spotify收听", lDemos: "最新演示", lReleased: "已发行的音乐", lDemoMark: "演示", lReleasedMark: "已发行", pReq: "需要密码", pNow: "立即收听", nDemo: "暂无演示", rMv: "已发行的视频", nMv: "暂无视频", lMore: "加载更多", mList: "月度听众", load: "载入中...", back: "返回", adm: "管理", edit: "编辑", pPrompt: "需要密码", pPrompt2: "输入密码收听此演示", unlock: "解锁", wPass: "密码错误", lyric: "歌词", nLyric: "暂无歌词", sAuth: "作曲:", lang: "中文", searchSong: "搜索歌曲...", noSongs: "暂无歌曲", noSongsDesc: "列表正在更新中，请稍后再来！", closeSearch: "关闭搜索", searchTitle: "搜索歌曲", noDemoFound: "找不到演示", mVault: "音乐库", "Hiển thị": "显示", "bài / trang": "首歌曲 / 页", "Tổng": "总计", "Trước": "上一步", "Sau": "下一步", pPartner: "合作伙伴:", pAutoNext: "未输入密码将自动跳过", vRef: "参考视频", nArtist: "艺术家" }
+    "Quay lại": "返回",
+    "Danh sách Playlist": "播放列表",
+    "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "创建、确定优先级和编辑播放列表",
+    "10 mục": "10个项目",
+    "20 mục": "20个项目",
+    "50 mục": "50个项目",
+    "100 mục": "100个项目",
+    "10 bài": "10首歌曲",
+    "20 bài": "20首歌曲",
+    "50 bài": "50首歌曲",
+    "100 bài": "100首歌曲",
+    "Tìm kiếm...": "搜索...",
+    "Chào Mừng Thành Viên!": "欢迎会员！",
+    "Khu Vực Thành Viên": "会员区",
+    "Vui lòng nhập thông tin đăng nhập quản trị": "请输入管理员登录信息",
+    "Bạn đã đăng nhập thành công dưới quyền": "您已成功登录为",
+    "Thành viên VIP": "VIP会员",
+    "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của": "现在您可以欣赏系统中所有的专辑、播放列表和受保护的演示伴奏曲",
+    "mà không cần nhập passcode riêng biệt.": "无需输入单独的密码。",
+    "Cấu hình tên miền riêng (Custom Domain)": "自定义域名配置",
+    "Sử dụng tên miền riêng của bạn (ví dụ:": "使用您的自定义域名（例如：",
+    "hoặc": "或",
+    ") thay vì sử dụng địa chỉ mặc định của hệ thống.": "）代替系统默认地址。",
+    "Tự động chuyển tab ở trang chủ (Music / Demo / Playlist)": "首页自动切换选项卡 (Music / Demo / Playlist)",
+    "Ẩn khỏi danh sách nghệ sĩ trên trang chủ Chorus.vn": "从 Chorus.vn 首页的艺术家列表中隐藏",
+    "Tab 3 (Album/EP)": "Album/EP", dDesc: "的演示天堂", btnSpot: "在Spotify收听", lDemos: "最新演示", lReleased: "已发行的音乐", lDemoMark: "演示", lReleasedMark: "已发行", pReq: "需要密码", pNow: "立即收听", nDemo: "暂无演示", rMv: "已发行的视频", nMv: "暂无视频", lMore: "加载更多", mList: "月度听众", load: "载入中...", back: "返回", adm: "管理", edit: "编辑", pPrompt: "需要密码", pPrompt2: "输入密码收听此演示", unlock: "解锁", wPass: "密码错误", lyric: "歌词", nLyric: "暂无歌词", sAuth: "作曲:", lang: "中文", searchSong: "搜索歌曲...", noSongs: "暂无歌曲", noSongsDesc: "列表正在更新中，请稍后再来！", closeSearch: "关闭搜索", searchTitle: "搜索歌曲", noDemoFound: "找不到演示", mVault: "音乐库", "Hiển thị": "显示", "bài / trang": "首歌曲 / 页", "Tổng": "总计", "Trước": "上一步", "Sau": "下一步", pPartner: "合作伙伴:", pAutoNext: "未输入密码将自动跳过", vRef: "参考视频", nArtist: "艺术家" }
 };
 
 const adminTranslations: Record<string, Record<string, string>> = {
@@ -4185,81 +4293,92 @@ const AdminFloatingAddButton = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Chỉ hiện khi ở trang admin và không phải trang thêm/sửa
+  // Chỉ hiện khi ở trang admin, đã đăng nhập thành công và không phải trang thêm/sửa
+  const isAdmin = !!getAdminToken();
   const isAdminPath = location.pathname.startsWith('/admin') || location.pathname.includes('/admin');
   const isFormPage = location.pathname.includes('/new') || location.pathname.includes('/edit');
 
-  if (!isAdminPath || isFormPage) return null;
+  const shouldShow = isAdmin && isAdminPath && !isFormPage;
 
   return (
-    <div className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-[100] flex items-center gap-3">
-      <AnimatePresence>
-        {showTooltip && (
-          <motion.div
-            initial={{ opacity: 0, x: 15, scale: 0.9, filter: 'blur(4px)' }}
-            animate={{ opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, x: 15, scale: 0.9, filter: 'blur(4px)' }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="relative bg-stone-950/95 backdrop-blur-md border border-white/15 text-white text-xs font-black tracking-wider px-4 py-2.5 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.5),0_0_15px_rgba(168,85,247,0.15)] whitespace-nowrap pointer-events-none uppercase"
-          >
-            {t("Đăng Bài Hát Mới")}
-            {/* Liquid-glass subtle glow gradient inside tooltip */}
-            <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl -z-10 animate-pulse" />
-            <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 w-3 h-3 bg-stone-950/95 border-r border-t border-white/15 rotate-45"></div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <Link
-        to={getAdminLink('/new')}
-      >
+    <AnimatePresence>
+      {shouldShow && (
         <motion.div 
-          className="relative flex items-center justify-center w-16 h-16 rounded-full cursor-pointer group overflow-hidden border border-white/50 backdrop-blur-xl bg-purple-950/10 shadow-[inset_0_2px_4px_rgba(255,255,255,0.75),0_16px_40px_rgba(219,39,119,0.5),0_0_24px_rgba(168,85,247,0.35)]"
-          whileHover={{ scale: 1.1, rotate: 90 }}
-          whileTap={{ scale: 0.9 }}
-          animate={{
-            scale: [1, 1.05, 1],
-            boxShadow: [
-              "inset 0 2px 4px rgba(255,255,255,0.75), 0 16px 40px rgba(219,39,119,0.5), 0 0 24px rgba(168,85,247,0.35)",
-              "inset 0 2px 4px rgba(255,255,255,0.9), 0 24px 56px rgba(236,72,153,0.75), 0 0 36px rgba(139,92,246,0.6)",
-              "inset 0 2px 4px rgba(255,255,255,0.75), 0 16px 40px rgba(219,39,119,0.5), 0 0 24px rgba(168,85,247,0.35)"
-            ]
-          }}
-          transition={{
-            scale: { repeat: Infinity, duration: 2.5, ease: "easeInOut" },
-            boxShadow: { repeat: Infinity, duration: 2.5, ease: "easeInOut" }
-          }}
-          onMouseEnter={() => setShowTooltip(true)}
-          onMouseLeave={() => setShowTooltip(false)}
+          initial={{ opacity: 0, scale: 0.4, y: 120, x: 60 }}
+          animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
+          exit={{ opacity: 0, scale: 0.4, y: 120, x: 60 }}
+          transition={{ type: "spring", stiffness: 240, damping: 22 }}
+          className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-[100] flex items-center gap-3"
         >
-          {/* Saturated and vivid liquid gradient rotating background */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600 via-fuchsia-600 via-pink-600 to-rose-500 opacity-100 animate-rotate-border -z-10" style={{ transform: 'scale(1.2)' }} />
-          
-          {/* Breathing inner overlay for deep shifting colors */}
-          <div className="absolute inset-0 bg-gradient-to-bl from-pink-500 via-purple-600 to-indigo-700 opacity-60 mix-blend-overlay animate-[pulse_3s_ease-in-out_infinite] -z-10" />
+          <AnimatePresence>
+            {showTooltip && (
+              <motion.div
+                initial={{ opacity: 0, x: 15, scale: 0.9, filter: 'blur(4px)' }}
+                animate={{ opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, x: 15, scale: 0.9, filter: 'blur(4px)' }}
+                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                className="relative bg-stone-950/95 backdrop-blur-md border border-white/15 text-white text-xs font-black tracking-wider px-4 py-2.5 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.5),0_0_15px_rgba(168,85,247,0.15)] whitespace-nowrap pointer-events-none uppercase"
+              >
+                {t("Đăng Bài Hát Mới")}
+                {/* Liquid-glass subtle glow gradient inside tooltip */}
+                <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl -z-10 animate-pulse" />
+                <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 w-3 h-3 bg-stone-950/95 border-r border-t border-white/15 rotate-45"></div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {/* Spheroid volumetric radial highlight */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.45)_0%,transparent_60%)] pointer-events-none mix-blend-overlay" />
+          <Link
+            to={getAdminLink('/new')}
+          >
+            <motion.div 
+              className="relative flex items-center justify-center w-16 h-16 rounded-full cursor-pointer group overflow-hidden border border-white/50 backdrop-blur-xl bg-purple-950/10 shadow-[inset_0_2px_4px_rgba(255,255,255,0.75),0_16px_40px_rgba(219,39,119,0.5),0_0_24px_rgba(168,85,247,0.35)]"
+              whileHover={{ scale: 1.1, rotate: 90 }}
+              whileTap={{ scale: 0.9 }}
+              animate={{
+                scale: [1, 1.05, 1],
+                boxShadow: [
+                  "inset 0 2px 4px rgba(255,255,255,0.75), 0 16px 40px rgba(219,39,119,0.5), 0 0 24px rgba(168,85,247,0.35)",
+                  "inset 0 2px 4px rgba(255,255,255,0.9), 0 24px 56px rgba(236,72,153,0.75), 0 0 36px rgba(139,92,246,0.6)",
+                  "inset 0 2px 4px rgba(255,255,255,0.75), 0 16px 40px rgba(219,39,119,0.5), 0 0 24px rgba(168,85,247,0.35)"
+                ]
+              }}
+              transition={{
+                scale: { repeat: Infinity, duration: 2.5, ease: "easeInOut" },
+                boxShadow: { repeat: Infinity, duration: 2.5, ease: "easeInOut" }
+              }}
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+            >
+              {/* Saturated and vivid liquid gradient rotating background */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600 via-fuchsia-600 via-pink-600 to-rose-500 opacity-100 animate-rotate-border -z-10" style={{ transform: 'scale(1.2)' }} />
+              
+              {/* Breathing inner overlay for deep shifting colors */}
+              <div className="absolute inset-0 bg-gradient-to-bl from-pink-500 via-purple-600 to-indigo-700 opacity-60 mix-blend-overlay animate-[pulse_3s_ease-in-out_infinite] -z-10" />
 
-          {/* Shiny glass glare top overlay */}
-          <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/45 to-transparent rounded-t-full pointer-events-none" />
-          
-          {/* Saturated glowing concentric concentric breathing ring lines */}
-          <motion.div 
-            className="absolute inset-0 rounded-full border border-pink-500/40 -z-20"
-            animate={{ scale: [1, 1.6, 1], opacity: [0.7, 0, 0.7] }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div 
-            className="absolute inset-0 rounded-full border border-purple-600/30 -z-20"
-            animate={{ scale: [1, 2.2, 1], opacity: [0.5, 0, 0.5] }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
-          />
+              {/* Spheroid volumetric radial highlight */}
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.45)_0%,transparent_60%)] pointer-events-none mix-blend-overlay" />
 
-          <Plus className="w-8 h-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)] transition-transform duration-500" />
+              {/* Shiny glass glare top overlay */}
+              <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/45 to-transparent rounded-t-full pointer-events-none" />
+              
+              {/* Saturated glowing concentric concentric breathing ring lines */}
+              <motion.div 
+                className="absolute inset-0 rounded-full border border-pink-500/40 -z-20"
+                animate={{ scale: [1, 1.6, 1], opacity: [0.7, 0, 0.7] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <motion.div 
+                className="absolute inset-0 rounded-full border border-purple-600/30 -z-20"
+                animate={{ scale: [1, 2.2, 1], opacity: [0.5, 0, 0.5] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
+              />
+
+              <Plus className="w-8 h-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)] transition-transform duration-500" />
+            </motion.div>
+          </Link>
         </motion.div>
-      </Link>
-    </div>
+      )}
+    </AnimatePresence>
   );
 };
 
@@ -9359,7 +9478,7 @@ function AdminTemplateEdit({ config, demos, onBack, onSave, isPCPreviewMode, set
     );
 }
 
-function AdminDatabaseSettings() {
+function AdminDatabaseSettings({ artistUsername }: { artistUsername?: string }) {
   const { t } = useAdminTranslation();
   const [configsData, setConfigsData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -9666,7 +9785,7 @@ function AdminDatabaseSettings() {
       {success && <div className="p-4 bg-green-50 text-green-700 rounded-xl border border-green-200 font-medium">{success}</div>}
       {error && <div className="p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 font-medium">{error}</div>}
 
-      {getArtistExtensionFromUrl() === 'acxuantai' && (
+      {(getArtistExtensionFromUrl() === 'acxuantai' || artistUsername === 'acxuantai') && (
         <div className="bg-stone-50 border border-amber-200 rounded-2xl p-6 shadow-sm">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div className="space-y-1.5">
@@ -10697,10 +10816,13 @@ function AdminDashboard() {
       )}
       <header className="bg-white border-b border-stone-200 sticky top-0 z-[100] shadow-xs">
         <div className="max-w-6xl mx-auto px-6 h-16 w-full flex items-center justify-between">
-          <div className="flex items-center gap-3 font-bold text-lg select-none">
+          <div className="flex items-center gap-2 select-none">
             <ChorusLogo className="w-9 h-9" />
-            
-            <span className="leading-none mt-1 ml-1 text-stone-400">Admin</span>
+            <div className="flex items-baseline mt-0.5">
+              <span className="font-sans font-black text-stone-950 tracking-tight text-xl leading-none">Chorus</span>
+              <span className="font-serif italic font-light text-stone-400 text-xl leading-none">.vn</span>
+              <span className="ml-2 font-mono text-[10px] font-bold uppercase tracking-widest text-stone-500 bg-stone-100 border border-stone-200/60 px-1.5 py-0.5 rounded shadow-xs">Admin</span>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <LanguageSwitcher isRelative={true} />
@@ -12285,81 +12407,84 @@ function AdminDashboard() {
                   <input name="globalPassword" defaultValue={data.globalPassword} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono" placeholder={t("Để trống nếu không muốn dùng mật khẩu chung")} autoComplete="new-password" data-lpignore="true" data-1p-ignore="true" />
                   <p className="text-sm text-stone-500 mt-2">{t("Tất cả các link ở trang chủ nếu chưa đặt mật khẩu riêng thì sẽ được bảo vệ bởi mật khẩu chung này.")}</p>
                 </div>
-                <div className="bg-gradient-to-br from-amber-50 to-orange-50/50 border border-amber-200/60 rounded-2xl p-6 shadow-sm">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <label className="block text-sm font-extrabold text-stone-800 uppercase tracking-wider">
-                        {t("Cấu hình tên miền riêng (Custom Domain)")}
-                      </label>
-                      <span className="flex items-center gap-1 bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest shadow-sm animate-pulse"></span>
-                        <span className="text-xs">✨ VIP</span>
-                      
-                    </div>
-                  </div>
-                  
-                  <p className="text-xs text-stone-600 mb-4 leading-relaxed">
-                    {t("Sử dụng tên miền riêng của bạn (ví dụ:")} <code className="font-mono bg-stone-100 px-1 rounded">nghesi.com</code> {t("hoặc")} <code className="font-mono bg-stone-100 px-1 rounded">music.nghesi.com</code> {t(") thay vì sử dụng địa chỉ mặc định của hệ thống.")}
-                  </p>
-
-                  <div className="space-y-4">
-                    <div>
-                      <input 
-                        type="text" 
-                        name="customDomain" 
-                        value={customDomain}
-                        onChange={(e) => setCustomDomain(e.target.value)}
-                        className="w-full border border-stone-300 bg-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono text-sm text-stone-900" 
-                        placeholder={t("VD: nghesi.com")} 
-                      />
-                    </div>
-
-                    {/* Show setup instructions if domain format looks okay */}
-                    {customDomain.trim().length > 3 && /^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}$/.test(customDomain.trim()) ? (
-                      <div className="bg-white border border-amber-200 rounded-xl p-5 space-y-3 shadow-inner text-stone-800">
-                        <div className="flex items-center gap-2 text-amber-800 font-bold text-xs uppercase tracking-wide">
-                          <span>{t("📋 Hướng dẫn cấu hình DNS")}</span>
-                        </div>
-                        <p className="text-xs text-stone-600 leading-relaxed">
-                          {t("Vui lòng truy cập trang quản lý tên miền của bạn (ví dụ: Cloudflare, GoDaddy, Nhân Hòa...) và thiết lập bản ghi sau để kết nối tên miền này:")}
-                        </p>
+                {/* Cấu hình tên miền riêng (Custom Domain) */}
+                {(data as any).isSpecial && (
+                  <div className="bg-gradient-to-br from-amber-50 to-orange-50/50 border border-amber-200/60 rounded-2xl p-6 shadow-sm">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <label className="block text-sm font-extrabold text-stone-800 uppercase tracking-wider">
+                          {t("Cấu hình tên miền riêng (Custom Domain)")}
+                        </label>
+                        <span className="flex items-center gap-1 bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest shadow-sm animate-pulse"></span>
+                          <span className="text-xs">✨ VIP</span>
                         
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-left text-xs border-collapse">
-                            <thead>
-                              <tr className="border-b border-stone-200 text-stone-400">
-                                <th className="pb-2 font-semibold uppercase">{t("Loại bản ghi")}</th>
-                                <th className="pb-2 font-semibold uppercase">{t("Tên (Host)")}</th>
-                                <th className="pb-2 font-semibold uppercase">{t("Giá trị (Points to)")}</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr className="border-b border-stone-100">
-                                <td className="py-2.5 font-mono font-bold text-stone-800">A</td>
-                                <td className="py-2.5 font-mono text-stone-600">{customDomain.trim().split('.').length > 2 ? customDomain.trim().split('.')[0] : '@'}</td>
-                                <td className="py-2.5 font-mono font-bold text-amber-600">{(data as any)?.systemIp || '103.1.2.3'}</td>
-                              </tr>
-                              {customDomain.trim().split('.').length <= 2 && (
-                                <tr>
-                                  <td className="py-2.5 font-mono font-bold text-stone-800">CNAME</td>
-                                  <td className="py-2.5 font-mono text-stone-600">www</td>
-                                  <td className="py-2.5 font-mono text-stone-600">{getArtistExtensionFromUrl() || 'artist'}.chorus.vn</td>
-                                </tr>
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
+                      </div>
+                    </div>
+                    
+                    <p className="text-xs text-stone-600 mb-4 leading-relaxed">
+                      {t("Sử dụng tên miền riêng của bạn (ví dụ:")} <code className="font-mono bg-stone-100 px-1 rounded">nghesi.com</code> {t("hoặc")} <code className="font-mono bg-stone-100 px-1 rounded">music.nghesi.com</code> {t(") thay vì sử dụng địa chỉ mặc định của hệ thống.")}
+                    </p>
 
-                        <div className="text-[11px] text-stone-500 leading-relaxed bg-amber-50/50 p-3 rounded-lg border border-amber-100">
-                          <strong>{t("💡 Lưu ý:")}</strong> {t("Sau khi cấu hình xong, quá trình cập nhật DNS có thể mất từ vài phút đến tối đa 24 giờ tùy nhà đăng ký tên miền.")}
+                    <div className="space-y-4">
+                      <div>
+                        <input 
+                          type="text" 
+                          name="customDomain" 
+                          value={customDomain}
+                          onChange={(e) => setCustomDomain(e.target.value)}
+                          className="w-full border border-stone-300 bg-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono text-sm text-stone-900" 
+                          placeholder={t("VD: nghesi.com")} 
+                        />
+                      </div>
+
+                      {/* Show setup instructions if domain format looks okay */}
+                      {customDomain.trim().length > 3 && /^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}$/.test(customDomain.trim()) ? (
+                        <div className="bg-white border border-amber-200 rounded-xl p-5 space-y-3 shadow-inner text-stone-800">
+                          <div className="flex items-center gap-2 text-amber-800 font-bold text-xs uppercase tracking-wide">
+                            <span>{t("📋 Hướng dẫn cấu hình DNS")}</span>
+                          </div>
+                          <p className="text-xs text-stone-600 leading-relaxed">
+                            {t("Vui lòng truy cập trang quản lý tên miền của bạn (ví dụ: Cloudflare, GoDaddy, Nhân Hòa...) và thiết lập bản ghi sau để kết nối tên miền này:")}
+                          </p>
+                          
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-left text-xs border-collapse">
+                              <thead>
+                                <tr className="border-b border-stone-200 text-stone-400">
+                                  <th className="pb-2 font-semibold uppercase">{t("Loại bản ghi")}</th>
+                                  <th className="pb-2 font-semibold uppercase">{t("Tên (Host)")}</th>
+                                  <th className="pb-2 font-semibold uppercase">{t("Giá trị (Points to)")}</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr className="border-b border-stone-100">
+                                  <td className="py-2.5 font-mono font-bold text-stone-800">A</td>
+                                  <td className="py-2.5 font-mono text-stone-600">{customDomain.trim().split('.').length > 2 ? customDomain.trim().split('.')[0] : '@'}</td>
+                                  <td className="py-2.5 font-mono font-bold text-amber-600">{(data as any)?.systemIp || '103.1.2.3'}</td>
+                                </tr>
+                                {customDomain.trim().split('.').length <= 2 && (
+                                  <tr>
+                                    <td className="py-2.5 font-mono font-bold text-stone-800">CNAME</td>
+                                    <td className="py-2.5 font-mono text-stone-600">www</td>
+                                    <td className="py-2.5 font-mono text-stone-600">{getArtistExtensionFromUrl() || 'artist'}.chorus.vn</td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+
+                          <div className="text-[11px] text-stone-500 leading-relaxed bg-amber-50/50 p-3 rounded-lg border border-amber-100">
+                            <strong>{t("💡 Lưu ý:")}</strong> {t("Sau khi cấu hình xong, quá trình cập nhật DNS có thể mất từ vài phút đến tối đa 24 giờ tùy nhà đăng ký tên miền.")}
+                          </div>
                         </div>
-                      </div>
-                    ) : customDomain.trim().length > 0 ? (
-                      <div className="text-xs text-rose-500 font-medium">
-                        ⚠️ {t("Định dạng tên miền không hợp lệ (ví dụ đúng: nghesi.com, sub.nghesi.com)")}
-                      </div>
-                    ) : null}
+                      ) : customDomain.trim().length > 0 ? (
+                        <div className="text-xs text-rose-500 font-medium">
+                          ⚠️ {t("Định dạng tên miền không hợp lệ (ví dụ đúng: nghesi.com, sub.nghesi.com)")}
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-3 bg-stone-50 border border-stone-200 p-4 rounded-xl">
@@ -12564,7 +12689,7 @@ function AdminDashboard() {
 
           {activeTab === 'database' && (
             <motion.div key="database" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
-            <AdminDatabaseSettings />
+            <AdminDatabaseSettings artistUsername={data?.username} />
             </motion.div>
           )}
 

@@ -1435,6 +1435,12 @@ async function startServer() {
   const formatUrl = (url: string | undefined, baseUrl: string | undefined) => {
     if (!url) return url;
     
+    // Always prefer relative URLs for uploads so that they work relative to the current site environment
+    const uploadsIdx = url.indexOf('uploads/');
+    if (uploadsIdx !== -1) {
+      return '/' + url.substring(uploadsIdx);
+    }
+    
     // Normalize baseUrl if provided
     let finalBaseUrl = baseUrl;
     if (finalBaseUrl) {
@@ -1443,17 +1449,6 @@ async function startServer() {
         finalBaseUrl = 'https://' + finalBaseUrl;
       }
       finalBaseUrl = finalBaseUrl.replace(/\/$/, '');
-    }
-
-    // Always prefer relative URLs for uploads so that they work relative to the SPA dev environment
-    const uploadMatch = url.match(/\/uploads\/[^/]+$/);
-    if (uploadMatch) {
-      if (url.startsWith('http')) return url;
-      return uploadMatch[0];
-    }
-    if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
-      let normalized = url.startsWith('/') ? url : '/' + url;
-      return normalized;
     }
 
     // Replace any absolute ais-dev or ais-pre URLs with the global base URL if set
@@ -1872,18 +1867,18 @@ function generateCaptchaSvg(text: string) {
             
             let extHomeCoverUrl = data.homeCoverUrl || '';
             const extBaseUrl = data.globalBaseUrl || '';
-            if (extHomeCoverUrl && !extHomeCoverUrl.startsWith('http') && extBaseUrl) {
+            if (extHomeCoverUrl && !extHomeCoverUrl.startsWith('http') && !extHomeCoverUrl.includes('uploads/') && extBaseUrl) {
               extHomeCoverUrl = `${extBaseUrl.endsWith('/') && extHomeCoverUrl.startsWith('/') ? extBaseUrl.slice(0, -1) : extBaseUrl}${extHomeCoverUrl.startsWith('/') ? '' : '/'}${extHomeCoverUrl}`;
             }
             homeCoverUrl = extHomeCoverUrl;
             
-            if (avatarUrl && !avatarUrl.startsWith('http') && extBaseUrl) {
+            if (avatarUrl && !avatarUrl.startsWith('http') && !avatarUrl.includes('uploads/') && extBaseUrl) {
               avatarUrl = `${extBaseUrl.endsWith('/') && avatarUrl.startsWith('/') ? extBaseUrl.slice(0, -1) : extBaseUrl}${avatarUrl.startsWith('/') ? '' : '/'}${avatarUrl}`;
             }
 
             let extSlideshowImages = data.slideshowImages || [];
             extSlideshowImages = extSlideshowImages.map((s: string) => {
-              if (s && !s.startsWith('http')) {
+              if (s && !s.startsWith('http') && !s.includes('uploads/')) {
                 return extBaseUrl ? `${extBaseUrl.endsWith('/') && s.startsWith('/') ? extBaseUrl.slice(0, -1) : extBaseUrl}${s.startsWith('/') ? '' : '/'}${s}` : s;
               }
               return s;
@@ -1904,18 +1899,18 @@ function generateCaptchaSvg(text: string) {
           
           let localHomeCoverUrl = data.homeCoverUrl || '';
           const localBaseUrl = data.globalBaseUrl || '';
-          if (localHomeCoverUrl && !localHomeCoverUrl.startsWith('http') && localBaseUrl) {
+          if (localHomeCoverUrl && !localHomeCoverUrl.startsWith('http') && !localHomeCoverUrl.includes('uploads/') && localBaseUrl) {
             localHomeCoverUrl = `${localBaseUrl.endsWith('/') && localHomeCoverUrl.startsWith('/') ? localBaseUrl.slice(0, -1) : localBaseUrl}${localHomeCoverUrl.startsWith('/') ? '' : '/'}${localHomeCoverUrl}`;
           }
           homeCoverUrl = localHomeCoverUrl;
           
-          if (avatarUrl && !avatarUrl.startsWith('http') && localBaseUrl) {
-            avatarUrl = `${localBaseUrl.endsWith('/') && avatarUrl.startsWith('/') ? localBaseUrl.slice(0, -1) : localBaseUrl}${avatarUrl.startsWith('/') ? '' : '/'}${avatarUrl}`;
+          if (avatarUrl && !avatarUrl.startsWith('http') && !avatarUrl.includes('uploads/') && localBaseUrl) {
+            avatarUrl = `${localBaseUrl.endsWith('/') && avatarUrl.startsWith('/') ? localBaseUrl.slice(0, -1) : localBaseUrl}${localBaseUrl.startsWith('/') ? '' : '/'}${avatarUrl}`;
           }
 
           let localSlideshowImages = data.slideshowImages || [];
           localSlideshowImages = localSlideshowImages.map((s: string) => {
-            if (s && !s.startsWith('http')) {
+            if (s && !s.startsWith('http') && !s.includes('uploads/')) {
               return localBaseUrl ? `${localBaseUrl.endsWith('/') && s.startsWith('/') ? localBaseUrl.slice(0, -1) : localBaseUrl}${s.startsWith('/') ? '' : '/'}${s}` : s;
             }
             return s;
@@ -2880,6 +2875,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       ...data, 
       memberPassword: req.artist?.memberPassword || '', 
       isMasterAdmin: req.artist?.username === 'acxuantai',
+      isSpecial: !!req.artist?.isSpecial || req.artist?.username === 'acxuantai',
       username: req.artist?.username,
       extension: req.artist?.extension,
       pendingNameChange: req.artist?.pendingNameChange,
