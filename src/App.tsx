@@ -3677,6 +3677,13 @@ const isArtistContext = () => {
   const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
   if (host.endsWith('.chorus.vn') && host !== 'chorus.vn') return true;
   if ((window as any).__ACTIVE_ARTIST_EXTENSION__) return true;
+  
+  // Custom domain check: not chorus.vn, not localhost/127.0.0.1, and not .run.app preview domain
+  const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
+  const isDefaultPlatform = host === 'chorus.vn' || host.endsWith('.run.app') || host.endsWith('.aistudio.google') || host.endsWith('.gitpod.io');
+  if (!isLocal && !isDefaultPlatform) {
+    return true;
+  }
   return false;
 };
 
@@ -16731,9 +16738,11 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl }: 
   );
 }
 
-function MultiImageDropzone({ values = [], onChange, onRemove, t }: any) {
+function MultiImageDropzone({ values = [], onChange, onRemove, onReorder, t }: any) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   
   const handleDrag = (e: any) => { 
     e.preventDefault(); e.stopPropagation(); 
@@ -16766,24 +16775,77 @@ function MultiImageDropzone({ values = [], onChange, onRemove, t }: any) {
     }
   };
 
+  // Drag and drop reordering handlers
+  const handleDragStart = (e: any, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: any, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+    setDragOverIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleItemDrop = (e: any, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    const newValues = [...values];
+    const [draggedItem] = newValues.splice(draggedIndex, 1);
+    newValues.splice(index, 0, draggedItem);
+
+    if (onReorder) {
+      onReorder(newValues);
+    }
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
   return (
     <div className="space-y-3">
       {/* List of uploaded images */}
       {values.length > 0 && (
         <div className="grid grid-cols-4 gap-3">
           {values.map((url: string, index: number) => (
-            <div key={index} className="relative aspect-square bg-stone-100 rounded-xl overflow-hidden border border-stone-200 group">
-              <img src={url} className="w-full h-full object-cover" />
+            <div 
+              key={index} 
+              draggable="true"
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDragEnd={handleDragEnd}
+              onDrop={(e) => handleItemDrop(e, index)}
+              className={`relative aspect-square bg-stone-100 rounded-xl overflow-hidden border transition-all duration-200 group cursor-grab active:cursor-grabbing ${
+                draggedIndex === index ? 'opacity-40 scale-95 border-indigo-400' : 
+                dragOverIndex === index ? 'border-indigo-500 scale-105 bg-indigo-50/10' : 'border-stone-200 hover:border-stone-300'
+              }`}
+            >
+              <img src={url} className="w-full h-full object-cover pointer-events-none" />
               <button 
                 type="button" 
-                onClick={() => onRemove(index)} 
-                className="absolute top-1 right-1 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-md cursor-pointer flex items-center justify-center"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemove(index);
+                }} 
+                className="absolute top-1 right-1 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-md cursor-pointer flex items-center justify-center z-10"
                 title={t("Xóa ảnh")}
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4 pointer-events-none" />
               </button>
-              <div className="absolute bottom-1 left-1 bg-black/60 text-white px-1.5 py-0.5 rounded text-[9px] font-bold">
+              <div className="absolute bottom-1 left-1 bg-black/60 text-white px-1.5 py-0.5 rounded text-[9px] font-bold select-none pointer-events-none z-10">
                 #{index + 1}
+              </div>
+              
+              {/* Overlay with subtle drag text on hover */}
+              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none z-0">
+                <span className="text-[9px] text-white font-semibold bg-black/50 px-1.5 py-0.5 rounded select-none">
+                  {t('Kéo để đổi vị trí') || 'Kéo để đổi vị trí'}
+                </span>
               </div>
             </div>
           ))}
@@ -16950,6 +17012,10 @@ function AdminBioEdit({ data, t, onSave }: any) {
                           updateEdu(idx, 'imageUrls', newUrls);
                           updateEdu(idx, 'imageUrl', newUrls[0] || '');
                         }} 
+                        onReorder={(newUrls: string[]) => {
+                          updateEdu(idx, 'imageUrls', newUrls);
+                          updateEdu(idx, 'imageUrl', newUrls[0] || '');
+                        }}
                         t={t} 
                       />
                     </div>
@@ -17010,6 +17076,10 @@ function AdminBioEdit({ data, t, onSave }: any) {
                           updateExp(idx, 'imageUrls', newUrls);
                           updateExp(idx, 'imageUrl', newUrls[0] || '');
                         }} 
+                        onReorder={(newUrls: string[]) => {
+                          updateExp(idx, 'imageUrls', newUrls);
+                          updateExp(idx, 'imageUrl', newUrls[0] || '');
+                        }}
                         t={t} 
                       />
                     </div>
@@ -17193,7 +17263,7 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="w-full mx-auto bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] p-6 sm:p-10 mt-24 mb-20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] relative z-10 text-white max-w-6xl flex flex-col lg:flex-row gap-10 lg:gap-16 items-center lg:items-start">
       {isAdmin && (
-        <a href={artistExtension ? `/${artistExtension}/admin#about` : '/admin#about'} className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white/70 hover:text-white z-20" title={t("Chỉnh sửa")}>
+        <a href={getAdminLink('#about')} className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white/70 hover:text-white z-20" title={t("Chỉnh sửa")}>
           <Edit3 className="w-5 h-5 sm:w-6 sm:h-6" />
         </a>
       )}
@@ -17312,7 +17382,7 @@ function PublicBioView({ biography, t, isAdmin, artistExtension }: any) {
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto mt-24 mb-20 relative z-10 px-4 sm:px-8 lg:px-12 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] py-12 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] text-white max-w-7xl ${hasEdu && hasExp ? 'grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16' : 'flex flex-col'}`}>
       {isAdmin && (
-        <a href={artistExtension ? `/${artistExtension}/admin#bio` : '/admin#bio'} className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white/70 hover:text-white z-20" title={t("Chỉnh sửa")}>
+        <a href={getAdminLink('#bio')} className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white/70 hover:text-white z-20" title={t("Chỉnh sửa")}>
           <Edit3 className="w-5 h-5 sm:w-6 sm:h-6" />
         </a>
       )}
