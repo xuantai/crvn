@@ -5254,7 +5254,7 @@ function Home() {
                             </span>
                           );
                         }
-                        return <span key={index} className="animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{word + " "}</span>;
+                        return <span key={index} className="animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] mr-[0.25em]">{word}</span>;
                       })}
                     </motion.h1>
               </div>
