@@ -17447,7 +17447,31 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0 }: {
               </div>
               <h3 className="font-bold text-white drop-shadow-sm text-base sm:text-lg leading-snug">{item.title}</h3>
             </div>
-            <p className="text-white/80 text-sm leading-relaxed whitespace-pre-line">{item.description}</p>
+            {/* Auto-detect bullet points/lists and render with proper indentation */}
+            <div className="space-y-2 mt-2">
+              {item.description ? item.description.split('\n').map((line: string, idx: number) => {
+                const trimmed = line.trim();
+                const bulletMatch = trimmed.match(/^([-*+•–—]|\d+[.)])\s*(.*)/);
+                if (bulletMatch) {
+                  const bullet = bulletMatch[1];
+                  const content = bulletMatch[2];
+                  const isNumber = /^\d+/.test(bullet);
+                  return (
+                    <div key={idx} className="flex items-start gap-2.5 pl-3 text-white/85 text-sm leading-relaxed">
+                      <span className={`text-amber-400 shrink-0 select-none ${isNumber ? 'font-bold text-xs mt-0.5' : 'text-base -mt-0.5'}`}>
+                        {isNumber ? bullet : '•'}
+                      </span>
+                      <span className="flex-1">{content}</span>
+                    </div>
+                  );
+                }
+                return (
+                  <p key={idx} className="text-white/80 text-sm leading-relaxed min-h-[1rem]">
+                    {line}
+                  </p>
+                );
+              }) : null}
+            </div>
           </div>
 
           {/* Image Container */}
@@ -17469,10 +17493,10 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0 }: {
               <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-6 sm:w-8 h-3 sm:h-4 bg-white/60 backdrop-blur-sm shadow-sm rotate-[4deg] z-10 border border-white/40"></div>
               
               {/* Image with preserved aspect ratio */}
-              <div className="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 flex items-center justify-center overflow-hidden bg-stone-50 rounded-sm">
+              <div className="w-14 sm:w-20 md:w-24 flex items-center justify-center overflow-hidden bg-stone-50 rounded-sm">
                 <img 
                   src={images[activeImgIdx]} 
-                  className="max-w-full max-h-full object-contain rounded-sm border border-stone-100"
+                  className="w-full h-auto max-h-28 sm:max-h-40 md:max-h-48 object-contain rounded-sm border border-stone-100"
                   alt={item.title}
                 />
               </div>
