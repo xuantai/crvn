@@ -13,11 +13,14 @@ interface Artist {
   isPublic?: boolean;
   dbConfig?: string;
   pendingNameChange?: string;
+  pendingUsernameChange?: string;
+  pendingExtensionChange?: string;
   hasExternalWebsite?: boolean;
   externalWebsiteUrl?: string;
   customDomain?: string;
   defaultLanguage?: string;
   artistBio?: string;
+  isSpecial?: boolean;
 }
 
 const DEFAULT_TEMPLATE_NAMES: Record<string, string> = {
@@ -130,6 +133,8 @@ export default function ACPControlPanel() {
   const [artistDefaultLanguage, setArtistDefaultLanguage] = useState('vi');
   const [isTranslatingArtist, setIsTranslatingArtist] = useState(false);
   const [artistBio, setArtistBio] = useState('');
+  const [artistIsSpecial, setArtistIsSpecial] = useState(false);
+  const [isSyncing, setIsSyncing] = useState<Record<string, boolean>>({});
 
   // Form states (Landing Config)
   const [landingTagline, setLandingTagline] = useState('');
@@ -565,7 +570,8 @@ export default function ACPControlPanel() {
           hasExternalWebsite: artistHasExternalWebsite,
           externalWebsiteUrl: artistExternalWebsiteUrl,
           defaultLanguage: artistDefaultLanguage,
-          artistBio
+          artistBio,
+          isSpecial: artistIsSpecial
         })
       });
 
@@ -645,7 +651,8 @@ export default function ACPControlPanel() {
           hasExternalWebsite: artistHasExternalWebsite,
           externalWebsiteUrl: artistExternalWebsiteUrl,
           defaultLanguage: artistDefaultLanguage,
-          artistBio
+          artistBio,
+          isSpecial: artistIsSpecial
         })
       });
 
@@ -660,6 +667,39 @@ export default function ACPControlPanel() {
       }
     } catch (err) {
       setFormErr('Lỗi kết nối máy chủ!');
+    }
+  };
+
+  const handleSyncFirebaseData = async (username: string) => {
+    if (!(await showConfirm('Bạn có chắc chắn muốn đồng bộ dữ liệu của nghệ sĩ này từ Firebase cũ về Server mới?\nTất cả bài hát, danh sách phát và cấu hình trên Server của nghệ sĩ này sẽ được thay thế bằng dữ liệu từ Firebase cũ.', 'Đồng bộ Firebase', 'confirm'))) {
+      return;
+    }
+
+    setIsSyncing(prev => ({ ...prev, [username]: true }));
+    try {
+      const res = await fetch('/api/acp/artists/firebase-sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ username })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setToast(data.message || 'Đồng bộ dữ liệu thành công!');
+        setTimeout(() => setToast(''), 3000);
+        setShowEditModal(false);
+        setEditingArtist(null);
+        resetForm();
+        fetchArtists();
+      } else {
+        await showConfirm(data.error || 'Có lỗi xảy ra khi đồng bộ.', 'Lỗi đồng bộ', 'alert');
+      }
+    } catch (err: any) {
+      await showConfirm('Lỗi kết nối máy chủ!', 'Lỗi kết nối', 'alert');
+    } finally {
+      setIsSyncing(prev => ({ ...prev, [username]: false }));
     }
   };
 
@@ -958,6 +998,7 @@ export default function ACPControlPanel() {
     setArtistExternalWebsiteUrl(artist.externalWebsiteUrl || '');
     setArtistDefaultLanguage(artist.defaultLanguage || 'vi');
     setArtistBio(artist.artistBio || '');
+    setArtistIsSpecial(!!artist.isSpecial);
     setShowEditModal(true);
   };
 
@@ -973,6 +1014,7 @@ export default function ACPControlPanel() {
     setArtistExternalWebsiteUrl('');
     setArtistDefaultLanguage('vi');
     setArtistBio('');
+    setArtistIsSpecial(false);
     setFormErr('');
   };
 
@@ -1208,6 +1250,11 @@ export default function ACPControlPanel() {
                                   {artist.verified && (
                                     <span className="bg-sky-500/15 text-sky-400 p-0.5 rounded-full inline-block border border-sky-500/20" title="Đã xác thực">
                                       <Check className="w-3 h-3 stroke-[3]" />
+                                    </span>
+                                  )}
+                                  {artist.isSpecial && (
+                                    <span className="bg-amber-500/15 text-amber-400 px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider border border-amber-500/25">
+                                      Đặc biệt
                                     </span>
                                   )}
                                 </div>
@@ -2507,7 +2554,7 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-1">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-1">
                 <div className="flex items-center gap-3">
                   <input 
                     type="checkbox" 
@@ -2530,7 +2577,20 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                     className="w-5 h-5 accent-purple-500 rounded border-white/10"
                   />
                   <label htmlFor="add-public" className="text-sm font-bold select-none cursor-pointer">
-                    Hiển thị trên Trang chủ
+                    Trang chủ
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <input 
+                    type="checkbox" 
+                    id="add-special"
+                    checked={artistIsSpecial}
+                    onChange={(e) => setArtistIsSpecial(e.target.checked)}
+                    className="w-5 h-5 accent-amber-500 rounded border-white/10"
+                  />
+                  <label htmlFor="add-special" className="text-sm font-bold select-none cursor-pointer text-amber-400">
+                    Đặc biệt (ACP riêng)
                   </label>
                 </div>
               </div>
@@ -2688,7 +2748,7 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-1">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-1">
                 <div className="flex items-center gap-3">
                   <input 
                     type="checkbox" 
@@ -2711,7 +2771,20 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                     className="w-5 h-5 accent-purple-500 rounded border-white/10"
                   />
                   <label htmlFor="edit-public" className="text-sm font-bold select-none cursor-pointer">
-                    Hiển thị trên Trang chủ
+                    Trang chủ
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <input 
+                    type="checkbox" 
+                    id="edit-special"
+                    checked={artistIsSpecial}
+                    onChange={(e) => setArtistIsSpecial(e.target.checked)}
+                    className="w-5 h-5 accent-amber-500 rounded border-white/10"
+                  />
+                  <label htmlFor="edit-special" className="text-sm font-bold select-none cursor-pointer text-amber-400">
+                    Đặc biệt (ACP riêng)
                   </label>
                 </div>
               </div>
@@ -2774,6 +2847,26 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                   className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none font-mono text-xs h-24"
                   placeholder='{ "apiKey": "AIza...", "projectId": "...", "storageBucket": "..." }'
                 />
+                {artistIsSpecial && (
+                  <button
+                    type="button"
+                    disabled={isSyncing[artistUsername]}
+                    onClick={() => handleSyncFirebaseData(artistUsername)}
+                    className="mt-2 w-full bg-amber-600 hover:bg-amber-700 disabled:bg-neutral-850 text-white font-bold py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer text-xs"
+                  >
+                    {isSyncing[artistUsername] ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <span>Đang đồng bộ dữ liệu...</span>
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>Đồng bộ toàn bộ dữ liệu từ Firebase cũ</span>
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
 
               <div className="bg-purple-950/20 border border-purple-500/20 p-4 rounded-xl space-y-3">

@@ -155,6 +155,10 @@ async function loadArtists() {
             artist.defaultLanguage = "vi";
             changed = true;
           }
+          if (artist.isSpecial === undefined) {
+            artist.isSpecial = artist.username === 'acxuantai';
+            changed = true;
+          }
         });
         await fs.writeFile(ARTISTS_FILE, JSON.stringify(artists, null, 2), 'utf-8');
         if (changed) await setDoc(masterDoc, { artists });
@@ -197,6 +201,10 @@ async function loadArtists() {
           artist.defaultLanguage = "vi";
           changed = true;
         }
+        if (artist.isSpecial === undefined) {
+          artist.isSpecial = artist.username === 'acxuantai';
+          changed = true;
+        }
       });
       if (changed) {
         await fs.writeFile(ARTISTS_FILE, JSON.stringify(artists, null, 2), 'utf-8');
@@ -211,6 +219,7 @@ async function loadArtists() {
           password: "XuanTaiDepTrai",
           verified: true,
           dbConfig: "",
+          isSpecial: true,
           activated: true,
           createdAt: "2026-01-01T00:00:00.000Z",
           emailVerified: true,
@@ -230,6 +239,7 @@ async function loadArtists() {
         password: "XuanTaiDepTrai",
         verified: true,
         dbConfig: "",
+        isSpecial: true,
         activated: true,
         createdAt: "2026-01-01T00:00:00.000Z",
         emailVerified: true,
@@ -447,11 +457,25 @@ function getFirestoreRefForArtist(artist: any) {
   if (artist && artist.dbConfig) {
     try {
       const config = typeof artist.dbConfig === 'string' ? JSON.parse(artist.dbConfig) : artist.dbConfig;
-      if (config && config.projectId && config.apiKey) {
+      const projectId = config.projectId || config.project_id;
+      const apiKey = config.apiKey || config.api_key;
+      const firestoreDatabaseId = config.firestoreDatabaseId || config.firestore_database_id;
+      
+      if (config && projectId && apiKey) {
         if (!firebaseAppCache.has(artist.username)) {
           const appName = `app-${artist.username}-${Date.now()}`;
-          const app = initializeApp(config, appName);
-          const customDb = getFirestore(app, config.firestoreDatabaseId || '(default)');
+          const normalizedConfig = {
+            apiKey: apiKey,
+            authDomain: config.authDomain || config.auth_domain,
+            projectId: projectId,
+            storageBucket: config.storageBucket || config.storage_bucket,
+            messagingSenderId: config.messagingSenderId || config.messaging_sender_id,
+            appId: config.appId || config.app_id,
+            measurementId: config.measurementId || config.measurement_id,
+            firestoreDatabaseId: firestoreDatabaseId || '(default)'
+          };
+          const app = initializeApp(normalizedConfig, appName);
+          const customDb = getFirestore(app, firestoreDatabaseId || '(default)');
           const docRef = doc(customDb, 'app_data', 'main');
           firebaseAppCache.set(artist.username, { app, db: customDb, docRef });
         }
@@ -2214,7 +2238,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const { artistName, username, extension, password, verified, dbConfig, isPublic, hasExternalWebsite, externalWebsiteUrl, artistBio } = req.body;
+    const { artistName, username, extension, password, verified, dbConfig, isPublic, hasExternalWebsite, externalWebsiteUrl, artistBio, isSpecial } = req.body;
     if (!artistName || !username || !extension || !password) {
       return res.status(400).json({ error: 'Vui lòng điền đầy đủ các thông tin bắt buộc!' });
     }
@@ -2235,7 +2259,8 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       dbConfig: dbConfig || "",
       memberPassword: "",
       hasExternalWebsite: !!hasExternalWebsite,
-      externalWebsiteUrl: externalWebsiteUrl || ""
+      externalWebsiteUrl: externalWebsiteUrl || "",
+      isSpecial: !!isSpecial
     };
     
     artists.push(newArtist);
@@ -2258,7 +2283,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const { originalUsername, artistName, extension, password, verified, dbConfig, isPublic, approveNameChange, rejectNameChange, approveUsernameChange, rejectUsernameChange, approveExtensionChange, rejectExtensionChange, hasExternalWebsite, externalWebsiteUrl, email, activated, emailVerified, defaultLanguage, artistBio } = req.body;
+    const { originalUsername, artistName, extension, password, verified, dbConfig, isPublic, approveNameChange, rejectNameChange, approveUsernameChange, rejectUsernameChange, approveExtensionChange, rejectExtensionChange, hasExternalWebsite, externalWebsiteUrl, email, activated, emailVerified, defaultLanguage, artistBio, isSpecial } = req.body;
     const artistIdx = artists.findIndex(a => a.username === originalUsername);
     if (artistIdx === -1) {
       return res.status(404).json({ error: 'Không tìm thấy nghệ sĩ!' });
@@ -2329,6 +2354,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       artist.activated = activated !== undefined ? !!activated : (artist.activated !== false);
       artist.emailVerified = emailVerified !== undefined ? !!emailVerified : artist.emailVerified;
       artist.defaultLanguage = defaultLanguage !== undefined ? defaultLanguage : (artist.defaultLanguage || 'vi');
+      artist.isSpecial = isSpecial !== undefined ? !!isSpecial : artist.isSpecial;
       
       const data = await loadData(artist.username);
       data.artistName = artist.artistName;
@@ -2364,6 +2390,82 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     await fs.unlink(artistDataFile).catch(() => {});
     
     res.json({ success: true });
+  });
+
+  app.post('/api/acp/artists/firebase-sync', async (req: any, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const { username } = req.body;
+    if (!username) {
+      return res.status(400).json({ error: 'Thiếu username của nghệ sĩ!' });
+    }
+    const artist = artists.find(a => a.username === username);
+    if (!artist) {
+      return res.status(404).json({ error: 'Không tìm thấy nghệ sĩ!' });
+    }
+
+    try {
+      let dbConfigStr = artist.dbConfig;
+      if (!dbConfigStr && username === 'acxuantai') {
+        const defaultDbConfig = {
+          projectId: "taimusic-96289",
+          apiKey: "AIzaSyAcml_QfgGTH80OKmRVj2tWIomEQUUiHB0",
+          appId: "1:848155741386:web:4f5b5d826ce5fbbba8f833",
+          authDomain: "taimusic-96289.firebaseapp.com",
+          storageBucket: "taimusic-96289.firebasestorage.app",
+          messagingSenderId: "848155741386",
+          measurementId: "G-D4ZSK50GZ2",
+          firestoreDatabaseId: "(default)"
+        };
+        artist.dbConfig = JSON.stringify(defaultDbConfig, null, 2);
+        await saveArtists(artists);
+        dbConfigStr = artist.dbConfig;
+      }
+
+      if (!dbConfigStr) {
+        return res.status(400).json({ error: 'Nghệ sĩ này chưa được cấu hình Firebase Database riêng!' });
+      }
+
+      const config = typeof dbConfigStr === 'string' ? JSON.parse(dbConfigStr) : dbConfigStr;
+      
+      const normalizedConfig = {
+        apiKey: config.apiKey || config.api_key,
+        authDomain: config.authDomain || config.auth_domain,
+        projectId: config.projectId || config.project_id,
+        storageBucket: config.storageBucket || config.storage_bucket,
+        messagingSenderId: config.messagingSenderId || config.messaging_sender_id,
+        appId: config.appId || config.app_id,
+        measurementId: config.measurementId || config.measurement_id,
+        firestoreDatabaseId: config.firestoreDatabaseId || config.firestore_database_id || '(default)'
+      };
+
+      if (!normalizedConfig.projectId || !normalizedConfig.apiKey) {
+        return res.status(400).json({ error: 'Cấu hình Firebase không hợp lệ (thiếu Project ID hoặc API Key)!' });
+      }
+
+      const appName = `sync-acp-${artist.username}-${Date.now()}`;
+      const customApp = initializeApp(normalizedConfig, appName);
+      const customDb = getFirestore(customApp, normalizedConfig.firestoreDatabaseId);
+      const docRef = doc(customDb, 'app_data', 'main');
+      const docSnap = await getDoc(docRef);
+      
+      if (!docSnap.exists()) {
+        return res.status(404).json({ error: 'Không tìm thấy dữ liệu trong bảng app_data/main trên Firebase cũ!' });
+      }
+
+      const syncedData = docSnap.data();
+      syncedData.username = artist.username;
+      if (!syncedData.demos) syncedData.demos = [];
+      if (!syncedData.playlists) syncedData.playlists = [];
+      
+      await saveData(artist.username, syncedData);
+      
+      res.json({ success: true, message: `Đồng bộ thành công dữ liệu cho ${artist.artistName}!` });
+    } catch (e: any) {
+      console.error('Lỗi khi đồng bộ Firebase:', e);
+      res.status(500).json({ error: e.message || 'Lỗi không xác định trong quá trình đồng bộ.' });
+    }
   });
 
   app.get('/api/acp/tickets', async (req, res) => {
@@ -2702,6 +2804,79 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     } catch (error: any) {
       console.error('Lỗi khi đổi DB Firebase:', error);
       res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/admin/firebase-sync', async (req: any, res) => {
+    if (!isRequestAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const currentUsername = req.artist?.username || 'acxuantai';
+    const artist = artists.find(a => a.username === currentUsername);
+    if (!artist) {
+      return res.status(404).json({ error: 'Không tìm thấy thông tin nghệ sĩ!' });
+    }
+
+    try {
+      let dbConfigStr = artist.dbConfig;
+      if (!dbConfigStr && currentUsername === 'acxuantai') {
+        const defaultDbConfig = {
+          projectId: "taimusic-96289",
+          apiKey: "AIzaSyAcml_QfgGTH80OKmRVj2tWIomEQUUiHB0",
+          appId: "1:848155741386:web:4f5b5d826ce5fbbba8f833",
+          authDomain: "taimusic-96289.firebaseapp.com",
+          storageBucket: "taimusic-96289.firebasestorage.app",
+          messagingSenderId: "848155741386",
+          measurementId: "G-D4ZSK50GZ2",
+          firestoreDatabaseId: "(default)"
+        };
+        artist.dbConfig = JSON.stringify(defaultDbConfig, null, 2);
+        await saveArtists(artists);
+        dbConfigStr = artist.dbConfig;
+      }
+
+      if (!dbConfigStr) {
+        return res.status(400).json({ error: 'Chưa cấu hình Firebase Database riêng cho tài khoản của bạn!' });
+      }
+
+      const config = typeof dbConfigStr === 'string' ? JSON.parse(dbConfigStr) : dbConfigStr;
+      
+      const normalizedConfig = {
+        apiKey: config.apiKey || config.api_key,
+        authDomain: config.authDomain || config.auth_domain,
+        projectId: config.projectId || config.project_id,
+        storageBucket: config.storageBucket || config.storage_bucket,
+        messagingSenderId: config.messagingSenderId || config.messaging_sender_id,
+        appId: config.appId || config.app_id,
+        measurementId: config.measurementId || config.measurement_id,
+        firestoreDatabaseId: config.firestoreDatabaseId || config.firestore_database_id || '(default)'
+      };
+
+      if (!normalizedConfig.projectId || !normalizedConfig.apiKey) {
+        return res.status(400).json({ error: 'Cấu hình Firebase không hợp lệ (thiếu Project ID hoặc API Key)!' });
+      }
+
+      const appName = `sync-${artist.username}-${Date.now()}`;
+      const customApp = initializeApp(normalizedConfig, appName);
+      const customDb = getFirestore(customApp, normalizedConfig.firestoreDatabaseId);
+      const docRef = doc(customDb, 'app_data', 'main');
+      const docSnap = await getDoc(docRef);
+      
+      if (!docSnap.exists()) {
+        return res.status(404).json({ error: 'Không tìm thấy dữ liệu trong bảng app_data/main trên Firebase cũ!' });
+      }
+
+      const syncedData = docSnap.data();
+      syncedData.username = artist.username;
+      if (!syncedData.demos) syncedData.demos = [];
+      if (!syncedData.playlists) syncedData.playlists = [];
+      
+      await saveData(artist.username, syncedData);
+      
+      res.json({ success: true, message: 'Đồng bộ thành công toàn bộ dữ liệu từ Firebase về Server!' });
+    } catch (e: any) {
+      console.error('Lỗi khi đồng bộ Firebase:', e);
+      res.status(500).json({ error: e.message || 'Lỗi không xác định trong quá trình đồng bộ.' });
     }
   });
 

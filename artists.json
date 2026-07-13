@@ -5,8 +5,14 @@
     "extension": "acxuantai",
     "password": "XuanTaiDepTrai",
     "verified": true,
-    "dbConfig": "",
-    "id": "yulpe483qq"
+    "dbConfig": "{\n      \"projectId\": \"taimusic-96289\",\n      \"apiKey\": \"AIzaSyAcml_QfgGTH80OKmRVj2tWIomEQUUiHB0\",\n      \"appId\": \"1:848155741386:web:4f5b5d826ce5fbbba8f833\",\n      \"authDomain\": \"taimusic-96289.firebaseapp.com\",\n      \"storageBucket\": \"taimusic-96289.firebasestorage.app\",\n      \"messagingSenderId\": \"848155741386\",\n      \"measurementId\": \"G-D4ZSK50GZ2\",\n      \"firestoreDatabaseId\": \"default\"\n    }",
+    "isSpecial": true,
+    "id": "yulpe483qq",
+    "activated": true,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "emailVerified": true,
+    "email": "",
+    "defaultLanguage": "vi"
   },
   {
     "id": "05ld1sirzmik",
@@ -17,6 +23,11 @@
     "verified": true,
     "dbConfig": "",
     "memberPassword": "",
-    "isPublic": true
+    "isPublic": true,
+    "activated": true,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "emailVerified": true,
+    "email": "",
+    "defaultLanguage": "vi"
   }
 ]

@@ -2,7 +2,7 @@ import { createPortal } from "react-dom";
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
 import { ChorusLogo } from './components/ChorusLogo';
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { UserCircle, BookOpen, User, Settings, Play, Music, Lock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, List, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, Palette} from 'lucide-react';
+import { UserCircle, BookOpen, User, Settings, Play, Music, Lock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, List, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, RefreshCw, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, Palette} from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { AppData, DemoSong, TemplateConfig, Achievement } from './types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -9363,10 +9363,49 @@ function AdminDatabaseSettings() {
   const [success, setSuccess] = useState('');
   const [editingConfigId, setEditingConfigId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<any>(null);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     fetchConfigs();
   }, []);
+
+  const handleSyncFirebase = async () => {
+    if (!configsData || !configsData.configs || configsData.configs.length === 0) {
+      setError('Bạn chưa cấu hình Firebase Database nào!');
+      return;
+    }
+    const globalConfirm = (window as any).globalShowConfirm;
+    if (globalConfirm && !(await globalConfirm('Bạn có chắc chắn muốn đồng bộ toàn bộ dữ liệu từ Firebase cũ về Server mới? Tất cả bài hát, danh sách phát và cài đặt hiện tại trên Server của bạn sẽ được ghi đè bằng dữ liệu từ Firebase.', 'Đồng bộ Firebase', 'confirm'))) {
+      return;
+    }
+
+    setSyncing(true);
+    setError('');
+    setSuccess('');
+    try {
+      const res = await fetch('/api/admin/firebase-sync', {
+        method: 'POST',
+        headers: {
+          'x-artist-extension': getArtistExtensionFromUrl(),
+          'Authorization': `Bearer ${getAdminToken()}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSuccess(data.message || 'Đồng bộ dữ liệu từ Firebase thành công! Vui lòng tải lại trang để thấy dữ liệu mới.');
+        if ((window as any).loadData) {
+          (window as any).loadData();
+        }
+      } else {
+        setError(data.error || 'Có lỗi xảy ra khi đồng bộ.');
+      }
+    } catch (e) {
+      setError('Lỗi kết nối máy chủ');
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const fetchConfigs = async () => {
     try {
@@ -9564,6 +9603,23 @@ function AdminDatabaseSettings() {
             setEditForm({ name: '', config: { projectId: '', apiKey: '', appId: '', authDomain: '', storageBucket: '', messagingSenderId: '', measurementId: '', firestoreDatabaseId: 'default' } });
           }} className="flex items-center gap-2 px-4 py-2 bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] rounded-xl font-bold hover:bg-stone-800 text-sm">
             <Plus className="w-4 h-4" /> {t("Thêm DB mới")}
+          </button>
+          <button
+            disabled={syncing || loading}
+            onClick={handleSyncFirebase}
+            className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white shadow-md hover:shadow-xl hover:shadow-amber-600/20 hover:-translate-y-0.5 border border-transparent hover:bg-amber-700 transition-all duration-300 ease-out active:scale-[0.98] rounded-xl font-bold hover:bg-amber-800 text-sm"
+          >
+            {syncing ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <span>{t("Đang đồng bộ...")}</span>
+              </>
+            ) : (
+              <>
+                <RefreshCw className="w-4 h-4" />
+                <span>{t("Đồng bộ từ Firebase cũ")}</span>
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -11023,6 +11079,36 @@ function AdminDashboard() {
                     </motion.div>
                     {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Bảo Mật")}</span>}
                   </button>
+
+                  {data?.isSpecial && (
+                    <button
+                      onClick={() => setActiveTab('database')}
+                      className={`flex items-center transition-all relative group ${
+                        effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
+                      } ${
+                        activeTab === 'database' ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                      }`}
+                      title={t("Cơ sở dữ liệu")}
+                    >
+                      {activeTab === 'database' && (
+                        <motion.span
+                          layoutId="adminSidebarActiveBg"
+                          className="absolute inset-0 bg-stone-900/95 rounded-xl z-0 shadow-[inset_0_2px_4px_rgba(255,255,255,0.1),inset_0_-2px_6px_rgba(0,0,0,0.8),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-md border border-stone-800 group-hover:bg-stone-800/95"
+                          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                        />
+                      )}
+                      <motion.div
+                        animate={activeTab === 'database' ? {
+                          scale: [1, 1.05, 1],
+                        } : { scale: 1 }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                        className="relative z-10 flex items-center justify-center"
+                      >
+                        <Database className={`w-5 h-5 relative z-10 transition-colors ${activeTab === 'database' ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                      </motion.div>
+                      {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Cơ sở dữ liệu")}</span>}
+                    </button>
+                  )}
                 </div>
               </>
             );
@@ -12400,6 +12486,12 @@ function AdminDashboard() {
                 </form>
               </div>
             </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'database' && (
+            <motion.div key="database" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+            <AdminDatabaseSettings />
             </motion.div>
           )}
 
