@@ -16731,6 +16731,83 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl }: 
   );
 }
 
+function MultiImageDropzone({ values = [], onChange, onRemove, t }: any) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  
+  const handleDrag = (e: any) => { 
+    e.preventDefault(); e.stopPropagation(); 
+    if (e.type === 'dragenter' || e.type === 'dragover') setIsDragging(true); 
+    else setIsDragging(false); 
+  };
+  
+  const handleDrop = async (e: any) => { 
+    e.preventDefault(); e.stopPropagation(); setIsDragging(false); 
+    const files = Array.from(e.dataTransfer.files || []);
+    if (files.length > 0) {
+      setIsUploading(true);
+      for (const file of files) {
+        if (values.length >= 4) break;
+        await onChange(file);
+      }
+      setIsUploading(false);
+    }
+  };
+
+  const handleChange = async (e: any) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      setIsUploading(true);
+      for (const file of files) {
+        if (values.length >= 4) break;
+        await onChange(file);
+      }
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* List of uploaded images */}
+      {values.length > 0 && (
+        <div className="grid grid-cols-4 gap-3">
+          {values.map((url: string, index: number) => (
+            <div key={index} className="relative aspect-square bg-stone-100 rounded-xl overflow-hidden border border-stone-200 group">
+              <img src={url} className="w-full h-full object-cover" />
+              <button 
+                type="button" 
+                onClick={() => onRemove(index)} 
+                className="absolute top-1 right-1 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-md cursor-pointer flex items-center justify-center"
+                title={t("Xóa ảnh")}
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <div className="absolute bottom-1 left-1 bg-black/60 text-white px-1.5 py-0.5 rounded text-[9px] font-bold">
+                #{index + 1}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Upload trigger */}
+      {values.length < 4 && (
+        <div onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop} className={`flex items-center gap-4 p-3 rounded-2xl border-2 transition-all ${isDragging ? 'border-indigo-500 bg-indigo-50/50 border-dashed scale-[1.01]' : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'}`}>
+          <label className="flex-1 flex flex-col items-center justify-center cursor-pointer py-2">
+            {isUploading ? (
+              <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mb-2" />
+            ) : (
+              <Upload className="w-5 h-5 text-stone-400 mb-2" />
+            )}
+            <span className="text-xs text-stone-500 font-medium">{isUploading ? t('Đang tải...') || 'Đang tải...' : `${t("Kéo thả hoặc Click để tải ảnh")} (${values.length}/4)`}</span>
+            <input type="file" accept="image/*" multiple className="hidden" onChange={handleChange} disabled={isUploading} />
+          </label>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ImageDropzone({ value, onChange, onRemove, t }: any) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -16801,13 +16878,13 @@ function AdminBioEdit({ data, t, onSave }: any) {
     if (experience.length < 20) setExperience([...experience, { time: '', title: '', description: '' }]);
   };
 
-  const updateEdu = (idx: number, field: string, val: string) => {
+  const updateEdu = (idx: number, field: string, val: any) => {
     const newEdu = [...education];
     newEdu[idx][field] = val;
     setEducation(newEdu);
   };
   
-  const updateExp = (idx: number, field: string, val: string) => {
+  const updateExp = (idx: number, field: string, val: any) => {
     const newExp = [...experience];
     newExp[idx][field] = val;
     setExperience(newExp);
@@ -16840,7 +16917,7 @@ function AdminBioEdit({ data, t, onSave }: any) {
                     <div className="flex gap-4">
                       <div className="w-1/3">
                         <label className="block text-xs font-bold text-stone-500 mb-1">{t("Thời gian")}</label>
-                        <input value={edu.time} onChange={(e) => updateEdu(idx, 'time', e.target.value)} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-stone-400" placeholder="VD: 2009-2012" />
+                        <input value={edu.time} onChange={(e) => updateEdu(idx, 'time', e.target.value)} maxLength={22} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-stone-400" placeholder="VD: 2009-2012" />
                       </div>
                       <div className="flex-1">
                         <label className="block text-xs font-bold text-stone-500 mb-1">{t("Sự Kiện")}</label>
@@ -16852,17 +16929,27 @@ function AdminBioEdit({ data, t, onSave }: any) {
                       <textarea value={edu.description} onChange={(e) => updateEdu(idx, 'description', e.target.value)} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-stone-400 min-h-[60px]" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-stone-500 mb-2">{t("Hình ảnh minh họa (Tùy chọn)")}</label>
-                      <ImageDropzone 
-                        value={edu.imageUrl} 
+                      <label className="block text-xs font-bold text-stone-500 mb-2">{t("Hình ảnh minh họa (Tối đa 4 ảnh)")}</label>
+                      <MultiImageDropzone 
+                        values={edu.imageUrls && Array.isArray(edu.imageUrls) ? edu.imageUrls : (edu.imageUrl ? [edu.imageUrl] : [])} 
                         onChange={async (file: any) => {
                           try {
-                            const jpg = await compressImageToJPG(file, 800);
+                            const jpg = await compressImageToJPG(file, 1000);
                             const url = await uploadGlobal(jpg);
-                            updateEdu(idx, 'imageUrl', url);
+                            const currentUrls = edu.imageUrls && Array.isArray(edu.imageUrls) ? [...edu.imageUrls] : (edu.imageUrl ? [edu.imageUrl] : []);
+                            if (currentUrls.length < 4) {
+                              const newUrls = [...currentUrls, url];
+                              updateEdu(idx, 'imageUrls', newUrls);
+                              updateEdu(idx, 'imageUrl', newUrls[0] || '');
+                            }
                           } catch (e) { alert("Error uploading"); }
                         }} 
-                        onRemove={() => updateEdu(idx, 'imageUrl', '')} 
+                        onRemove={(imgIdx: number) => {
+                          const currentUrls = edu.imageUrls && Array.isArray(edu.imageUrls) ? [...edu.imageUrls] : (edu.imageUrl ? [edu.imageUrl] : []);
+                          const newUrls = currentUrls.filter((_, i) => i !== imgIdx);
+                          updateEdu(idx, 'imageUrls', newUrls);
+                          updateEdu(idx, 'imageUrl', newUrls[0] || '');
+                        }} 
                         t={t} 
                       />
                     </div>
@@ -16890,7 +16977,7 @@ function AdminBioEdit({ data, t, onSave }: any) {
                     <div className="flex gap-4">
                       <div className="w-1/3">
                         <label className="block text-xs font-bold text-stone-500 mb-1">{t("Thời gian")}</label>
-                        <input value={exp.time} onChange={(e) => updateExp(idx, 'time', e.target.value)} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-stone-400" placeholder="VD: 2025" />
+                        <input value={exp.time} onChange={(e) => updateExp(idx, 'time', e.target.value)} maxLength={22} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-stone-400" placeholder="VD: 2025" />
                       </div>
                       <div className="flex-1">
                         <label className="block text-xs font-bold text-stone-500 mb-1">{t("Sự Kiện")}</label>
@@ -16902,17 +16989,27 @@ function AdminBioEdit({ data, t, onSave }: any) {
                       <textarea value={exp.description} onChange={(e) => updateExp(idx, 'description', e.target.value)} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-stone-400 min-h-[60px]" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-stone-500 mb-2">{t("Hình ảnh minh họa (Tùy chọn)")}</label>
-                      <ImageDropzone 
-                        value={exp.imageUrl} 
+                      <label className="block text-xs font-bold text-stone-500 mb-2">{t("Hình ảnh minh họa (Tối đa 4 ảnh)")}</label>
+                      <MultiImageDropzone 
+                        values={exp.imageUrls && Array.isArray(exp.imageUrls) ? exp.imageUrls : (exp.imageUrl ? [exp.imageUrl] : [])} 
                         onChange={async (file: any) => {
                           try {
-                            const jpg = await compressImageToJPG(file, 800);
+                            const jpg = await compressImageToJPG(file, 1000);
                             const url = await uploadGlobal(jpg);
-                            updateExp(idx, 'imageUrl', url);
+                            const currentUrls = exp.imageUrls && Array.isArray(exp.imageUrls) ? [...exp.imageUrls] : (exp.imageUrl ? [exp.imageUrl] : []);
+                            if (currentUrls.length < 4) {
+                              const newUrls = [...currentUrls, url];
+                              updateExp(idx, 'imageUrls', newUrls);
+                              updateExp(idx, 'imageUrl', newUrls[0] || '');
+                            }
                           } catch (e) { alert("Error uploading"); }
                         }} 
-                        onRemove={() => updateExp(idx, 'imageUrl', '')} 
+                        onRemove={(imgIdx: number) => {
+                          const currentUrls = exp.imageUrls && Array.isArray(exp.imageUrls) ? [...exp.imageUrls] : (exp.imageUrl ? [exp.imageUrl] : []);
+                          const newUrls = currentUrls.filter((_, i) => i !== imgIdx);
+                          updateExp(idx, 'imageUrls', newUrls);
+                          updateExp(idx, 'imageUrl', newUrls[0] || '');
+                        }} 
                         t={t} 
                       />
                     </div>
@@ -17266,6 +17363,54 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0 }: {
   const isEmerald = color === "emerald";
   const [isImgOpen, setIsImgOpen] = useState(false);
   
+  // Resolve multiple images from data
+  const images = useMemo(() => {
+    if (item.imageUrls && Array.isArray(item.imageUrls) && item.imageUrls.length > 0) {
+      return item.imageUrls.filter(Boolean);
+    }
+    return item.imageUrl ? [item.imageUrl] : [];
+  }, [item.imageUrls, item.imageUrl]);
+
+  const [activeImgIdx, setActiveImgIdx] = useState(0);
+  const [activeModalIdx, setActiveModalIdx] = useState(0);
+
+  // Outer slideshow (auto transition 3s)
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const interval = setInterval(() => {
+      setActiveImgIdx((prev) => (prev + 1) % images.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [images.length]);
+
+  // Open modal handler
+  const handleOpenModal = () => {
+    setActiveModalIdx(activeImgIdx);
+    setIsImgOpen(true);
+  };
+
+  // Modal manual control with timer reset
+  const handlePrev = (e: any) => {
+    e.stopPropagation();
+    setActiveModalIdx((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const handleNext = (e: any) => {
+    e.stopPropagation();
+    setActiveModalIdx((prev) => (prev + 1) % images.length);
+  };
+
+  // Modal auto transition (auto transition 3s)
+  useEffect(() => {
+    if (!isImgOpen || images.length <= 1) return;
+    const interval = setInterval(() => {
+      setActiveModalIdx((prev) => (prev + 1) % images.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [isImgOpen, images.length, activeModalIdx]); // reset timer on activeModalIdx change
+
+  const hasImages = images.length > 0;
+
   return (
     <>
       <div className={`relative flex items-start justify-between md:justify-normal ${!isSplit ? 'md:odd:flex-row-reverse' : ''} group is-active cursor-default`}>
@@ -17294,8 +17439,9 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0 }: {
           transition={{ delay: index * 0.2 + 0.4, duration: 0.5, ease: 'easeOut' }}
           className={`flex-1 pt-0 pb-8 transition-colors ${!isSplit ? 'md:flex-none md:w-[calc(50%-2.5rem)] text-left md:group-odd:text-right' : 'ml-2 sm:ml-3'} relative flex flex-row items-start justify-between gap-0 sm:gap-2 md:gap-0 p-4 -mt-4 rounded-xl hover:bg-white/5 hover:scale-[1.02] duration-300 group`}
         >
-          <div className={`w-[85%] md:w-[85%] lg:w-[82%] relative z-0 md:pr-6`}>
-            <div className={`flex flex-col mb-1 ${!isSplit ? 'md:group-odd:items-end' : ''}`}>
+          {/* Text content - dynamically adjust width based on hasImages */}
+          <div className={`${hasImages ? 'w-[85%] md:w-[85%] lg:w-[82%] md:pr-6' : 'w-full'} relative z-0`}>
+            <div className={`flex flex-col mb-1 ${!isSplit && hasImages ? 'md:group-odd:items-end' : ''}`}>
               <div className="mb-2">
                 <span className={`text-xs sm:text-sm font-bold inline-block px-3 py-1.5 rounded-lg border transition-all duration-300 shadow-sm ${isEmerald ? 'text-[#34d399] border-[#34d399]/10 bg-[#34d399]/5 group-hover:border-[#34d399]/40 group-hover:bg-[#34d399]/15' : 'text-[#38bdf8] border-[#38bdf8]/10 bg-[#38bdf8]/5 group-hover:border-[#38bdf8]/40 group-hover:bg-[#38bdf8]/15'}`}>{item.time}</span>
               </div>
@@ -17303,7 +17449,9 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0 }: {
             </div>
             <p className="text-white/80 text-sm leading-relaxed whitespace-pre-line">{item.description}</p>
           </div>
-          {item.imageUrl && (
+
+          {/* Image Container */}
+          {hasImages && (
             <motion.div 
               initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
               whileInView={{ opacity: 1, scale: 1, rotate: !isSplit ? [-2, 3, -1, 2, -2] : [2, -3, 1, -2, 2] }}
@@ -17314,21 +17462,38 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0 }: {
                 rotate: { repeat: Infinity, duration: 8, ease: "easeInOut" }
               }}
               style={{ transformOrigin: 'top center' }}
-              className={`shrink-0 absolute top-0 -right-2 sm:-right-4 md:-right-10 bg-[#fdfbf7] p-1 pb-3 sm:p-1.5 sm:pb-5 shadow-[2px_4px_15px_rgba(0,0,0,0.15)] border border-stone-200/80 rounded-sm cursor-pointer hover:z-20 hover:scale-105 transition-transform z-10 ${!isSplit ? 'md:group-odd:left-auto md:group-odd:right-auto md:group-odd:-left-10 lg:group-odd:-left-12' : ''}`}
-              onClick={() => setIsImgOpen(true)}
+              className={`shrink-0 absolute top-0 -right-2 sm:-right-4 md:-right-10 bg-[#fdfbf7] p-1 pb-3 sm:p-1.5 sm:pb-5 shadow-[2px_4px_15px_rgba(0,0,0,0.15)] border border-stone-200/80 rounded-sm cursor-pointer hover:z-20 hover:scale-105 transition-all z-10 ${!isSplit ? 'md:group-odd:left-auto md:group-odd:right-auto md:group-odd:-left-10 lg:group-odd:-left-12' : ''}`}
+              onClick={handleOpenModal}
             >
               {/* Tape effect */}
               <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-6 sm:w-8 h-3 sm:h-4 bg-white/60 backdrop-blur-sm shadow-sm rotate-[4deg] z-10 border border-white/40"></div>
-              <img 
-                src={item.imageUrl} 
-                className={`w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 object-cover rounded-sm border border-stone-200/50`}
-                alt={item.title}
-              />
+              
+              {/* Image with preserved aspect ratio */}
+              <div className="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 flex items-center justify-center overflow-hidden bg-stone-50 rounded-sm">
+                <img 
+                  src={images[activeImgIdx]} 
+                  className="max-w-full max-h-full object-contain rounded-sm border border-stone-100"
+                  alt={item.title}
+                />
+              </div>
+
+              {/* Indicator dots for multiple images on miniature Polaroid */}
+              {images.length > 1 && (
+                <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex items-center gap-0.5 pointer-events-none">
+                  {images.map((_, i) => (
+                    <div 
+                      key={i} 
+                      className={`w-1 h-1 rounded-full transition-all duration-300 ${i === activeImgIdx ? 'bg-amber-500 scale-125' : 'bg-stone-300'}`} 
+                    />
+                  ))}
+                </div>
+              )}
             </motion.div>
           )}
         </motion.div>
       </div>
 
+      {/* Modal Zoom Portal */}
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
           {isImgOpen && (
@@ -17336,60 +17501,104 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0 }: {
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
-              className="fixed inset-0 z-[999999] flex items-center justify-center p-4 sm:p-8 bg-black/40 backdrop-blur-sm" 
+              className="fixed inset-0 z-[999999] flex items-center justify-center p-4 sm:p-8 bg-black/50 backdrop-blur-md" 
               onClick={() => setIsImgOpen(false)}
             >
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0, y: 20, rotate: -2 }} 
-              animate={{ scale: 1, opacity: 1, y: 0, rotate: 0 }} 
-              exit={{ scale: 0.95, opacity: 0, y: 20, rotate: 2 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative inline-flex flex-col bg-[#fdfbf7] p-2.5 sm:p-4 pb-4 sm:pb-6 shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-stone-200/80 rounded-sm cursor-auto max-w-[95vw] sm:max-w-[90vw]" 
-              onClick={e => e.stopPropagation()}
-            >
-              {/* Tape effect */}
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-12 sm:w-16 h-5 sm:h-6 bg-white/60 backdrop-blur-sm shadow-sm rotate-[3deg] z-10 border border-white/40"></div>
-              
-              {/* Close Button */}
-              <div className="absolute -top-4 -right-4 z-20">
-                <button 
-                  type="button" 
-                  onClick={() => setIsImgOpen(false)} 
-                  className="text-stone-500 hover:text-stone-800 transition-colors p-2 bg-white hover:bg-stone-50 border border-stone-200 rounded-full shadow-md"
-                >
-                  <X className="w-5 h-5 sm:w-6 sm:h-6" />
-                </button>
-              </div>
-
-              {/* Image */}
-              <div className="flex items-center justify-center overflow-hidden border border-stone-200/50">
-                <div className="relative inline-block leading-none">
-                  <img 
-                    src={item.imageUrl} 
-                    className="w-[280px] h-[280px] sm:w-[400px] sm:h-[400px] md:w-[500px] md:h-[500px] max-w-[85vw] max-h-[70vh] object-cover shadow-sm cursor-pointer" 
-                    alt={item.title} 
+              <motion.div 
+                initial={{ scale: 0.95, opacity: 0, y: 20, rotate: -2 }} 
+                animate={{ scale: 1, opacity: 1, y: 0, rotate: 0 }} 
+                exit={{ scale: 0.95, opacity: 0, y: 20, rotate: 2 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="relative inline-flex flex-col bg-[#fdfbf7] p-3 sm:p-5 pb-5 sm:pb-7 shadow-[0_20px_50px_rgba(0,0,0,0.6)] border border-stone-200/90 rounded-sm cursor-auto max-w-[95vw] sm:max-w-[90vw]" 
+                onClick={e => e.stopPropagation()}
+              >
+                {/* Tape effect */}
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-14 sm:w-20 h-5 sm:h-7 bg-white/70 backdrop-blur-sm shadow-sm rotate-[3deg] z-10 border border-white/50"></div>
+                
+                {/* Close Button */}
+                <div className="absolute -top-4 -right-4 z-30">
+                  <button 
+                    type="button" 
                     onClick={() => setIsImgOpen(false)} 
-                  />
-                  
-                  {/* Vintage Date Overlay */}
-                  <div 
-                    className="absolute bottom-2 sm:bottom-4 left-3 sm:left-5 z-10 text-[#ffb800] text-[14px] sm:text-2xl font-bold tracking-widest opacity-90 pointer-events-none" 
-                    style={{ 
-                      fontFamily: '"Courier New", Courier, monospace', 
-                      textShadow: '2px 2px 4px rgba(0,0,0,0.8), -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' 
-                    }}
+                    className="text-stone-500 hover:text-stone-800 transition-colors p-2 bg-white hover:bg-stone-50 border border-stone-200 rounded-full shadow-md cursor-pointer"
                   >
-                    {item.time}
+                    <X className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </button>
+                </div>
+
+                {/* Slideshow Display Section */}
+                <div className="relative flex items-center justify-center overflow-hidden border border-stone-200/50 bg-stone-50/50 p-1 rounded-sm max-w-[85vw] max-h-[65vh] md:max-w-[65vw] md:max-h-[65vh]">
+                  {/* Left Arrow Button */}
+                  {images.length > 1 && (
+                    <button 
+                      type="button"
+                      onClick={handlePrev}
+                      className="absolute left-2 z-20 p-2 rounded-full bg-white/80 hover:bg-white text-stone-700 hover:text-stone-900 shadow-md backdrop-blur-xs transition-all duration-200 cursor-pointer active:scale-95"
+                      title="Quay lại"
+                    >
+                      <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </button>
+                  )}
+
+                  {/* Right Arrow Button */}
+                  {images.length > 1 && (
+                    <button 
+                      type="button"
+                      onClick={handleNext}
+                      className="absolute right-2 z-20 p-2 rounded-full bg-white/80 hover:bg-white text-stone-700 hover:text-stone-900 shadow-md backdrop-blur-xs transition-all duration-200 cursor-pointer active:scale-95"
+                      title="Tiếp theo"
+                    >
+                      <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </button>
+                  )}
+
+                  {/* Image with preserved aspect ratio */}
+                  <div className="relative inline-block leading-none">
+                    <img 
+                      src={images[activeModalIdx]} 
+                      className="max-w-[80vw] max-h-[60vh] md:max-w-[60vw] md:max-h-[60vh] min-w-[200px] min-h-[200px] object-contain shadow-xs cursor-pointer select-none" 
+                      alt={item.title} 
+                      onClick={() => setIsImgOpen(false)} 
+                    />
+                    
+                    {/* Vintage Date Overlay */}
+                    <div 
+                      className="absolute bottom-3 sm:bottom-5 left-4 sm:left-6 z-10 text-[#ffb800] text-[14px] sm:text-2xl font-bold tracking-widest opacity-90 pointer-events-none select-none" 
+                      style={{ 
+                        fontFamily: '"Courier New", Courier, monospace', 
+                        textShadow: '2px 2px 4px rgba(0,0,0,0.8), -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' 
+                      }}
+                    >
+                      {item.time}
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              {/* Handwriting Caption */}
-              <div className="w-full px-2 mt-2 sm:mt-4 text-center flex items-center justify-center">
-                <h3 className="text-sm sm:text-xl text-stone-800 font-medium italic -rotate-1 line-clamp-2 leading-tight px-1 max-w-full">{item.title}</h3>
-              </div>
+
+                {/* Dots indicator for multiple images in Modal */}
+                {images.length > 1 && (
+                  <div className="flex justify-center gap-1.5 mt-3 select-none">
+                    {images.map((_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveModalIdx(i);
+                        }}
+                        className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${i === activeModalIdx ? 'bg-amber-500 scale-125' : 'bg-stone-300 hover:bg-stone-400'} cursor-pointer`}
+                      />
+                    ))}
+                  </div>
+                )}
+                
+                {/* Handwriting Caption */}
+                <div className="w-full px-2 mt-3 sm:mt-4 text-center flex items-center justify-center select-none">
+                  <h3 className="text-sm sm:text-xl text-stone-800 font-medium italic -rotate-1 line-clamp-2 leading-tight px-1 max-w-full">
+                    {item.title} {images.length > 1 && <span className="text-stone-400 font-sans font-light not-italic text-xs sm:text-sm ml-1">({activeModalIdx + 1}/{images.length})</span>}
+                  </h3>
+                </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
           )}
         </AnimatePresence>,
         document.body
