@@ -3539,7 +3539,10 @@ const LanguageContext = createContext<LangContextType>({ lang: 'vi', setLang: ()
 
 // ---- GLOBAL MULTI-ARTIST INTERCEPTORS ----
 const getArtistExtensionFromUrl = () => {
-  const host = window.location.hostname.replace(/^www\./, '');
+  if ((window as any).__ACTIVE_ARTIST_EXTENSION__) {
+    return (window as any).__ACTIVE_ARTIST_EXTENSION__;
+  }
+  const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
   if (host.endsWith('.chorus.vn') && host !== 'chorus.vn') {
     const sub = host.replace('.chorus.vn', '');
     if (sub) return sub;
@@ -3562,9 +3565,15 @@ const getArtistExtensionFromUrl = () => {
   return '';
 };
 
+const isArtistContext = () => {
+  const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
+  if (host.endsWith('.chorus.vn') && host !== 'chorus.vn') return true;
+  if ((window as any).__ACTIVE_ARTIST_EXTENSION__) return true;
+  return false;
+};
+
 const getAdminLink = (subPath: string = '') => {
-  const host = window.location.hostname.replace(/^www\./, '');
-  const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
+  const isSubdomain = isArtistContext();
   if (isSubdomain) {
     return `/admin${subPath}`;
   }
@@ -3573,8 +3582,7 @@ const getAdminLink = (subPath: string = '') => {
 };
 
 const getArtistLink = (subPath: string = '') => {
-  const host = window.location.hostname.replace(/^www\./, '');
-  const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
+  const isSubdomain = isArtistContext();
   const normalizedPath = subPath.startsWith('/') ? subPath : `/${subPath}`;
   if (isSubdomain) {
     return normalizedPath;
@@ -3789,8 +3797,7 @@ function AdminLogin() {
   const [err, setErr] = useState('');
 
   useEffect(() => {
-    const host = window.location.hostname.replace(/^www\./, '');
-    const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
+    const isSubdomain = isArtistContext();
     if (!isSubdomain && window.location.pathname === '/admin') {
       window.location.href = '/';
     }
@@ -3807,8 +3814,7 @@ function AdminLogin() {
       if (res.ok) {
         const data = await res.json();
         setAdminToken(data.token || pwd);
-        const host = window.location.hostname.replace(/^www\./, '');
-        const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
+        const isSubdomain = isArtistContext();
         if (isSubdomain) {
           window.location.href = getAdminLink();
         } else {
@@ -3994,8 +4000,7 @@ function MemberLogin() {
 
 function RequireAdmin({ children }: { children: React.ReactNode }) {
   const ext = getArtistExtensionFromUrl();
-  const host = window.location.hostname.replace(/^www\./, '');
-  const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
+  const isSubdomain = isArtistContext();
   
   if (!ext && !isSubdomain) {
      window.location.href = '/';
@@ -4011,8 +4016,7 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
 
 function AnimatedRoutes() {
   const location = useLocation();
-  const host = window.location.hostname.replace(/^www\./, '');
-  const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
+  const isSubdomain = isArtistContext();
 
   return (
     <AnimatePresence mode="wait">
@@ -9364,10 +9368,45 @@ function AdminDatabaseSettings() {
   const [editingConfigId, setEditingConfigId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<any>(null);
   const [syncing, setSyncing] = useState(false);
+  const [mediaSyncing, setMediaSyncing] = useState(false);
 
   useEffect(() => {
     fetchConfigs();
   }, []);
+
+  const handleSyncMediaFirebase = async () => {
+    const globalConfirm = (window as any).globalShowConfirm;
+    if (globalConfirm && !(await globalConfirm('Hệ thống sẽ tải toàn bộ tệp tin nhạc (mp3) và hình ảnh (ảnh bìa, ảnh chạy slideshow, ảnh đại diện, banner) từ Firebase/Google Drive về lưu trữ trực tiếp trên ổ cứng Server, sau đó đồng bộ hóa đường dẫn nội bộ. Bạn có muốn tiếp tục?', 'Tải Media & Đồng Bộ về Server', 'confirm'))) {
+      return;
+    }
+
+    setMediaSyncing(true);
+    setError('');
+    setSuccess('');
+    try {
+      const res = await fetch('/api/admin/firebase-media-sync', {
+        method: 'POST',
+        headers: {
+          'x-artist-extension': getArtistExtensionFromUrl(),
+          'Authorization': `Bearer ${getAdminToken()}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSuccess(data.message || 'Tải media và đồng bộ hóa từ Firebase thành công!');
+        if ((window as any).loadData) {
+          (window as any).loadData();
+        }
+      } else {
+        setError(data.error || 'Có lỗi xảy ra khi tải media và đồng bộ.');
+      }
+    } catch (e) {
+      setError('Lỗi kết nối máy chủ');
+    } finally {
+      setMediaSyncing(false);
+    }
+  };
 
   const handleSyncFirebase = async () => {
     if (!configsData || !configsData.configs || configsData.configs.length === 0) {
@@ -9626,6 +9665,40 @@ function AdminDatabaseSettings() {
 
       {success && <div className="p-4 bg-green-50 text-green-700 rounded-xl border border-green-200 font-medium">{success}</div>}
       {error && <div className="p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 font-medium">{error}</div>}
+
+      {getArtistExtensionFromUrl() === 'acxuantai' && (
+        <div className="bg-stone-50 border border-amber-200 rounded-2xl p-6 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div className="space-y-1.5">
+              <h3 className="font-extrabold text-stone-900 text-base flex items-center gap-2">
+                <span className="w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping"></span>
+                Đồng Bộ Toàn Bộ Dữ Liệu & Tải Media Về Server Chính
+              </h3>
+              <p className="text-xs text-stone-500 leading-relaxed max-w-3xl">
+                Dành riêng cho tài khoản đặc biệt: Tải trực tiếp toàn bộ các tệp tin âm thanh (.mp3) và hình ảnh (ảnh bìa, slideshow, avatar, banner) từ Firebase Database/Storage về ổ đĩa cứng của Server chính này, tự động tối ưu hóa đường dẫn nội bộ cục bộ để cả hai nơi đều lưu trữ đầy đủ tài nguyên một cách độc lập và đồng bộ.
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled={mediaSyncing || loading}
+              onClick={handleSyncMediaFirebase}
+              className="flex items-center justify-center gap-2 px-6 py-3.5 bg-amber-500 hover:bg-amber-600 disabled:bg-stone-300 text-stone-950 font-extrabold rounded-xl text-sm transition-all shadow-md hover:shadow-lg active:scale-[0.98] shrink-0 cursor-pointer self-start md:self-auto"
+            >
+              {mediaSyncing ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-stone-950/30 border-t-stone-950 rounded-full animate-spin"></div>
+                  <span>Đang tải tệp tin...</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  <span>Tải & Đồng bộ Media</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {configsData?.configs?.map((c: any) => {

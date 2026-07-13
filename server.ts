@@ -1108,21 +1108,63 @@ async function startServer() {
     }
   };
 
+  const domainsMatch = (d1: string, d2: string): boolean => {
+    if (!d1 || !d2) return false;
+    const clean = (d: string) => d.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].toLowerCase().trim();
+    const c1 = clean(d1);
+    const c2 = clean(d2);
+    if (c1 === c2) return true;
+    
+    try {
+      const ascii1_nfc = punycode.toASCII(c1.normalize('NFC'));
+      const ascii1_nfd = punycode.toASCII(c1.normalize('NFD'));
+      const ascii2_nfc = punycode.toASCII(c2.normalize('NFC'));
+      const ascii2_nfd = punycode.toASCII(c2.normalize('NFD'));
+      
+      const uni1_nfc = punycode.toUnicode(c1).normalize('NFC');
+      const uni1_nfd = punycode.toUnicode(c1).normalize('NFD');
+      const uni2_nfc = punycode.toUnicode(c2).normalize('NFC');
+      const uni2_nfd = punycode.toUnicode(c2).normalize('NFD');
+      
+      const set1 = new Set([c1, ascii1_nfc, ascii1_nfd, uni1_nfc, uni1_nfd]);
+      const set2 = new Set([c2, ascii2_nfc, ascii2_nfd, uni2_nfc, uni2_nfd]);
+      
+      for (const item of set1) {
+        if (set2.has(item)) return true;
+      }
+    } catch (e) {}
+    return false;
+  };
+
   const getArtistFromRequest = (req: express.Request): any => {
     let ext = (req.query.artist || req.query.extension || req.query.artistExtension) as string;
     
     if (!ext) {
       ext = (req.headers['x-artist-extension'] || req.headers['x-artist']) as string;
     }
+
+    // Check request path segments directly
+    if (!ext && req.path) {
+      const segments = req.path.split('/').filter(Boolean);
+      if (segments.length > 0) {
+        const possibleExt = segments[0];
+        const reserved = ['admin', 'acp', 'mem', 'demo', 'song', 'playlist', 'api', 'uploads'];
+        if (!reserved.includes(possibleExt)) {
+          const matchedArtist = artists.find(a => a.extension === possibleExt || a.username === possibleExt);
+          if (matchedArtist) {
+            ext = matchedArtist.extension;
+          }
+        }
+      }
+    }
     
     // Check subdomain (e.g. abc.chorus.vn) or custom domain
     if (!ext && req.headers.host) {
       const host = req.headers.host.replace(/^www\./, '').toLowerCase().trim();
-      const hostAscii = normalizeToAscii(host);
       const matchedArtist = artists.find(a => {
         const cd = a.customDomain || '';
         const ew = a.externalWebsiteUrl || '';
-        return (cd && normalizeToAscii(cd) === hostAscii) || (ew && normalizeToAscii(ew) === hostAscii);
+        return (cd && domainsMatch(cd, host)) || (ew && domainsMatch(ew, host));
       });
       if (matchedArtist) {
         ext = matchedArtist.extension;
@@ -1139,11 +1181,10 @@ async function startServer() {
           const parsedUrl = new URL(referer);
           // Also check referer hostname
           const refHost = parsedUrl.hostname.replace(/^www\./, '').toLowerCase().trim();
-          const refHostAscii = normalizeToAscii(refHost);
           const matchedArtistByRef = artists.find(a => {
             const cd = a.customDomain || '';
             const ew = a.externalWebsiteUrl || '';
-            return (cd && normalizeToAscii(cd) === refHostAscii) || (ew && normalizeToAscii(ew) === refHostAscii);
+            return (cd && domainsMatch(cd, refHost)) || (ew && domainsMatch(ew, refHost));
           });
           if (matchedArtistByRef) {
             ext = matchedArtistByRef.extension;
@@ -2961,6 +3002,239 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     } catch (e: any) {
       console.error('Lỗi khi đồng bộ Firebase:', e);
       res.status(500).json({ error: e.message || 'Lỗi không xác định trong quá trình đồng bộ.' });
+    }
+  });
+
+  app.post('/api/admin/firebase-media-sync', async (req: any, res) => {
+    if (!isRequestAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const currentUsername = req.artist?.username || 'acxuantai';
+    const artist = artists.find(a => a.username === currentUsername);
+    if (!artist) {
+      return res.status(404).json({ error: 'Không tìm thấy thông tin nghệ sĩ!' });
+    }
+
+    try {
+      let dbConfigStr = artist.dbConfig;
+      if (!dbConfigStr && currentUsername === 'acxuantai') {
+        const defaultDbConfig = {
+          projectId: "taimusic-96289",
+          apiKey: "AIzaSyAcml_QfgGTH80OKmRVj2tWIomEQUUiHB0",
+          appId: "1:848155741386:web:4f5b5d826ce5fbbba8f833",
+          authDomain: "taimusic-96289.firebaseapp.com",
+          storageBucket: "taimusic-96289.firebasestorage.app",
+          messagingSenderId: "848155741386",
+          measurementId: "G-D4ZSK50GZ2",
+          firestoreDatabaseId: "default"
+        };
+        artist.dbConfig = JSON.stringify(defaultDbConfig, null, 2);
+        await saveArtists(artists);
+        dbConfigStr = artist.dbConfig;
+      }
+
+      if (!dbConfigStr) {
+        return res.status(400).json({ error: 'Chưa cấu hình Firebase Database riêng cho tài khoản của bạn!' });
+      }
+
+      const config = typeof dbConfigStr === 'string' ? JSON.parse(dbConfigStr) : dbConfigStr;
+      
+      const normalizedConfig = {
+        apiKey: config.apiKey || config.api_key,
+        authDomain: config.authDomain || config.auth_domain,
+        projectId: config.projectId || config.project_id,
+        storageBucket: config.storageBucket || config.storage_bucket,
+        messagingSenderId: config.messagingSenderId || config.messaging_sender_id,
+        appId: config.appId || config.app_id,
+        measurementId: config.measurementId || config.measurement_id,
+        firestoreDatabaseId: config.firestoreDatabaseId || config.firestore_database_id || 'default'
+      };
+
+      if (!normalizedConfig.projectId || !normalizedConfig.apiKey) {
+        return res.status(400).json({ error: 'Cấu hình Firebase không hợp lệ (thiếu Project ID hoặc API Key)!' });
+      }
+
+      const appName = `media-sync-${artist.username}-${Date.now()}`;
+      const customApp = initializeApp(normalizedConfig, appName);
+      const customDb = getFirestore(customApp, normalizedConfig.firestoreDatabaseId);
+      const docRef = doc(customDb, 'app_data', 'main');
+      const docSnap = await getDoc(docRef);
+      
+      if (!docSnap.exists()) {
+        return res.status(404).json({ error: 'Không tìm thấy dữ liệu trong bảng app_data/main trên Firebase!' });
+      }
+
+      const syncedData = docSnap.data();
+      syncedData.username = artist.username;
+      if (!syncedData.demos) syncedData.demos = [];
+      if (!syncedData.playlists) syncedData.playlists = [];
+
+      let downloadCount = 0;
+      let failCount = 0;
+
+      const artistUploadsDir = path.join(process.cwd(), 'public', 'uploads', artist.username);
+      await fs.mkdir(artistUploadsDir, { recursive: true });
+
+      const cleanUrlToFilename = (urlStr: string, prefix: string, defaultExt: string, idx: number): string => {
+        try {
+          const u = new URL(urlStr);
+          const pathname = u.pathname;
+          let base = path.basename(pathname);
+          base = decodeURIComponent(base).split('?')[0].split('/').pop() || '';
+          if (base && base.includes('.')) {
+            const ext = path.extname(base);
+            const name = path.basename(base, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
+            return `${prefix}_${idx}_${name}${ext}`;
+          }
+        } catch (e) {}
+        return `${prefix}_${idx}_${Date.now()}${defaultExt}`;
+      };
+
+      async function downloadMediaFile(url: string, destPath: string): Promise<boolean> {
+        try {
+          let fetchUrl = url;
+          const driveRegex = /(?:drive\.google\.com\/(?:file\/d\/|open\?id=)|docs\.google\.com\/(?:file\/d\/|open\?id=))([a-zA-Z0-9_-]{25,})/;
+          const match = url.match(driveRegex);
+          if (match && match[1]) {
+            fetchUrl = `https://docs.google.com/uc?export=download&id=${match[1]}`;
+          }
+
+          const res = await fetch(fetchUrl, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+          });
+
+          if (!res.ok) {
+            console.error(`Failed to download ${url}: status ${res.status}`);
+            return false;
+          }
+
+          const buffer = Buffer.from(await res.arrayBuffer());
+          await fs.writeFile(destPath, buffer);
+          return true;
+        } catch (err) {
+          console.error(`Error downloading media ${url}:`, err);
+          return false;
+        }
+      }
+
+      // 1. Process aboutMe avatar
+      if (syncedData.aboutMe && syncedData.aboutMe.avatarUrl && syncedData.aboutMe.avatarUrl.startsWith('http') && !syncedData.aboutMe.avatarUrl.includes('/uploads/')) {
+        const url = syncedData.aboutMe.avatarUrl;
+        const filename = cleanUrlToFilename(url, 'avatar', '.jpg', 0);
+        const dest = path.join(artistUploadsDir, filename);
+        if (await downloadMediaFile(url, dest)) {
+          syncedData.aboutMe.avatarUrl = `/uploads/${artist.username}/${filename}`;
+          downloadCount++;
+        } else {
+          failCount++;
+        }
+      }
+
+      // 2. Process homeCoverUrl
+      if (syncedData.homeCoverUrl && syncedData.homeCoverUrl.startsWith('http') && !syncedData.homeCoverUrl.includes('/uploads/')) {
+        const url = syncedData.homeCoverUrl;
+        const filename = cleanUrlToFilename(url, 'home_cover', '.jpg', 0);
+        const dest = path.join(artistUploadsDir, filename);
+        if (await downloadMediaFile(url, dest)) {
+          syncedData.homeCoverUrl = `/uploads/${artist.username}/${filename}`;
+          downloadCount++;
+        } else {
+          failCount++;
+        }
+      }
+
+      // 3. Process slideshowImages
+      if (Array.isArray(syncedData.slideshowImages)) {
+        for (let i = 0; i < syncedData.slideshowImages.length; i++) {
+          const url = syncedData.slideshowImages[i];
+          if (url && url.startsWith('http') && !url.includes('/uploads/')) {
+            const filename = cleanUrlToFilename(url, 'slide', '.jpg', i);
+            const dest = path.join(artistUploadsDir, filename);
+            if (await downloadMediaFile(url, dest)) {
+              syncedData.slideshowImages[i] = `/uploads/${artist.username}/${filename}`;
+              downloadCount++;
+            } else {
+              failCount++;
+            }
+          }
+        }
+      }
+
+      // 4. Process demos
+      if (Array.isArray(syncedData.demos)) {
+        for (let i = 0; i < syncedData.demos.length; i++) {
+          const d = syncedData.demos[i];
+          if (!d) continue;
+
+          // audioUrl
+          if (d.audioUrl && d.audioUrl.startsWith('http') && !d.audioUrl.includes('/uploads/')) {
+            const filename = cleanUrlToFilename(d.audioUrl, 'audio', '.mp3', i);
+            const dest = path.join(artistUploadsDir, filename);
+            if (await downloadMediaFile(d.audioUrl, dest)) {
+              d.audioUrl = `/uploads/${artist.username}/${filename}`;
+              downloadCount++;
+            } else {
+              failCount++;
+            }
+          }
+
+          // coverUrl
+          if (d.coverUrl && d.coverUrl.startsWith('http') && !d.coverUrl.includes('/uploads/')) {
+            const filename = cleanUrlToFilename(d.coverUrl, 'cover', '.jpg', i);
+            const dest = path.join(artistUploadsDir, filename);
+            if (await downloadMediaFile(d.coverUrl, dest)) {
+              d.coverUrl = `/uploads/${artist.username}/${filename}`;
+              downloadCount++;
+            } else {
+              failCount++;
+            }
+          }
+
+          // backgroundUrl
+          if (d.backgroundUrl && d.backgroundUrl.startsWith('http') && !d.backgroundUrl.includes('/uploads/')) {
+            const filename = cleanUrlToFilename(d.backgroundUrl, 'bg', '.jpg', i);
+            const dest = path.join(artistUploadsDir, filename);
+            if (await downloadMediaFile(d.backgroundUrl, dest)) {
+              d.backgroundUrl = `/uploads/${artist.username}/${filename}`;
+              downloadCount++;
+            } else {
+              failCount++;
+            }
+          }
+        }
+      }
+
+      // 5. Process playlists
+      if (Array.isArray(syncedData.playlists)) {
+        for (let i = 0; i < syncedData.playlists.length; i++) {
+          const p = syncedData.playlists[i];
+          if (!p) continue;
+
+          // coverUrl
+          if (p.coverUrl && p.coverUrl.startsWith('http') && !p.coverUrl.includes('/uploads/')) {
+            const filename = cleanUrlToFilename(p.coverUrl, 'playlist', '.jpg', i);
+            const dest = path.join(artistUploadsDir, filename);
+            if (await downloadMediaFile(p.coverUrl, dest)) {
+              p.coverUrl = `/uploads/${artist.username}/${filename}`;
+              downloadCount++;
+            } else {
+              failCount++;
+            }
+          }
+        }
+      }
+
+      await saveData(artist.username, syncedData);
+
+      res.json({
+        success: true,
+        message: `Đã tải thành công ${downloadCount} tệp tin media từ Firebase về Server và đồng bộ hóa thành công cục bộ! (Thất bại: ${failCount})`
+      });
+    } catch (e: any) {
+      console.error('Lỗi khi tải media từ Firebase:', e);
+      res.status(500).json({ error: e.message || 'Lỗi không xác định trong quá trình tải media.' });
     }
   });
 
@@ -5114,7 +5388,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       const isCustomDomain = artists.some(a => {
         const cd = a.customDomain || '';
         const ew = a.externalWebsiteUrl || '';
-        return (cd && normalizeToAscii(cd) === hostAscii) || (ew && normalizeToAscii(ew) === hostAscii);
+        return (cd && domainsMatch(cd, host)) || (ew && domainsMatch(ew, host));
       });
 
       const cleanPath = url.split('?')[0];
@@ -5302,7 +5576,15 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       if (faviconUrlToInject) {
         metaTags += `\n        <link rel="icon" href="${escapeHtmlAttr(faviconUrlToInject)}" />`;
       }
-      html = html.replace(/<\/head>/i, `${metaTags}</head>`);
+      let injectedScripts = '';
+      const activeArtist = (req as any).artist;
+      if (activeArtist && !isMainLandingPage) {
+        injectedScripts += `\n    <script>
+      window.__ACTIVE_ARTIST_USERNAME__ = ${JSON.stringify(activeArtist.username)};
+      window.__ACTIVE_ARTIST_EXTENSION__ = ${JSON.stringify(activeArtist.extension)};
+    </script>`;
+      }
+      html = html.replace(/<\/head>/i, `${metaTags}${injectedScripts}</head>`);
 
       res.status(200).set({ 'Content-Type': 'text/html' }).end(html);
     } catch (e: any) {
