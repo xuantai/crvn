@@ -1,5 +1,6 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
+import punycode from 'punycode';
 
 import fsSync from 'fs';
 import path from 'path';
@@ -1026,6 +1027,15 @@ async function startServer() {
     res.json({ status: 'ok' });
   });
 
+  const normalizeToAscii = (domain: string): string => {
+    try {
+      const clean = (domain || '').replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].toLowerCase().trim();
+      return punycode.toASCII(clean);
+    } catch (e) {
+      return (domain || '').replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].toLowerCase().trim();
+    }
+  };
+
   const getArtistFromRequest = (req: express.Request): any => {
     let ext = (req.query.artist || req.query.extension || req.query.artistExtension) as string;
     
@@ -1036,10 +1046,11 @@ async function startServer() {
     // Check subdomain (e.g. abc.chorus.vn) or custom domain
     if (!ext && req.headers.host) {
       const host = req.headers.host.replace(/^www\./, '').toLowerCase().trim();
+      const hostAscii = normalizeToAscii(host);
       const matchedArtist = artists.find(a => {
-        const cd = (a.customDomain || '').replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].toLowerCase().trim();
-        const ew = (a.externalWebsiteUrl || '').replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].toLowerCase().trim();
-        return (cd && cd === host) || (ew && ew === host);
+        const cd = a.customDomain || '';
+        const ew = a.externalWebsiteUrl || '';
+        return (cd && normalizeToAscii(cd) === hostAscii) || (ew && normalizeToAscii(ew) === hostAscii);
       });
       if (matchedArtist) {
         ext = matchedArtist.extension;
@@ -1056,10 +1067,11 @@ async function startServer() {
           const parsedUrl = new URL(referer);
           // Also check referer hostname
           const refHost = parsedUrl.hostname.replace(/^www\./, '').toLowerCase().trim();
+          const refHostAscii = normalizeToAscii(refHost);
           const matchedArtistByRef = artists.find(a => {
-            const cd = (a.customDomain || '').replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].toLowerCase().trim();
-            const ew = (a.externalWebsiteUrl || '').replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].toLowerCase().trim();
-            return (cd && cd === refHost) || (ew && ew === refHost);
+            const cd = a.customDomain || '';
+            const ew = a.externalWebsiteUrl || '';
+            return (cd && normalizeToAscii(cd) === refHostAscii) || (ew && normalizeToAscii(ew) === refHostAscii);
           });
           if (matchedArtistByRef) {
             ext = matchedArtistByRef.extension;
@@ -4997,12 +5009,13 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       }
 
       const host = req.get('x-forwarded-host') || req.get('host') || '';
+      const hostAscii = normalizeToAscii(host);
       const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
       
       const isCustomDomain = artists.some(a => {
-        const cd = (a.customDomain || '').replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].toLowerCase().trim();
-        const ew = (a.externalWebsiteUrl || '').replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].toLowerCase().trim();
-        return (cd && cd === host) || (ew && ew === host);
+        const cd = a.customDomain || '';
+        const ew = a.externalWebsiteUrl || '';
+        return (cd && normalizeToAscii(cd) === hostAscii) || (ew && normalizeToAscii(ew) === hostAscii);
       });
 
       const cleanPath = url.split('?')[0];
