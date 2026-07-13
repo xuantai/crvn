@@ -123,6 +123,76 @@ async function saveSentEmail(mailRecord: any) {
   }
 }
 
+async function syncArtistsCustomDomains() {
+  console.log("[Sync] Starting syncArtistsCustomDomains for " + artists.length + " artists...");
+  let needsGlobalSave = false;
+  for (const art of artists) {
+    try {
+      let artData: any = null;
+      const file = path.join(process.cwd(), `data_${art.username}.json`);
+      if (fsSync.existsSync(file)) {
+        const text = fsSync.readFileSync(file, 'utf-8');
+        artData = JSON.parse(text);
+      }
+      
+      console.log(`[Sync] Checking artist: ${art.username}, local customDomain: ${artData?.customDomain || 'none'}`);
+      
+      if ((!artData || !artData.customDomain) && !isFirestoreDisabled && landingConfig.cloudSyncEnabled !== false) {
+        console.log(`[Sync] Local custom domain empty for ${art.username}. Fetching from Firestore...`);
+        const artistDocRef = getFirestoreRefForArtist(art);
+        if (artistDocRef) {
+          const docSnap = await getDoc(artistDocRef);
+          if (docSnap.exists()) {
+            artData = docSnap.data();
+            console.log(`[Sync] Firestore fetched customDomain for ${art.username}: ${artData?.customDomain}`);
+            // Also write to local file if fetched successfully so we keep it locally
+            if (artData) {
+              await fs.writeFile(file, JSON.stringify(artData, null, 2), 'utf-8').catch(() => {});
+            }
+          } else {
+            console.log(`[Sync] Firestore document not found for ${art.username}`);
+          }
+        }
+      }
+
+      if (artData) {
+        if (artData.customDomain && art.customDomain !== artData.customDomain) {
+          console.log(`[Sync] Updating artist ${art.username} customDomain in global list from "${art.customDomain}" to "${artData.customDomain}"`);
+          art.customDomain = artData.customDomain;
+          needsGlobalSave = true;
+        }
+        if (artData.externalWebsiteUrl && art.externalWebsiteUrl !== artData.externalWebsiteUrl) {
+          console.log(`[Sync] Updating artist ${art.username} externalWebsiteUrl in global list from "${art.externalWebsiteUrl}" to "${artData.externalWebsiteUrl}"`);
+          art.externalWebsiteUrl = artData.externalWebsiteUrl;
+          needsGlobalSave = true;
+        }
+        if (artData.hasExternalWebsite !== undefined && art.hasExternalWebsite !== artData.hasExternalWebsite) {
+          console.log(`[Sync] Updating artist ${art.username} hasExternalWebsite in global list to ${artData.hasExternalWebsite}`);
+          art.hasExternalWebsite = artData.hasExternalWebsite;
+          needsGlobalSave = true;
+        }
+      }
+    } catch (err: any) {
+      console.error("Error syncing custom domain for artist " + art.username + ":", err.message || err);
+    }
+  }
+  console.log(`[Sync] needsGlobalSave is ${needsGlobalSave}`);
+  if (needsGlobalSave) {
+    try {
+      const cleanedArtists = JSON.parse(JSON.stringify(artists));
+      await fs.writeFile(ARTISTS_FILE, JSON.stringify(cleanedArtists, null, 2), 'utf-8');
+      console.log(`[Sync] Saved updated artists.json successfully.`);
+      if (!isFirestoreDisabled && landingConfig.cloudSyncEnabled !== false) {
+        const masterDoc = doc(db, 'app_data', 'master');
+        await setDoc(masterDoc, { artists: cleanedArtists });
+        console.log(`[Sync] Saved updated master artists array to Firestore app_data/master.`);
+      }
+    } catch (e: any) {
+      console.error("Error auto-saving synced artists:", e.message || e);
+    }
+  }
+}
+
 async function loadArtists() {
   if (!isFirestoreDisabled && landingConfig.cloudSyncEnabled !== false) {
     try {
@@ -163,6 +233,7 @@ async function loadArtists() {
         });
         await fs.writeFile(ARTISTS_FILE, JSON.stringify(artists, null, 2), 'utf-8');
         if (changed) await setDoc(masterDoc, { artists });
+        await syncArtistsCustomDomains();
         await loadSentEmails();
         return artists;
       }
@@ -255,6 +326,7 @@ async function loadArtists() {
       await setDoc(masterDoc, { artists }, { merge: true });
     } catch (e) {}
   }
+  await syncArtistsCustomDomains();
   await loadSentEmails();
   return artists;
 }
@@ -1030,7 +1102,7 @@ async function startServer() {
   const normalizeToAscii = (domain: string): string => {
     try {
       const clean = (domain || '').replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].toLowerCase().trim();
-      return punycode.toASCII(clean);
+      return punycode.toASCII(clean.normalize('NFC'));
     } catch (e) {
       return (domain || '').replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].toLowerCase().trim();
     }
@@ -3041,7 +3113,34 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     data.socialTiktok = req.body.socialTiktok ?? data.socialTiktok;
     data.globalPassword = req.body.globalPassword ?? data.globalPassword;
     data.globalBaseUrl = req.body.globalBaseUrl !== undefined ? req.body.globalBaseUrl : data.globalBaseUrl;
-    data.customDomain = req.body.customDomain !== undefined ? req.body.customDomain : data.customDomain;
+    
+    if (req.body.customDomain !== undefined) {
+      data.customDomain = req.body.customDomain;
+      const artist = req.artist || artists.find(a => a.username === data.username);
+      if (artist) {
+        artist.customDomain = req.body.customDomain;
+        await saveArtists(artists);
+      }
+    }
+    
+    if (req.body.externalWebsiteUrl !== undefined) {
+      data.externalWebsiteUrl = req.body.externalWebsiteUrl;
+      const artist = req.artist || artists.find(a => a.username === data.username);
+      if (artist) {
+        artist.externalWebsiteUrl = req.body.externalWebsiteUrl;
+        await saveArtists(artists);
+      }
+    }
+    
+    if (req.body.hasExternalWebsite !== undefined) {
+      data.hasExternalWebsite = req.body.hasExternalWebsite === 'true' || req.body.hasExternalWebsite === true;
+      const artist = req.artist || artists.find(a => a.username === data.username);
+      if (artist) {
+        artist.hasExternalWebsite = data.hasExternalWebsite;
+        await saveArtists(artists);
+      }
+    }
+
     data.autoSwitchTabs = req.body.autoSwitchTabs !== undefined ? req.body.autoSwitchTabs : data.autoSwitchTabs;
     data.tab1Name = req.body.tab1Name !== undefined ? req.body.tab1Name : data.tab1Name;
     data.tab2Name = req.body.tab2Name !== undefined ? req.body.tab2Name : data.tab2Name;
