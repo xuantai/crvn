@@ -24,6 +24,7 @@ export interface DemoSong {
   title: string;
   author: string;
   composer?: string;
+  musicProducer?: string;
   singer?: string;
   audioUrl: string;
   coverUrl?: string;
@@ -99,4 +100,5 @@ export interface AppData {
   tab1Name?: string;
   tab2Name?: string;
   tab3Name?: string;
+  layoutSections?: string[];
 }

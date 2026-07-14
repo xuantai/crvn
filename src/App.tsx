@@ -2,7 +2,7 @@ import { createPortal } from "react-dom";
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
 import { ChorusLogo } from './components/ChorusLogo';
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { UserCircle, BookOpen, User, Settings, Play, Music, Lock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, List, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, RefreshCw, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, Palette} from 'lucide-react';
+import { UserCircle, BookOpen, User, Settings, Play, Music, Lock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, List, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, RefreshCw, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, Palette, LayoutTemplate} from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { AppData, DemoSong, TemplateConfig, Achievement } from './types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -402,7 +402,7 @@ const translations: Record<string, Record<string, string>> = {
     ") thay v\u00ec s\u1eed d\u1ee5ng \u0111\u1ecba ch\u1ec9 m\u1eb7c \u0111\u1ecbnh c\u1ee7a h\u1ec7 th\u1ed1ng.": ") thay v\u00ec s\u1eed d\u1ee5ng \u0111\u1ecba ch\u1ec9 m\u1eb7c \u0111\u1ecbnh c\u1ee7a h\u1ec7 th\u1ed1ng.",
     "T\u1ef1 \u0111\u1ed9ng chuy\u1ec3n tab \u1edf trang ch\u1ee7 (Music / Demo / Playlist)": "T\u1ef1 \u0111\u1ed9ng chuy\u1ec3n tab \u1edf trang ch\u1ee7 (Music / Demo / Playlist)",
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn",
-    "Tab 3 (Album/EP)": "Album/EP", dDesc: "Thiên đường âm nhạc của", btnSpot: "Nghe trên Spotify", lDemos: "Đề Mô", lReleased: "Ra Rồi", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Cần Mật Khẩu", pNow: "Nghe Ngay", nDemo: "Chưa có demo nào.", rMv: "MV Đã Phát Hành", nMv: "Chưa có MV nào.", lMore: "Hiển thị thêm", mList: "người nghe hàng tháng", load: "Đang tải trang...", back: "Trở về", adm: "AdminCP", edit: "Chỉnh sửa", pPrompt: "Cần mật khẩu", pPrompt2: "Nhập mật khẩu để nghe demo này", unlock: "Mở khóa", wPass: "Sai mật khẩu", lyric: "Lời bài hát", nLyric: "Chưa cập nhật lời bài hát", sAuth: "Sáng tác:", lang: "Tiếng Việt", lDemosMobile: "Đề mô", lReleasedMobile: "Ra Rồi", searchSong: "Tìm kiếm bài hát...", noSongs: "Chưa có bài hát nào", noSongsDesc: "Danh sách đang được cập nhật, bạn vui lòng quay lại sau nhé!", closeSearch: "Đóng tìm kiếm", searchTitle: "Tìm kiếm bài hát", noDemoFound: "Không tìm thấy demo", mVault: "Kho Nhạc", "Hiển thị": "Hiển thị", "bài / trang": "bài / trang", "Tổng": "Tổng", "Trước": "Trước", "Sau": "Sau", pPartner: "Đối tác:", pAutoNext: "Sẽ tự động chuyển bài nếu không nhập mật khẩu", vRef: "Video Tham Khảo", nArtist: "Nghệ sĩ" },
+    "Tab 3 (Album/EP)": "Album/EP", dDesc: "Thiên đường âm nhạc của", btnSpot: "Nghe trên Spotify", lDemos: "Đề Mô", lReleased: "Ra Rồi", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Cần Mật Khẩu", pNow: "Nghe Ngay", nDemo: "Chưa có demo nào.", rMv: "MV Đã Phát Hành", nMv: "Chưa có MV nào.", lMore: "Hiển thị thêm", mList: "người nghe hàng tháng", load: "Đang tải trang...", back: "Trở về", adm: "AdminCP", edit: "Chỉnh sửa", pPrompt: "Cần mật khẩu", pPrompt2: "Nhập mật khẩu để nghe demo này", unlock: "Mở khóa", wPass: "Sai mật khẩu", lyric: "Lời bài hát", nLyric: "Chưa cập nhật lời bài hát", sAuth: "Sáng tác:", lang: "Tiếng Việt", lDemosMobile: "Đề mô", lReleasedMobile: "Ra Rồi", searchSong: "Tìm kiếm bài hát...", noSongs: "Chưa có bài hát nào", noSongsDesc: "Danh sách đang được cập nhật, bạn vui lòng quay lại sau nhé!", closeSearch: "Đóng tìm kiếm", searchTitle: "Tìm kiếm bài hát", noDemoFound: "Không tìm thấy demo", mVault: "Kho Nhạc", "Hiển thị": "Hiển thị", "bài / trang": "bài / trang", "Tổng": "Tổng", "Trước": "Trước", "Sau": "Sau", pPartner: "Đối tác:", pAutoNext: "Sẽ tự động chuyển bài nếu không nhập mật khẩu", vRef: "Video Tham Khảo", nArtist: "Nghệ sĩ", "Bấm để phát trên YouTube": "Bấm để phát trên YouTube", "Đóng": "Đóng", "Bấm để phát trên YouTube ở tab mới": "Bấm để phát trên YouTube ở tab mới" },
   en: {
     "Kho Nhạc": "Music Vault",
 
@@ -437,28 +437,13 @@ const translations: Record<string, Record<string, string>> = {
     ") thay v\u00ec s\u1eed d\u1ee5ng \u0111\u1ecba ch\u1ec9 m\u1eb7c \u0111\u1ecbnh c\u1ee7a h\u1ec7 th\u1ed1ng.": ") instead of using the system's default address.",
     "T\u1ef1 \u0111\u1ed9ng chuy\u1ec3n tab \u1edf trang ch\u1ee7 (Music / Demo / Playlist)": "Auto-switch tabs on homepage (Music / Demo / Playlist)",
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "Hide from artist list on Chorus.vn homepage",
-    "Tab 3 (Album/EP)": "Album/EP", dDesc: "Music paradise of", btnSpot: "Listen on Spotify", lDemos: "Demo", lReleased: "Release", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Password", pNow: "Play Now", nDemo: "No demos yet.", rMv: "Released Music Videos", nMv: "No MVs yet.", lMore: "Load more", mList: "monthly listeners", load: "Loading...", back: "Back", adm: "Admin", edit: "Edit", pPrompt: "Password required", pPrompt2: "Enter password to listen to this demo", unlock: "Unlock", wPass: "Wrong password", lyric: "Lyrics", nLyric: "No lyrics yet", sAuth: "Composer:", lang: "English", searchSong: "Search songs...", noSongs: "No songs available", noSongsDesc: "The list is being updated, please come back later!", closeSearch: "Close search", searchTitle: "Search songs", noDemoFound: "Demo not found", mVault: "Music Vault", "Hiển thị": "Show", "bài / trang": "songs / page", "Tổng": "Total", "Trước": "Prev", "Sau": "Next", pPartner: "Partner:", pAutoNext: "Will auto skip if password not entered", vRef: "Reference Video", nArtist: "Artist" },
+    "Tab 3 (Album/EP)": "Album/EP", dDesc: "Music paradise of", btnSpot: "Listen on Spotify", lDemos: "Demo", lReleased: "Release", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Password", pNow: "Play Now", nDemo: "No demos yet.", rMv: "Released Music Videos", nMv: "No MVs yet.", lMore: "Load more", mList: "monthly listeners", load: "Loading...", back: "Back", adm: "Admin", edit: "Edit", pPrompt: "Password required", pPrompt2: "Enter password to listen to this demo", unlock: "Unlock", wPass: "Wrong password", lyric: "Lyrics", nLyric: "No lyrics yet", sAuth: "Composer:", lang: "English", searchSong: "Search songs...", noSongs: "No songs available", noSongsDesc: "The list is being updated, please come back later!", closeSearch: "Close search", searchTitle: "Search songs", noDemoFound: "Demo not found", mVault: "Music Vault", "Hiển thị": "Show", "bài / trang": "songs / page", "Tổng": "Total", "Trước": "Prev", "Sau": "Next", pPartner: "Partner:", pAutoNext: "Will auto skip if password not entered", vRef: "Reference Video", nArtist: "Artist", "Bấm để phát trên YouTube": "Click to Play on YouTube", "Đóng": "Close", "Bấm để phát trên YouTube ở tab mới": "Click to play on YouTube in a new tab" },
   ko: {
     "Kho Nhạc": "음악 보관함",
     "Quản lý Menu": "메뉴 관리",
     "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "드래그 앤 드롭으로 순서를 정렬하세요. 첫 번째 탭이 기본 페이지가 됩니다. 최대 3개의 사용자 지정 탭을 지원합니다.",
     "Lưu Menu": "메뉴 저장",
-    "Về Tôi": "내 소개",
-    "Tiểu Sử": "약력",
-    "Giới thiệu nghệ sĩ": "아티스트 소개",
-    "Tên Thật": "본명",
-    "Ngày Sinh": "생년월일",
-    "Địa Chỉ": "주소",
-    "Công Ty": "회사",
-    "Danh Xưng": "직함/역할",
-    "Ca nhạc sĩ, producer...": "가수, 프로듀서...",
-    "Email": "이메일",
-    "SĐT": "전화번호",
-    "Học Vấn": "학력",
-    "Kinh nghiệm": "경력",
-    "Thời gian": "기간",
-    "Sự Kiện": "이벤트",
-    "Thêm giai đoạn": "기간 추가",
+    "Về Tôi": "내 소개", "Tiểu Sử": "약력", "Giới thiệu nghệ sĩ": "아티스트 소개", "Tên Thật": "본명", "Ngày Sinh": "생년월일", "Địa Chỉ": "주소", "Công Ty": "회사", "Danh Xưng": "직함/역할", "Ca nhạc sĩ, producer...": "가수, 프로듀서...", "Email": "이메일", "SĐT": "전화번호", "Học Vấn": "학력", "Kinh nghiệm": "경력", "Thời gian": "기간", "Sự Kiện": "이벤트", "Thêm giai đoạn": "기간 추가", "Danh Mục": "카테고리", "Thêm Menu Mới": "새 메뉴 추가", "Tiêu Đề Menu": "메뉴 제목", "Đường Dẫn": "링크/경로",
     "Quay lại": "뒤로 가기",
     "Danh sách Playlist": "재생 목록 목록",
     "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "재생 목록 생성, 정렬 및 편집",
@@ -478,45 +463,45 @@ const translations: Record<string, Record<string, string>> = {
     "Thành viên VIP": "VIP 회원",
     "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của": "이제 다음 시스템의 모든 앨범, 재생 목록 및 보안 데모 반주를 즐길 수 있습니다: ",
     "mà không cần nhập passcode riêng biệt.": "별도의 패스코드를 입력할 필요가 없습니다.",
-    "Cấu hình tên miền riêng (Custom Domain)": "개인 도메인 설정",
-    "Sử dụng tên miền riêng của bạn (ví dụ:": "개인 도메인 사용 (예: ",
+    "Cấu hình tên miền riêng (Custom Domain)": "개인 도메인 설정 (Custom Domain)",
+    "Sử dụng tên miền riêng của bạn (ví dụ:": "귀하의 개인 도메인을 사용하십시오 (예:",
     "hoặc": "또는",
-    ") thay vì sử dụng địa chỉ mặc định của hệ thống.": "시스템 기본 주소 대신",
+    ") thay vì sử dụng địa chỉ mặc định của hệ thống.": ") 시스템의 기본 주소를 사용하는 대신.",
     "Tự động chuyển tab ở trang chủ (Music / Demo / Playlist)": "홈페이지에서 탭 자동 전환 (Music / Demo / Playlist)",
-    "Ẩn khỏi danh sách nghệ sĩ trên trang chủ Chorus.vn": "Chorus.vn 홈페이지 아티스트 목록에서 숨기기",
+    "Ẩn khỏi danh sách nghệ sĩ trên trang chủ Chorus.vn": "Chorus.vn 홈페이지의 아티스트 목록에서 숨기기",
     "Tab 3 (Album/EP)": "Album/EP",
-    dDesc: "데모 뮤직 파라다이스",
+    dDesc: "데모 음악",
     btnSpot: "Spotify에서 듣기",
-    lDemos: "최근 데모",
+    lDemos: "데모",
     lReleased: "발매된 곡",
     lDemoMark: "데모",
     lReleasedMark: "발매됨",
     pReq: "비밀번호 필요",
-    pNow: "지금 듣기",
-    nDemo: "데모가 없습니다",
+    pNow: "지금 재생",
+    nDemo: "등록된 데모가 없습니다.",
     rMv: "발매된 뮤직비디오",
-    nMv: "MV가 없습니다",
+    nMv: "등록된 MV가 없습니다.",
     lMore: "더 보기",
-    mList: "월별 리스너",
+    mList: "월간 청취자",
     load: "로딩 중...",
-    back: "뒤로",
+    back: "뒤로 가기",
     adm: "관리자",
     edit: "편집",
     pPrompt: "비밀번호 필요",
     pPrompt2: "이 데모를 들으려면 비밀번호를 입력하세요",
     unlock: "잠금 해제",
-    wPass: "비밀번호가 틀렸습니다",
+    wPass: "잘못된 비밀번호",
     lyric: "가사",
-    nLyric: "가사가 아직 없습니다",
-    sAuth: "작곡:",
+    nLyric: "등록된 가사가 없습니다",
+    sAuth: "작곡가:",
     lang: "한국어",
     searchSong: "곡 검색...",
     noSongs: "곡이 없습니다",
-    noSongsDesc: "목록을 업데이트 중입니다. 나중에 다시 시도해 주세요!",
+    noSongsDesc: "목록을 업데이트 중입니다. 잠시 후 다시 시도해 주세요!",
     closeSearch: "검색 닫기",
     searchTitle: "곡 검색",
     noDemoFound: "데모를 찾을 수 없습니다",
-    mVault: "음악 보관함",
+    mVault: "뮤직 볼트",
     "Hiển thị": "표시",
     "bài / trang": "곡 / 페이지",
     "Tổng": "합계",
@@ -524,30 +509,18 @@ const translations: Record<string, Record<string, string>> = {
     "Sau": "다음",
     pPartner: "파트너:",
     pAutoNext: "비밀번호를 입력하지 않으면 자동으로 건너뜁니다",
-    vRef: "참고 비디오",
-    nArtist: "아티스트"
+    vRef: "참조 비디오",
+    nArtist: "아티스트",
+    "Bấm để phát trên YouTube": "YouTube에서 재생하려면 클릭",
+    "Đóng": "닫기",
+    "Bấm để phát trên YouTube ở tab mới": "새 탭에서 YouTube로 재생하려면 클릭"
   },
   ja: {
     "Kho Nhạc": "ミュージックボルト",
     "Quản lý Menu": "メニュー管理",
     "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "ドラッグ＆ドロップで優先順位を並べ替えます。最初のタブがデフォルトの表示ページになります。最大3つのカスタムタブ作成をサポートします。",
     "Lưu Menu": "メニュー保存",
-    "Về Tôi": "プロフィール",
-    "Tiểu Sử": "経歴",
-    "Giới thiệu nghệ sĩ": "アーティスト紹介",
-    "Tên Thật": "本名",
-    "Ngày Sinh": "生年月日",
-    "Địa Chỉ": "住所",
-    "Công Ty": "会社",
-    "Danh Xưng": "肩書",
-    "Ca nhạc sĩ, producer...": "シンガーソングライター、プロデューサー...",
-    "Email": "メールアドレス",
-    "SĐT": "電話番号",
-    "Học Vấn": "学歴",
-    "Kinh nghiệm": "経験",
-    "Thời gian": "期間",
-    "Sự Kiện": "出来事",
-    "Thêm giai đoạn": "期間を追加",
+    "Về Tôi": "プロフィール", "Tiểu Sử": "経歴", "Giới thiệu nghệ sĩ": "アーティスト紹介", "Tên Thật": "本名", "Ngày Sinh": "生年月日", "Địa Chỉ": "住所", "Công Ty": "会社", "Danh Xưng": "肩書", "Ca nhạc sĩ, producer...": "シンガーソングライター、プロデューサー...", "Email": "メールアドレス", "SĐT": "電話番号", "Học Vấn": "学歴", "Kinh nghiệm": "経験", "Thời gian": "期間", "Sự Kiện": "出来事", "Thêm giai đoạn": "期間を追加", "Danh Mục": "カテゴリー", "Thêm Menu Mới": "新規メニュー追加", "Tiêu Đề Menu": "メニューのタイトル", "Đường Dẫn": "リンク先",
     "Quay lại": "戻る",
     "Danh sách Playlist": "プレイリスト一覧",
     "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "プレイリストの作成、優先順位付け、編集",
@@ -574,34 +547,34 @@ const translations: Record<string, Record<string, string>> = {
     "Tự động chuyển tab ở trang chủ (Music / Demo / Playlist)": "ホームページでタブを自動的に切り替える (Music / Demo / Playlist)",
     "Ẩn khỏi danh sách nghệ sĩ trên trang chủ Chorus.vn": "Chorus.vnホームページのアーティストリストから非表示にする",
     "Tab 3 (Album/EP)": "Album/EP",
-    dDesc: "デモミュージックパラダイス",
+    dDesc: "デモミュージック",
     btnSpot: "Spotifyで聴く",
     lDemos: "最新デモ",
-    lReleased: "リリース曲",
+    lReleased: "リリース済みの曲",
     lDemoMark: "デモ",
-    lReleasedMark: "リリース済",
-    pReq: "パスワード",
+    lReleasedMark: "リリース済み",
+    pReq: "パスコードが必要",
     pNow: "今すぐ聴く",
-    nDemo: "デモはありません",
-    rMv: "リリース済ミュージックビデオ",
-    nMv: "MVはありません",
+    nDemo: "デモなし",
+    rMv: "ミュージックビデオ",
+    nMv: "MVなし",
     lMore: "もっと読み込む",
     mList: "月間リスナー",
     load: "読み込み中...",
     back: "戻る",
-    adm: "管理者",
+    adm: "管理",
     edit: "編集",
-    pPrompt: "パスワードが必要",
-    pPrompt2: "このデモを聴くにはパスワードを入力してください",
+    pPrompt: "パスコードが必要です",
+    pPrompt2: "このデモを聴くにはパスコードを入力してください",
     unlock: "ロック解除",
-    wPass: "パスワードが間違っています",
+    wPass: "パスコードが正しくありません",
     lyric: "歌詞",
-    nLyric: "歌詞はまだありません",
-    sAuth: "作曲:",
+    nLyric: "歌詞なし",
+    sAuth: "作曲者:",
     lang: "日本語",
     searchSong: "曲を検索...",
-    noSongs: "曲はありません",
-    noSongsDesc: "リストは更新中です。後でもう一度アクセスしてください！",
+    noSongs: "曲がありません",
+    noSongsDesc: "リスト更新中、しばらくしてからもう一度お試しください！",
     closeSearch: "検索を閉じる",
     searchTitle: "曲を検索",
     noDemoFound: "デモが見つかりません",
@@ -612,22 +585,22 @@ const translations: Record<string, Record<string, string>> = {
     "Trước": "前へ",
     "Sau": "次へ",
     pPartner: "パートナー:",
-    pAutoNext: "パスワードが入力されていない場合は自動的にスキップされます",
+    pAutoNext: "パスコードを入力しない場合は自動的にスキップされます",
     vRef: "参考ビデオ",
-    nArtist: "アーティスト"
+    nArtist: "アーティスト",
+    "Bấm để phát trên YouTube": "YouTubeで再生",
+    "Đóng": "閉じる",
+    "Bấm để phát trên YouTube ở tab mới": "新しいタブでYouTubeで再生"
   },
   th: {
     "Kho Nhạc": "คลังเพลง",
-
-    "Quản lý Menu": "จัดการเมนู",
-
-    "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "ลากและวางเพื่อจัดเรียงลำดับ แท็บแรกจะเป็นหน้าเริ่มต้น รองรับแท็บกำหนดเองสูงสุด 3 แท็บ", "Lưu Menu": "บันทึกเมนู",
-
-    "Về Tôi": "เกี่ยวกับฉัน", "Tiểu Sử": "ประวัติส่วนตัว", "Giới thiệu nghệ sĩ": "แนะนำศิลปิน", "Tên Thật": "ชื่อจริง", "Ngày Sinh": "วันเกิด", "Địa Chỉ": "ที่อยู่", "Công Ty": "บริษัท", "Danh Xưng": "ตำแหน่ง", "Ca nhạc sĩ, producer...": "นักดนตรี นักแต่งเพลง โปรดิวเซอร์...", "Email": "อีเมล", "SĐT": "เบอร์โทรศัพท์", "Học Vấn": "การศึกษา", "Kinh nghiệm": "ประสบการณ์", "Thời gian": "ระยะเวลา", "Sự Kiện": "เหตุการณ์", "Thêm giai đoạn": "เพิ่มช่วงเวลา",
- 
-    "Quay lại": "ย้อนกลับ",
-    "Danh sách Playlist": "รายการเพลงเล่น",
-    "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "สร้าง จัดลำดับความสำคัญ และแก้ไขเพลย์ลิสต์",
+    "Quản lý Menu": "การจัดการเมนู",
+    "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "ลากและวางเพื่อจัดลำดับความสำคัญ แท็บแรกจะเป็นหน้าแสดงเริ่มต้น รองรับการสร้างแท็บแบบกำหนดเองสูงสุด 3 แท็บ",
+    "Lưu Menu": "บันทึกเมนู",
+    "Về Tôi": "เกี่ยวกับฉัน", "Tiểu Sử": "ประวัติ", "Giới thiệu nghệ sĩ": "แนะนำศิลปิน", "Tên Thật": "ชื่อจริง", "Ngày Sinh": "วันเกิด", "Địa Chỉ": "ที่อยู่", "Công Ty": "บริษัท", "Danh Xưng": "ตำแหน่ง", "Ca nhạc sĩ, producer...": "นักร้องนักแต่งเพลง, โปรดิวเซอร์...", "Email": "อีเมล", "SĐT": "เบอร์โทรศัพท์", "Học Vấn": "การศึกษา", "Kinh nghiệm": "ประสบการณ์", "Thời gian": "ระยะเวลา", "Sự Kiện": "เหตุการณ์", "Thêm giai đoạn": "เพิ่มช่วงเวลา", "Danh Mục": "หมวดหมู่", "Thêm Menu Mới": "เพิ่มเมนูใหม่", "Tiêu Đề Menu": "หัวข้อเมนู", "Đường Dẫn": "ลิงก์ / เส้นทาง",
+    "Quay lại": "กลับ",
+    "Danh sách Playlist": "รายการเพลย์ลิสต์",
+    "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "สร้าง จัดลำดับความสำคัญ และแก้ไขรายการเล่นเพลง",
     "10 mục": "10 รายการ",
     "20 mục": "20 รายการ",
     "50 mục": "50 รายการ",
@@ -650,16 +623,58 @@ const translations: Record<string, Record<string, string>> = {
     ") thay vì sử dụng địa chỉ mặc định của hệ thống.": ") แทนที่จะใช้ที่อยู่เริ่มต้นของระบบ",
     "Tự động chuyển tab ở trang chủ (Music / Demo / Playlist)": "สลับแท็บอัตโนมัติบนหน้าแรก (Music / Demo / Playlist)",
     "Ẩn khỏi danh sách nghệ sĩ trên trang chủ Chorus.vn": "ซ่อนจากรายการศิลปินบนหน้าแรก Chorus.vn",
-    "Tab 3 (Album/EP)": "Album/EP", dDesc: "สวรรค์แห่งเพลงเดโม่ของ", btnSpot: "ฟังบน Spotify", lDemos: "ตัวอย่างล่าสุด", lReleased: "เพลงที่ปล่อยแล้ว", lDemoMark: "เดโม่", lReleasedMark: "ปล่อยแล้ว", pReq: "รหัสผ่าน", pNow: "ฟังเลย", nDemo: "ไม่มีตัวอย่าง", rMv: "มิวสิควิดีโอ", nMv: "ไม่มี MV", lMore: "โหลดเพิ่ม", mList: "ผู้ฟังรายเดือน", load: "กำลังโหลด...", back: "กลับ", adm: "แอดมิน", edit: "แก้ไข", pPrompt: "ต้องใช้รหัสผ่าน", pPrompt2: "ใส่รหัสผ่านเพื่อฟังเดโม่นี้", unlock: "ปลดล็อค", wPass: "รหัสผ่านผิด", lyric: "เนื้อเพลง", nLyric: "ไม่มีเนื้อเพลง", sAuth: "แต่งโดย:", lang: "ไทย", searchSong: "ค้นหาเพลง...", noSongs: "ยังไม่มีเพลง", noSongsDesc: "กำลังอัปเดตรายการ โปรดกลับมาใหม่อีกครั้งในภายหลัง!", closeSearch: "ปิดการค้นหา", searchTitle: "ค้นหาเพลง", noDemoFound: "ไม่พบเดโม", mVault: "คลังเพลง", "Hiển thị": "แสดง", "bài / trang": "เพลง / หน้า", "Tổng": "ทั้งหมด", "Trước": "ก่อนหน้า", "Sau": "ถัดไป", pPartner: "พาร์ทเนอร์:", pAutoNext: "จะข้ามอัตโนมัติหากไม่ใส่รหัส", vRef: "วิดีโออ้างอิง", nArtist: "ศิลปิน" },
+    "Tab 3 (Album/EP)": "Album/EP",
+    dDesc: "สวรรค์แห่งเพลงเดโม่ของ",
+    btnSpot: "ฟังบน Spotify",
+    lDemos: "ตัวอย่างล่าสุด",
+    lReleased: "เพลงที่ปล่อยแล้ว",
+    lDemoMark: "เดโม่",
+    lReleasedMark: "ปล่อยแล้ว",
+    pReq: "รหัสผ่าน",
+    pNow: "ฟังเลย",
+    nDemo: "ไม่มีตัวอย่าง",
+    rMv: "มิวสิควิดีโอ",
+    nMv: "ไม่มี MV",
+    lMore: "โหลดเพิ่ม",
+    mList: "ผู้ฟังรายเดือน",
+    load: "กำลังโหลด...",
+    back: "กลับ",
+    adm: "แอดมิน",
+    edit: "แก้ไข",
+    pPrompt: "ต้องใช้รหัสผ่าน",
+    pPrompt2: "ใส่รหัสผ่านเพื่อฟังเดโม่นี้",
+    unlock: "ปลดล็อค",
+    wPass: "รหัสผ่านผิด",
+    lyric: "เนื้อเพลง",
+    nLyric: "ไม่มีเนื้อเพลง",
+    sAuth: "แต่งโดย:",
+    lang: "ไทย",
+    searchSong: "ค้นหาเพลง...",
+    noSongs: "ยังไม่มีเพลง",
+    noSongsDesc: "กำลังอัปเดตรายการ โปรดกลับมาใหม่อีกครั้งในภายหลัง!",
+    closeSearch: "ปิดการค้นหา",
+    searchTitle: "ค้นหาเพลง",
+    noDemoFound: "ไม่พบเดโม",
+    mVault: "คลังเพลง",
+    "Hiển thị": "แสดง",
+    "bài / trang": "เพลง / หน้า",
+    "Tổng": "ทั้งหมด",
+    "Trước": "ก่อนหน้า",
+    "Sau": "ถัดไป",
+    pPartner: "พาร์ทเนอร์:",
+    pAutoNext: "จะข้ามอัตโนมัติหากไม่ใส่รหัส",
+    vRef: "วิดีโออ้างอิง",
+    nArtist: "ศิลปิน",
+    "Bấm để phát trên YouTube": "คลิกเพื่อเล่นบน YouTube",
+    "Đóng": "ปิด",
+    "Bấm để phát trên YouTube ở tab mới": "คลิกเพื่อเล่นบน YouTube ในแท็บใหม่"
+  },
   zh: {
     "Kho Nhạc": "音乐库",
-
     "Quản lý Menu": "菜单管理",
-
-    "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "拖放以重新排序。第一个选项卡将作为默认页面。最多支持3个自定义选项卡。", "Lưu Menu": "保存菜单",
-
-    "Về Tôi": "关于我", "Tiểu Sử": "个人简介", "Giới thiệu nghệ sĩ": "艺术家介绍", "Tên Thật": "真实姓名", "Ngày Sinh": "出生日期", "Địa Chỉ": "地址", "Công Ty": "公司", "Danh Xưng": "职位/角色", "Ca nhạc sĩ, producer...": "歌手、制作人...", "Email": "电子邮件", "SĐT": "电话号码", "Học Vấn": "教育", "Kinh nghiệm": "经验", "Thời gian": "时间/期间", "Sự Kiện": "事件", "Thêm giai đoạn": "添加时期",
- 
+    "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "拖放以重新排序。第一个选项卡将作为默认页面。最多支持3个自定义选项卡。",
+    "Lưu Menu": "保存菜单",
+    "Về Tôi": "关于我", "Tiểu Sử": "个人简介", "Giới thiệu nghệ sĩ": "艺术家介绍", "Tên Thật": "真实姓名", "Ngày Sinh": "出生日期", "Địa Chỉ": "地址", "Công Ty": "公司", "Danh Xưng": "职位/角色", "Ca nhạc sĩ, producer...": "歌手、制作人...", "Email": "电子邮件", "SĐT": "电话号码", "Học Vấn": "教育", "Kinh nghiệm": "经验", "Thời gian": "时间/期间", "Sự Kiện": "事件", "Thêm giai đoạn": "添加时期", "Danh Mục": "分类", "Thêm Menu Mới": "添加新菜单", "Tiêu Đề Menu": "菜单标题", "Đường Dẫn": "路径/链接",
     "Quay lại": "返回",
     "Danh sách Playlist": "播放列表",
     "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "创建、确定优先级和编辑播放列表",
@@ -680,12 +695,57 @@ const translations: Record<string, Record<string, string>> = {
     "Giờ đây bạn có thể thưởng thức toàn bộ album, danh sách phát và các bài hát đệm demo bảo mật trên hệ thống của": "现在您可以欣赏系统中所有的专辑、播放列表和受保护的演示伴奏曲",
     "mà không cần nhập passcode riêng biệt.": "无需输入单独的密码。",
     "Cấu hình tên miền riêng (Custom Domain)": "自定义域名配置",
-    "Sử dụng tên miền riêng của bạn (ví dụ:": "使用您的自定义域名（例如：",
+    "Sử dụng tên miền riêng of bạn (ví dụ:": "使用您的自定义域名（例如：",
     "hoặc": "或",
-    ") thay vì sử dụng địa chỉ mặc định của hệ thống.": "）代替系统默认地址。",
+    ") thay vì sử dụng địa chỉ mặc định of hệ thống.": "）代替系统默认地址。",
     "Tự động chuyển tab ở trang chủ (Music / Demo / Playlist)": "首页自动切换选项卡 (Music / Demo / Playlist)",
     "Ẩn khỏi danh sách nghệ sĩ trên trang chủ Chorus.vn": "从 Chorus.vn 首页的艺术家列表中隐藏",
-    "Tab 3 (Album/EP)": "Album/EP", dDesc: "的演示天堂", btnSpot: "在Spotify收听", lDemos: "最新演示", lReleased: "已发行的音乐", lDemoMark: "演示", lReleasedMark: "已发行", pReq: "需要密码", pNow: "立即收听", nDemo: "暂无演示", rMv: "已发行的视频", nMv: "暂无视频", lMore: "加载更多", mList: "月度听众", load: "载入中...", back: "返回", adm: "管理", edit: "编辑", pPrompt: "需要密码", pPrompt2: "输入密码收听此演示", unlock: "解锁", wPass: "密码错误", lyric: "歌词", nLyric: "暂无歌词", sAuth: "作曲:", lang: "中文", searchSong: "搜索歌曲...", noSongs: "暂无歌曲", noSongsDesc: "列表正在更新中，请稍后再来！", closeSearch: "关闭搜索", searchTitle: "搜索歌曲", noDemoFound: "找不到演示", mVault: "音乐库", "Hiển thị": "显示", "bài / trang": "首歌曲 / 页", "Tổng": "总计", "Trước": "上一步", "Sau": "下一步", pPartner: "合作伙伴:", pAutoNext: "未输入密码将自动跳过", vRef: "参考视频", nArtist: "艺术家" }
+    "Tab 3 (Album/EP)": "Album/EP",
+    dDesc: "的演示天堂",
+    btnSpot: "在Spotify收听",
+    lDemos: "最新演示",
+    lReleased: "已发行的音乐",
+    lDemoMark: "演示",
+    lReleasedMark: "已发行",
+    pReq: "需要密码",
+    pNow: "立即收听",
+    nDemo: "暂无演示",
+    rMv: "已发行的视频",
+    nMv: "暂无视频",
+    lMore: "加载更多",
+    mList: "月度听众",
+    load: "载入中...",
+    back: "返回",
+    adm: "管理",
+    edit: "编辑",
+    pPrompt: "需要密码",
+    pPrompt2: "输入密码收听此演示",
+    unlock: "解锁",
+    wPass: "密码错误",
+    lyric: "歌词",
+    nLyric: "暂无歌词",
+    sAuth: "作曲:",
+    lang: "中文",
+    searchSong: "搜索歌曲...",
+    noSongs: "暂无歌曲",
+    noSongsDesc: "列表正在更新中，请稍后再来！",
+    closeSearch: "关闭搜索",
+    searchTitle: "搜索歌曲",
+    noDemoFound: "找不到演示",
+    mVault: "音乐库",
+    "Hiển thị": "显示",
+    "bài / trang": "首歌曲 / 页",
+    "Tổng": "总计",
+    "Trước": "上一步",
+    "Sau": "下一步",
+    pPartner: "合作伙伴:",
+    pAutoNext: "未输入密码将自动跳过",
+    vRef: "参考视频",
+    nArtist: "艺术家",
+    "Bấm để phát trên YouTube": "点击在YouTube上播放",
+    "Đóng": "关闭",
+    "Bấm để phát trên YouTube ở tab mới": "点击在新标签页中在YouTube上播放"
+  }
 };
 
 const adminTranslations: Record<string, Record<string, string>> = {
@@ -1191,6 +1251,18 @@ const adminTranslations: Record<string, Record<string, string>> = {
   },
   en: {
     "Kho Nhạc": "Music Vault",
+    "Bố Cục": "Layout",
+    "Bố Cục Trang Chủ": "Homepage Layout",
+    "Kéo thả các phần dưới đây để sắp xếp thứ tự hiển thị của chúng ở trang chủ nghệ sĩ.": "Drag and drop the sections below to rearrange their display order on the artist homepage.",
+    "Lưu Bố Cục": "Save Layout",
+    "Tiêu Đề (Tên & Giới thiệu ngắn)": "Header (Name & Brief Bio)",
+    "Spotify Playlist / Album": "Spotify Playlist / Album",
+    "Kho Nhạc (Danh sách Đề mô / Ra Rồi)": "Music Vault (Demo / Released)",
+    "MV Đã Phát Hành (YouTube Videos)": "Released MVs (YouTube Videos)",
+    "Phần hiển thị tên nghệ sĩ, dấu tích xanh và lời giới thiệu ngắn.": "Displays the artist name, blue verification tick, and a brief introduction.",
+    "Khung phát nhạc nhúng trực tiếp từ Spotify (nếu được cấu hình).": "Music player embedded directly from Spotify (if configured).",
+    "Phần danh sách bài hát chính chia theo tab Đề mô / Ra Rồi.": "The main song list partitioned into Demo / Released tabs.",
+    "Phần hiển thị các MV Youtube đã phát hành và trình phát video popup.": "Displays released YouTube MVs and a popup video player.",
 
     "Quản lý Menu": "Manage Menu",
 
@@ -1675,12 +1747,24 @@ const adminTranslations: Record<string, Record<string, string>> = {
   },
   ko: {
     "Kho Nhạc": "음악 보관함",
+    "Bố Cục": "레이아웃",
+    "Bố Cục Trang Chủ": "홈페이지 레이아웃",
+    "Kéo thả các phần dưới đây để sắp xếp thứ tự hiển thị của chúng ở trang chủ nghệ sĩ.": "아티스트 홈페이지에서 각 섹션의 정렬 및 표시 순서를 조정하려면 아래 항목들을 드래그 앤 드롭하세요.",
+    "Lưu Bố Cục": "레이아웃 저장",
+    "Tiêu Đề (Tên & Giới thiệu ngắn)": "헤더 (이름 및 짧은 소개)",
+    "Spotify Playlist / Album": "Spotify 플레이리스트 / 앨범",
+    "Kho Nhạc (Danh sách Đề mô / Ra Rồi)": "음악 보관함 (데모 / 발매 목록)",
+    "MV Đã Phát Hành (YouTube Videos)": "발매된 MV (YouTube 비디오)",
+    "Phần hiển thị tên nghệ sĩ, dấu tích xanh và lời giới thiệu ngắn.": "아티스트 이름, 파란색 인증 마크 및 짧은 소개를 표시합니다.",
+    "Khung phát nhạc nhúng trực tiếp từ Spotify (nếu được cấu hình).": "Spotify에서 직접 임베드된 음악 플레이어입니다 (설정된 경우).",
+    "Phần danh sách bài hát chính chia theo tab Đề mô / Ra Rồi.": "데모 / 발매 탭으로 나뉜 메인 곡 목록 섹션입니다.",
+    "Phần hiển thị các MV Youtube đã phát hành và trình phát video popup.": "발매된 YouTube MV 및 팝업 비디오 플레이어를 표시합니다.",
 
     "Quản lý Menu": "메뉴 관리",
 
     "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "드래그 앤 드롭으로 순서를 변경하세요. 첫 번째 탭이 기본 페이지가 됩니다. 최대 3개의 사용자 지정 탭을 지원합니다.", "Lưu Menu": "메뉴 저장",
 
-    "Về Tôi": "내 소개", "Tiểu Sử": "약력", "Giới thiệu nghệ sĩ": "아티스트 소개", "Tên Thật": "본명", "Ngày Sinh": "생년월일", "Địa Chỉ": "주소", "Công Ty": "회사", "Danh Xưng": "직함/역할", "Ca nhạc sĩ, producer...": "가수, 프로듀서...", "Email": "이메일", "SĐT": "전화번호", "Học Vấn": "학력", "Kinh nghiệm": "경력", "Thời gian": "기간", "Sự Kiện": "이벤트", "Thêm giai đoạn": "기간 추가",
+    "Về Tôi": "내 소개", "Tiểu Sử": "약력", "Giới thiệu nghệ sĩ": "아티스트 소개", "Tên Thật": "본명", "Ngày Sinh": "생년월일", "Địa Chỉ": "주소", "Công Ty": "회사", "Danh Xưng": "직함/역할", "Ca nhạc sĩ, producer...": "가수, 프로듀서...", "Email": "이메일", "SĐT": "전화번호", "Học Vấn": "학력", "Kinh nghiệm": "경력", "Thời gian": "기간", "Sự Kiện": "이벤트", "Thêm giai đoạn": "기간 추가", "Danh Mục": "카테고리", "Thêm Menu Mới": "새 메뉴 추가", "Tiêu Đề Menu": "메뉴 제목", "Đường Dẫn": "링크/경로",
  
     "Bài hát Preview": "프리뷰 곡",
     "Tên hiển thị": "표시 이름",
@@ -2159,12 +2243,24 @@ const adminTranslations: Record<string, Record<string, string>> = {
   },
   ja: {
     "Kho Nhạc": "ミュージックボルト",
+    "Bố Cục": "レイアウト",
+    "Bố Cục Trang Chủ": "ホームページレイアウト",
+    "Kéo thả các phần dưới đây để sắp xếp thứ tự hiển thị của chúng ở trang chủ nghệ sĩ.": "以下のセクションをドラッグ＆ドロップして、アーティストホームページ上の表示順を調整します。",
+    "Lưu Bố Cục": "レイアウトを保存",
+    "Tiêu Đề (Tên & Giới thiệu ngắn)": "ヘッダー (名前 & 簡単な紹介)",
+    "Spotify Playlist / Album": "Spotifyプレイリスト / アルバム",
+    "Kho Nhạc (Danh sách Đề mô / Ra Rồi)": "ミュージックボルト (デモ / リリース一覧)",
+    "MV Đã Phát Hành (YouTube Videos)": "リリース済みMV (YouTubeビデオ)",
+    "Phần hiển thị tên nghệ sĩ, dấu tích xanh và lời giới thiệu ngắn.": "アーティスト名、青い認証マーク、簡単な紹介を表示します。",
+    "Khung phát nhạc nhúng trực tiếp từ Spotify (nếu được cấu hình).": "Spotifyから直接埋め込まれた音楽プレーヤーです（設定されている場合）。",
+    "Phần danh sách bài hát chính chia theo tab Đề mô / Ra Rồi.": "デモ / リリース タブに分かれたメイン曲リストセクションです。",
+    "Phần hiển thị các MV Youtube đã phát hành và trình phát video popup.": "リリースされたYouTube MVとポップアップビデオプレーヤーを表示します。",
 
     "Quản lý Menu": "メニュー管理",
 
     "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "ドラッグ＆ドロップで並べ替えます。最初のタブがデフォルトページになります。最大3つのカスタムタブをサポートします。", "Lưu Menu": "メニューを保存",
 
-    "Về Tôi": "自己紹介", "Tiểu Sử": "経歴", "Giới thiệu nghệ sĩ": "アーティスト紹介", "Tên Thật": "本名", "Ngày Sinh": "生年月日", "Địa Chỉ": "住所", "Công Ty": "会社", "Danh Xưng": "役職", "Ca nhạc sĩ, producer...": "歌手、プロデューサー...", "Email": "Eメール", "SĐT": "電話番号", "Học Vấn": "学歴", "Kinh nghiệm": "経験", "Thời gian": "期間", "Sự Kiện": "イベント", "Thêm giai đoạn": "期間を追加",
+    "Về Tôi": "自己紹介", "Tiểu Sử": "経歴", "Giới thiệu nghệ sĩ": "アーティスト紹介", "Tên Thật": "本名", "Ngày Sinh": "生年月日", "Địa Chỉ": "住所", "Công Ty": "会社", "Danh Xưng": "役職", "Ca nhạc sĩ, producer...": "歌手、プロデューサー...", "Email": "Eメール", "SĐT": "電話番号", "Học Vấn": "学歴", "Kinh nghiệm": "経験", "Thời gian": "期間", "Sự Kiện": "イベント", "Thêm giai đoạn": "期間を追加", "Danh Mục": "カテゴリー", "Thêm Menu Mới": "新規メニュー追加", "Tiêu Đề Menu": "メニューのタイトル", "Đường Dẫn": "リンク先",
  
     "Bài hát Preview": "プレビュー曲",
     "Tên hiển thị": "表示名",
@@ -2643,12 +2739,24 @@ const adminTranslations: Record<string, Record<string, string>> = {
   },
   th: {
     "Kho Nhạc": "คลังเพลง",
+    "Bố Cục": "เลย์เอาต์",
+    "Bố Cục Trang Chủ": "เลย์เอาต์หน้าแรก",
+    "Kéo thả các phần dưới đây để sắp xếp thứ tự hiển thị của chúng ở trang chủ nghệ sĩ.": "ลากและวางส่วนต่างๆ ด้านล่างเพื่อจัดเรียงลำดับการแสดงผลบนหน้าแรกของศิลปิน",
+    "Lưu Bố Cục": "บันทึกเลย์เอาต์",
+    "Tiêu Đề (Tên & Giới thiệu ngắn)": "ส่วนหัว (ชื่อ & แนะนำตัวสั้นๆ)",
+    "Spotify Playlist / Album": "เพลย์ลิสต์ / อัลบั้ม Spotify",
+    "Kho Nhạc (Danh sách Đề mô / Ra Rồi)": "คลังเพลง (รายการเดโม / ปล่อยแล้ว)",
+    "MV Đã Phát Hành (YouTube Videos)": "MV ที่ปล่อยแล้ว (วิดีโอ YouTube)",
+    "Phần hiển thị tên nghệ sĩ, dấu tích xanh và lời giới thiệu ngắn.": "แสดงชื่อศิลปิน เครื่องหมายถูกสีฟ้า และการแนะนำสั้นๆ",
+    "Khung phát nhạc nhúng trực tiếp từ Spotify (nếu được cấu hình).": "เครื่องเล่นเพลงที่ฝังโดยตรงจาก Spotify (หากกำหนดค่าไว้)",
+    "Phần danh sách bài hát chính chia theo tab Đề mô / Ra Rồi.": "ส่วนรายการเพลงหลักที่แบ่งตามแท็บเดโม / ปล่อยแล้ว",
+    "Phần hiển thị các MV Youtube đã phát hành và trình phát video popup.": "แสดง YouTube MV ที่ปล่อยแล้วและเครื่องเล่นวิดีโอป๊อปอัป",
 
     "Quản lý Menu": "จัดการเมนู",
 
     "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "ลากและวางเพื่อจัดเรียงลำดับ แท็บแรกจะเป็นหน้าเริ่มต้น รองรับแท็บกำหนดเองสูงสุด 3 แท็บ", "Lưu Menu": "บันทึกเมนู",
 
-    "Về Tôi": "เกี่ยวกับฉัน", "Tiểu Sử": "ประวัติส่วนตัว", "Giới thiệu nghệ sĩ": "แนะนำศิลปิน", "Tên Thật": "ชื่อจริง", "Ngày Sinh": "วันเกิด", "Địa Chỉ": "ที่อยู่", "Công Ty": "บริษัท", "Danh Xưng": "ตำแหน่ง", "Ca nhạc sĩ, producer...": "นักร้อง, โปรดิวเซอร์...", "Email": "อีเมล", "SĐT": "เบอร์โทรศัพท์", "Học Vấn": "การศึกษา", "Kinh nghiệm": "ประสบการณ์", "Thời gian": "เวลา/ช่วงเวลา", "Sự Kiện": "เหตุการณ์", "Thêm giai đoạn": "เพิ่มช่วงเวลา",
+    "Về Tôi": "เกี่ยวกับฉัน", "Tiểu Sử": "ประวัติส่วนตัว", "Giới thiệu nghệ sĩ": "แนะนำศิลปิน", "Tên Thật": "ชื่อจริง", "Ngày Sinh": "วันเกิด", "Địa Chỉ": "ที่อยู่", "Công Ty": "บริษัท", "Danh Xưng": "ตำแหน่ง", "Ca nhạc sĩ, producer...": "นักร้อง, โปรดิวเซอร์...", "Email": "อีเมล", "SĐT": "เบอร์โทรศัพท์", "Học Vấn": "การศึกษา", "Kinh nghiệm": "ประสบการณ์", "Thời gian": "เวลา/ช่วงเวลา", "Sự Kiện": "เหตุการณ์", "Thêm giai đoạn": "เพิ่มช่วงเวลา", "Danh Mục": "หมวดหมู่", "Thêm Menu Mới": "เพิ่มเมนูใหม่", "Tiêu Đề Menu": "หัวข้อเมนู", "Đường Dẫn": "ลิงก์ / เส้นทาง",
  
     "Bài hát Preview": "ตัวอย่างเพลง",
     "Tên hiển thị": "ชื่อที่แสดง",
@@ -3128,12 +3236,24 @@ const adminTranslations: Record<string, Record<string, string>> = {
   },
   zh: {
     "Kho Nhạc": "音乐库",
+    "Bố Cục": "布局",
+    "Bố Cục Trang Chủ": "首页布局",
+    "Kéo thả các phần dưới đây để sắp xếp thứ tự hiển thị của chúng ở trang chủ nghệ sĩ.": "拖放以下部分以调整它们在艺术家首页上的显示顺序。",
+    "Lưu Bố Cục": "保存布局",
+    "Tiêu Đề (Tên & Giới thiệu ngắn)": "标题 (姓名和简短介绍)",
+    "Spotify Playlist / Album": "Spotify 播放列表 / 专辑",
+    "Kho Nhạc (Danh sách Đề mô / Ra Rồi)": "音乐库 (小样 / 已发行列表)",
+    "MV Đã Phát Hành (YouTube Videos)": "已发行 MV (YouTube 视频)",
+    "Phần hiển thị tên nghệ sĩ, dấu tích xanh và lời giới thiệu ngắn.": "显示艺术家姓名、蓝色认证标记和简短介绍。",
+    "Khung phát nhạc nhúng trực tiếp từ Spotify (nếu được cấu hình).": "直接从 Spotify 嵌入的音乐播放器（如果配置）。",
+    "Phần danh sách bài hát chính chia theo tab Đề mô / Ra Rồi.": "主歌曲列表分为 小样 / 已发行 选项卡。",
+    "Phần hiển thị các MV Youtube đã phát hành và trình phát video popup.": "显示已发行的 YouTube MV 和弹出式视频播放器。",
 
     "Quản lý Menu": "菜单管理",
 
     "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "拖放以重新排序。第一个选项卡将作为默认页面。最多支持3个自定义选项卡。", "Lưu Menu": "保存菜单",
 
-    "Về Tôi": "关于我", "Tiểu Sử": "个人简介", "Giới thiệu nghệ sĩ": "艺术家介绍", "Tên Thật": "真实姓名", "Ngày Sinh": "出生日期", "Địa Chỉ": "地址", "Công Ty": "公司", "Danh Xưng": "职位/角色", "Ca nhạc sĩ, producer...": "歌手、制作人...", "Email": "电子邮件", "SĐT": "电话号码", "Học Vấn": "教育", "Kinh nghiệm": "经验", "Thời gian": "时间/期间", "Sự Kiện": "事件", "Thêm giai đoạn": "添加时期",
+    "Về Tôi": "关于我", "Tiểu Sử": "个人简介", "Giới thiệu nghệ sĩ": "艺术家介绍", "Tên Thật": "真实姓名", "Ngày Sinh": "出生日期", "Địa Chỉ": "地址", "Công Ty": "公司", "Danh Xưng": "职位/角色", "Ca nhạc sĩ, producer...": "歌手、制作人...", "Email": "电子邮件", "SĐT": "电话号码", "Học Vấn": "教育", "Kinh nghiệm": "经验", "Thời gian": "时间/期间", "Sự Kiện": "事件", "Thêm giai đoạn": "添加时期", "Danh Mục": "分类", "Thêm Menu Mới": "添加新菜单", "Tiêu Đề Menu": "菜单标题", "Đường Dẫn": "路径/链接",
  
     "Bài hát Preview": "预览歌曲",
     "Tên hiển thị": "显示名称",
@@ -3646,17 +3766,30 @@ const LanguageContext = createContext<LangContextType>({ lang: 'vi', setLang: ()
 // Thumbnail fallback handled server-side now
 
 // ---- GLOBAL MULTI-ARTIST INTERCEPTORS ----
-const getArtistExtensionFromUrl = () => {
-  if ((window as any).__ACTIVE_ARTIST_EXTENSION__) {
+const getArtistExtensionFromUrl = (customPath?: string) => {
+  const currentPath = customPath !== undefined ? customPath : window.location.pathname;
+  const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
+  const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
+  const isDefaultPlatform = host === 'chorus.vn' || host.endsWith('.chorus.vn') || host.endsWith('.run.app') || host.endsWith('.aistudio.google') || host.endsWith('.gitpod.io');
+
+  if (isDefaultPlatform && !isLocal) {
+    if (currentPath === '/') {
+      return '';
+    }
+  }
+
+  if ((window as any).__ACTIVE_ARTIST_EXTENSION__ && customPath === undefined) {
     return (window as any).__ACTIVE_ARTIST_EXTENSION__;
   }
-  const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
+  if (!isLocal && !isDefaultPlatform) {
+    return '';
+  }
   if (host.endsWith('.chorus.vn') && host !== 'chorus.vn') {
     const sub = host.replace('.chorus.vn', '');
     if (sub) return sub;
   }
 
-  const segments = window.location.pathname.split('/').filter(Boolean);
+  const segments = currentPath.split('/').filter(Boolean);
   if (segments.length > 0) {
     const firstSegment = segments[0].toLowerCase();
     
@@ -3676,7 +3809,6 @@ const getArtistExtensionFromUrl = () => {
 const isArtistContext = () => {
   const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
   if (host.endsWith('.chorus.vn') && host !== 'chorus.vn') return true;
-  if ((window as any).__ACTIVE_ARTIST_EXTENSION__) return true;
   
   // Custom domain check: not chorus.vn, not localhost/127.0.0.1, and not .run.app preview domain
   const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
@@ -3687,35 +3819,35 @@ const isArtistContext = () => {
   return false;
 };
 
-const getAdminLink = (subPath: string = '') => {
+const getAdminLink = (subPath: string = '', customPath?: string) => {
   const isSubdomain = isArtistContext();
   if (isSubdomain) {
     return `/admin${subPath}`;
   }
-  const ext = getArtistExtensionFromUrl();
+  const ext = getArtistExtensionFromUrl(customPath);
   return ext ? `/${ext}/admin${subPath}` : `/acp${subPath}`;
 };
 
-const getArtistLink = (subPath: string = '') => {
+const getArtistLink = (subPath: string = '', customPath?: string) => {
   const isSubdomain = isArtistContext();
   const normalizedPath = subPath.startsWith('/') ? subPath : `/${subPath}`;
   if (isSubdomain) {
     return normalizedPath;
   }
-  const ext = getArtistExtensionFromUrl();
+  const ext = getArtistExtensionFromUrl(customPath);
   return ext ? `/${ext}${normalizedPath}` : normalizedPath;
 };
 
-const getAdminTokenKey = () => getArtistExtensionFromUrl() ? `adminToken_${getArtistExtensionFromUrl()}` : 'adminToken';
-const getMemberTokenKey = () => getArtistExtensionFromUrl() ? `memberToken_${getArtistExtensionFromUrl()}` : 'memberToken';
+const getAdminTokenKey = (customPath?: string) => getArtistExtensionFromUrl(customPath) ? `adminToken_${getArtistExtensionFromUrl(customPath)}` : 'adminToken';
+const getMemberTokenKey = (customPath?: string) => getArtistExtensionFromUrl(customPath) ? `memberToken_${getArtistExtensionFromUrl(customPath)}` : 'memberToken';
 
-const getAdminToken = () => localStorage.getItem(getAdminTokenKey());
-const setAdminToken = (token: string) => localStorage.setItem(getAdminTokenKey(), token);
-const removeAdminToken = () => localStorage.removeItem(getAdminTokenKey());
+const getAdminToken = (customPath?: string) => localStorage.getItem(getAdminTokenKey(customPath));
+const setAdminToken = (token: string, customPath?: string) => localStorage.setItem(getAdminTokenKey(customPath), token);
+const removeAdminToken = (customPath?: string) => localStorage.removeItem(getAdminTokenKey(customPath));
 
-const getMemberToken = () => localStorage.getItem(getMemberTokenKey());
-const setMemberToken = (token: string) => localStorage.setItem(getMemberTokenKey(), token);
-const removeMemberToken = () => localStorage.removeItem(getMemberTokenKey());
+const getMemberToken = (customPath?: string) => localStorage.getItem(getMemberTokenKey(customPath));
+const setMemberToken = (token: string, customPath?: string) => localStorage.setItem(getMemberTokenKey(customPath), token);
+const removeMemberToken = (customPath?: string) => localStorage.removeItem(getMemberTokenKey(customPath));
 
 
 // Patch window.fetch to automatically route to artist collections using Object.defineProperty to support read-only (getter-only) envs
@@ -4050,7 +4182,7 @@ function MemberLogin() {
 
           <div className="space-y-3">
             <Link 
-              to={getArtistExtensionFromUrl() ? `/${getArtistExtensionFromUrl()}` : "/"} 
+              to={getArtistLink("/")} 
               className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-purple-900/30 hover:shadow-purple-900/50 hover:scale-[1.02] transition-all duration-300"
             >
               <Play className="w-4 h-4 fill-white" /> Khám phá & Nghe nhạc ngay
@@ -4104,7 +4236,7 @@ function MemberLogin() {
         </form>
 
         <div className="mt-6 text-center">
-          <Link to={getArtistExtensionFromUrl() ? `/${getArtistExtensionFromUrl()}` : "/"} className="text-neutral-500 hover:text-neutral-300 text-xs transition-colors inline-flex items-center gap-1.5 font-medium">
+          <Link to={getArtistLink("/")} className="text-neutral-500 hover:text-neutral-300 text-xs transition-colors inline-flex items-center gap-1.5 font-medium">
             <ArrowLeft className="w-3.5 h-3.5" /> {t("Trở về Trang chủ")}
           </Link>
         </div>
@@ -4114,7 +4246,8 @@ function MemberLogin() {
 }
 
 function RequireAdmin({ children }: { children: React.ReactNode }) {
-  const ext = getArtistExtensionFromUrl();
+  const location = useLocation();
+  const ext = getArtistExtensionFromUrl(location.pathname);
   const isSubdomain = isArtistContext();
   
   if (!ext && !isSubdomain) {
@@ -4122,7 +4255,7 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
      return null;
   }
   
-  const token = getAdminToken();
+  const token = getAdminToken(location.pathname);
   if (!token) {
     return <AdminLogin />;
   }
@@ -4165,8 +4298,8 @@ function AnimatedRoutes() {
 }
 
 function AdminFloatingControls({ onLogout }: { onLogout: () => void }) {
-  const isAdmin = !!getAdminToken();
   const location = useLocation();
+  const isAdmin = !!getAdminToken(location.pathname);
   const [isPageLoading, setIsPageLoading] = useState(true);
   const { artistData } = useContext(LanguageContext);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -4259,7 +4392,7 @@ function AdminFloatingControls({ onLogout }: { onLogout: () => void }) {
       >
          {isAdminPage ? (
            <a 
-             href={getArtistExtensionFromUrl() ? `/${getArtistExtensionFromUrl()}` : "/"}
+             href={getArtistLink("/", location.pathname)}
              className="flex items-center justify-center p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/40 shadow-[0_4px_12px_rgba(0,0,0,0.15)] transition-all duration-300 hover:scale-115"
              title="Trang chủ"
            >
@@ -4267,7 +4400,7 @@ function AdminFloatingControls({ onLogout }: { onLogout: () => void }) {
            </a>
          ) : (
            <a 
-             href={getAdminLink()}
+             href={getAdminLink('', location.pathname)}
              className="flex items-center justify-center p-3 rounded-full bg-emerald-500/10 hover:bg-emerald-500/25 backdrop-blur-md text-emerald-400 border border-emerald-500/40 shadow-[0_4px_12px_rgba(16,185,129,0.15)] transition-all duration-300 hover:scale-115 cursor-pointer"
              title="Cài đặt (Admin)"
            >
@@ -5082,12 +5215,151 @@ function Home() {
   const pushDown = hasNavbar && !isScrolled;
   const effectiveCoverUrl = data.homeCoverUrl || data.aboutMe?.avatarUrl;
 
+  const renderTitleSection = (isFirst: boolean) => {
+    return (
+      <section key="title" className={`relative ${isFirst ? 'pt-36 sm:pt-40 md:pt-48' : 'pt-12 sm:pt-16'} pb-10 px-6 sm:px-12 flex flex-col items-center justify-center text-center min-h-[300px]`}>
+        <div className="relative z-10 w-full max-w-5xl flex flex-col items-center mt-10 sm:mt-14 md:mt-18">
+          <div className="w-full text-center">
+            {effectiveCoverUrl ? (
+              <div>
+                <motion.p 
+                  initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  onAnimationComplete={() => setShowArtist(true)}
+                  className="text-xl sm:text-2xl text-white font-medium max-w-3xl mx-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] mb-6 sm:mb-8 md:mb-10"
+                >
+                  <AutoTranslate text={(!data.artistBio || ["Thiên đường demo của", "Thiên đường âm nhạc của"].includes(data.artistBio?.trim() || '')) ? t.dDesc : data.artistBio} />
+                </motion.p>
+                <motion.h1 
+                  initial={{ scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
+                  animate={showArtist ? { scale: 1, opacity: 1, filter: 'blur(0px)' } : { scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  className="text-4xl sm:text-6xl md:text-[6rem] lg:text-[7rem] font-black mb-4 tracking-tighter text-white drop-shadow-lg leading-[1.15] text-center max-w-full mt-3 sm:mt-4"
+                >
+                  {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
+                    if (index === array.length - 1) {
+                      return (
+                        <span key={index} className="whitespace-nowrap"><span className="animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
+                            <motion.div animate={{ rotateY: [0, 360], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", repeatDelay: 3 }} className="flex items-center justify-center">
+                              <BadgeCheck className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 text-blue-500 fill-blue-500/20 shrink-0 cursor-pointer" />
+                            </motion.div>
+                            <div className="absolute bottom-full mb-2 hidden group-hover:block bg-neutral-900 border border-white/10 text-white text-[11px] sm:text-xs font-bold py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none z-50 tracking-normal normal-case leading-none">
+                              Nghệ sĩ đã xác thực
+                              <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-neutral-900" />
+                            </div>
+                          </div>
+                        </span>
+                      );
+                    }
+                    return <React.Fragment key={index}><span className="animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{word}</span>{' '}</React.Fragment>;
+                  })}
+                </motion.h1>
+              </div>
+            ) : (
+              <div className="w-full max-w-3xl p-10 mx-auto mb-8">
+                <motion.p 
+                  initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  onAnimationComplete={() => setShowArtist(true)}
+                  className="text-lg sm:text-xl text-white font-medium mb-6 sm:mb-8 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
+                >
+                  <AutoTranslate text={(!data.artistBio || ["Thiên đường demo của", "Thiên đường âm nhạc của"].includes(data.artistBio?.trim() || '')) ? t.dDesc : data.artistBio} />
+                </motion.p>
+                <motion.h1 
+                  initial={{ scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
+                  animate={showArtist ? { scale: 1, opacity: 1, filter: 'blur(0px)' } : { scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  className="text-3xl sm:text-5xl md:text-6xl font-black mb-0 tracking-tight leading-[1.15] text-center max-w-full mt-2 sm:mt-3 animate-text-shine"
+                >
+                  {data.artistName || ''}
+                </motion.h1>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  };
+
+  const renderSpotifySection = (isFirst: boolean) => {
+    if (!data.spotifyUrl) return null;
+    return (
+      <section key="spotify" className={`w-full max-w-5xl mx-auto px-6 sm:px-12 ${isFirst ? 'pt-36 sm:pt-40 md:pt-48 pb-10' : 'pb-6'}`}>
+        <div className="w-full relative z-10 max-w-4xl mx-auto">
+          {(() => {
+            const spMatch = data.spotifyUrl.match(/spotify\.com\/(artist|playlist|album|track)\/([a-zA-Z0-9]+)/);
+            if (spMatch) {
+              return (
+                <motion.div 
+                  key="spotify-embed"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: spotifyLoaded ? 1 : 0, y: spotifyLoaded ? 0 : 20 }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  className="w-full bg-white/5 p-2 sm:p-4 md:p-6 rounded-3xl border border-white/10 backdrop-blur-md shadow-2xl flex flex-col gap-4 text-left"
+                >
+                  {spotifyInfo && (
+                    <div className="flex items-center gap-4 px-2">
+                       <img src={spotifyInfo.image} className="w-16 h-16 rounded-full shadow-lg border border-white/20 object-cover" alt="Spotify" />
+                       <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-white text-lg">{data.artistName}</span>
+                            <div className="w-4 h-4 bg-[#1DB954] rounded-full flex items-center justify-center">
+                              <svg className="w-2.5 h-2.5 text-black" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+                            </div>
+                          </div>
+                          <span className="text-sm font-medium text-stone-300">
+                            {spotifyInfo.description.replace('người nghe hàng tháng', 'monthly listeners')}
+                          </span>
+                       </div>
+                       <a href={data.spotifyUrl} target="_blank" rel="noreferrer" className="hidden sm:flex ml-auto items-center gap-2 bg-[#1DB954] text-white px-4 py-2 rounded-full transition-transform font-bold text-sm">
+                         <SpotifyIcon className="w-4 h-4" /> Open Spotify
+                       </a>
+                    </div>
+                  )}
+                  
+                  <div className="w-full overflow-hidden rounded-2xl relative min-h-[450px]">
+                    {!spotifyLoaded && (
+                       <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                         <div className="w-8 h-8 border-4 border-[#1DB954]/30 border-t-[#1DB954] rounded-full animate-spin"></div>
+                       </div>
+                    )}
+                    <iframe 
+                      src={`https://open.spotify.com/embed/${spMatch[1]}/${spMatch[2]}?utm_source=generator&theme=0`} 
+                      width="100%" 
+                      height="450" 
+                      frameBorder="0" 
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                      loading="lazy" 
+                      onLoad={() => setSpotifyLoaded(true)}
+                      className={`w-full bg-neutral-900 transition-opacity duration-1000 ${spotifyLoaded ? 'opacity-100' : 'opacity-0'}`}
+                    ></iframe>
+                  </div>
+                </motion.div>
+              );
+            }
+            return (
+             <div className="flex justify-center">
+               <a href={data.spotifyUrl} target="_blank" rel="noreferrer" className="inline-flex transition-transform hover:scale-105 active:scale-95">
+                 <span className="flex items-center gap-2 bg-[#1DB954] text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-[#1DB954]/20 text-lg">
+                   <SpotifyIcon className="w-5 h-5" /> {t.btnSpot}
+                 </span>
+               </a>
+             </div>
+            );
+          })()}
+        </div>
+      </section>
+    );
+  };
+
   return (
     <motion.div 
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 1.05 }}
-      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
       className="min-h-screen flex flex-col bg-neutral-950 text-white font-sans selection:bg-rose-500 selection:text-white relative z-0 bg-notebook-dark"
     >
       <SocialCarousel data={data} pushDown={pushDown} />
@@ -5149,8 +5421,8 @@ function Home() {
               <div className="absolute inset-0 bg-black/75 backdrop-blur-md" />
             </div>
 
-            <div className="relative w-full max-w-4xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/20 flex flex-col z-10 cursor-default" onClick={e => e.stopPropagation()}>
-              <div className="p-3 bg-neutral-900 border-b border-white/10 flex items-center justify-between gap-3 text-xs sm:text-sm text-neutral-350 relative z-10">
+            <div className="relative w-full max-w-4xl aspect-video bg-white/5 backdrop-blur-2xl rounded-2xl overflow-hidden shadow-[0_24px_50px_-12px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.15)] border border-white/15 flex flex-col z-10 cursor-default" onClick={e => e.stopPropagation()}>
+              <div className="p-3.5 bg-white/5 backdrop-blur-xl border-b border-white/10 flex items-center justify-between gap-3 text-xs sm:text-sm text-neutral-350 relative z-10">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse shrink-0"></span>
                   <span className="font-bold text-white text-[11px] sm:text-sm tracking-tight break-words line-clamp-2 sm:line-clamp-none leading-normal">
@@ -5159,9 +5431,9 @@ function Home() {
                 </div>
                 <div className="flex items-center gap-3 justify-end shrink-0">
                   <button 
-                    className="text-neutral-400 hover:text-white px-2.5 py-0.5 font-bold transition-colors text-base sm:text-lg shrink-0"
+                    className="text-neutral-400 hover:text-white px-2.5 py-0.5 font-bold transition-colors text-base sm:text-lg shrink-0 cursor-pointer"
                     onClick={() => setPlayingVideo(null)}
-                    title={lang === 'vi' ? 'Đóng' : 'Close'}
+                    title={t("Đóng")}
                   >
                     ✕
                   </button>
@@ -5174,7 +5446,7 @@ function Home() {
                 target="_blank" 
                 rel="noreferrer" 
                 className="flex-1 w-full h-full relative bg-neutral-950 group overflow-hidden block"
-                title="Bấm để phát trên YouTube ở tab mới"
+                title={t("Bấm để phát trên YouTube ở tab mới")}
               >
                 {/* Image with fallback urls in standard CSS support structure */}
                 <img 
@@ -5192,14 +5464,14 @@ function Home() {
                 
                 {/* Glow ring Play button in middle */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center select-none z-10 gap-3 sm:gap-4">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-red-600 rounded-full flex items-center justify-center text-white shadow-[0_0_30px_rgba(239,68,68,0.6)] transition-all duration-350 sm:group-hover:scale-110 sm:group-active:scale-95 border border-white/20 relative">
-                    <span className="absolute inset-0 rounded-full border-2 border-white/30 animate-ping opacity-35"></span>
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-red-600/75 backdrop-blur-lg border border-red-500/30 rounded-full flex items-center justify-center text-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.35),0_12px_24px_-4px_rgba(0,0,0,0.5),0_0_25px_rgba(239,68,68,0.4)] transition-all duration-350 sm:group-hover:scale-110 sm:group-active:scale-95 sm:group-hover:bg-red-600/90 sm:group-hover:border-red-500/50 relative">
+                    <span className="absolute inset-0 rounded-full border border-red-500/50 animate-ping opacity-50"></span>
                     <Play className="w-8 h-8 sm:w-9 sm:h-9 text-white fill-white translate-x-0.5" />
                   </div>
                   
                   <div className="flex flex-col gap-1 sm:gap-2">
                     <h4 className="text-sm sm:text-lg font-black text-white tracking-widest uppercase drop-shadow-md sm:group-hover:text-red-400 transition-colors">
-                      {lang === 'vi' ? 'Bấm để phát trên YouTube' : 'Click to Play on YouTube'}
+                      {t("Bấm để phát trên YouTube")}
                     </h4>
                   </div>
                 </div>
@@ -5214,153 +5486,27 @@ function Home() {
         {hasNavbar && <PublicNavbar menus={finalMenus} activeTab={activeMenuTab} setActiveTab={setActiveMenuTab} t={t} />}
       </div>
 
-      {isVault && (
-        <>
-      {/* Hero Section */}
-      <section className="relative pt-36 sm:pt-40 md:pt-48 pb-20 px-6 sm:px-12 flex flex-col items-center justify-center text-center min-h-[400px]">
-
-        
-        <div className="relative z-10 w-full max-w-5xl flex flex-col items-center mt-20 sm:mt-24 md:mt-28">
-          <div className="w-full text-center">
-            {effectiveCoverUrl ? (
-              <div>
-                <motion.p 
-                  initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
-                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
-                  onAnimationComplete={() => setShowArtist(true)}
-                  className="text-xl sm:text-2xl text-white font-medium max-w-3xl mx-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] mb-6 sm:mb-8 md:mb-10"
-                >
-                  <AutoTranslate text={(!data.artistBio || ["Thiên đường demo của", "Thiên đường âm nhạc của"].includes(data.artistBio?.trim() || '')) ? t.dDesc : data.artistBio} />
-                </motion.p>
-                    <motion.h1 
-                      initial={{ scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
-                      animate={showArtist ? { scale: 1, opacity: 1, filter: 'blur(0px)' } : { scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
-                      transition={{ duration: 1.5, ease: "easeOut" }}
-                      className="text-4xl sm:text-6xl md:text-[6rem] lg:text-[7rem] font-black mb-4 tracking-tighter text-white drop-shadow-lg leading-[1.15] text-center max-w-full mt-3 sm:mt-4"
-                    >
-                      {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
-                        if (index === array.length - 1) {
-                          return (
-                            <span key={index} className="whitespace-nowrap"><span className="animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
-                                <motion.div animate={{ rotateY: [0, 360], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", repeatDelay: 3 }} className="flex items-center justify-center">
-                                  <BadgeCheck className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 text-blue-500 fill-blue-500/20 shrink-0 cursor-pointer" />
-                                </motion.div>
-                                <div className="absolute bottom-full mb-2 hidden group-hover:block bg-neutral-900 border border-white/10 text-white text-[11px] sm:text-xs font-bold py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none z-50 tracking-normal normal-case leading-none">
-                                  Nghệ sĩ đã xác thực
-                                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-neutral-900" />
-                                </div>
-                              </div>
-                            </span>
-                          );
-                        }
-                        return <span key={index} className="animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] mr-[0.25em]">{word}</span>;
-                      })}
-                    </motion.h1>
-              </div>
-            ) : (
-              <div 
-                className="w-full max-w-3xl p-10 mx-auto mb-8"
-              >
-                <motion.p 
-                  initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
-                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
-                  onAnimationComplete={() => setShowArtist(true)}
-                  className="text-lg sm:text-xl text-white font-medium mb-6 sm:mb-8 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
-                >
-                  <AutoTranslate text={(!data.artistBio || ["Thiên đường demo của", "Thiên đường âm nhạc của"].includes(data.artistBio?.trim() || '')) ? t.dDesc : data.artistBio} />
-                </motion.p>
-                    <motion.h1 
-                      initial={{ scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
-                      animate={showArtist ? { scale: 1, opacity: 1, filter: 'blur(0px)' } : { scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
-                      transition={{ duration: 1.5, ease: "easeOut" }}
-                      className="text-3xl sm:text-5xl md:text-6xl font-black mb-0 tracking-tight leading-[1.15] text-center max-w-full mt-2 sm:mt-3 animate-text-shine"
-                    >
-                      {data.artistName || ''}
-                    </motion.h1>
+      {isVault && (() => {
+        const layoutOrder = data?.layoutSections || ['title', 'spotify', 'vault', 'mv'];
+        const titleOrder = layoutOrder.indexOf('title') !== -1 ? layoutOrder.indexOf('title') : 0;
+        const spotifyOrder = layoutOrder.indexOf('spotify') !== -1 ? layoutOrder.indexOf('spotify') : 1;
+        const vaultOrder = layoutOrder.indexOf('vault') !== -1 ? layoutOrder.indexOf('vault') : 2;
+        const mvOrder = layoutOrder.indexOf('mv') !== -1 ? layoutOrder.indexOf('mv') : 3;
+        const firstSection = layoutOrder[0] || 'title';
+        return (
+          <main className="flex-1 w-full flex flex-col pb-32">
+            <div style={{ order: titleOrder }} className="w-full">
+              {renderTitleSection(firstSection === 'title')}
+            </div>
+            {data.spotifyUrl && (
+              <div style={{ order: spotifyOrder }} className="w-full">
+                {renderSpotifySection(firstSection === 'spotify')}
               </div>
             )}
-          </div>
 
-          {data.spotifyUrl && (
-            <div className="w-full relative z-10 max-w-4xl mx-auto mt-12">
-              {(() => {
-                const spMatch = data.spotifyUrl.match(/spotify\.com\/(artist|playlist|album|track)\/([a-zA-Z0-9]+)/);
-                if (spMatch) {
-                  return (
-                    <motion.div 
-                      key="spotify-embed"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: spotifyLoaded ? 1 : 0, y: spotifyLoaded ? 0 : 20 }}
-                      transition={{ duration: 1.5, ease: "easeOut" }}
-                      className="w-full bg-black/20 p-2 sm:p-4 md:p-6 rounded-3xl border border-white/10 backdrop-blur-md shadow-2xl flex flex-col gap-4"
-                    >
-                      {spotifyInfo && (
-                        <div className="flex items-center gap-4 px-2">
-                           <img src={spotifyInfo.image} className="w-16 h-16 rounded-full shadow-lg border border-white/20 object-cover" alt="Spotify" />
-                           <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-bold text-white text-lg">{data.artistName}</span>
-                                <div className="w-4 h-4 bg-[#1DB954] rounded-full flex items-center justify-center">
-                                  <svg className="w-2.5 h-2.5 text-black" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
-                                </div>
-                              </div>
-                              <span className="text-sm font-medium text-stone-300">
-                                {spotifyInfo.description.replace('người nghe hàng tháng', 'monthly listeners')}
-                              </span>
-                              
-                           </div>
-                           <a href={data.spotifyUrl} target="_blank" rel="noreferrer" className="hidden sm:flex ml-auto items-center gap-2 bg-[#1DB954] text-white px-4 py-2 rounded-full transition-transform font-bold text-sm">
-                             <SpotifyIcon className="w-4 h-4" /> Open Spotify
-                           </a>
-                        </div>
-                      )}
-                      
-                      <div className="w-full overflow-hidden rounded-2xl relative min-h-[450px]">
-                        {!spotifyLoaded && (
-                           <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                             <div className="w-8 h-8 border-4 border-[#1DB954]/30 border-t-[#1DB954] rounded-full animate-spin"></div>
-                           </div>
-                        )}
-                        <iframe 
-                          src={`https://open.spotify.com/embed/${spMatch[1]}/${spMatch[2]}?utm_source=generator&theme=0`} 
-                          width="100%" 
-                          height="450" 
-                          frameBorder="0" 
-                          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                          loading="lazy" 
-                          onLoad={() => setSpotifyLoaded(true)}
-                          className={`w-full bg-neutral-900 transition-opacity duration-1000 ${spotifyLoaded ? 'opacity-100' : 'opacity-0'}`}
-                        ></iframe>
-                      </div>
-                    </motion.div>
-                  );
-                }
-                return (
-                 <div className="flex justify-center mt-6">
-                   <a href={data.spotifyUrl} target="_blank" rel="noreferrer" className="inline-flex transition-transform hover:scale-105 active:scale-95">
-                     <span className="flex items-center gap-2 bg-[#1DB954] text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-[#1DB954]/20 text-lg">
-                       <SpotifyIcon className="w-5 h-5" /> {t.btnSpot}
-                     </span>
-                   </a>
-                 </div>
-                );
-              })()}
-            </div>
-          )}
-        </div>
-      </section>
-      </>
-      )}
-
-      {/* Main Content */}
-      <main className="flex-1 w-full max-w-5xl mx-auto px-6 sm:px-12 pb-32 space-y-12 sm:space-y-16">
-        
-        {isVault && (
-          <>
-        {/* Demos Section */}
-        <section id="music-tabs-section" className="scroll-mt-24">
+            <div style={{ order: vaultOrder }} className="w-full">
+              {/* Demos Section */}
+              <section id="music-tabs-section" className={`scroll-mt-24 w-full max-w-5xl mx-auto px-6 sm:px-12 pb-10 ${firstSection === 'vault' ? 'pt-36 sm:pt-40 md:pt-48' : ''}`}>
           {/* Header Row with compact Search Box */}
           <div className="flex items-center justify-between mb-4">
             <div className={`${isHomeSearchExpanded ? 'hidden sm:flex' : 'flex'} text-base sm:text-lg font-bold tracking-tight text-white/95 items-center gap-2 shrink-0`}>
@@ -5760,7 +5906,7 @@ function Home() {
                                         </h3>
                                         <p className="text-neutral-400 font-medium text-xs mt-1 truncate tracking-wider flex items-center gap-1.5">
                                           <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: activeBrandColors.secondary }}></span>
-                                          Nhạc Thương Hiệu
+                                          {t("Nhạc Thương Hiệu")}
                                         </p>
                                       </motion.div>
                                     ) : (
@@ -5930,9 +6076,11 @@ function Home() {
             );
           })()}
         </section>
+            </div>
 
-        {/* Released Songs Section */}
-        {ytVideos.length > 0 && (() => {
+            {ytVideos.length > 0 && (
+              <div style={{ order: mvOrder }} className={`w-full max-w-5xl mx-auto px-6 sm:px-12 pb-32 ${firstSection === 'mv' ? 'pt-36 sm:pt-40 md:pt-48' : ''}`}>
+                {(() => {
           const mvTotalItems = ytVideos.length;
           const mvTotalPages = Math.ceil(mvTotalItems / mvPageSize);
           const mvStartIndex = (mvCurrentPage - 1) * mvPageSize;
@@ -5948,14 +6096,16 @@ function Home() {
                 {paginatedMVs.map((song) => (
                   <button 
                     onClick={() => setPlayingVideo(song.videoId)} key={song.videoId} 
-                    className="w-full text-left flex items-center gap-4 bg-neutral-900 border border-white/5 hover:bg-neutral-800 rounded-xl p-3 transition-colors group">
-                    <div className="w-24 h-16 bg-neutral-800 rounded-lg overflow-hidden flex-shrink-0 relative">
-                      <img src={`https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`} alt={song.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                      <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors flex items-center justify-center">
-                         <Play className="w-6 h-6 text-white drop-shadow-md opacity-70 group-hover:opacity-100" />
+                    className="w-full text-left flex items-center gap-4 bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10 hover:border-white/20 rounded-xl p-3 shadow-lg shadow-black/10 transition-all duration-300 group">
+                    <div className="w-24 h-16 bg-white/5 rounded-lg overflow-hidden flex-shrink-0 relative border border-white/5">
+                      <img src={`https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`} alt={song.title} className="w-full h-full object-cover opacity-85 group-hover:opacity-100 transition-all duration-300 group-hover:scale-105" />
+                      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center">
+                        <div className="p-2 bg-white/10 backdrop-blur-md border border-white/30 rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_4px_12px_rgba(0,0,0,0.3)] opacity-90 group-hover:opacity-100 scale-90 group-hover:scale-105 transition-all duration-300 flex items-center justify-center">
+                          <Play className="w-4 h-4 text-white fill-white translate-x-0.5" />
+                        </div>
                       </div>
                     </div>
-                    <h3 className="text-lg font-medium group-hover:text-emerald-400 transition-colors pr-2 break-words">{song.title}</h3>
+                    <h3 className="text-base sm:text-lg font-medium group-hover:text-emerald-400 transition-colors pr-2 break-words text-white/90 group-hover:text-white">{song.title}</h3>
                   </button>
                 ))}
               </div>
@@ -6049,15 +6199,21 @@ function Home() {
                   )}
                 </div>
               )}
-            </section>
-          );
-        })()}
+                    </section>
+                  );
+                })()}
+              </div>
+            )}
+          </main>
+        );
+      })()}
 
-          </>
-        )}
-        {isAbout && <PublicAboutView aboutMe={data.aboutMe} data={data} t={t} onGoToVault={() => setActiveMenuTab(data.menus?.find((m: any) => m.type === 'vault')?.id || 'm1')} isAdmin={!!getAdminToken()} artistExtension={getArtistExtensionFromUrl()} />}
-        {isBio && <PublicBioView biography={data.biography} t={t} isAdmin={!!getAdminToken()} artistExtension={getArtistExtensionFromUrl()} />}
-      </main>
+      {!isVault && (
+        <main className="flex-1 w-full max-w-5xl mx-auto px-6 sm:px-12 pb-32 pt-36 sm:pt-40 md:pt-48">
+          {isAbout && <PublicAboutView aboutMe={data.aboutMe} data={data} t={t} onGoToVault={() => setActiveMenuTab(data.menus?.find((m: any) => m.type === 'vault')?.id || 'm1')} isAdmin={!!getAdminToken()} artistExtension={getArtistExtensionFromUrl()} />}
+          {isBio && <PublicBioView biography={data.biography} t={t} isAdmin={!!getAdminToken()} artistExtension={getArtistExtensionFromUrl()} />}
+        </main>
+      )}
 
       <footer className="py-8 text-center text-sm border-t border-white/10 relative z-10">
         <a href="https://Chorus.vn" target="_blank" rel="noopener noreferrer" className="font-bold tracking-wider text-rose-500/80 hover:text-rose-400 drop-shadow-[0_0_10px_rgba(244,63,94,0.5)] transition-all">
@@ -6079,6 +6235,7 @@ function Home() {
             demo={{...activeBioSong, coverUrl: getPreviewUrl(activeBioSong.coverUrl)}} 
             onClose={() => setActiveBioSong(null)} 
             isStandalone={false}
+            lang={lang}
           />
         )}
       </AnimatePresence>
@@ -7626,6 +7783,56 @@ function PlaylistPlayer() {
   );
 }
 
+function formatBriefText(text: string | null | undefined) {
+  if (!text) return null;
+  const lines = text.split(/\r?\n/);
+  return lines.map((line, idx) => {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      return <div key={idx} className="h-2" />;
+    }
+    
+    // Check if line matches a list with bullet (- or * or + or •)
+    const bulletMatch = line.match(/^(\s*)([-*•+])\s+(.*)$/);
+    if (bulletMatch) {
+      const leadingSpaces = bulletMatch[1];
+      const content = bulletMatch[3];
+      const indentClass = leadingSpaces.length > 0 ? "pl-8" : "pl-4";
+      return (
+        <div key={idx} className={`flex items-start gap-2 ${indentClass} py-0.5 leading-relaxed text-left`}>
+          <span className="text-indigo-400 select-none shrink-0">•</span>
+          <span className="text-left">{content}</span>
+        </div>
+      );
+    }
+    
+    // Check if line matches a numbered list e.g. "1. " or "2) " or "1 " (with spaces)
+    const numberMatch = line.match(/^(\s*)(\d+|[a-zA-Z])([.)]|\s+)\s*(.*)$/);
+    if (numberMatch) {
+      const leadingSpaces = numberMatch[1];
+      const num = numberMatch[2];
+      const separator = numberMatch[3].trim();
+      const content = numberMatch[4];
+      if (content) {
+        const indentClass = leadingSpaces.length > 0 ? "pl-8" : "pl-4";
+        return (
+          <div key={idx} className={`flex items-start gap-2 ${indentClass} py-0.5 leading-relaxed text-left`}>
+            <span className="text-indigo-400 font-bold font-mono select-none shrink-0">{num}{separator || '.'}</span>
+            <span className="text-left">{content}</span>
+          </div>
+        );
+      }
+    }
+
+    // Fallback regular line
+    return (
+      <p key={idx} className="leading-relaxed py-0.5 text-left">
+        {line}
+      </p>
+    );
+  });
+}
+
 function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, onAlmostEnded, playlistContext, previewConfig, previewData }: any = {}) {
   const { lang, landingConfig, artistData } = useContext(LanguageContext);
   const t = useMemo(() => {
@@ -8147,7 +8354,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
   const finalDisplayCover = resolveCoverUrl(displayCoverUrl) || displayCoverUrl;
 
   if (demo?.linkType === 'indirect') {
-    return <IndirectBioCard demo={{...demo, coverUrl: finalDisplayCover}} isStandalone={true} />;
+    return <IndirectBioCard demo={{...demo, coverUrl: finalDisplayCover}} isStandalone={true} lang={lang} />;
   }
 
   // Templates
@@ -8897,7 +9104,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
                 <h3 className="font-bold text-lg flex items-center gap-2"><FileText className="w-5 h-5 text-indigo-400" /> Brief khách hàng</h3>
                 <button onClick={() => setShowBrandBrief(false)} className="p-1 hover:bg-white/10 rounded-lg"><X className="w-5 h-5" /></button>
               </div>
-              <div className="text-sm text-stone-200 whitespace-pre-wrap leading-relaxed max-h-[60vh] overflow-y-auto custom-scrollbar">{demo?.brandBrief}</div>
+              <div className="text-sm text-stone-200 leading-relaxed max-h-[60vh] overflow-y-auto custom-scrollbar space-y-1">{formatBriefText(demo?.brandBrief)}</div>
             </div>
           </div>
         </div>
@@ -9144,43 +9351,60 @@ const DEFAULT_VI_NAMES: Record<string, string> = {
 
 const translateTemplateName = (nameOrId: string) => {
   const map: Record<string, string> = {
-    '1': 'Cheerful (Warm)',
-    '2': 'Energetic (Vibrant)',
-    '3': 'Sad (Deep)',
-    '4': 'Relaxed (Gentle)',
-    '5': 'Cute (Red, dancing)',
-    '6': 'Happy (Pink, falling petals)',
-    '7': 'School (White, falling yellow leaves)',
-    '8': 'Vietnam ( Red, waving flag )',
-    '9': 'Rainbow',
-    '10': 'Hip Hop (Street)',
-    '11': 'Mysterious (Black-Gold, Moon-Smoke-Rain)',
-    '12': 'Classic (Brown, retro)',
-    '13': 'Sunset (Orange-Red sunset)',
-    '14': 'Ocean (Sea waves)',
+    '1': 'Vui vẻ (Ấm áp)',
+    '2': 'Căng Cực (Sôi động)',
+    '3': 'Buồn (Sâu lắng)',
+    '4': 'Thư giãn (Nhẹ nhàng)',
+    '5': 'Đáng yêu (Đỏ, Nhảy múa)',
+    '6': 'Hạnh Phúc (Hồng, Hoa rơi)',
+    '7': 'Học Đường (Trắng, Lá vàng rơi)',
+    '8': 'Tổ Quốc (Đỏ, Cờ phấp phới)',
+    '9': 'Cầu Vồng',
+    '10': 'Hip Hop (Đường phố)',
+    '11': 'Kỳ bí (Đen vàng, Trăng khói mưa)',
+    '12': 'Cổ điển (Nâu, retro)',
+    '13': 'Hoàng hôn (Cam đỏ trời chiều)',
+    '14': 'Đại Dương (Sóng biển)',
     '15': 'Retro 8-Bit (Game)',
-    '16': 'Puzzle Grid',
-    '17': 'Cheering (Clouds, sun)',
-    '18': 'Fireworks (New Year)',
-    'Vui vẻ (Ấm áp)': 'Cheerful (Warm)',
-    'Căng Cực (Sôi động)': 'Energetic (Vibrant)',
-    'Buồn (Sâu lắng)': 'Sad (Deep)',
-    'Thư giãn (Nhẹ nhàng)': 'Relaxed (Gentle)',
-    'Đáng yêu (Đỏ, Nhảy múa)': 'Cute (Red, dancing)',
-    'Hạnh Phúc (Hồng, Hoa rơi)': 'Happy (Pink, falling petals)',
-    'Học Đường (Trắng, Lá vàng rơi)': 'School (White, falling yellow leaves)',
-    'Tổ Quốc (Đỏ, Cờ phấp phới)': 'Vietnam ( Red, waving flag )',
-    'Vietnam (Red, waving flag)': 'Vietnam ( Red, waving flag )',
-    'Cầu Vồng': 'Rainbow',
-    'Hip Hop (Đường phố)': 'Hip Hop (Street)',
-    'Kỳ bí (Đen vàng, Trăng khói mưa)': 'Mysterious (Black-Gold, Moon-Smoke-Rain)',
-    'Cổ điển (Nâu, retro)': 'Classic (Brown, retro)',
-    'Hoàng hôn (Cam đỏ trời chiều)': 'Sunset (Orange-Red sunset)',
-    'Đại Dương (Sóng biển)': 'Ocean (Sea waves)',
+    '16': 'Xếp hình Puzzle',
+    '17': 'Cổ vũ (Mây, mặt trời)',
+    '18': 'Pháo hoa (Năm mới)',
+    'Cheerful (Warm)': 'Vui vẻ (Ấm áp)',
+    'Energetic (Vibrant)': 'Căng Cực (Sôi động)',
+    'Sad (Deep)': 'Buồn (Sâu lắng)',
+    'Relaxed (Gentle)': 'Thư giãn (Nhẹ nhàng)',
+    'Cute (Red, dancing)': 'Đáng yêu (Đỏ, Nhảy múa)',
+    'Happy (Pink, falling petals)': 'Hạnh Phúc (Hồng, Hoa rơi)',
+    'School (White, falling yellow leaves)': 'Học Đường (Trắng, Lá vàng rơi)',
+    'Vietnam ( Red, waving flag )': 'Tổ Quốc (Đỏ, Cờ phấp phới)',
+    'Vietnam (Red, waving flag)': 'Tổ Quốc (Đỏ, Cờ phấp phới)',
+    'Rainbow': 'Cầu Vồng',
+    'Hip Hop (Street)': 'Hip Hop (Đường phố)',
+    'Mysterious (Black-Gold, Moon-Smoke-Rain)': 'Kỳ bí (Đen vàng, Trăng khói mưa)',
+    'Classic (Brown, retro)': 'Cổ điển (Nâu, retro)',
+    'Sunset (Orange-Red sunset)': 'Hoàng hôn (Cam đỏ trời chiều)',
+    'Ocean (Sea waves)': 'Đại Dương (Sóng biển)',
     'Retro 8-Bit (Game)': 'Retro 8-Bit (Game)',
-    'Xếp hình Puzzle': 'Puzzle Grid',
-    'Cổ vũ (Mây, mặt trời)': 'Cheering (Clouds, sun)',
-    'Pháo hoa (Năm mới)': 'Fireworks (New Year)'
+    'Puzzle Grid': 'Xếp hình Puzzle',
+    'Cheering (Clouds, sun)': 'Cổ vũ (Mây, mặt trời)',
+    'Fireworks (New Year)': 'Pháo hoa (Năm mới)',
+    'Vui vẻ (Ấm áp)': 'Vui vẻ (Ấm áp)',
+    'Căng Cực (Sôi động)': 'Căng Cực (Sôi động)',
+    'Buồn (Sâu lắng)': 'Buồn (Sâu lắng)',
+    'Thư giãn (Nhẹ nhàng)': 'Thư giãn (Nhẹ nhàng)',
+    'Đáng yêu (Đỏ, Nhảy múa)': 'Đáng yêu (Đỏ, Nhảy múa)',
+    'Hạnh Phúc (Hồng, Hoa rơi)': 'Hạnh Phúc (Hồng, Hoa rơi)',
+    'Học Đường (Trắng, Lá vàng rơi)': 'Học Đường (Trắng, Lá vàng rơi)',
+    'Tổ Quốc (Đỏ, Cờ phấp phới)': 'Tổ Quốc (Đỏ, Cờ phấp phới)',
+    'Cầu Vồng': 'Cầu Vồng',
+    'Hip Hop (Đường phố)': 'Hip Hop (Đường phố)',
+    'Kỳ bí (Đen vàng, Trăng khói mưa)': 'Kỳ bí (Đen vàng, Trăng khói mưa)',
+    'Cổ điển (Nâu, retro)': 'Cổ điển (Nâu, retro)',
+    'Hoàng hôn (Cam đỏ trời chiều)': 'Hoàng hôn (Cam đỏ trời chiều)',
+    'Đại Dương (Sóng biển)': 'Đại Dương (Sóng biển)',
+    'Xếp hình Puzzle': 'Xếp hình Puzzle',
+    'Cổ vũ (Mây, mặt trời)': 'Cổ vũ (Mây, mặt trời)',
+    'Pháo hoa (Năm mới)': 'Pháo hoa (Năm mới)'
   };
   return map[nameOrId] || nameOrId;
 };
@@ -9245,7 +9469,7 @@ function AdminTemplatesSettings({ isPCPreviewMode, setIsPCPreviewMode }: { isPCP
         for (let i = 1; i <= 18; i++) {
            const exist = merged.find((c: any) => c.id === String(i));
            if (!exist) {
-             merged.push({ id: String(i), name: defaultNames[i - 1], order: i });
+             merged.push({ id: String(i), name: translateTemplateName(defaultNames[i - 1]), order: i });
            } else {
              exist.name = translateTemplateName(exist.name || String(i));
            }
@@ -9858,12 +10082,23 @@ function AdminDatabaseSettings({ artistUsername }: { artistUsername?: string }) 
 
 function AdminDashboard() {
   const { t } = useAdminTranslation();
+  const location = useLocation();
   const [data, setData] = useState<AppData | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState<'demos'|'playlists'|'profile'|'about'|'bio'|'menus'|'socials'|'security'|'templates'|'database'|'reposts'|'tickets'>(
+  const [activeTab, setActiveTab] = useState<'demos'|'playlists'|'profile'|'about'|'bio'|'menus'|'socials'|'security'|'templates'|'database'|'reposts'|'tickets'|'layout'>(
     (window.location.hash ? window.location.hash.replace('#', '') : 'demos') as any
   );
   const [demosSubTab, setDemosSubTab] = useState<'released' | 'demos' | 'drafts' | 'playlists' | 'trash' | 'landing_pages' | 'brands'>('released');
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const subtabParam = searchParams.get('subtab');
+    if (subtabParam) {
+      if (['released', 'demos', 'drafts', 'playlists', 'trash', 'landing_pages', 'brands'].includes(subtabParam)) {
+        setDemosSubTab(subtabParam as any);
+      }
+    }
+  }, [location.search]);
   
   // Chorus Repost & Ticket States
   const [isTranslatingAll, setIsTranslatingAll] = useState(false);
@@ -10834,7 +11069,7 @@ function AdminDashboard() {
           <div className="flex items-center gap-3">
             <LanguageSwitcher isRelative={true} />
             <Link 
-              to={getArtistExtensionFromUrl() ? `/${getArtistExtensionFromUrl()}` : "/"} 
+              to={getArtistLink("/")} 
               className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 shadow-sm transition-all duration-300 animate-[fade-in_0.3s_ease-out]"
               title={t("Trang chủ")}
               id="admin-top-home-btn"
@@ -10887,6 +11122,7 @@ function AdminDashboard() {
             const isAboutActive = activeTab === 'about';
             const isBioActive = activeTab === 'bio';
             const isMenusActive = activeTab === 'menus';
+            const isLayoutActive = activeTab === 'layout';
 
             return (
               <>
@@ -11214,6 +11450,35 @@ function AdminDashboard() {
                       <List className={`w-5 h-5 transition-colors ${isMenusActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
                     </motion.div>
                     {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Danh Mục")}</span>}
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('layout')}
+                    className={`flex items-center transition-all relative group ${
+                      effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
+                    } ${
+                      isLayoutActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                    }`}
+                    title={t("Bố Cục")}
+                  >
+                    {isLayoutActive && (
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 bg-stone-900/95 rounded-xl z-0 shadow-[inset_0_2px_4px_rgba(255,255,255,0.1),inset_0_-2px_6px_rgba(0,0,0,0.8),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-md border border-stone-800 group-hover:bg-stone-800/95"
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    <motion.div
+                      animate={isLayoutActive ? {
+                        scale: [1, 1.05, 1],
+                        rotate: [-2, 2, -2]
+                      } : { scale: 1, rotate: 0 }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                      className="relative z-10 flex items-center justify-center"
+                    >
+                      <LayoutTemplate className={`w-5 h-5 transition-colors ${isLayoutActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                    </motion.div>
+                    {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Bố Cục")}</span>}
                   </button>
 
                   <button
@@ -12130,6 +12395,14 @@ function AdminDashboard() {
             <motion.div key="menus" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
               <div className="max-w-2xl py-1">
                 <AdminMenuEdit data={data} t={t} onSave={handleCustomSave} />
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'layout' && (
+            <motion.div key="layout" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+              <div className="max-w-2xl py-1">
+                <AdminLayoutEdit data={data} t={t} onSave={handleCustomSave} />
               </div>
             </motion.div>
           )}
@@ -13749,34 +14022,6 @@ function AdminCreateDemo() {
   };
 
   useEffect(() => {
-    if (location.state?.isBrand) {
-      setIsBrand(true);
-    }
-    if (location.state?.repostFrom) {
-      const sf = location.state.repostFrom;
-      setTitle(sf.title || '');
-      setSinger(sf.singer || '');
-      setComposer(sf.composer || '');
-      setLyrics(sf.lyrics || '');
-      setReleaseYear(sf.releaseYear || '');
-      setIsReleased(sf.isReleased !== false);
-      
-      if (sf.audioUrl) {
-        setUploadedAudioUrl(sf.audioUrl);
-        setUploadedAudioName(getFileNameFromUrl(sf.audioUrl) || 'audio.mp3');
-      }
-      if (sf.coverUrl) {
-        setUploadedCoverUrl(sf.coverUrl);
-        setUploadedCoverName(getFileNameFromUrl(sf.coverUrl) || 'cover.jpg');
-      }
-      if (sf.backgroundUrl) {
-        setUploadedBgUrl(sf.backgroundUrl);
-        setUploadedBgName(getFileNameFromUrl(sf.backgroundUrl) || 'background.jpg');
-      }
-    }
-  }, [location.state]);
-
-  useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await fetch('/api/admin/data', {
@@ -13794,7 +14039,7 @@ function AdminCreateDemo() {
           const sorted = data.templateConfigs.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id)) })).sort((a: any, b: any) => a.order - b.order);
           setTemplateConfigs(sorted);
         } else {
-          setTemplateConfigs([
+          const fallbackList = [
             { id: '1', name: 'Cheerful (Warm)' },
             { id: '2', name: 'Energetic (Vibrant)' },
             { id: '3', name: 'Sad (Deep)' },
@@ -13813,7 +14058,8 @@ function AdminCreateDemo() {
             { id: '16', name: 'Puzzle Grid' },
             { id: '17', name: 'Cheering (Clouds, sun)' },
             { id: '18', name: 'Fireworks (New Year)' }
-          ]);
+          ];
+          setTemplateConfigs(fallbackList.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id)) })));
         }
       } catch (err) {}
     };
@@ -13858,6 +14104,7 @@ function AdminCreateDemo() {
   };
 
   const [composer, setComposer] = useState('');
+  const [musicProducer, setMusicProducer] = useState('');
   const [singer, setSinger] = useState('');
   const [releaseYear, setReleaseYear] = useState('');
   const [lyrics, setLyrics] = useState('');
@@ -13898,6 +14145,53 @@ function AdminCreateDemo() {
   const [linkApple, setLinkApple] = useState('');
   const [linkYoutubeMusic, setLinkYoutubeMusic] = useState('');
   const [linkYoutube, setLinkYoutube] = useState('');
+
+  useEffect(() => {
+    if (location.state?.isBrand) {
+      setIsBrand(true);
+    }
+    if (location.state?.repostFrom) {
+      const sf = location.state.repostFrom;
+      setTitle(sf.title || '');
+      setSinger(sf.singer || '');
+      setComposer(sf.composer || '');
+      setMusicProducer(sf.musicProducer || '');
+      setLyrics(sf.lyrics || '');
+      setReleaseYear(sf.releaseYear || '');
+      setIsReleased(sf.isReleased !== false);
+      setLinkType(sf.linkType || 'direct');
+      setLinkZing(sf.linkZing || '');
+      setLinkSpotify(sf.linkSpotify || '');
+      setLinkApple(sf.linkApple || '');
+      setLinkYoutubeMusic(sf.linkYoutubeMusic || '');
+      setLinkYoutube(sf.linkYoutube || '');
+      setLinkDrive(sf.linkDrive || '');
+      setIsBrand(sf.isBrand || false);
+      setBrandName(sf.brandName || '');
+      setBrandBrief(sf.brandBrief || '');
+      setBrandColor(sf.brandColor || '');
+      setUploadedBrandLogoUrl(sf.brandLogoUrl || '');
+      if (sf.brandReferenceVideos) {
+        setBrandReferenceVideos(sf.brandReferenceVideos);
+      }
+      if (sf.template) {
+        setTemplate(sf.template);
+      }
+      
+      if (sf.audioUrl) {
+        setUploadedAudioUrl(sf.audioUrl);
+        setUploadedAudioName(getFileNameFromUrl(sf.audioUrl) || 'audio.mp3');
+      }
+      if (sf.coverUrl) {
+        setUploadedCoverUrl(sf.coverUrl);
+        setUploadedCoverName(getFileNameFromUrl(sf.coverUrl) || 'cover.jpg');
+      }
+      if (sf.backgroundUrl) {
+        setUploadedBgUrl(sf.backgroundUrl);
+        setUploadedBgName(getFileNameFromUrl(sf.backgroundUrl) || 'background.jpg');
+      }
+    }
+  }, [location.state]);
 
   const getPreviewUrl = (url: string | undefined) => {
     if (!url) return '';
@@ -13941,7 +14235,7 @@ function AdminCreateDemo() {
           setTemplateConfigs(sorted);
         } else {
           // Fallback static
-          setTemplateConfigs([
+          const fallbackList = [
             { id: '1', name: 'Cheerful (Warm)' },
             { id: '2', name: 'Energetic (Vibrant)' },
             { id: '3', name: 'Sad (Deep)' },
@@ -13960,7 +14254,8 @@ function AdminCreateDemo() {
             { id: '16', name: 'Puzzle Grid' },
             { id: '17', name: 'Cheering (Clouds, sun)' },
             { id: '18', name: 'Fireworks (New Year)' }
-          ]);
+          ];
+          setTemplateConfigs(fallbackList.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id)) })));
         }
       })
       .catch(console.error);
@@ -14181,6 +14476,7 @@ function AdminCreateDemo() {
     formData.set('title', title);
     formData.set('slug', slug);
     formData.set('composer', composer);
+    formData.set('musicProducer', musicProducer);
     formData.set('singer', singer);
     formData.set('lyrics', lyrics);
     formData.set('template', template);
@@ -14235,7 +14531,7 @@ function AdminCreateDemo() {
                });
             } else {
                triggerNotification(t("Đăng bài hát thành công!"), 'success', t("Thành công"), () => {
-                 navigate(getAdminLink());
+                 navigate(getAdminLink() + (linkType === 'indirect' ? '?subtab=landing_pages' : ''));
                });
             }
         } else {
@@ -14261,7 +14557,7 @@ function AdminCreateDemo() {
       className="min-h-screen bg-stone-100 text-stone-900 font-sans py-12 px-4 origin-bottom-right"
     >
       <div className="max-w-2xl mx-auto">
-        <Link to={getAdminLink()} className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-900 font-medium mb-8 transition-colors">
+        <Link to={getAdminLink() + (linkType === 'indirect' ? '?subtab=landing_pages' : '')} className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-900 font-medium mb-8 transition-colors">
           <ArrowLeft className="w-5 h-5" /> {t("Trở về Dashboard")}
         </Link>
         
@@ -14302,10 +14598,14 @@ function AdminCreateDemo() {
               <p className="text-xs text-stone-500 mt-2">{t("Nếu nhập link, người dùng sẽ thấy icon tải nhạc (Download) ở trên phần lời bài hát để click tải.")}</p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-2">{t("Sáng tác")}</label>
                 <input name="composer" value={composer} onChange={e => setComposer(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-stone-700 mb-2">{t("Music Producer")}</label>
+                <input name="musicProducer" value={musicProducer} onChange={e => setMusicProducer(e.target.value)} placeholder="Chưa rõ" className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ca sĩ thể hiện")}</label>
@@ -14845,6 +15145,7 @@ function AdminCreateDemo() {
               title: title,
               singer: singer || appData?.artistName || t("Nghệ sĩ"),
               composer: composer || appData?.artistName || t("Nghệ sĩ"),
+              musicProducer: musicProducer,
               audioUrl: uploadedAudioUrl || 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
               coverUrl: uploadedCoverUrl || randomSlideUrl || (slideshowImages && slideshowImages.length > 0 ? slideshowImages[0] : '') || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80",
               backgroundUrl: uploadedBgUrl,
@@ -14976,6 +15277,7 @@ function AdminEditDemo() {
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
 
   const [composer, setComposer] = useState('');
+  const [musicProducer, setMusicProducer] = useState('');
   const [singer, setSinger] = useState('');
   const [releaseYear, setReleaseYear] = useState('');
   const [lyrics, setLyrics] = useState('');
@@ -15045,7 +15347,7 @@ function AdminEditDemo() {
           const sorted = data.templateConfigs.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id)) })).sort((a: any, b: any) => a.order - b.order);
           setTemplateConfigs(sorted);
         } else {
-          setTemplateConfigs([
+          const fallbackList = [
             { id: '1', name: 'Cheerful (Warm)' },
             { id: '2', name: 'Energetic (Vibrant)' },
             { id: '3', name: 'Sad (Deep)' },
@@ -15064,7 +15366,8 @@ function AdminEditDemo() {
             { id: '16', name: 'Puzzle Grid' },
             { id: '17', name: 'Cheering (Clouds, sun)' },
             { id: '18', name: 'Fireworks (New Year)' }
-          ]);
+          ];
+          setTemplateConfigs(fallbackList.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id)) })));
         }
         const found = data.demos.find((d: any) => d.id === id);
         if (found) {
@@ -15077,6 +15380,7 @@ function AdminEditDemo() {
           setPlaylistIds(found.playlistIds || []);
           setTemplate(found.template || '1');
           setComposer(found.composer || '');
+          setMusicProducer(found.musicProducer || '');
           setSinger(found.singer || '');
           setReleaseYear(found.releaseYear || '');
           setLyrics(found.lyrics || '');
@@ -15368,6 +15672,7 @@ function AdminEditDemo() {
     formData.set('title', title);
     formData.set('slug', slug);
     formData.set('composer', composer);
+    formData.set('musicProducer', musicProducer);
     formData.set('singer', singer);
     formData.set('lyrics', lyrics);
     formData.set('template', template);
@@ -15421,7 +15726,7 @@ function AdminEditDemo() {
         });
         if (res.ok) {
             triggerNotification(isDraft ? t("Cập nhật bản nháp thành công!") : t("Cập nhật thành công!"), 'success', t("Thành công"), () => {
-              navigate(getAdminLink());
+              navigate(getAdminLink() + (linkType === 'indirect' ? '?subtab=landing_pages' : (isDraft ? '?subtab=drafts' : (isReleased ? '?subtab=released' : '?subtab=demos'))));
             });
         } else {
             triggerNotification(t("Lỗi cập nhật. Thử tải lại trang và làm lại!"), 'error', t("Thất bại"));
@@ -15443,7 +15748,7 @@ function AdminEditDemo() {
     <div className="min-h-screen bg-stone-100 text-stone-900 font-sans py-12 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <Link to={getAdminLink()} className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-900 font-medium transition-colors">
+          <Link to={getAdminLink() + (linkType === 'indirect' ? '?subtab=landing_pages' : (demo?.isDraft ? '?subtab=drafts' : (demo?.isReleased ? '?subtab=released' : '?subtab=demos')))} className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-900 font-medium transition-colors">
             <ArrowLeft className="w-5 h-5" /> {t("Trở về Dashboard")}
           </Link>
           <button 
@@ -15515,10 +15820,14 @@ function AdminEditDemo() {
               <p className="text-xs text-stone-500 mt-2">{t("Nếu nhập link, người dùng sẽ thấy icon tải nhạc (Download) ở trên phần lời bài hát để click tải.")}</p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-2">{t("Sáng tác")}</label>
                 <input name="composer" value={composer} onChange={e => setComposer(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-stone-700 mb-2">{t("Music Producer")}</label>
+                <input name="musicProducer" value={musicProducer} onChange={e => setMusicProducer(e.target.value)} placeholder="Chưa rõ" className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ca sĩ thể hiện")}</label>
@@ -16189,6 +16498,7 @@ function AdminEditDemo() {
               title: title,
               singer: singer || appData?.artistName || t("Nghệ sĩ"),
               composer: composer || appData?.artistName || t("Nghệ sĩ"),
+              musicProducer: musicProducer,
               audioUrl: uploadedAudioUrl || demo?.audioUrl,
               coverUrl: uploadedCoverUrl || demo?.coverUrl || randomSlideUrl || (appData?.slideshowImages && appData.slideshowImages.length > 0 ? appData.slideshowImages[0] : '') || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80",
               backgroundUrl: uploadedBgUrl || demo?.backgroundUrl,
@@ -17211,6 +17521,88 @@ function AdminMenuEdit({ data, t, onSave }: any) {
           {t("Lưu Menu")}
         </button>
       </div>
+    </div>
+  );
+}
+
+
+function AdminLayoutEdit({ data, t, onSave }: any) {
+  const [layoutSections, setLayoutSections] = useState<string[]>(
+    data.layoutSections || ['title', 'spotify', 'vault', 'mv']
+  );
+
+  const getSectionName = (sec: string) => {
+    if (sec === 'title') return t("Tiêu Đề (Tên & Giới thiệu ngắn)");
+    if (sec === 'spotify') return t("Spotify Playlist / Album");
+    if (sec === 'vault') return t("Kho Nhạc (Danh sách Đề mô / Ra Rồi)");
+    if (sec === 'mv') return t("MV Đã Phát Hành (YouTube Videos)");
+    return sec;
+  };
+
+  const handleDragStart = (e: any, index: number) => {
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
+
+  const handleDrop = (e: any, dropIndex: number) => {
+    const dragIndex = parseInt(e.dataTransfer.getData('text/plain'));
+    if (dragIndex === dropIndex) return;
+    const newList = [...layoutSections];
+    const draggedItem = newList[dragIndex];
+    newList.splice(dragIndex, 1);
+    newList.splice(dropIndex, 0, draggedItem);
+    setLayoutSections(newList);
+  };
+
+  const handleSave = () => {
+    onSave({ layoutSections });
+  };
+
+  return (
+    <div className="py-1">
+      <h2 className="text-2xl font-bold mb-8 flex items-center gap-2">
+        <LayoutTemplate className="w-6 h-6 text-teal-600 animate-[pulse_2.5s_infinite]" />
+        {t("Bố Cục Trang Chủ")}
+      </h2>
+      <p className="text-sm text-stone-500 mb-6">
+        {t("Kéo thả các phần dưới đây để sắp xếp thứ tự hiển thị của chúng ở trang chủ nghệ sĩ.")}
+      </p>
+
+      <div className="space-y-3 mb-6">
+        {layoutSections.map((sec, i) => (
+          <div 
+            key={sec} 
+            draggable 
+            onDragStart={(e) => handleDragStart(e, i)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => handleDrop(e, i)}
+            className="flex items-center gap-4 bg-stone-50 border border-stone-200 hover:border-stone-300 rounded-xl p-4 cursor-grab active:cursor-grabbing transition-all hover:shadow-sm select-none"
+          >
+            <GripVertical className="text-stone-400 w-5 h-5 shrink-0" />
+            <div className="flex-1">
+              <div className="font-bold text-stone-800 text-sm">
+                {getSectionName(sec)}
+              </div>
+              <div className="text-xs text-stone-400 mt-0.5">
+                {sec === 'title' && t("Phần hiển thị tên nghệ sĩ, dấu tích xanh và lời giới thiệu ngắn.")}
+                {sec === 'spotify' && t("Khung phát nhạc nhúng trực tiếp từ Spotify (nếu được cấu hình).")}
+                {sec === 'vault' && t("Phần danh sách bài hát chính chia theo tab Đề mô / Ra Rồi.")}
+                {sec === 'mv' && t("Phần hiển thị các MV Youtube đã phát hành và trình phát video popup.")}
+              </div>
+            </div>
+            <div className="w-6 h-6 rounded-full bg-stone-100 flex items-center justify-center text-xs font-bold text-stone-500">
+              {i + 1}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <button 
+        type="button" 
+        onClick={handleSave} 
+        className="bg-stone-900 hover:bg-stone-800 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer shadow-sm"
+      >
+        {t("Lưu Bố Cục")}
+      </button>
     </div>
   );
 }

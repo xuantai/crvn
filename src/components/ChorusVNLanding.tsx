@@ -262,7 +262,7 @@ const FALLBACK_SLIDESHOW = [
 
 const slideVariants = {
   enter: (direction: number) => ({
-    x: direction > 0 ? 300 : -300,
+    x: direction > 0 ? 400 : -400,
     opacity: 0
   }),
   center: {
@@ -270,7 +270,7 @@ const slideVariants = {
     opacity: 1
   },
   exit: (direction: number) => ({
-    x: direction < 0 ? 300 : -300,
+    x: direction < 0 ? 400 : -400,
     opacity: 0
   })
 };
@@ -495,12 +495,12 @@ function ArtistLandingCard({ artist, t }: { artist: any; t: any; key?: any }) {
       </div>
 
       {/* Overlaid Info - text over cover, optimized vertical footprint, elegant typography */}
-      <div className="p-6 relative z-20 w-full flex flex-col justify-end space-y-4">
+      <div className="px-6 pb-4 pt-0 relative z-20 w-full flex flex-col justify-end space-y-2.5">
         <div className="space-y-1">
           <p className="text-neutral-200 text-xs line-clamp-1 font-serif italic tracking-wide drop-shadow-sm mb-1">
             {artist.artistBio || `Thiên đường nhạc của`}
           </p>
-          <h3 className={`font-black tracking-tight text-white drop-shadow-md min-w-0 pt-0.5 leading-[1.35] min-h-[2.7em] ${artist.artistName.length > 15 ? 'text-2xl' : 'text-3xl'}`}>
+          <h3 className={`font-black tracking-tight text-white drop-shadow-md min-w-0 pt-0.5 leading-[1.35] min-h-0 ${artist.artistName.length > 15 ? 'text-2xl' : 'text-3xl'}`}>
             {artist.artistName.split(' ').map((word, index, array) => {
               if (index === array.length - 1) {
                 return (
@@ -909,6 +909,32 @@ export default function ChorusVNLanding() {
     }, 8000);
     return () => clearInterval(interval);
   }, [currentPage, totalPages, searchQuery, isPreloading]);
+
+  // Preload next page's assets in the background 3s before transition (at 5000ms of current page's 8000ms cycle)
+  useEffect(() => {
+    if (totalPages <= 1 || searchQuery.trim() !== '') return;
+    
+    const preloadTimer = setTimeout(() => {
+      const nextIdx = (currentPage + 1) % totalPages;
+      const targetArtists = getArtistsForPage(nextIdx, filteredArtists);
+      
+      const urlsToPreload: string[] = [];
+      targetArtists.forEach((artist) => {
+        if (artist.homeCoverUrl) {
+          urlsToPreload.push(artist.homeCoverUrl);
+        }
+        if (artist.slideshowImages && artist.slideshowImages.length > 0) {
+          artist.slideshowImages.forEach((img) => urlsToPreload.push(img));
+        } else {
+          FALLBACK_SLIDESHOW.forEach((img) => urlsToPreload.push(img));
+        }
+      });
+      
+      preloadImages(urlsToPreload).catch(err => console.warn("Background preload failed:", err));
+    }, 5000); // 3 seconds before the 8-second auto-slide interval
+    
+    return () => clearTimeout(preloadTimer);
+  }, [currentPage, totalPages, searchQuery, filteredArtists]);
 
   const t = (key: string) => {
     const originalValue = (dict['vi'] as any)[key];
@@ -1449,7 +1475,7 @@ export default function ChorusVNLanding() {
                       </div>
                     </div>
                   )}
-                  <AnimatePresence mode="wait" custom={slideDirection}>
+                  <AnimatePresence mode="popLayout" custom={slideDirection}>
                     <motion.div
                       key={currentPage}
                       custom={slideDirection}
@@ -1458,8 +1484,8 @@ export default function ChorusVNLanding() {
                       animate="center"
                       exit="exit"
                       transition={{ 
-                        x: { type: "spring", stiffness: 300, damping: 30 },
-                        opacity: { duration: 0.3 }
+                        x: { type: "spring", stiffness: 150, damping: 22 },
+                        opacity: { duration: 0.4 }
                       }}
                       className={isMobile ? "grid grid-cols-4 gap-3 w-full max-w-sm mx-auto px-1 justify-items-center" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"}
                     >

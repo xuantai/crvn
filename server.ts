@@ -3425,6 +3425,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       }
     }
     if (req.body.slideshowImages) data.slideshowImages = req.body.slideshowImages;
+    if (req.body.layoutSections !== undefined) data.layoutSections = req.body.layoutSections;
     await saveData(data);
     res.json({ ...data, pendingNameChangeNotice: nameChangeNotice });
   });
@@ -3759,6 +3760,20 @@ app.get('/api/admin/other-songs', async (req: any, res) => {
             lyrics: d.lyrics,
             isReleased: d.isReleased,
             releaseYear: d.releaseYear,
+            template: d.template,
+            linkType: d.linkType,
+            linkZing: d.linkZing,
+            linkSpotify: d.linkSpotify,
+            linkApple: d.linkApple,
+            linkYoutubeMusic: d.linkYoutubeMusic,
+            linkYoutube: d.linkYoutube,
+            linkDrive: d.linkDrive,
+            isBrand: d.isBrand,
+            brandName: d.brandName,
+            brandBrief: d.brandBrief,
+            brandColor: d.brandColor,
+            brandLogoUrl: d.brandLogoUrl,
+            brandReferenceVideos: d.brandReferenceVideos,
             sourceArtist: {
               username: a.username,
               artistName: a.artistName,
@@ -4202,6 +4217,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
       linkYoutubeMusic: req.body.linkYoutubeMusic || '',
       linkYoutube: req.body.linkYoutube || '',
       linkDrive: req.body.linkDrive || '',
+      musicProducer: req.body.musicProducer || '',
       isBrand: req.body.isBrand === 'true',
       brandName: req.body.brandName || '',
       brandBrief: req.body.brandBrief || '',
