@@ -772,6 +772,8 @@ const adminTranslations: Record<string, Record<string, string>> = {
       "Thêm giai đoạn": "Thêm giai đoạn",
       "Danh Mục": "Danh Mục",
       "Kho Nhạc": "Kho Nhạc",
+      "Cài Đặt Hệ Thống": "Cài Đặt Hệ Thống",
+      "Trang Chủ": "Trang Chủ",
     "Bài hát Preview": "Bài hát Preview",
     "Tên hiển thị": "Tên hiển thị",
     "Màu nền tùy chỉnh": "Màu nền tùy chỉnh",
@@ -1250,7 +1252,15 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Có lỗi xảy ra khi kết nối máy chủ.": "Có lỗi xảy ra khi kết nối máy chủ.",
   },
   en: {
+    "Liên kết các kênh mạng xã hội chính thức của bạn": "Link your official social media channels",
+    "Cập Nhật Email Quản Trị": "Update Admin Email",
+    "Bạn sẽ dùng email này để đăng nhập vào trang quản trị thay cho username (nếu muốn).": "You will use this email to log in to the admin panel instead of the username (optional).",
+    "Địa chỉ Email": "Email Address",
+    "Nhập email...": "Enter email...",
+    "Cập nhật Email": "Update Email",
     "Kho Nhạc": "Music Vault",
+    "Cài Đặt Hệ Thống": "System Settings",
+    "Trang Chủ": "Homepage",
     "Bố Cục": "Layout",
     "Bố Cục Trang Chủ": "Homepage Layout",
     "Kéo thả các phần dưới đây để sắp xếp thứ tự hiển thị của chúng ở trang chủ nghệ sĩ.": "Drag and drop the sections below to rearrange their display order on the artist homepage.",
@@ -1708,6 +1718,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "📋 Hướng dẫn cấu hình DNS": "📋 DNS Configuration Guide",
     "Đổi mật khẩu Admin": "Change Admin Password",
     "Cập nhật mật khẩu Thành viên": "Update Member Password",
+    "Cập Nhật": "Update",
     "VD: nghesi.com": "e.g., nghesi.com",
     "Vui lòng truy cập trang quản lý tên miền của bạn (ví dụ: Cloudflare, GoDaddy, Nhân Hòa...) và thiết lập bản ghi sau để kết nối tên miền này:": "Please access your domain registrar's control panel (e.g., Cloudflare, GoDaddy...) and configure the following record to connect your domain:",
     "Sau khi cấu hình xong, quá trình cập nhật DNS có thể mất từ vài phút đến tối đa 24 giờ tùy nhà đăng ký tên miền.": "After configuration, DNS propagation can take from a few minutes up to 24 hours depending on your domain registrar.",
@@ -1746,7 +1757,15 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Có lỗi xảy ra khi kết nối máy chủ.": "An error occurred while connecting to the server.",
   },
   ko: {
+    "Liên kết các kênh mạng xã hội chính thức của bạn": "공식 소셜 미디어 채널 링크",
+    "Cập Nhật Email Quản Trị": "관리자 이메일 업데이트",
+    "Bạn sẽ dùng email này để đăng nhập vào trang quản trị thay cho username (nếu muốn).": "원하는 경우 사용자 이름 대신 이 이메일을 사용하여 관리자 패널에 로그인할 수 있습니다.",
+    "Địa chỉ Email": "이메일 주소",
+    "Nhập email...": "이메일 입력...",
+    "Cập nhật Email": "이메일 업데이트",
     "Kho Nhạc": "음악 보관함",
+    "Cài Đặt Hệ Thống": "시스템 설정",
+    "Trang Chủ": "홈페이지",
     "Bố Cục": "레이아웃",
     "Bố Cục Trang Chủ": "홈페이지 레이아웃",
     "Kéo thả các phần dưới đây để sắp xếp thứ tự hiển thị của chúng ở trang chủ nghệ sĩ.": "아티스트 홈페이지에서 각 섹션의 정렬 및 표시 순서를 조정하려면 아래 항목들을 드래그 앤 드롭하세요.",
@@ -2204,6 +2223,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "📋 Hướng dẫn cấu hình DNS": "📋 DNS 설정 가이드",
     "Đổi mật khẩu Admin": "관리자 비밀번호 변경",
     "Cập nhật mật khẩu Thành viên": "회원 비밀번호 업데이트",
+    "Cập Nhật": "업데이트",
     "VD: nghesi.com": "예: nghesi.com",
     "Vui lòng truy cập trang quản lý tên miền của bạn (ví dụ: Cloudflare, GoDaddy, Nhân Hòa...) và thiết lập bản ghi sau để kết nối tên miền này:": "도메인 등록 대행업체의 제어판(예: Cloudflare, GoDaddy...)에 접속하여 도메인을 연결하기 위해 다음 레코드를 설정하십시오:",
     "Sau khi cấu hình xong, quá trình cập nhật DNS có thể mất từ vài phút đến tối đa 24 giờ tùy nhà đăng ký tên miền.": "설정 후 DNS 전파는 도메인 등록 대행업체에 따라 몇 분에서 최대 24시간까지 걸릴 수 있습니다.",
@@ -2242,7 +2262,15 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Có lỗi xảy ra khi kết nối máy chủ.": "서버에 연결하는 동안 오류가 발생했습니다.",
   },
   ja: {
+    "Liên kết các kênh mạng xã hội chính thức của bạn": "公式ソーシャルメディアチャンネルをリンクします",
+    "Cập Nhật Email Quản Trị": "管理者メールアドレスの更新",
+    "Bạn sẽ dùng email này để đăng nhập vào trang quản trị thay cho username (nếu muốn).": "必要に応じて、ユーザー名の代わりにこのメールアドレスを使用して管理パネルにログインできます。",
+    "Địa chỉ Email": "メールアドレス",
+    "Nhập email...": "メールアドレスを入力...",
+    "Cập nhật Email": "メールを更新",
     "Kho Nhạc": "ミュージックボルト",
+    "Cài Đặt Hệ Thống": "システム設定",
+    "Trang Chủ": "ホームページ",
     "Bố Cục": "レイアウト",
     "Bố Cục Trang Chủ": "ホームページレイアウト",
     "Kéo thả các phần dưới đây để sắp xếp thứ tự hiển thị của chúng ở trang chủ nghệ sĩ.": "以下のセクションをドラッグ＆ドロップして、アーティストホームページ上の表示順を調整します。",
@@ -2700,6 +2728,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "📋 Hướng dẫn cấu hình DNS": "📋 DNS設定ガイド",
     "Đổi mật khẩu Admin": "管理者パスワードの変更",
     "Cập nhật mật khẩu Thành viên": "メンバーパスワードの更新",
+    "Cập Nhật": "更新",
     "VD: nghesi.com": "例: nghesi.com",
     "Vui lòng truy cập trang quản lý tên miền của bạn (ví dụ: Cloudflare, GoDaddy, Nhân Hòa...) và thiết lập bản ghi sau để kết nối tên miền này:": "ドメイン登録業者の管理画面（例：Cloudflare、GoDaddyなど）にアクセスし、ドメインを接続するために次のレコードを設定してください。",
     "Sau khi cấu hình xong, quá trình cập nhật DNS có thể mất từ vài phút đến tối đa 24 giờ tùy nhà đăng ký tên miền.": "設定後、DNSの反映にはドメイン登録業者によって数分から最大24時間かかる場合があります。",
@@ -2738,7 +2767,15 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Có lỗi xảy ra khi kết nối máy chủ.": "サーバーへの接続中にエラーが発生しました。",
   },
   th: {
+    "Liên kết các kênh mạng xã hội chính thức của bạn": "เชื่อมโยงช่องโซเชียลมีเดียอย่างเป็นทางการของคุณ",
+    "Cập Nhật Email Quản Trị": "อัปเดตอีเมลผู้ดูแลระบบ",
+    "Bạn sẽ dùng email này để đăng nhập vào trang quản trị thay cho username (nếu muốn).": "คุณจะใช้อีเมลนี้เพื่อเข้าสู่ระบบแผงควบคุมผู้ดูแลระบบแทนชื่อผู้ใช้ (หากต้องการ)",
+    "Địa chỉ Email": "ที่อยู่อีเมล",
+    "Nhập email...": "ใส่อีเมล...",
+    "Cập nhật Email": "อัปเดตอีเมล",
     "Kho Nhạc": "คลังเพลง",
+    "Cài Đặt Hệ Thống": "ตั้งค่าระบบ",
+    "Trang Chủ": "หน้าแรก",
     "Bố Cục": "เลย์เอาต์",
     "Bố Cục Trang Chủ": "เลย์เอาต์หน้าแรก",
     "Kéo thả các phần dưới đây để sắp xếp thứ tự hiển thị của chúng ở trang chủ nghệ sĩ.": "ลากและวางส่วนต่างๆ ด้านล่างเพื่อจัดเรียงลำดับการแสดงผลบนหน้าแรกของศิลปิน",
@@ -3196,6 +3233,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "📋 Hướng dẫn cấu hình DNS": "📋 คู่มือการตั้งค่า DNS",
     "Đổi mật khẩu Admin": "เปลี่ยนรหัสผ่านผู้ดูแลระบบ",
     "Cập nhật mật khẩu Thành viên": "อัปเดตรหัสผ่านสมาชิก",
+    "Cập Nhật": "อัปเดต",
     "VD: nghesi.com": "เช่น nghesi.com",
     "Vui lòng truy cập trang quản lý tên miền của bạn (ví dụ: Cloudflare, GoDaddy, Nhân Hòa...) và thiết lập bản ghi sau để kết nối tên miền này:": "โปรดเข้าสู่แผงควบคุมของผู้ให้บริการโดเมนของคุณ (เช่น Cloudflare, GoDaddy...) และกำหนดค่าบันทึกต่อไปนี้เพื่อเชื่อมต่อโดเมนของคุณ:",
     "Sau khi cấu hình xong, quá trình cập nhật DNS có thể mất từ vài phút đến tối đa 24 giờ tùy nhà đăng ký tên miền.": "หลังการกำหนดค่า การอัปเดต DNS อาจใช้เวลาตั้งแต่ไม่กี่นาทีจนถึงสูงสุด 24 ชั่วโมง ขึ้นอยู่กับผู้ให้บริการโดเมนของคุณ",
@@ -3235,7 +3273,15 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Tất cả bài hát đều đã ở trong playlist nàyแล้ว.": "เพลงทั้งหมดอยู่ในเพลย์ลิสต์นี้แล้ว"
   },
   zh: {
+    "Liên kết các kênh mạng xã hội chính thức của bạn": "链接您的官方社交媒体渠道",
+    "Cập Nhật Email Quản Trị": "更新管理员电子邮件",
+    "Bạn sẽ dùng email này để đăng nhập vào trang quản trị thay cho username (nếu muốn).": "如果需要，您可以使用此电子邮件登录管理面板代替用户名。",
+    "Địa chỉ Email": "电子邮件地址",
+    "Nhập email...": "输入电子邮件...",
+    "Cập nhật Email": "更新电子邮件",
     "Kho Nhạc": "音乐库",
+    "Cài Đặt Hệ Thống": "系统设置",
+    "Trang Chủ": "首页",
     "Bố Cục": "布局",
     "Bố Cục Trang Chủ": "首页布局",
     "Kéo thả các phần dưới đây để sắp xếp thứ tự hiển thị của chúng ở trang chủ nghệ sĩ.": "拖放以下部分以调整它们在艺术家首页上的显示顺序。",
@@ -3693,6 +3739,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "📋 Hướng dẫn cấu hình DNS": "📋 DNS配置指南",
     "Đổi mật khẩu Admin": "修改管理员密码",
     "Cập nhật mật khẩu Thành viên": "更新会员密码",
+    "Cập Nhật": "更新",
     "VD: nghesi.com": "例: nghesi.com",
     "Vui lòng truy cập trang quản lý tên miền của bạn (ví dụ: Cloudflare, GoDaddy, Nhân Hòa...) và thiết lập bản ghi sau để kết nối tên miền này:": "请访问您的域名注册商控制面板（例如 Cloudflare、GoDaddy...），并配置以下记录以连接您的域名：",
     "Sau khi cấu hình xong, quá trình cập nhật DNS có thể mất từ vài phút đến tối đa 24 giờ tùy nhà đăng ký tên miền.": "配置完成后，根据您的域名注册商，DNS 解析可能需要几分钟到最多 24 小时的时间。",
@@ -4456,7 +4503,7 @@ const AdminFloatingAddButton = () => {
                 initial={{ opacity: 0, x: 15, scale: 0.9, filter: 'blur(4px)' }}
                 animate={{ opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, x: 15, scale: 0.9, filter: 'blur(4px)' }}
-                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }}
                 className="relative bg-stone-950/95 backdrop-blur-md border border-white/15 text-white text-xs font-black tracking-wider px-4 py-2.5 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.5),0_0_15px_rgba(168,85,247,0.15)] whitespace-nowrap pointer-events-none uppercase"
               >
                 {t("Đăng Bài Hát Mới")}
@@ -5232,9 +5279,9 @@ function Home() {
                   <AutoTranslate text={(!data.artistBio || ["Thiên đường demo của", "Thiên đường âm nhạc của"].includes(data.artistBio?.trim() || '')) ? t.dDesc : data.artistBio} />
                 </motion.p>
                 <motion.h1 
-                  initial={{ scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
-                  animate={showArtist ? { scale: 1, opacity: 1, filter: 'blur(0px)' } : { scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  initial={{ opacity: 0, y: 15, filter: 'blur(4px)' }}
+                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                  transition={{ duration: 1.2, ease: "easeOut" }}
                   className="text-4xl sm:text-6xl md:text-[6rem] lg:text-[7rem] font-black mb-4 tracking-tighter text-white drop-shadow-lg leading-[1.15] text-center max-w-full mt-3 sm:mt-4"
                 >
                   {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
@@ -5268,12 +5315,28 @@ function Home() {
                   <AutoTranslate text={(!data.artistBio || ["Thiên đường demo của", "Thiên đường âm nhạc của"].includes(data.artistBio?.trim() || '')) ? t.dDesc : data.artistBio} />
                 </motion.p>
                 <motion.h1 
-                  initial={{ scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
-                  animate={showArtist ? { scale: 1, opacity: 1, filter: 'blur(0px)' } : { scale: 0.9, opacity: 0, filter: 'blur(10px)' }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
-                  className="text-3xl sm:text-5xl md:text-6xl font-black mb-0 tracking-tight leading-[1.15] text-center max-w-full mt-2 sm:mt-3 animate-text-shine"
+                  initial={{ opacity: 0, y: 15, filter: 'blur(4px)' }}
+                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                  transition={{ duration: 1.2, ease: "easeOut" }}
+                  className="text-3xl sm:text-5xl md:text-6xl font-black mb-0 tracking-tight leading-[1.15] text-center max-w-full mt-2 sm:mt-3"
                 >
-                  {data.artistName || ''}
+                  {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
+                    if (index === array.length - 1) {
+                      return (
+                        <span key={index} className="whitespace-nowrap"><span className="animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
+                            <motion.div animate={{ rotateY: [0, 360], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", repeatDelay: 3 }} className="flex items-center justify-center">
+                              <BadgeCheck className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 text-blue-500 fill-blue-500/20 shrink-0 cursor-pointer" />
+                            </motion.div>
+                            <div className="absolute bottom-full mb-2 hidden group-hover:block bg-neutral-900 border border-white/10 text-white text-[11px] sm:text-xs font-bold py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none z-50 tracking-normal normal-case leading-none">
+                              Nghệ sĩ đã xác thực
+                              <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-neutral-900" />
+                            </div>
+                          </div>
+                        </span>
+                      );
+                    }
+                    return <React.Fragment key={index}><span className="animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{word}</span>{' '}</React.Fragment>;
+                  })}
                 </motion.h1>
               </div>
             )}
@@ -5988,18 +6051,23 @@ function Home() {
                   <div className="col-span-full flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-white/10">
                     <div className="flex items-center gap-2 text-xs sm:text-sm text-neutral-300">
                       <span>{t("Hiển thị")}</span>
-                      <select 
-                        value={pageSize} 
-                        onChange={(e) => {
-                          setPageSize(Number(e.target.value));
-                          setCurrentPage(1);
-                        }}
-                        className={`bg-neutral-900/90 border border-white/20 rounded-xl px-3 py-1.5 text-white cursor-pointer backdrop-blur-md transition-all duration-300 hover:bg-neutral-800/90 hover:border-white/40 focus:outline-none focus:ring-2 ${activeRingColor} text-xs sm:text-sm shadow-lg`}
-                      >
-                        <option value={20} className="bg-neutral-900 text-white">20</option>
-                        <option value={50} className="bg-neutral-900 text-white">50</option>
-                        <option value={100} className="bg-neutral-900 text-white">100</option>
-                      </select>
+                      <div className="relative">
+                        <select 
+                          value={pageSize} 
+                          onChange={(e) => {
+                            setPageSize(Number(e.target.value));
+                            setCurrentPage(1);
+                          }}
+                          className={`bg-neutral-900/90 border border-white/20 rounded-xl pl-3 pr-8 py-1.5 text-white cursor-pointer backdrop-blur-md transition-all duration-300 hover:bg-neutral-800/90 hover:border-white/40 focus:outline-none focus:ring-2 ${activeRingColor} text-xs sm:text-sm shadow-lg appearance-none`}
+                        >
+                          <option value={20} className="bg-neutral-900 text-white">20</option>
+                          <option value={50} className="bg-neutral-900 text-white">50</option>
+                          <option value={100} className="bg-neutral-900 text-white">100</option>
+                        </select>
+                        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                        </div>
+                      </div>
                       <span>{t("bài / trang")} ({t("Tổng")}: {totalItems})</span>
                     </div>
                     
@@ -6115,18 +6183,23 @@ function Home() {
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 mt-6 border-t border-white/10">
                   <div className="flex items-center gap-2 text-xs sm:text-sm text-neutral-300">
                     <span>{t("Hiển thị")}</span>
-                    <select 
-                      value={mvPageSize} 
-                      onChange={(e) => {
-                        setMvPageSize(Number(e.target.value));
-                        setMvCurrentPage(1);
-                      }}
-                      className="bg-neutral-900/90 border border-white/20 rounded-xl px-3 py-1.5 text-white cursor-pointer backdrop-blur-md transition-all duration-300 hover:bg-neutral-800/90 hover:border-white/40 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-xs sm:text-sm shadow-lg"
-                    >
-                      <option value={8} className="bg-neutral-900 text-white">8</option>
-                      <option value={20} className="bg-neutral-900 text-white">20</option>
-                      <option value={50} className="bg-neutral-900 text-white">50</option>
-                    </select>
+                    <div className="relative">
+                      <select 
+                        value={mvPageSize} 
+                        onChange={(e) => {
+                          setMvPageSize(Number(e.target.value));
+                          setMvCurrentPage(1);
+                        }}
+                        className="bg-neutral-900/90 border border-white/20 rounded-xl pl-3 pr-8 py-1.5 text-white cursor-pointer backdrop-blur-md transition-all duration-300 hover:bg-neutral-800/90 hover:border-white/40 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-xs sm:text-sm shadow-lg appearance-none"
+                      >
+                        <option value={8} className="bg-neutral-900 text-white">8</option>
+                        <option value={20} className="bg-neutral-900 text-white">20</option>
+                        <option value={50} className="bg-neutral-900 text-white">50</option>
+                      </select>
+                      <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                      </div>
+                    </div>
                     <span>{t("bài / trang")} ({t("Tổng")}: {mvTotalItems})</span>
                   </div>
 
@@ -8397,7 +8470,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
     accentClass = "bg-white/85 backdrop-blur text-sky-800 shadow-xl shadow-sky-200/50 outline outline-2 outline-white font-bold";
   } else if (templateType === '10') {
     themeClasses = "bg-neutral-900/80 bg-[url('/hiphop-bg.png')] bg-cover bg-center bg-fixed text-white bg-blend-multiply";
-    accentClass = "bg-yellow-400 text-black font-black uppercase shadow-[4px_4px_0_rgba(0,0,0,1)] tracking-wide transform hover:-rotate-2 transition-transform";
+    accentClass = "bg-yellow-400 text-black font-black uppercase shadow-[4px_4px_0_rgba(0,0,0,1)] tracking-wide transform hover:scale-105 hover:-rotate-2 transition-transform";
   } else if (templateType === '11') {
     themeClasses = "bg-black text-amber-100 font-serif";
     accentClass = "bg-[#d4af37] text-black font-bold uppercase shadow-[0_0_20px_rgba(212,175,55,0.4)]";
@@ -8418,7 +8491,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
     accentClass = "bg-gradient-to-r from-yellow-400 via-pink-400 via-purple-500 to-indigo-500 hover:from-yellow-300 hover:via-pink-300 hover:via-purple-400 hover:to-indigo-450 text-white font-black tracking-widest uppercase rounded-2xl shadow-[0_0_30px_rgba(236,72,153,0.5)] border border-pink-500/20";
   } else if (templateType === '17') {
     themeClasses = "bg-sky-300 text-stone-900 font-sans";
-    accentClass = "bg-yellow-400 hover:bg-yellow-300 text-stone-900 rounded-full font-black border-[3px] border-white/30 backdrop-blur-md shadow-[0_0_20px_rgba(250,204,21,0.6)]";
+    accentClass = "bg-yellow-400 hover:bg-yellow-300 text-stone-900 rounded-full font-black border-[3px] border-white shadow-[0_0_20px_rgba(250,204,21,0.6)]";
   } else if (templateType === '18') {
     themeClasses = "bg-slate-900 text-amber-50 font-sans";
     accentClass = "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-full font-bold shadow-[0_0_30px_rgba(245,158,11,0.5)]";
@@ -8458,7 +8531,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
         
         {pageBgUrl && templateType !== '9' && (
           <div 
-            className="absolute inset-0 bg-cover bg-center opacity-20 blur-md scale-105"
+            className="absolute inset-0 bg-cover bg-center opacity-20 blur-md scale-105 pointer-events-none z-0"
             style={{ backgroundImage: `url(${pageBgUrl})` }}
           ></div>
         )}
@@ -8527,7 +8600,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
           </p>
           
           <form onSubmit={handleUnlock} onClick={(e) => e.stopPropagation()} className="space-y-4">
-                        <PasswordInput 
+            <PasswordInput 
               placeholder="***" 
               value={password}
               onFocus={() => { pwdTouchedRef.current = true; }}
@@ -9308,9 +9381,9 @@ function SocialCarousel({ data, pushDown = false }: { data: AppData, pushDown?: 
   if (socials.length === 0) return null;
 
   return (
-    <div className={`fixed left-6 z-50 flex flex-col items-center gap-3 transition-all duration-500 ease-in-out ${pushDown ? 'top-20' : 'top-6'}`}>
+    <div className={`fixed left-6 z-[105] flex flex-col items-center gap-3 transition-all duration-500 ease-in-out ${pushDown ? 'top-20' : 'top-6'}`}>
       <button 
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => { setIsOpen(!isOpen); console.log('Clicked, new state:', !isOpen); }}
         className="relative flex items-center justify-center w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 hover:scale-110 shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all cursor-pointer"
         title="Follow"
       >
@@ -9691,7 +9764,7 @@ function AdminTemplateEdit({ config, demos, onBack, onSave, isPCPreviewMode, set
 
       return (
         <div>
-          <label className={`block font-bold text-stone-700 mb-1 ${isPCPreviewMode ? 'text-xs' : 'text-sm'}`}>{t(label)}</label>
+          <label className={`block font-semibold text-stone-700 mb-1 ${isPCPreviewMode ? 'text-xs' : 'text-sm'}`}>{t(label)}</label>
           <div className="flex gap-2 items-center animate-fade-in">
             <input 
               value={value} 
@@ -9740,12 +9813,17 @@ function AdminTemplateEdit({ config, demos, onBack, onSave, isPCPreviewMode, set
                  </div>
                  
                  <div>
-                    <label className={`${isPCPreviewMode ? 'text-xs' : 'text-sm'} block font-bold text-stone-700 mb-2`}>{t("Bài hát Preview")}</label>
-                    <select className={`w-full border rounded-xl px-4 ${isPCPreviewMode ? 'py-2 text-sm' : 'py-3'} bg-stone-50`} value={previewSongId} onChange={e => setPreviewSongId(e.target.value)}>
-                       {demos.map((d: any) => (
-                           <option key={d.id} value={d.id}>{d.title}</option>
-                       ))}
-                    </select>
+                    <label className={`${isPCPreviewMode ? 'text-xs' : 'text-sm'} block font-semibold text-stone-700 mb-2`}>{t("Bài hát Preview")}</label>
+                    <div className="relative">
+                       <select className={`w-full border border-stone-300 rounded-xl pl-4 pr-10 ${isPCPreviewMode ? 'py-2 text-sm' : 'py-3'} bg-white shadow-xs appearance-none cursor-pointer hover:border-stone-400 transition-colors`} value={previewSongId} onChange={e => setPreviewSongId(e.target.value)}>
+                          {demos.map((d: any) => (
+                              <option key={d.id} value={d.id}>{d.title}</option>
+                          ))}
+                       </select>
+                       <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
+                       </div>
+                    </div>
                  </div>
 
                  <div className={`space-y-4 pt-4 border-t border-stone-200 ${isPCPreviewMode ? 'text-sm' : ''}`}>
@@ -10185,6 +10263,13 @@ function AdminDashboard() {
   const [showCreatePlaylistModal, setShowCreatePlaylistModal] = useState(false);
   const [newPlaylistTitle, setNewPlaylistTitle] = useState('');
   const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false);
+
+  const [defaultLang, setDefaultLang] = useState('vi');
+  useEffect(() => {
+    if (data?.defaultLanguage) {
+      setDefaultLang(data.defaultLanguage);
+    }
+  }, [data?.defaultLanguage]);
 
   const getTicketTypeStyle = (type: string) => {
     switch (type) {
@@ -11197,7 +11282,7 @@ function AdminDashboard() {
         </div>
       </header>
 
-      <div className={`mx-auto ${showFullBleed ? 'w-full px-0 py-0 flex-1 flex overflow-hidden' : 'w-full px-4 md:px-8 py-8 flex flex-col md:flex-row gap-8'}`}>
+      <div className={`mx-auto ${showFullBleed ? 'w-full px-0 py-0 flex-1 flex overflow-hidden' : 'w-full px-4 md:px-6 py-4 flex flex-col md:flex-row gap-5'}`}>
         <aside className={`${
           effectiveSidebarCollapsed 
             ? (showFullBleed 
@@ -11241,15 +11326,16 @@ function AdminDashboard() {
                     className={`flex items-center transition-all relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
-                      isDemosActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                      isDemosActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
                     }`}
-                    title={t("Bài Hát")}
+                    title={t("Kho Nhạc")}
                   >
                     {isDemosActive && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 bg-stone-900/95 rounded-xl z-0 shadow-[inset_0_2px_4px_rgba(255,255,255,0.1),inset_0_-2px_6px_rgba(0,0,0,0.8),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-md border border-stone-800 group-hover:bg-stone-800/95"
-                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        style={{ transition: 'none' }}
+                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
                       />
                     )}
                     <motion.div
@@ -11264,9 +11350,17 @@ function AdminDashboard() {
                       } : { duration: 0.2 }}
                       className="relative z-10 flex items-center justify-center"
                     >
-                      <Disc3 className={`w-5 h-5 transition-colors animate-[spin_4s_linear_infinite] ${isDemosActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                      <Disc3 className={`w-5 h-5 transition-colors animate-[spin_4s_linear_infinite] ${isDemosActive ? 'text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
                     </motion.div>
-                    {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Bài Hát")}</span>}
+                    {!effectiveSidebarCollapsed && (
+                      <motion.span 
+                        animate={isDemosActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
+                        transition={isDemosActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
+                        className="relative z-10"
+                      >
+                        {t("Kho Nhạc")}
+                      </motion.span>
+                    )}
                   </button>
 
                   <button
@@ -11274,15 +11368,16 @@ function AdminDashboard() {
                     className={`flex items-center transition-all relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
-                      isPlaylistActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                      isPlaylistActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
                     }`}
                     title={t("Playlist")}
                   >
                     {isPlaylistActive && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 bg-stone-900/95 rounded-xl z-0 shadow-[inset_0_2px_4px_rgba(255,255,255,0.1),inset_0_-2px_6px_rgba(0,0,0,0.8),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-md border border-stone-800 group-hover:bg-stone-800/95"
-                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        style={{ transition: 'none' }}
+                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
                       />
                     )}
                     <motion.div
@@ -11297,9 +11392,17 @@ function AdminDashboard() {
                       } : { duration: 0.2 }}
                       className="relative z-10 flex items-center justify-center"
                     >
-                      <ListMusic className={`w-5 h-5 transition-colors ${isPlaylistActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                      <ListMusic className={`w-5 h-5 transition-colors ${isPlaylistActive ? 'text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
                     </motion.div>
-                    {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Playlist")}</span>}
+                    {!effectiveSidebarCollapsed && (
+                      <motion.span 
+                        animate={isPlaylistActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
+                        transition={isPlaylistActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
+                        className="relative z-10"
+                      >
+                        {t("Playlist")}
+                      </motion.span>
+                    )}
                   </button>
 
                   <button 
@@ -11307,15 +11410,16 @@ function AdminDashboard() {
                     className={`flex items-center transition-all relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
-                      isTemplatesActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                      isTemplatesActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
                     }`} 
                     title={t("Giao Diện")}
                   >
                     {isTemplatesActive && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 bg-stone-900/95 rounded-xl z-0 shadow-[inset_0_2px_4px_rgba(255,255,255,0.1),inset_0_-2px_6px_rgba(0,0,0,0.8),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-md border border-stone-800 group-hover:bg-stone-800/95"
-                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        style={{ transition: 'none' }}
+                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
                       />
                     )}
                     <motion.div
@@ -11330,9 +11434,17 @@ function AdminDashboard() {
                       } : { duration: 0.2 }}
                       className="relative z-10 flex items-center justify-center"
                     >
-                      <Palette className={`w-5 h-5 transition-colors ${isTemplatesActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                      <Palette className={`w-5 h-5 transition-colors ${isTemplatesActive ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
                     </motion.div>
-                    {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Giao Diện")}</span>}
+                    {!effectiveSidebarCollapsed && (
+                      <motion.span 
+                        animate={isTemplatesActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
+                        transition={isTemplatesActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
+                        className="relative z-10"
+                      >
+                        {t("Giao Diện")}
+                      </motion.span>
+                    )}
                   </button>
 
                   <button
@@ -11340,15 +11452,16 @@ function AdminDashboard() {
                     className={`flex items-center transition-all relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
-                      isRepostsActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                      isRepostsActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
                     }`}
                     title={`${t("Đăng lại")} (${otherSongs.length})`}
                   >
                     {isRepostsActive && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 bg-stone-900/95 rounded-xl z-0 shadow-[inset_0_2px_4px_rgba(255,255,255,0.1),inset_0_-2px_6px_rgba(0,0,0,0.8),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-md border border-stone-800 group-hover:bg-stone-800/95"
-                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        style={{ transition: 'none' }}
+                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
                       />
                     )}
                     <motion.div
@@ -11363,86 +11476,45 @@ function AdminDashboard() {
                       } : { duration: 0.2 }}
                       className="relative flex items-center justify-center z-10"
                     >
-                      <Repeat className={`w-5 h-5 transition-colors ${isRepostsActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                      <Repeat className={`w-5 h-5 transition-colors ${isRepostsActive ? 'text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
                       {effectiveSidebarCollapsed && otherSongs.length > 0 && (
                         <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">{otherSongs.length}</span>
                       )}
                     </motion.div>
                     {!effectiveSidebarCollapsed && (
-                      <span className="relative z-10 flex items-center justify-between w-full">
+                      <motion.span 
+                        animate={isRepostsActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
+                        transition={isRepostsActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
+                        className="relative z-10 flex items-center justify-between w-full"
+                      >
                         <span>{t("Đăng lại")}</span>
                         <span className={`px-2 py-0.5 rounded-full text-xs font-bold transition-colors ${isRepostsActive ? 'bg-white/20 text-white' : 'bg-stone-100 text-stone-600 group-hover:bg-stone-200/80 group-hover:text-stone-900'}`}>{otherSongs.length}</span>
-                      </span>
-                    )}
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab('tickets')}
-                    className={`flex items-center transition-all relative group ${
-                      effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
-                    } ${
-                      isTicketsActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
-                    }`}
-                    title={t("Hộp thư")}
-                  >
-                    {isTicketsActive && (
-                      <motion.span
-                        layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 bg-stone-900/95 rounded-xl z-0 shadow-[inset_0_2px_4px_rgba(255,255,255,0.1),inset_0_-2px_6px_rgba(0,0,0,0.8),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-md border border-stone-800 group-hover:bg-stone-800/95"
-                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                      />
-                    )}
-                    <motion.div
-                      animate={isTicketsActive ? {
-                        rotate: [-5, 5, -5],
-                        y: [-1, 1, -1]
-                      } : { rotate: 0, y: 0 }}
-                      transition={isTicketsActive ? {
-                        repeat: Infinity,
-                        duration: 2.1,
-                        ease: "easeInOut"
-                      } : { duration: 0.2 }}
-                      className="relative flex items-center justify-center z-10"
-                    >
-                      <MessageSquare className={`w-5 h-5 transition-colors ${isTicketsActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
-                      {effectiveSidebarCollapsed && bellCount > 0 && (
-                        <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white animate-pulse">{bellCount}</span>
-                      )}
-                    </motion.div>
-                    {!effectiveSidebarCollapsed && (
-                      <span className="relative z-10 flex items-center justify-between w-full">
-                        <span className="flex items-center gap-2">
-                          {t("Hộp thư")} 
-                          {bellCount > 0 && <span className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-ping" />}
-                        </span>
-                        {bellCount > 0 && (
-                          <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs animate-pulse">
-                            {bellCount}
-                          </span>
-                        )}
-                      </span>
+                      </motion.span>
                     )}
                   </button>
 
                   {!effectiveSidebarCollapsed && (
                     <h3 className="text-[10px] font-extrabold text-stone-400 uppercase tracking-widest mb-3 mt-4 px-4 select-none opacity-80">
-                      {t("Hồ sơ & Mở rộng")}
+                      {t("Cài Đặt Hệ Thống")}
                     </h3>
                   )}
+
+                  {/* 1. Trang Chủ (formerly Cài Đặt / Profile) */}
                   <button
                     onClick={() => setActiveTab('profile')}
                     className={`flex items-center transition-all relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
-                      isProfileActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                      isProfileActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
                     }`}
-                    title={t("Cài Đặt")}
+                    title={t("Trang Chủ")}
                   >
                     {isProfileActive && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 bg-stone-900/95 rounded-xl z-0 shadow-[inset_0_2px_4px_rgba(255,255,255,0.1),inset_0_-2px_6px_rgba(0,0,0,0.8),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-md border border-stone-800 group-hover:bg-stone-800/95"
-                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        style={{ transition: 'none' }}
+                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
                       />
                     )}
                     <motion.div
@@ -11457,25 +11529,74 @@ function AdminDashboard() {
                       } : { duration: 0.2 }}
                       className="relative z-10 flex items-center justify-center"
                     >
-                      <Settings className={`w-5 h-5 transition-colors ${isProfileActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                      <Settings className={`w-5 h-5 transition-colors ${isProfileActive ? 'text-teal-400 drop-shadow-[0_0_8px_rgba(45,212,191,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
                     </motion.div>
-                    {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Cài Đặt")}</span>}
+                    {!effectiveSidebarCollapsed && (
+                      <motion.span 
+                        animate={isProfileActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
+                        transition={isProfileActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
+                        className="relative z-10"
+                      >
+                        {t("Trang Chủ")}
+                      </motion.span>
+                    )}
                   </button>
 
+                  {/* 2. Bố Cục */}
+                  <button
+                    onClick={() => setActiveTab('layout')}
+                    className={`flex items-center transition-all relative group ${
+                      effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
+                    } ${
+                      isLayoutActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                    }`}
+                    title={t("Bố Cục")}
+                  >
+                    {isLayoutActive && (
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        style={{ transition: 'none' }}
+                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
+                      />
+                    )}
+                    <motion.div
+                      animate={isLayoutActive ? {
+                        scale: [1, 1.05, 1],
+                        rotate: [-2, 2, -2]
+                      } : { scale: 1, rotate: 0 }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                      className="relative z-10 flex items-center justify-center"
+                    >
+                      <LayoutTemplate className={`w-5 h-5 transition-colors ${isLayoutActive ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                    </motion.div>
+                    {!effectiveSidebarCollapsed && (
+                      <motion.span 
+                        animate={isLayoutActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
+                        transition={isLayoutActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
+                        className="relative z-10"
+                      >
+                        {t("Bố Cục")}
+                      </motion.span>
+                    )}
+                  </button>
+
+                  {/* 3. Về Tôi */}
                   <button
                     onClick={() => setActiveTab('about')}
                     className={`flex items-center transition-all relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
-                      isAboutActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                      isAboutActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
                     }`}
                     title={t("Về Tôi")}
                   >
                     {isAboutActive && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 bg-stone-900/95 rounded-xl z-0 shadow-[inset_0_2px_4px_rgba(255,255,255,0.1),inset_0_-2px_6px_rgba(0,0,0,0.8),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-md border border-stone-800 group-hover:bg-stone-800/95"
-                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        style={{ transition: 'none' }}
+                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
                       />
                     )}
                     <motion.div
@@ -11490,25 +11611,35 @@ function AdminDashboard() {
                       } : { duration: 0.2 }}
                       className="relative z-10 flex items-center justify-center"
                     >
-                      <UserCircle className={`w-5 h-5 transition-colors ${isAboutActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                      <UserCircle className={`w-5 h-5 transition-colors ${isAboutActive ? 'text-violet-400 drop-shadow-[0_0_8px_rgba(167,139,250,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
                     </motion.div>
-                    {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Về Tôi")}</span>}
+                    {!effectiveSidebarCollapsed && (
+                      <motion.span 
+                        animate={isAboutActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
+                        transition={isAboutActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
+                        className="relative z-10"
+                      >
+                        {t("Về Tôi")}
+                      </motion.span>
+                    )}
                   </button>
 
+                  {/* 4. Tiểu Sử */}
                   <button
                     onClick={() => setActiveTab('bio')}
                     className={`flex items-center transition-all relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
-                      isBioActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                      isBioActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
                     }`}
                     title={t("Tiểu Sử")}
                   >
                     {isBioActive && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 bg-stone-900/95 rounded-xl z-0 shadow-[inset_0_2px_4px_rgba(255,255,255,0.1),inset_0_-2px_6px_rgba(0,0,0,0.8),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-md border border-stone-800 group-hover:bg-stone-800/95"
-                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        style={{ transition: 'none' }}
+                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
                       />
                     )}
                     <motion.div
@@ -11523,25 +11654,35 @@ function AdminDashboard() {
                       } : { duration: 0.2 }}
                       className="relative z-10 flex items-center justify-center"
                     >
-                      <BookOpen className={`w-5 h-5 transition-colors ${isBioActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                      <BookOpen className={`w-5 h-5 transition-colors ${isBioActive ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
                     </motion.div>
-                    {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Tiểu Sử")}</span>}
+                    {!effectiveSidebarCollapsed && (
+                      <motion.span 
+                        animate={isBioActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
+                        transition={isBioActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
+                        className="relative z-10"
+                      >
+                        {t("Tiểu Sử")}
+                      </motion.span>
+                    )}
                   </button>
 
+                  {/* 5. Danh Mục */}
                   <button
                     onClick={() => setActiveTab('menus')}
                     className={`flex items-center transition-all relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
-                      isMenusActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                      isMenusActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
                     }`}
                     title={t("Danh Mục")}
                   >
                     {isMenusActive && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 bg-stone-900/95 rounded-xl z-0 shadow-[inset_0_2px_4px_rgba(255,255,255,0.1),inset_0_-2px_6px_rgba(0,0,0,0.8),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-md border border-stone-800 group-hover:bg-stone-800/95"
-                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        style={{ transition: 'none' }}
+                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
                       />
                     )}
                     <motion.div
@@ -11556,87 +11697,35 @@ function AdminDashboard() {
                       } : { duration: 0.2 }}
                       className="relative z-10 flex items-center justify-center"
                     >
-                      <List className={`w-5 h-5 transition-colors ${isMenusActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                      <List className={`w-5 h-5 transition-colors ${isMenusActive ? 'text-teal-400 drop-shadow-[0_0_8px_rgba(45,212,191,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
                     </motion.div>
-                    {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Danh Mục")}</span>}
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab('layout')}
-                    className={`flex items-center transition-all relative group ${
-                      effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
-                    } ${
-                      isLayoutActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
-                    }`}
-                    title={t("Bố Cục")}
-                  >
-                    {isLayoutActive && (
-                      <motion.span
-                        layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 bg-stone-900/95 rounded-xl z-0 shadow-[inset_0_2px_4px_rgba(255,255,255,0.1),inset_0_-2px_6px_rgba(0,0,0,0.8),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-md border border-stone-800 group-hover:bg-stone-800/95"
-                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                      />
+                    {!effectiveSidebarCollapsed && (
+                      <motion.span 
+                        animate={isMenusActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
+                        transition={isMenusActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
+                        className="relative z-10"
+                      >
+                        {t("Danh Mục")}
+                      </motion.span>
                     )}
-                    <motion.div
-                      animate={isLayoutActive ? {
-                        scale: [1, 1.05, 1],
-                        rotate: [-2, 2, -2]
-                      } : { scale: 1, rotate: 0 }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                      className="relative z-10 flex items-center justify-center"
-                    >
-                      <LayoutTemplate className={`w-5 h-5 transition-colors ${isLayoutActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
-                    </motion.div>
-                    {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Bố Cục")}</span>}
                   </button>
 
-                  <button
-                    onClick={() => setActiveTab('socials')}
-                    className={`flex items-center transition-all relative group ${
-                      effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
-                    } ${
-                      isSocialsActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
-                    }`}
-                    title={t("Mạng Xã Hội")}
-                  >
-                    {isSocialsActive && (
-                      <motion.span
-                        layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 bg-stone-900/95 rounded-xl z-0 shadow-[inset_0_2px_4px_rgba(255,255,255,0.1),inset_0_-2px_6px_rgba(0,0,0,0.8),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-md border border-stone-800 group-hover:bg-stone-800/95"
-                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                      />
-                    )}
-                    <motion.div
-                      animate={isSocialsActive ? {
-                        rotate: [-4, 4, -4],
-                        y: [-1, 1, -1]
-                      } : { rotate: 0, y: 0 }}
-                      transition={isSocialsActive ? {
-                        repeat: Infinity,
-                        duration: 2,
-                        ease: "easeInOut"
-                      } : { duration: 0.2 }}
-                      className="relative z-10 flex items-center justify-center"
-                    >
-                      <Globe className={`w-5 h-5 relative z-10 transition-colors ${isSocialsActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
-                    </motion.div>
-                    {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Mạng Xã Hội")}</span>}
-                  </button>
-
+                  {/* 6. Bảo Mật */}
                   <button
                     onClick={() => setActiveTab('security')}
                     className={`flex items-center transition-all relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
-                      isSecurityActive ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                      isSecurityActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
                     }`}
                     title={t("Bảo Mật")}
                   >
                     {isSecurityActive && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 bg-stone-900/95 rounded-xl z-0 shadow-[inset_0_2px_4px_rgba(255,255,255,0.1),inset_0_-2px_6px_rgba(0,0,0,0.8),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-md border border-stone-800 group-hover:bg-stone-800/95"
-                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        style={{ transition: 'none' }}
+                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
                       />
                     )}
                     <motion.div
@@ -11651,9 +11740,71 @@ function AdminDashboard() {
                       } : { duration: 0.2 }}
                       className="relative z-10 flex items-center justify-center"
                     >
-                      <Lock className={`w-5 h-5 relative z-10 transition-colors ${isSecurityActive ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                      <Lock className={`w-5 h-5 relative z-10 transition-colors ${isSecurityActive ? 'text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
                     </motion.div>
-                    {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Bảo Mật")}</span>}
+                    {!effectiveSidebarCollapsed && (
+                      <motion.span 
+                        animate={isSecurityActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
+                        transition={isSecurityActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
+                        className="relative z-10"
+                      >
+                        {t("Bảo Mật")}
+                      </motion.span>
+                    )}
+                  </button>
+
+                  {/* 7. Hộp Thư (moved to Hồ Sơ & Mở Rộng section) */}
+                  <button
+                    onClick={() => setActiveTab('tickets')}
+                    className={`flex items-center transition-all relative group ${
+                      effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
+                    } ${
+                      isTicketsActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                    }`}
+                    title={t("Hộp thư")}
+                  >
+                    {isTicketsActive && (
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        style={{ transition: 'none' }}
+                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
+                      />
+                    )}
+                    <motion.div
+                      animate={isTicketsActive ? {
+                        rotate: [-5, 5, -5],
+                        y: [-1, 1, -1]
+                      } : { rotate: 0, y: 0 }}
+                      transition={isTicketsActive ? {
+                        repeat: Infinity,
+                        duration: 2.1,
+                        ease: "easeInOut"
+                      } : { duration: 0.2 }}
+                      className="relative flex items-center justify-center z-10"
+                    >
+                      <MessageSquare className={`w-5 h-5 transition-colors ${isTicketsActive ? 'text-rose-400 drop-shadow-[0_0_8px_rgba(251,113,133,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                      {effectiveSidebarCollapsed && bellCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white animate-pulse">{bellCount}</span>
+                      )}
+                    </motion.div>
+                    {!effectiveSidebarCollapsed && (
+                      <motion.span 
+                        animate={isTicketsActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
+                        transition={isTicketsActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
+                        className="relative z-10 flex items-center justify-between w-full"
+                      >
+                        <span className="flex items-center gap-2">
+                          {t("Hộp thư")} 
+                          {bellCount > 0 && <span className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-ping" />}
+                        </span>
+                        {bellCount > 0 && (
+                          <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs animate-pulse">
+                            {bellCount}
+                          </span>
+                        )}
+                      </motion.span>
+                    )}
                   </button>
 
                   {data?.isSpecial && (
@@ -11662,15 +11813,15 @@ function AdminDashboard() {
                       className={`flex items-center transition-all relative group ${
                         effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                       } ${
-                        activeTab === 'database' ? 'text-white' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                        activeTab === 'database' ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
                       }`}
                       title={t("Cơ sở dữ liệu")}
                     >
                       {activeTab === 'database' && (
                         <motion.span
                           layoutId="adminSidebarActiveBg"
-                          className="absolute inset-0 bg-stone-900/95 rounded-xl z-0 shadow-[inset_0_2px_4px_rgba(255,255,255,0.1),inset_0_-2px_6px_rgba(0,0,0,0.8),0_4px_12px_rgba(0,0,0,0.4)] backdrop-blur-md border border-stone-800 group-hover:bg-stone-800/95"
-                          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                          className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
+                          transition={{ type: 'tween', ease: 'easeInOut', duration: 0.32 }}
                         />
                       )}
                       <motion.div
@@ -11680,9 +11831,17 @@ function AdminDashboard() {
                         transition={{ duration: 1.5, repeat: Infinity }}
                         className="relative z-10 flex items-center justify-center"
                       >
-                        <Database className={`w-5 h-5 relative z-10 transition-colors ${activeTab === 'database' ? 'text-white' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                        <Database className={`w-5 h-5 relative z-10 transition-colors ${activeTab === 'database' ? 'text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
                       </motion.div>
-                      {!effectiveSidebarCollapsed && <span className="relative z-10">{t("Cơ sở dữ liệu")}</span>}
+                      {!effectiveSidebarCollapsed && (
+                        <motion.span 
+                          animate={activeTab === 'database' ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
+                          transition={activeTab === 'database' ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
+                          className="relative z-10"
+                        >
+                          {t("Cơ sở dữ liệu")}
+                        </motion.span>
+                      )}
                     </button>
                   )}
                 </div>
@@ -11694,7 +11853,7 @@ function AdminDashboard() {
         <main className={`flex-1 bg-white flex flex-col ${showFullBleed ? 'rounded-none border-0 shadow-none min-h-0 h-[calc(100vh-64px)] overflow-hidden p-4 md:p-6' : 'rounded-none md:rounded-3xl border-0 md:border md:border-stone-200 shadow-none md:shadow-sm p-4 md:p-8 min-h-[calc(100vh-64px)]'}`}>
           <AnimatePresence mode="wait">
           {activeTab === 'demos' && (
-            <motion.div key="demos" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+            <motion.div key="demos" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
             <div>
               {/* Header with Sub-tabs and Create button */}
               <div className="flex flex-col gap-4 mb-6 border-b border-stone-100 pb-4">
@@ -11723,7 +11882,7 @@ function AdminDashboard() {
                         <motion.span
                           layoutId="adminSubTabActiveBg"
                           className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
-                          transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                          transition={{ type: 'tween', ease: 'easeInOut', duration: 0.32 }}
                         />
                       )}
                       <Music className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 relative z-10 ${demosSubTab === 'released' ? 'hidden sm:block' : ''}`} />
@@ -11746,7 +11905,7 @@ function AdminDashboard() {
                         <motion.span
                           layoutId="adminSubTabActiveBg"
                           className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
-                          transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                          transition={{ type: 'tween', ease: 'easeInOut', duration: 0.32 }}
                         />
                       )}
                       <Disc3 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-500 relative z-10 ${demosSubTab === 'demos' ? 'hidden sm:block' : ''}`} />
@@ -11769,7 +11928,7 @@ function AdminDashboard() {
                         <motion.span
                           layoutId="adminSubTabActiveBg"
                           className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
-                          transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                          transition={{ type: 'tween', ease: 'easeInOut', duration: 0.32 }}
                         />
                       )}
                       <FileText className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 relative z-10 ${demosSubTab === 'drafts' ? 'hidden sm:block' : ''}`} />
@@ -11792,7 +11951,7 @@ function AdminDashboard() {
                         <motion.span
                           layoutId="adminSubTabActiveBg"
                           className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
-                          transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                          transition={{ type: 'tween', ease: 'easeInOut', duration: 0.32 }}
                         />
                       )}
                       <ExternalLink className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-500 relative z-10 ${demosSubTab === 'landing_pages' ? 'hidden sm:block' : ''}`} />
@@ -11815,7 +11974,7 @@ function AdminDashboard() {
                         <motion.span
                           layoutId="adminSubTabActiveBg"
                           className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
-                          transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                          transition={{ type: 'tween', ease: 'easeInOut', duration: 0.32 }}
                         />
                       )}
                       <BadgeCheck className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-500 relative z-10 ${demosSubTab === 'brands' ? 'hidden sm:block' : ''}`} />
@@ -11882,16 +12041,21 @@ function AdminDashboard() {
                     <div className="flex items-center gap-3 justify-between sm:justify-end w-full sm:w-auto shrink-0 pr-4 py-2">
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-stone-400 font-medium">{t("Hiển thị")}:</span>
-                        <select 
-                          value={itemsPerPage} 
-                          onChange={e => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }} 
-                          className="bg-white border border-stone-200 rounded-xl px-3 py-2 text-sm font-bold text-stone-700 outline-none hover:border-stone-300 transition-colors cursor-pointer min-w-[90px]"
-                        >
-                          <option value={10}>{demosSubTab === 'playlists' ? t("10 mục") : t("10 bài")}</option>
-                          <option value={20}>{demosSubTab === 'playlists' ? t("20 mục") : t("20 bài")}</option>
-                          <option value={50}>{demosSubTab === 'playlists' ? t("50 mục") : t("50 bài")}</option>
-                          <option value={100}>{demosSubTab === 'playlists' ? t("100 mục") : t("100 bài")}</option>
-                        </select>
+                        <div className="relative">
+                          <select 
+                            value={itemsPerPage} 
+                            onChange={e => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }} 
+                            className="bg-white border border-stone-200 rounded-xl pl-3 pr-8 py-2 text-sm font-semibold text-stone-700 outline-none hover:border-stone-300 transition-colors cursor-pointer min-w-[95px] appearance-none"
+                          >
+                            <option value={10}>{demosSubTab === 'playlists' ? t("10 mục") : t("10 bài")}</option>
+                            <option value={20}>{demosSubTab === 'playlists' ? t("20 mục") : t("20 bài")}</option>
+                            <option value={50}>{demosSubTab === 'playlists' ? t("50 mục") : t("50 bài")}</option>
+                            <option value={100}>{demosSubTab === 'playlists' ? t("100 mục") : t("100 bài")}</option>
+                          </select>
+                          <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                          </div>
+                        </div>
                       </div>
                       {demosSubTab === 'playlists' ? (
                         <button
@@ -11918,7 +12082,7 @@ function AdminDashboard() {
               {/* Action area for selected subtab */}
               <div className="overflow-x-auto min-h-[300px]">
 <AnimatePresence mode="wait">
-                {demosSubTab === 'landing_pages' && (<motion.div key="landing_pages" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="w-full">{(() => {
+                {demosSubTab === 'landing_pages' && (<motion.div key="landing_pages" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
                   let landingList = data.demos?.filter(d => d.linkType === 'indirect' && !d.deleted) || [];
                   if (adminSearchQuery.trim()) {
                     landingList = landingList.filter(d => d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase()));
@@ -11971,7 +12135,7 @@ function AdminDashboard() {
                   );
                 })()}</motion.div>)}
 
-                {demosSubTab === 'released' && (<motion.div key="released" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="w-full">{(() => {
+                {demosSubTab === 'released' && (<motion.div key="released" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
                   let releasedList = data.demos?.filter(d => d.isReleased && !d.deleted && !d.isDraft && d.linkType !== 'indirect') || [];
                   if (adminSearchQuery.trim()) {
                     releasedList = releasedList.filter(d => d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase()));
@@ -12063,7 +12227,7 @@ function AdminDashboard() {
                   );
                 })()}</motion.div>)}
 
-                {demosSubTab === 'demos' && (<motion.div key="demos" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="w-full">{(() => {
+                {demosSubTab === 'demos' && (<motion.div key="demos" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
                   let demoList = data.demos?.filter(d => !d.isReleased && !d.deleted && !d.isDraft && d.linkType !== 'indirect') || [];
                   if (adminSearchQuery.trim()) {
                     demoList = demoList.filter(d => d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase()));
@@ -12159,7 +12323,7 @@ function AdminDashboard() {
                   );
                 })()}</motion.div>)}
 
-                {demosSubTab === 'brands' && (<motion.div key="brands" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="w-full">{(() => {
+                {demosSubTab === 'brands' && (<motion.div key="brands" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
                   let brandList = data.demos?.filter(d => d.isBrand && !d.deleted) || [];
                   if (adminSearchQuery.trim()) {
                     brandList = brandList.filter(d => d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase()));
@@ -12258,7 +12422,7 @@ function AdminDashboard() {
                     </div>
                   );
                 })()}</motion.div>)}
-                {demosSubTab === 'drafts' && (<motion.div key="drafts" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="w-full">{(() => {
+                {demosSubTab === 'drafts' && (<motion.div key="drafts" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
                   let draftList = data.demos?.filter(d => d.isDraft && !d.deleted && d.linkType !== 'indirect') || [];
                   if (adminSearchQuery.trim()) {
                     draftList = draftList.filter(d => d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase()));
@@ -12338,7 +12502,7 @@ function AdminDashboard() {
                   );
                 })()}</motion.div>)}
 
-                {demosSubTab === 'playlists' && (<motion.div key="playlists" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="w-full">{(() => {
+                {demosSubTab === 'playlists' && (<motion.div key="playlists" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
                   let playlistList = (data.playlists || []).filter(p => !p.deleted);
                   if (adminSearchQuery.trim()) {
                     playlistList = playlistList.filter(p => p.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase()));
@@ -12415,7 +12579,7 @@ function AdminDashboard() {
                   );
                 })()}</motion.div>)}
 
-                {demosSubTab === 'trash' && (<motion.div key="trash" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="w-full">{(() => {
+                {demosSubTab === 'trash' && (<motion.div key="trash" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
                   const trashedDemos = data.demos?.filter(d => d.deleted) || [];
                   const trashedPlaylists = (data.playlists || []).filter(p => p.deleted);
                   
@@ -12501,7 +12665,7 @@ function AdminDashboard() {
           )}
 
           {activeTab === 'menus' && (
-            <motion.div key="menus" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+            <motion.div key="menus" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
               <div className="max-w-2xl py-1">
                 <AdminMenuEdit data={data} t={t} onSave={handleCustomSave} />
               </div>
@@ -12509,7 +12673,7 @@ function AdminDashboard() {
           )}
 
           {activeTab === 'layout' && (
-            <motion.div key="layout" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+            <motion.div key="layout" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
               <div className="max-w-2xl py-1">
                 <AdminLayoutEdit data={data} t={t} onSave={handleCustomSave} />
               </div>
@@ -12517,8 +12681,8 @@ function AdminDashboard() {
           )}
 
           {activeTab === 'profile' && (
-            <motion.div key="profile" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
-            <div className="max-w-2xl">
+            <motion.div key="profile" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+            <div className="max-w-2xl pb-10">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-stone-100 pb-4">
                 <div>
                   <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
@@ -12531,11 +12695,11 @@ function AdminDashboard() {
               <form onSubmit={handleProfileSave} className="space-y-6">
 
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">{t("Giới thiệu ngắn")}</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Giới thiệu ngắn")}</label>
                   <input name="artistBio" defaultValue={data.artistBio} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">{t("Tên nghệ sĩ")}</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tên nghệ sĩ")}</label>
                   {data.pendingNameChange ? (
                     <div className="flex items-center gap-2">
                       <div className="w-full border border-stone-200 bg-stone-100 text-stone-500 rounded-xl px-4 py-3 flex items-center justify-between opacity-80 select-none">
@@ -12549,7 +12713,7 @@ function AdminDashboard() {
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">{t("Username đăng nhập")}</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Username đăng nhập")}</label>
                   {data.pendingUsernameChange ? (
                     <div className="flex items-center gap-2">
                       <div className="w-full border border-stone-200 bg-stone-100 text-stone-500 rounded-xl px-4 py-3 flex items-center justify-between opacity-80 select-none">
@@ -12563,7 +12727,7 @@ function AdminDashboard() {
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">{t("Phần mở rộng (Sub-domain)")}</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Phần mở rộng (Sub-domain)")}</label>
                   {data.pendingExtensionChange ? (
                     <div className="flex items-center gap-2">
                       <div className="w-full border border-stone-200 bg-stone-100 text-stone-500 rounded-xl px-4 py-3 flex items-center justify-between opacity-80 select-none">
@@ -12581,26 +12745,27 @@ function AdminDashboard() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ngôn ngữ mặc định (Default Language)")}</label>
-                  <select 
-                    name="defaultLanguage" 
-                    defaultValue={data.defaultLanguage || 'vi'} 
-                    className="w-full border border-stone-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-stone-900"
-                  >
-                    <option value="vi">{t("Tiếng Việt")}</option>
-                    <option value="en">English</option>
-                    <option value="ko">한국어</option>
-                    <option value="ja">日本語</option>
-                    <option value="th">ไทย</option>
-                    <option value="zh">中文</option>
-                  </select>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Ngôn ngữ mặc định (Default Language)")}</label>
+                  <CustomSelect
+                    value={defaultLang}
+                    onChange={(val) => setDefaultLang(val)}
+                    options={[
+                      { value: 'vi', label: t("Tiếng Việt") },
+                      { value: 'en', label: 'English' },
+                      { value: 'ko', label: '한국어' },
+                      { value: 'ja', label: '日本語' },
+                      { value: 'th', label: 'ไทย' },
+                      { value: 'zh', label: '中文' }
+                    ]}
+                  />
+                  <input type="hidden" name="defaultLanguage" value={defaultLang} />
                   <p className="text-xs text-stone-500 mt-1.5">{t("Ngôn ngữ mặc định ban đầu khi khách truy cập vào trang cá nhân của bạn.")}</p>
                 </div>
                 <div>
 
 
 
-                  <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ảnh nền trang chủ ( Chọn nhiều ảnh để chạy slideshow )")}</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Ảnh nền trang chủ ( Chọn nhiều ảnh để chạy slideshow )")}</label>
                   <div className="flex flex-col gap-3">
                     <div className="flex flex-wrap gap-3">
                        {slideshowImages.map((src, i) => (
@@ -12651,7 +12816,7 @@ function AdminDashboard() {
 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
   
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">{t("Favicon (Icon trên trình duyệt)")}</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Favicon (Icon trên trình duyệt)")}</label>
                   <div 
                     className="flex items-center gap-4 p-4 rounded-3xl border-2 border-dashed border-stone-200 bg-stone-50/50 hover:border-stone-300 transition-colors"
                     onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
@@ -12678,7 +12843,7 @@ function AdminDashboard() {
                     )}
                     <div className="flex-1 min-w-[150px]">
                       <div className="flex items-center gap-2">
-                        <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${faviconProgress === 100 || faviconUrlPreview ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('faviconUpload')?.click()}>
+                        <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${faviconProgress === 100 || faviconUrlPreview ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('faviconUpload')?.click()}>
                             <Upload className="w-4 h-4"/>
                             <span className="max-w-[150px] truncate">{faviconProgress > 0 && faviconProgress < 100 ? `Đang tải ${faviconProgress}%` : (faviconUrlPreview ? t("Thay đổi") : t("Chọn ảnh"))}</span>
                         </button>
@@ -12713,7 +12878,7 @@ function AdminDashboard() {
                 </div>
   
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">{t("Thumbnail ( Ảnh minh họa khi chia sẻ Link )")}</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Thumbnail ( Ảnh minh họa khi chia sẻ Link )")}</label>
                   <div 
                     className="flex items-center gap-4 p-4 rounded-3xl border-2 border-dashed border-stone-200 bg-stone-50/50 hover:border-stone-300 transition-colors"
                     onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
@@ -12740,7 +12905,7 @@ function AdminDashboard() {
                     )}
                     <div className="flex-1 min-w-[150px]">
                       <div className="flex items-center gap-2">
-                        <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${ogImageProgress === 100 || ogImageUrlPreview ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('ogImageUpload')?.click()}>
+                        <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${ogImageProgress === 100 || ogImageUrlPreview ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('ogImageUpload')?.click()}>
                             <Upload className="w-4 h-4"/>
                             <span className="max-w-[150px] truncate">{ogImageProgress > 0 && ogImageProgress < 100 ? `Đang tải ${ogImageProgress}%` : (ogImageUrlPreview ? t("Thay đổi") : t("Chọn ảnh"))}</span>
                         </button>
@@ -12776,23 +12941,23 @@ function AdminDashboard() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">{t("Tiêu đề Website")}</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tiêu đề Website")}</label>
                   <input name="pageTitle" defaultValue={data.pageTitle} placeholder={t("Để trống sẽ dùng mặc định: Thiên Đường Demo của [Tên nghệ sĩ]")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
                 </div>
 
 <hr className="border-stone-200" />
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">{t("Link Playlist YouTube (Nhạc đã phát hành)")}</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Link Playlist YouTube (Nhạc đã phát hành)")}</label>
                   <input name="youtubePlaylistUrl" defaultValue={data.youtubePlaylistUrl} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" placeholder="https://youtube.com/playlist?list=..." />
                   <p className="text-sm text-stone-500 mt-2">{t("Sẽ tự động hiển thị 4 bài hát mới nhất từ playlist này.")}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">Link Profile Spotify</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Link Profile Spotify</label>
                   <input name="spotifyUrl" defaultValue={data.spotifyUrl} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" placeholder="https://open.spotify.com/artist/..." />
                 </div>
                 <hr className="border-stone-200" />
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">{t("Mật khẩu chung cho các Demo")}</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Mật khẩu chung cho các Demo")}</label>
                   <input name="globalPassword" defaultValue={data.globalPassword} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono" placeholder={t("Để trống nếu không muốn dùng mật khẩu chung")} autoComplete="new-password" data-lpignore="true" data-1p-ignore="true" />
                   <p className="text-sm text-stone-500 mt-2">{t("Tất cả các link ở trang chủ nếu chưa đặt mật khẩu riêng thì sẽ được bảo vệ bởi mật khẩu chung này.")}</p>
                 </div>
@@ -12885,7 +13050,7 @@ function AdminDashboard() {
                       value="true" 
                       className="w-5 h-5 rounded border-stone-300 text-stone-900 focus:ring-stone-900 cursor-pointer" 
                     />
-                    <label htmlFor="autoSwitchTabs" className="text-sm font-bold text-stone-700 cursor-pointer select-none">
+                    <label htmlFor="autoSwitchTabs" className="text-sm font-semibold text-stone-700 cursor-pointer select-none">
                       {t("Tự động chuyển tab ở trang chủ (Music / Demo / Playlist)")}
                     </label>
                   </div>
@@ -12898,7 +13063,7 @@ function AdminDashboard() {
                       value="true" 
                       className="w-5 h-5 rounded border-stone-300 text-stone-900 focus:ring-stone-900 cursor-pointer" 
                     />
-                    <label htmlFor="hideFromHomepage" className="text-sm font-bold text-stone-700 cursor-pointer select-none">
+                    <label htmlFor="hideFromHomepage" className="text-sm font-semibold text-stone-700 cursor-pointer select-none">
                       {t("Ẩn khỏi danh sách nghệ sĩ trên trang chủ Chorus.vn")}
                     </label>
                   </div>
@@ -12922,15 +13087,16 @@ function AdminDashboard() {
                   </div>
                 </div>
 
-<div className="flex items-center gap-4 border-t border-stone-200 pt-6 mt-2">
-                    <button type="submit" className="bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] px-6 py-3 rounded-xl font-medium hover:bg-stone-800 transition-colors">{t("Lưu thay đổi")}</button>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 border-t border-stone-100 pt-6 mt-6">
+                    <button type="submit" className="bg-stone-900 text-white shadow-sm hover:shadow-md hover:bg-stone-800 active:scale-[0.98] px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer">
+                      {t("Lưu thay đổi")}
+                    </button>
                     <button type="button" onClick={async () => {
                       if (!confirm(t("Bạn có chắc muốn làm mới toàn bộ Secret Link? Các Secret Link cũ sẽ không còn hoạt động, tự động chuyển về đường dẫn gốc yêu cầu mật khẩu."))) return;
                       const res = await fetch('/api/admin/reset-secret-links', {
                         method: 'POST',
                         headers: {
-        'x-artist-extension': getArtistExtensionFromUrl(),
-
+                          'x-artist-extension': getArtistExtensionFromUrl(),
                           'Authorization': `Bearer ${getAdminToken() || ''}`
                         }
                       });
@@ -12939,8 +13105,8 @@ function AdminDashboard() {
                         setTimeout(() => setToast(''), 3000);
                         loadData();
                       }
-                    }} className="text-red-500 font-bold ml-auto px-4 py-2 border border-red-200 rounded-xl hover:bg-red-50 transition-colors">{t("Reset Toàn Bộ Secret Link")}</button>
-                </div>
+                    }} className="text-red-500 hover:text-red-600 font-bold sm:ml-auto px-4 py-2 bg-red-50/50 hover:bg-red-50 border border-red-100 rounded-xl text-xs transition-all duration-200 cursor-pointer">{t("Reset Toàn Bộ Secret Link")}</button>
+                  </div>
               </form>
             </div>
             </motion.div>
@@ -12948,29 +13114,37 @@ function AdminDashboard() {
 
 
           {activeTab === 'socials' && (
-            <motion.div key="socials" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
-            <div className="max-w-2xl py-1">
-              <h2 className="text-2xl font-bold mb-8 flex items-center gap-2"><Globe className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />{t("Mạng xã hội")}</h2>
+            <motion.div key="socials" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+            <div className="max-w-2xl pb-10">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-stone-100 pb-4">
+                <div>
+                  <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+                    <Globe className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />
+                    {t("Mạng xã hội")}
+                  </h2>
+                  <p className="text-xs text-stone-500 mt-1">{t("Liên kết các kênh mạng xã hội chính thức của bạn")}</p>
+                </div>
+              </div>
               <form onSubmit={handleProfileSave} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">Facebook</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Facebook</label>
                   <input name="socialFacebook" defaultValue={data.socialFacebook} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" placeholder="https://facebook.com/..." />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">Instagram</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Instagram</label>
                   <input name="socialInstagram" defaultValue={data.socialInstagram} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" placeholder="https://instagram.com/..." />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">YouTube</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">YouTube</label>
                   <input name="socialYoutube" defaultValue={data.socialYoutube} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" placeholder="https://youtube.com/..." />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">TikTok</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">TikTok</label>
                   <input name="socialTiktok" defaultValue={data.socialTiktok} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" placeholder="https://tiktok.com/@..." />
                 </div>
                 
-                <div className="flex items-center gap-4 border-t border-stone-200 pt-6 mt-2">
-                    <button type="submit" className="bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] px-6 py-3 rounded-xl font-medium hover:bg-stone-800 transition-colors">{t("Lưu thay đổi")}</button>
+                <div className="flex items-center gap-4 border-t border-stone-100 pt-6 mt-6">
+                    <button type="submit" className="bg-stone-900 text-white shadow-sm hover:shadow-md hover:bg-stone-800 active:scale-[0.98] px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer">{t("Lưu thay đổi")}</button>
                 </div>
               </form>
             </div>
@@ -12978,21 +13152,26 @@ function AdminDashboard() {
           )}
 
           {activeTab === 'templates' && (
-            <motion.div key="templates" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+            <motion.div key="templates" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
             <AdminTemplatesSettings isPCPreviewMode={isPCPreviewMode} setIsPCPreviewMode={setIsPCPreviewMode} />
             </motion.div>
           )}
 
           {activeTab === 'security' && (
-            <motion.div key="security" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
-            <div className="max-w-2xl space-y-12 py-1">
+            <motion.div key="security" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+            <div className="max-w-2xl space-y-12 pb-10">
               <div>
-                <h2 className="text-2xl font-bold mb-2 text-stone-900 flex items-center gap-2"><Lock className="w-6 h-6 text-indigo-600" />{t("Cập Nhật Email Quản Trị")}</h2>
-                <p className="text-sm text-stone-500 mb-6">{t("Bạn sẽ dùng email này để đăng nhập vào trang quản trị thay cho username (nếu muốn).")}</p>
+                <div className="flex flex-col gap-1 mb-6 border-b border-stone-100 pb-4">
+                  <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+                    <Lock className="w-6 h-6 text-indigo-600" />
+                    {t("Cập Nhật Email Quản Trị")}
+                  </h2>
+                  <p className="text-xs text-stone-500 mt-1">{t("Bạn sẽ dùng email này để đăng nhập vào trang quản trị thay cho username (nếu muốn).")}</p>
+                </div>
                 
                 <form onSubmit={handleAdminEmailChange} className="space-y-4 max-w-md">
                   <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">{t("Địa chỉ Email")}</label>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Địa chỉ Email")}</label>
                     <input 
                       type="email"
                       value={adminEmail}
@@ -13010,21 +13189,26 @@ function AdminDashboard() {
                     <p className="text-emerald-600 text-sm font-bold bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2">{adminEmailSuccess}</p>
                   )}
                   
-                  <div className="pt-2">
-                    <button type="submit" className="bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] px-6 py-3 rounded-xl font-medium">{t("Cập nhật Email")}</button>
+                  <div className="pt-4 border-t border-stone-100 mt-6">
+                    <button type="submit" className="bg-stone-900 text-white shadow-sm hover:shadow-md hover:bg-stone-800 active:scale-[0.98] px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer">{t("Cập nhật Email")}</button>
                   </div>
                 </form>
               </div>
 
-              <div className="h-px bg-stone-200 w-full"></div>
+              <div className="h-px bg-stone-100 w-full"></div>
 
               <div>
-                <h2 className="text-2xl font-bold mb-2 text-stone-900 flex items-center gap-2"><Lock className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />{t("Đổi Mật Khẩu Quản Trị (Admin)")}</h2>
-                <p className="text-sm text-stone-500 mb-6">{t("Bạn sẽ dùng mật khẩu này để đăng nhập vào trang quản trị AdminCP này.")}</p>
+                <div className="flex flex-col gap-1 mb-6 border-b border-stone-100 pb-4">
+                  <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+                    <Lock className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />
+                    {t("Đổi Mật Khẩu Quản Trị (Admin)")}
+                  </h2>
+                  <p className="text-xs text-stone-500 mt-1">{t("Bạn sẽ dùng mật khẩu này để đăng nhập vào trang quản trị AdminCP này.")}</p>
+                </div>
                 
                 <form onSubmit={handleAdminPasswordChange} className="space-y-4 max-w-md">
                   <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">{t("Mật khẩu cũ")}</label>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Mật khẩu cũ")}</label>
                     <PasswordInput 
                       value={oldAdminPass}
                       onChange={(e: any) => setOldAdminPass(e.target.value)}
@@ -13032,10 +13216,10 @@ function AdminDashboard() {
                       placeholder={t("Nhập mật khẩu hiện tại")}
                     />
                   </div>
-                                    <div>
+                  <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-bold text-stone-700">{t("Mật khẩu mới")}</label>
-                      <button type="button" onClick={() => { const p = Math.random().toString(36).slice(-8); setNewAdminPass(p); setConfirmAdminPass(p); }} className="text-xs text-rose-500 hover:text-rose-600 font-bold flex items-center gap-1"><Sparkles className="w-3 h-3" />{t("Tự sinh Ngẫu Nhiên")}</button>
+                      <label className="block text-sm font-semibold text-stone-700">{t("Mật khẩu mới")}</label>
+                      <button type="button" onClick={() => { const p = Math.random().toString(36).slice(-8); setNewAdminPass(p); setConfirmAdminPass(p); }} className="text-xs text-rose-500 hover:text-rose-600 font-bold flex items-center gap-1 cursor-pointer"><Sparkles className="w-3 h-3" />{t("Tự sinh Ngẫu Nhiên")}</button>
                     </div>
                     <PasswordInput 
                       value={newAdminPass}
@@ -13045,7 +13229,7 @@ function AdminDashboard() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">{t("Xác nhận mật khẩu mới")}</label>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Xác nhận mật khẩu mới")}</label>
                     <PasswordInput 
                       value={confirmAdminPass}
                       onChange={(e: any) => setConfirmAdminPass(e.target.value)}
@@ -13061,28 +13245,35 @@ function AdminDashboard() {
                     <p className="text-emerald-600 text-sm font-bold bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2">{adminPassSuccess}</p>
                   )}
 
-                  <button type="submit" className="bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] px-6 py-3 rounded-xl font-medium hover:bg-stone-800 transition-colors">
-                    {t("Đổi mật khẩu Admin")}
-                  </button>
+                  <div className="pt-4 border-t border-stone-100 mt-6">
+                    <button type="submit" className="bg-stone-900 text-white shadow-sm hover:shadow-md hover:bg-stone-800 active:scale-[0.98] px-12 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer min-w-[180px]">
+                      {t("Cập Nhật")}
+                    </button>
+                  </div>
                 </form>
               </div>
 
-              <hr className="border-stone-200" />
+              <div className="h-px bg-stone-100 w-full"></div>
 
               <div>
-                <h2 className="text-2xl font-bold mb-2 text-stone-900 flex items-center gap-2"><Lock className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />{t("Thiết Lập Mật Khẩu Thành Viên")}</h2>
-                <p className="text-sm text-stone-500 mb-6">
-                  {t("Người dùng nhập mật khẩu này tại trang")}{" "}
-                  <code className="bg-stone-100 px-1.5 py-0.5 rounded font-mono text-red-600 font-bold">
-                    {`${data?.extension || getArtistExtensionFromUrl() || 'artist'}.chorus.vn/mem`}
-                  </code>{" "}
-                  {t("để nghe tự do mọi album/bài hát bị khóa mà không cần nhập mật khẩu.")}
-                </p>
+                <div className="flex flex-col gap-1 mb-6 border-b border-stone-100 pb-4">
+                  <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+                    <Lock className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />
+                    {t("Thiết Lập Mật Khẩu Thành Viên")}
+                  </h2>
+                  <p className="text-xs text-stone-500 mt-1">
+                    {t("Người dùng nhập mật khẩu này tại trang")}{" "}
+                    <code className="bg-stone-100 px-1.5 py-0.5 rounded font-mono text-red-600 font-bold">
+                      {`${data?.extension || getArtistExtensionFromUrl() || 'artist'}.chorus.vn/mem`}
+                    </code>{" "}
+                    {t("để nghe tự do mọi album/bài hát bị khóa mà không cần nhập mật khẩu.")}
+                  </p>
+                </div>
                 
                 <form onSubmit={handleMemberPasswordChange} className="space-y-4 max-w-md">
-                                    <div>
+                  <div>
                     <div className="flex items-center justify-end mb-2">
-                      <button type="button" onClick={() => setMemberPassInput(Math.random().toString(36).slice(-8))} className="text-xs text-rose-500 hover:text-rose-600 font-bold flex items-center gap-1"><Sparkles className="w-3 h-3" />{t("Tự sinh Ngẫu Nhiên")}</button>
+                      <button type="button" onClick={() => setMemberPassInput(Math.random().toString(36).slice(-8))} className="text-xs text-rose-500 hover:text-rose-600 font-bold flex items-center gap-1 cursor-pointer"><Sparkles className="w-3 h-3" />{t("Tự sinh Ngẫu Nhiên")}</button>
                     </div>
                     <PasswordInput 
                       value={memberPassInput}
@@ -13099,9 +13290,11 @@ function AdminDashboard() {
                     <p className="text-emerald-600 text-sm font-bold bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2">{memberPassSuccess}</p>
                   )}
 
-                  <button type="submit" className="bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] px-6 py-3 rounded-xl font-medium hover:bg-stone-800 transition-colors">
-                    {t("Cập nhật mật khẩu Thành viên")}
-                  </button>
+                  <div className="pt-4 border-t border-stone-100 mt-6">
+                    <button type="submit" className="bg-stone-900 text-white shadow-sm hover:shadow-md hover:bg-stone-800 active:scale-[0.98] px-12 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer min-w-[180px]">
+                      {t("Cập Nhật")}
+                    </button>
+                  </div>
                 </form>
               </div>
             </div>
@@ -13109,7 +13302,7 @@ function AdminDashboard() {
           )}
 
           {activeTab === 'database' && (
-            <motion.div key="database" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+            <motion.div key="database" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
             <AdminDatabaseSettings artistUsername={data?.username} />
             </motion.div>
           )}
@@ -13117,12 +13310,12 @@ function AdminDashboard() {
 
 
           {activeTab === 'reposts' && (
-            <motion.div key="reposts" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+            <motion.div key="reposts" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
             <div className="space-y-6 py-1">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-stone-900 flex items-center gap-2"><Share2 className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />{t("Đăng lại")} ({otherSongs.length})</h2>
-                  <p className="text-sm text-stone-500 mt-1">{t("Danh sách các bài hát của bạn đang được các nghệ sĩ khác đăng tải lên kênh của họ hoặc liên kết từ URL ngoài.")}</p>
+                  <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2"><Share2 className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />{t("Đăng lại")} ({otherSongs.length})</h2>
+                  <p className="text-xs text-stone-500 mt-1">{t("Danh sách các bài hát của bạn đang được các nghệ sĩ khác đăng tải lên kênh của họ hoặc liên kết từ URL ngoài.")}</p>
                 </div>
                 <button
                   type="button"
@@ -13275,7 +13468,7 @@ function AdminDashboard() {
           )}
 
           {activeTab === 'tickets' && (
-            <motion.div key="tickets" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+            <motion.div key="tickets" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
             <div className="space-y-6 py-1">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-stone-100 pb-4">
                 <div>
@@ -13578,7 +13771,7 @@ function AdminDashboard() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">{t("Loại yêu cầu")}</label>
+                    <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-2">{t("Loại yêu cầu")}</label>
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         type="button"
@@ -13600,7 +13793,7 @@ function AdminDashboard() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">{t("Mô tả lý do / Nội dung chi tiết")}</label>
+                    <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-2">{t("Mô tả lý do / Nội dung chi tiết")}</label>
                     <textarea
                       value={reportDesc}
                       onChange={(e) => setReportDesc(e.target.value)}
@@ -13683,7 +13876,7 @@ function AdminDashboard() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">{t("Tên playlist")}</label>
+                    <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-2">{t("Tên playlist")}</label>
                     <input
                       type="text"
                       value={newPlaylistTitle}
@@ -13732,20 +13925,25 @@ function AdminDashboard() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">{t("Loại feedback")}</label>
-                    <select
-                      value={feedbackType}
-                      onChange={(e: any) => setFeedbackType(e.target.value)}
-                      className="w-full text-sm border border-stone-300 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-transparent cursor-pointer"
-                    >
-                      <option value="bug">{t("Báo Lỗi")}</option>
-                      <option value="feature">{t("Góp ý tính năng")}</option>
-                      <option value="account">{t("Báo Cáo Tài Khoản")}</option>
-                    </select>
+                    <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-2">{t("Loại feedback")}</label>
+                    <div className="relative">
+                      <select
+                        value={feedbackType}
+                        onChange={(e: any) => setFeedbackType(e.target.value)}
+                        className="w-full text-sm border border-stone-300 rounded-xl pl-4 pr-10 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-stone-900 appearance-none cursor-pointer hover:border-stone-400 transition-colors shadow-xs"
+                      >
+                        <option value="bug">{t("Báo Lỗi")}</option>
+                        <option value="feature">{t("Góp ý tính năng")}</option>
+                        <option value="account">{t("Báo Cáo Tài Khoản")}</option>
+                      </select>
+                      <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
+                      </div>
+                    </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">{t("Tiêu đề")}</label>
+                    <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-2">{t("Tiêu đề")}</label>
                     <input
                       type="text"
                       value={feedbackTitle}
@@ -13757,7 +13955,7 @@ function AdminDashboard() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">{t("Nội dung mô tả")}</label>
+                    <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-2">{t("Nội dung mô tả")}</label>
                     <textarea
                       value={feedbackDesc}
                       onChange={(e) => setFeedbackDesc(e.target.value)}
@@ -13883,6 +14081,92 @@ function AdminDashboard() {
   );
 }
 
+interface CustomSelectOption {
+  value: string;
+  label: string;
+}
+
+function CustomSelect({
+  value,
+  onChange,
+  options,
+  placeholder = '',
+  className = '',
+  dropdownClassName = ''
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  options: CustomSelectOption[];
+  placeholder?: string;
+  className?: string;
+  dropdownClassName?: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find(o => o.value === value);
+
+  return (
+    <div className={`relative ${className}`} ref={ref}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between border border-stone-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-stone-950/10 focus:border-stone-900 transition-all cursor-pointer shadow-xs text-left"
+      >
+        <span className="truncate text-stone-700 font-semibold text-sm">
+          {selectedOption ? selectedOption.label : placeholder}
+        </span>
+        <svg
+          className={`w-4 h-4 text-stone-500 transition-transform duration-200 shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth="2.5"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className={`absolute top-full left-0 right-0 mt-1.5 bg-white border border-stone-200 rounded-xl shadow-xl z-[150] py-1.5 max-h-60 overflow-y-auto custom-scrollbar ${dropdownClassName}`}>
+          {options.map(opt => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => {
+                onChange(opt.value);
+                setIsOpen(false);
+              }}
+              className={`w-full text-left px-4 py-2.5 text-sm transition-all flex items-center justify-between ${
+                opt.value === value
+                  ? 'bg-stone-900 text-white font-bold'
+                  : 'text-stone-700 hover:bg-stone-50'
+              }`}
+            >
+              <span className="truncate">{opt.label}</span>
+              {opt.value === value && (
+                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function PlaylistSelect({ selectedIds, onChange }: { selectedIds: string[], onChange: (ids: string[]) => void }) {
   const { t } = useAdminTranslation();
   const [playlists, setPlaylists] = useState<any[]>([]);
@@ -13942,18 +14226,16 @@ function PlaylistSelect({ selectedIds, onChange }: { selectedIds: string[], onCh
   };
 
   return (
-    <div className="space-y-4 relative" ref={dropdownRef}>
-      <label className="block text-sm font-bold text-stone-700">{t("Thêm vào Playlist")}</label>
-      <div className="relative">
-         <button type="button" onClick={() => setIsOpen(!isOpen)} className="w-full bg-white border border-stone-300 rounded-xl px-4 py-3 flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow text-left">
-           <span className="truncate">{selectedIds.length > 0 ? `${selectedIds.length} playlist được chọn` : t("Chọn Playlist")}</span>
-           <svg className={`w-5 h-5 text-stone-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-           </svg>
-         </button>
-         
-         {isOpen && (
-           <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-stone-200 rounded-xl shadow-2xl z-[100] p-2 space-y-1 max-h-80 overflow-y-auto custom-scrollbar">
+    <div className="relative" ref={dropdownRef}>
+      <button type="button" onClick={() => setIsOpen(!isOpen)} className="w-full h-[60px] bg-white border border-stone-300 rounded-xl px-4 py-3 flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow text-left">
+        <span className="truncate text-stone-700 font-medium">{selectedIds.length > 0 ? `${selectedIds.length} playlist được chọn` : t("Chọn Playlist")}</span>
+        <svg className={`w-5 h-5 text-stone-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-stone-200 rounded-xl shadow-2xl z-[100] p-2 space-y-1 max-h-80 overflow-y-auto custom-scrollbar">
               {playlists.map(p => (
                  <label className="flex items-center gap-3 px-3 py-2.5 hover:bg-stone-50 rounded-lg cursor-pointer transition-colors" key={p.id}>
                     <input type="checkbox" checked={selectedIds.includes(p.id)} onChange={(e) => toggle(p.id, e)} className="w-[18px] h-[18px] rounded border-stone-300 text-stone-900 focus:ring-stone-900" />
@@ -13966,7 +14248,6 @@ function PlaylistSelect({ selectedIds, onChange }: { selectedIds: string[], onCh
               </div>
            </div>
          )}
-      </div>
     </div>
   );
 }
@@ -14087,20 +14368,12 @@ function AchievementEditor({ achievements, onChange }: { achievements: Achieveme
             <div key={index} className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl border border-stone-200 shadow-sm relative group overflow-hidden items-end">
               <div className="w-full sm:w-[220px] shrink-0">
                 <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-2">{t("Loại thành tích")}</label>
-                <div className="relative">
-                   <select 
-                     value={ach.type} 
-                     onChange={e => handleUpdate(index, 'type', e.target.value)}
-                     className="w-full border border-stone-300 rounded-lg px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white appearance-none cursor-pointer pr-20 hover:border-stone-400 transition-colors"
-                   >
-                     {Object.entries(achievementTypes).map(([k, v]) => (
-                       <option key={k} value={k}>{v}</option>
-                     ))}
-                   </select>
-                   <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                   </div>
-                </div>
+                <CustomSelect
+                  value={ach.type} 
+                  onChange={val => handleUpdate(index, 'type', val)}
+                  options={Object.entries(achievementTypes).map(([k, v]) => ({ value: k, label: v }))}
+                  className="w-full"
+                />
               </div>
               <div className="flex-1 w-full relative">
                 <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-2">{t("Giá trị / Nội dung chi tiết")}</label>
@@ -14277,6 +14550,7 @@ function AdminCreateDemo() {
 
   const [template, setTemplate] = useState('1');
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
+  const [status, setStatus] = useState('public');
 
   const [linkType, setLinkType] = useState<'direct'|'indirect'>('direct');
   const [isReleased, setIsReleased] = useState(false);
@@ -14637,18 +14911,10 @@ function AdminCreateDemo() {
     formData.set('linkYoutube', linkYoutube);
     formData.set('linkDrive', linkDrive);
 
-    const statusEl = document.querySelector('select[name="status"]') as HTMLSelectElement;
-
     formData.set('password', password);
-    formData.set('status', statusEl?.value || 'public');
+    formData.set('status', status);
     formData.set('isReleased', isReleased ? 'true' : 'false');
     formData.set('isDraft', isDraft ? 'true' : 'false');
-    formData.set('isBrand', isBrand ? 'true' : 'false');
-    formData.set('brandName', brandName);
-    formData.set('brandBrief', brandBrief);
-    formData.set('brandColor', brandColor);
-    formData.set('brandLogoUrl', uploadedBrandLogoUrl);
-    formData.set('brandReferenceVideos', JSON.stringify(brandReferenceVideos));
     formData.set('isBrand', isBrand ? 'true' : 'false');
     formData.set('brandName', brandName);
     formData.set('brandBrief', brandBrief);
@@ -14696,28 +14962,58 @@ function AdminCreateDemo() {
       animate={{ clipPath: 'circle(150% at 92% 92%)', opacity: 1 }}
       exit={{ clipPath: 'circle(0% at 92% 92%)', opacity: 0 }}
       transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
-      className="min-h-screen bg-stone-100 text-stone-900 font-sans py-12 px-4 origin-bottom-right"
+      className="min-h-screen bg-stone-100 text-stone-900 font-sans py-6 px-4 origin-bottom-right"
     >
       <div className="max-w-2xl mx-auto">
-        <Link to={getAdminLink() + (linkType === 'indirect' ? '?subtab=landing_pages' : '')} className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-900 font-medium mb-8 transition-colors">
+        <Link to={getAdminLink() + (linkType === 'indirect' ? '?subtab=landing_pages' : '')} className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-900 font-medium mb-4 transition-colors">
           <ArrowLeft className="w-5 h-5" /> {t("Trở về Dashboard")}
         </Link>
         
-        <div className="bg-white p-8 rounded-3xl border border-stone-200 shadow-xl shadow-stone-200/50">
+        <div className="bg-white p-5 md:p-6 rounded-2xl border border-stone-200 shadow-xl shadow-stone-200/50">
           
-          <div className="flex bg-stone-100 p-1 rounded-xl mb-8 w-full max-w-xs mx-auto">
-            <button type="button" onClick={() => setLinkType('direct')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${linkType === 'direct' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}>{t("Trực Tiếp")}</button>
-            <button type="button" onClick={() => setLinkType('indirect')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${linkType === 'indirect' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}>Landing Page</button>
+          <div className="flex bg-stone-100 p-1 rounded-xl mb-5 w-full max-w-xs mx-auto relative">
+            <button
+              type="button"
+              onClick={() => setLinkType('direct')}
+              className={`flex-1 py-2 text-sm font-bold rounded-lg relative transition-colors z-10 ${
+                linkType === 'direct' ? 'text-stone-900' : 'text-stone-500 hover:text-stone-700'
+              }`}
+            >
+              {linkType === 'direct' && (
+                <motion.span
+                  layoutId="linkTypeActiveBgAdd"
+                  className="absolute inset-0 bg-white rounded-lg shadow-xs z-0"
+                  transition={{ type: 'tween', ease: 'easeInOut', duration: 0.32 }}
+                />
+              )}
+              <span className="relative z-10">{t("Trực Tiếp")}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setLinkType('indirect')}
+              className={`flex-1 py-2 text-sm font-bold rounded-lg relative transition-colors z-10 ${
+                linkType === 'indirect' ? 'text-stone-900' : 'text-stone-500 hover:text-stone-700'
+              }`}
+            >
+              {linkType === 'indirect' && (
+                <motion.span
+                  layoutId="linkTypeActiveBgAdd"
+                  className="absolute inset-0 bg-white rounded-lg shadow-xs z-0"
+                  transition={{ type: 'tween', ease: 'easeInOut', duration: 0.32 }}
+                />
+              )}
+              <span className="relative z-10">Landing Page</span>
+            </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6 create-demo-form">
+          <form onSubmit={handleSubmit} className="space-y-4 create-demo-form">
             <div>
-              <label className="block text-sm font-bold text-stone-700 mb-2">{t("Tên bài hát")}<span className="text-red-500">*</span></label>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tên bài hát")}<span className="text-red-500">*</span></label>
               <input name="title" required value={title} onChange={e => setTitle(e.target.value)} placeholder={t("Nhập tên bài hát mới...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-stone-700 mb-2">{t("Phần mở rộng (Link bài hát)")}</label>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Phần mở rộng (Link bài hát)")}</label>
               <div className="flex items-center gap-2 border border-stone-300 rounded-xl px-4 py-3 bg-white focus-within:border-stone-900 focus-within:ring-2 focus-within:ring-stone-900 transition-shadow">
                 <span className="text-stone-400 font-mono text-sm opacity-60 hidden sm:inline">/</span>
                 <input name="slug" value={slug} onChange={e => {setSlug(generateSlug(e.target.value)); setIsSlugEdited(true);}} placeholder="ten-bai-hat..." className="w-full focus:outline-none bg-transparent" />
@@ -14727,22 +15023,22 @@ function AdminCreateDemo() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ca sĩ thể hiện")}</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Ca sĩ thể hiện")}</label>
                 <input name="singer" value={singer} onChange={e => setSinger(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
               </div>
               <div>
-                <label className="block text-sm font-bold text-stone-700 mb-2">{t("Sáng tác")}</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Sáng tác")}</label>
                 <input name="composer" value={composer} onChange={e => setComposer(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
               </div>
               <div>
-                <label className="block text-sm font-bold text-stone-700 mb-2">{t("Music Producer")}</label>
-                <input name="musicProducer" value={musicProducer} onChange={e => setMusicProducer(e.target.value)} placeholder="Chưa rõ" className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Music Producer")}</label>
+                <input name="musicProducer" value={musicProducer} onChange={e => setMusicProducer(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-bold text-stone-700 mb-2">{t("Bìa Đĩa (Dùng làm thumbnail)")}</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Bìa Đĩa (Dùng làm thumbnail)")}</label>
                 <div 
                   onDragOver={(e) => { e.preventDefault(); setIsDraggingCover(true); }}
                   onDragLeave={() => setIsDraggingCover(false)}
@@ -14767,7 +15063,7 @@ function AdminCreateDemo() {
                   )}
                   <div className="flex-1 min-w-[150px]">
                     <div className="flex items-center gap-2">
-                      <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${coverUploadProgress === 100 || uploadedCoverUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('coverCreateUpload')?.click()}>
+                      <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${coverUploadProgress === 100 || uploadedCoverUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('coverCreateUpload')?.click()}>
                           <Upload className="w-4 h-4"/>
                           <span className="max-w-[150px] truncate">{coverUploadProgress > 0 && coverUploadProgress < 100 ? `Đang tải ${coverUploadProgress}%` : (uploadedCoverName ? formatFileName(uploadedCoverName) : t("Chọn bìa đĩa"))}</span>
                       </button>
@@ -14793,7 +15089,7 @@ function AdminCreateDemo() {
  
               {linkType === 'direct' && (
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ảnh Nền (Nếu có)")}</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Ảnh Nền (Nếu có)")}</label>
                   <div 
                     onDragOver={(e) => { e.preventDefault(); setIsDraggingBg(true); }}
                     onDragLeave={() => setIsDraggingBg(false)}
@@ -14818,7 +15114,7 @@ function AdminCreateDemo() {
                     )}
                     <div className="flex-1 min-w-[150px]">
                       <div className="flex items-center gap-2">
-                        <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${bgUploadProgress === 100 || uploadedBgUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('bgCreateUpload')?.click()}>
+                        <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${bgUploadProgress === 100 || uploadedBgUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('bgCreateUpload')?.click()}>
                             <Upload className="w-4 h-4"/>
                             <span className="max-w-[150px] truncate">{bgUploadProgress > 0 && bgUploadProgress < 100 ? `Đang tải ${bgUploadProgress}%` : (uploadedBgName ? formatFileName(uploadedBgName) : t("Chọn ảnh nền"))}</span>
                         </button>
@@ -14848,7 +15144,7 @@ function AdminCreateDemo() {
               <>
                 <div className="grid grid-cols-1 gap-6">
                    <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">{t("File Nhạc (Audio)")}<span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("File Nhạc (Audio)")}<span className="text-red-500">*</span></label>
                   <div 
                     onDragOver={(e) => { e.preventDefault(); setIsDraggingAudio(true); }}
                     onDragLeave={() => setIsDraggingAudio(false)}
@@ -14874,7 +15170,7 @@ function AdminCreateDemo() {
                       )}
                       <div className="flex-1 min-w-[150px]">
                         <div className="flex items-center gap-2">
-                          <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${audioUploadProgress === 100 || (uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com')) ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('audioCreateUpload')?.click()}>
+                          <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${audioUploadProgress === 100 || (uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com')) ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('audioCreateUpload')?.click()}>
                               <Upload className="w-4 h-4"/>
                               <span className="max-w-[200px] truncate">{audioUploadProgress > 0 && audioUploadProgress < 100 ? `Đang tải ${audioUploadProgress}%` : (uploadedAudioName ? formatFileName(uploadedAudioName) : t("Chọn file nhạc"))}</span>
                           </button>
@@ -14902,20 +15198,20 @@ function AdminCreateDemo() {
                 <div className="bg-stone-50 p-6 rounded-2xl border border-stone-200 mt-4 mb-4">
                   <div className="flex items-center gap-3 mb-2">
                     <input type="checkbox" id="isBrandCreateDirect" checked={isBrand} onChange={e => setIsBrand(e.target.checked)} className="w-5 h-5 accent-indigo-500 rounded border-stone-300" />
-                    <label htmlFor="isBrandCreateDirect" className="font-bold text-stone-700 text-sm cursor-pointer">{t("Là nhạc thương hiệu (Brand Music)")}</label>
+                    <label htmlFor="isBrandCreateDirect" className="font-semibold text-stone-700 text-sm cursor-pointer">{t("Là nhạc thương hiệu (Brand Music)")}</label>
                   </div>
                   {isBrand && (
                     <div className="grid grid-cols-1 gap-4 pt-2">
                       <div>
-                        <label className="block text-sm font-bold text-stone-700 mb-2">{t("Tên đối tác")}<span className="text-red-500">*</span></label>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tên đối tác")}<span className="text-red-500">*</span></label>
                         <input type="text" value={brandName} onChange={e => setBrandName(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder="VD: Vingroup" />
                       </div>
                       <div>
-                        <label className="block text-sm font-bold text-stone-700 mb-2">{t("Brief khách hàng (nếu có)")}</label>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Brief khách hàng (nếu có)")}</label>
                         <textarea rows={3} value={brandBrief} onChange={e => setBrandBrief(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder={t("Nhập brief khách hàng...")} />
                       </div>
                       <div>
-                        <label className="block text-sm font-bold text-stone-700 mb-2 flex justify-between items-center">
+                        <label className="block text-sm font-semibold text-stone-700 mb-2 flex justify-between items-center">
                           <span>{t("Video Tham Khảo (Tối đa 5 video)")}</span>
                           {brandReferenceVideos.length < 5 && (
                             <button type="button" onClick={() => setBrandReferenceVideos([...brandReferenceVideos, ""])} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-indigo-200"><Plus className="w-3 h-3"/>{t("Thêm video")}</button>
@@ -14929,7 +15225,7 @@ function AdminCreateDemo() {
                         ))}
                       </div>
                       <div>
-                        <label className="block text-sm font-bold text-stone-700 mb-2">{t("Logo đối tác (Upload)")}</label>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Logo đối tác (Upload)")}</label>
                         <div 
                           onDragOver={(e) => { e.preventDefault(); setIsDraggingBrandLogo(true); }}
                           onDragLeave={() => setIsDraggingBrandLogo(false)}
@@ -14961,7 +15257,7 @@ function AdminCreateDemo() {
                           )}
                           <div className="flex-1 min-w-[150px]">
                              <div className="flex items-center gap-2">
-                               <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${brandLogoUploadProgress === 100 || uploadedBrandLogoUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('brandLogoCreateDirectUpload')?.click()}>
+                               <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${brandLogoUploadProgress === 100 || uploadedBrandLogoUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('brandLogoCreateDirectUpload')?.click()}>
                                    <Upload className="w-4 h-4"/>
                                    <span className="max-w-[150px] truncate">{brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? `Đang tải ${brandLogoUploadProgress}%` : (uploadedBrandLogoName ? formatFileName(uploadedBrandLogoName) : t("Chọn logo"))}</span>
                                </button>
@@ -15000,7 +15296,7 @@ function AdminCreateDemo() {
 
                 <div>
                   <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
-                    <label className="block text-sm font-bold text-stone-700">{t("Lời bài hát")}</label>
+                    <label className="block text-sm font-semibold text-stone-700">{t("Lời bài hát")}</label>
                     <div className="flex flex-wrap gap-1.5 items-center">
                       {[
                         { label: 'Intro', value: 'Intro', className: 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200' },
@@ -15037,13 +15333,15 @@ function AdminCreateDemo() {
 
               <div className="grid grid-cols-1 gap-6 pt-4 border-t border-stone-100">
                   <div className="w-full">
-                    <label className="block text-sm font-bold text-stone-700 mb-2">{t("Template Giao Diện")}</label>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Template Giao Diện")}</label>
                     <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 min-w-0">
-                      <select name="templateCreate" value={template} onChange={(e) => setTemplate(e.target.value)} className="w-full min-w-0 border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white shadow-sm">
-                        {templateConfigs.map((tc: any) => (
-                          <option key={tc.id} value={tc.id}>{t(tc.name)}</option>
-                        ))}
-                      </select>
+                      <CustomSelect
+                        value={template}
+                        onChange={val => setTemplate(val)}
+                        options={templateConfigs.map((tc: any) => ({ value: tc.id, label: t(tc.name) }))}
+                        className="w-full"
+                      />
+                      <input type="hidden" name="templateCreate" value={template} />
                       <button 
                         type="button" 
                         disabled={!title.trim()}
@@ -15062,20 +15360,20 @@ function AdminCreateDemo() {
                 <div className="bg-stone-50 p-6 rounded-2xl border border-stone-200 mt-4 mb-4">
                   <div className="flex items-center gap-3 mb-2">
                     <input type="checkbox" id="isBrandCreateIndirect" checked={isBrand} onChange={e => setIsBrand(e.target.checked)} className="w-5 h-5 accent-indigo-500 rounded border-stone-300" />
-                    <label htmlFor="isBrandCreateIndirect" className="font-bold text-stone-700 text-sm cursor-pointer">{t("Là nhạc thương hiệu (Brand Music)")}</label>
+                    <label htmlFor="isBrandCreateIndirect" className="font-semibold text-stone-700 text-sm cursor-pointer">{t("Là nhạc thương hiệu (Brand Music)")}</label>
                   </div>
                   {isBrand && (
                     <div className="grid grid-cols-1 gap-4 pt-2">
                       <div>
-                        <label className="block text-sm font-bold text-stone-700 mb-2">{t("Tên đối tác")}<span className="text-red-500">*</span></label>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tên đối tác")}<span className="text-red-500">*</span></label>
                         <input type="text" value={brandName} onChange={e => setBrandName(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder="VD: Vingroup" />
                       </div>
                       <div>
-                        <label className="block text-sm font-bold text-stone-700 mb-2">{t("Brief khách hàng (nếu có)")}</label>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Brief khách hàng (nếu có)")}</label>
                         <textarea rows={3} value={brandBrief} onChange={e => setBrandBrief(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder={t("Nhập brief khách hàng...")} />
                       </div>
                       <div>
-                        <label className="block text-sm font-bold text-stone-700 mb-2 flex justify-between items-center">
+                        <label className="block text-sm font-semibold text-stone-700 mb-2 flex justify-between items-center">
                           <span>{t("Video Tham Khảo (Tối đa 5 video)")}</span>
                           {brandReferenceVideos.length < 5 && (
                             <button type="button" onClick={() => setBrandReferenceVideos([...brandReferenceVideos, ""])} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-indigo-200"><Plus className="w-3 h-3"/>{t("Thêm video")}</button>
@@ -15089,7 +15387,7 @@ function AdminCreateDemo() {
                         ))}
                       </div>
                       <div>
-                        <label className="block text-sm font-bold text-stone-700 mb-2">{t("Logo đối tác (Upload)")}</label>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Logo đối tác (Upload)")}</label>
                         <div 
                           onDragOver={(e) => { e.preventDefault(); setIsDraggingBrandLogo(true); }}
                           onDragLeave={() => setIsDraggingBrandLogo(false)}
@@ -15121,7 +15419,7 @@ function AdminCreateDemo() {
                           )}
                           <div className="flex-1 min-w-[150px]">
                              <div className="flex items-center gap-2">
-                               <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${brandLogoUploadProgress === 100 || uploadedBrandLogoUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('brandLogoCreateIndirectUpload')?.click()}>
+                               <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${brandLogoUploadProgress === 100 || uploadedBrandLogoUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('brandLogoCreateIndirectUpload')?.click()}>
                                    <Upload className="w-4 h-4"/>
                                    <span className="max-w-[150px] truncate">{brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? `Đang tải ${brandLogoUploadProgress}%` : (uploadedBrandLogoName ? formatFileName(uploadedBrandLogoName) : t("Chọn logo"))}</span>
                                </button>
@@ -15162,23 +15460,23 @@ function AdminCreateDemo() {
                 <h3 className="font-bold text-stone-800 text-lg">{t("Liên kết phát nhạc")}</h3>
                 <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">Zing MP3</label>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">Zing MP3</label>
                     <input name="linkZing" value={linkZing} onChange={e => setLinkZing(e.target.value)} placeholder={t("Nhập link Zing MP3...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">Spotify</label>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">Spotify</label>
                     <input name="linkSpotify" value={linkSpotify} onChange={e => setLinkSpotify(e.target.value)} placeholder={t("Nhập link Spotify...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">Apple Music</label>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">Apple Music</label>
                     <input name="linkApple" value={linkApple} onChange={e => setLinkApple(e.target.value)} placeholder={t("Nhập link Apple Music...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">YouTube Music</label>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">YouTube Music</label>
                     <input name="linkYoutubeMusic" value={linkYoutubeMusic} onChange={e => setLinkYoutubeMusic(e.target.value)} placeholder={t("Nhập link YouTube Music...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">YouTube MV</label>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">YouTube MV</label>
                     <input name="linkYoutube" value={linkYoutube} onChange={e => setLinkYoutube(e.target.value)} placeholder={t("Nhập link YouTube MV...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
                   </div>
                 </div>
@@ -15191,7 +15489,7 @@ function AdminCreateDemo() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-stone-100">
                   {!isReleased ? (
                     <div>
-                      <label className="block text-sm font-bold text-stone-700 mb-2">{t("Mật khẩu bảo vệ (tùy chọn)")}</label>
+                      <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Mật khẩu bảo vệ (tùy chọn)")}</label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-3.5 w-5 h-5 text-stone-400" />
                         <input name="password" value={password} onChange={e => setPassword(e.target.value)} placeholder={t("Bỏ trống nếu không cần")} className="w-full border border-stone-300 rounded-xl pl-10 pr-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
@@ -15203,18 +15501,23 @@ function AdminCreateDemo() {
                     </div>
                   )}
                    <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">{t("Hiển thị (Trạng thái phát hành)")}</label>
-                     <select name="status" className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white">
-                      <option value="public">{t("Công khai")}</option>
-                      <option value="hidden">{t("Ẩn")}</option>
-                    </select>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Hiển thị (Trạng thái phát hành)")}</label>
+                     <CustomSelect
+                       value={status}
+                       onChange={val => setStatus(val)}
+                       options={[
+                         { value: 'public', label: t("Công khai") },
+                         { value: 'hidden', label: t("Ẩn") }
+                       ]}
+                     />
+                     <input type="hidden" name="status" value={status} />
                   </div>
                 </div>
 
                 <AchievementEditor achievements={achievements} onChange={setAchievements} />
 
                 <div className="mt-6 mb-6">
-                  <label className="block text-sm font-bold text-stone-700 mb-2">{t("Link Google Drive tải nhạc")}</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Link Google Drive tải nhạc")}</label>
                   <div className="relative">
                     <FolderDown className="absolute left-3 top-3.5 w-5 h-5 text-stone-400" />
                     <input 
@@ -15238,12 +15541,12 @@ function AdminCreateDemo() {
                           setPassword('');
                         }
                       }} className="w-6 h-6 rounded border-stone-300 text-stone-900 focus:ring-stone-900 transition-all cursor-pointer" />
-                      <label htmlFor="isReleasedForm" className="block text-sm font-bold text-stone-700 cursor-pointer select-none mb-0">{t("Đã phát hành")}</label>
+                      <label htmlFor="isReleasedForm" className="block text-sm font-semibold text-stone-700 cursor-pointer select-none mb-0">{t("Đã phát hành")}</label>
                     </div>
                     
                     {isReleased && (
                       <div className="flex items-center gap-2">
-                        <input name="releaseYear" value={releaseYear} onChange={e => setReleaseYear(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder={t("2026")} className="w-16 border border-stone-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow text-sm text-center bg-white" maxLength={4} />
+                        <input name="releaseYear" value={releaseYear} onChange={e => setReleaseYear(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder={t("2026")} className="w-32 border border-stone-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow text-sm text-center bg-white" maxLength={4} />
                       </div>
                     )}
                   </div>
@@ -15255,12 +15558,12 @@ function AdminCreateDemo() {
               </>
             )}
 
-            <div className="flex flex-col sm:flex-row gap-4 mt-8">
+            <div className="flex flex-col sm:flex-row gap-3 mt-6 sm:justify-end">
               <button 
                 disabled={loading} 
                 type="button" 
                 onClick={() => saveDemo(true)}
-                className="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-900 border border-stone-300 text-lg font-bold py-4 rounded-xl transition-colors disabled:opacity-80 flex justify-center items-center gap-2"
+                className="btn-glass-draft text-stone-900 text-sm sm:text-base font-bold py-2.5 px-5 sm:px-6 rounded-xl transition-all duration-300 disabled:opacity-80 flex justify-center items-center gap-2 active:scale-[0.98] shadow-sm sm:flex-initial sm:min-w-[150px]"
               >
                 <FileText className="w-5 h-5 text-amber-500" />
                 {loading ? t("Đang lưu...") : t("Lưu Bản Nháp")}
@@ -15270,7 +15573,7 @@ function AdminCreateDemo() {
                 disabled={loading} 
                 type="button" 
                 onClick={() => saveDemo(false)}
-                className="flex-1 bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] text-lg font-bold py-4 rounded-xl transition-colors disabled:opacity-80 flex justify-center items-center gap-2"
+                className="btn-black-gradient-blur text-white text-sm sm:text-base font-bold py-2.5 px-5 sm:px-6 rounded-xl disabled:opacity-80 flex justify-center items-center gap-2 active:scale-[0.98] sm:flex-initial sm:min-w-[150px]"
               >
                 <Sparkles className="w-5 h-5 text-yellow-400" />
                 {loading ? t("Đang xuất bản...") : t("Xuất Bản")}
@@ -15289,7 +15592,7 @@ function AdminCreateDemo() {
               title: title,
               singer: singer || appData?.artistName || t("Nghệ sĩ"),
               composer: composer || appData?.artistName || t("Nghệ sĩ"),
-              musicProducer: musicProducer,
+              musicProducer: musicProducer || undefined,
               audioUrl: uploadedAudioUrl || 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
               coverUrl: uploadedCoverUrl || randomSlideUrl || (slideshowImages && slideshowImages.length > 0 ? slideshowImages[0] : '') || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80",
               backgroundUrl: uploadedBgUrl,
@@ -15451,6 +15754,7 @@ function AdminEditDemo() {
   const [randomSlideUrl, setRandomSlideUrl] = useState<string>('');
 
   const [linkType, setLinkType] = useState<'direct'|'indirect'>('direct');
+  const [status, setStatus] = useState('public');
   const [isReleased, setIsReleased] = useState(false);
   const [password, setPassword] = useState('');
   const [linkZing, setLinkZing] = useState('');
@@ -15523,6 +15827,7 @@ function AdminEditDemo() {
           setUploadedBgUrl(found.backgroundUrl || '');
           setPlaylistIds(found.playlistIds || []);
           setTemplate(found.template || '1');
+          setStatus(found.status || 'public');
           setComposer(found.composer || '');
           setMusicProducer(found.musicProducer || '');
           setSinger(found.singer || '');
@@ -15841,10 +16146,8 @@ function AdminEditDemo() {
     formData.set('linkYoutube', linkYoutube);
     formData.set('linkDrive', linkDrive);
 
-    const statusEl = document.querySelector('select[name="status"]') as HTMLSelectElement;
-
     formData.set('password', password);
-    formData.set('status', statusEl?.value || 'public');
+    formData.set('status', status);
     formData.set('isReleased', isReleased ? 'true' : 'false');
     formData.set('isDraft', isDraft ? 'true' : 'false');
     formData.set('isBrand', isBrand ? 'true' : 'false');
@@ -15890,9 +16193,9 @@ function AdminEditDemo() {
   if (!demo) return <LoadingScreen text={t("Đang tải dữ liệu bài hát...")} />;
 
   return (
-    <div className="min-h-screen bg-stone-100 text-stone-900 font-sans py-12 px-4">
+    <div className="min-h-screen bg-stone-100 text-stone-900 font-sans py-6 px-4">
       <div className="max-w-2xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-4">
           <Link to={getAdminLink() + (linkType === 'indirect' ? '?subtab=landing_pages' : (demo?.isDraft ? '?subtab=drafts' : (demo?.isReleased ? '?subtab=released' : '?subtab=demos')))} className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-900 font-medium transition-colors">
             <ArrowLeft className="w-5 h-5" /> {t("Trở về Dashboard")}
           </Link>
@@ -15928,21 +16231,51 @@ function AdminEditDemo() {
           </button>
         </div>
         
-        <div className="bg-white p-8 rounded-3xl border border-stone-200 shadow-xl shadow-stone-200/50">
+        <div className="bg-white p-5 md:p-6 rounded-2xl border border-stone-200 shadow-xl shadow-stone-200/50">
           
-          <div className="flex bg-stone-100 p-1 rounded-xl mb-8 w-full max-w-xs mx-auto">
-            <button type="button" onClick={() => setLinkType('direct')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${linkType === 'direct' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}>{t("Trực Tiếp")}</button>
-            <button type="button" onClick={() => setLinkType('indirect')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${linkType === 'indirect' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}>Landing Page</button>
+          <div className="flex bg-stone-100 p-1 rounded-xl mb-8 w-full max-w-xs mx-auto relative">
+            <button
+              type="button"
+              onClick={() => setLinkType('direct')}
+              className={`flex-1 py-2 text-sm font-bold rounded-lg relative transition-colors z-10 ${
+                linkType === 'direct' ? 'text-stone-900' : 'text-stone-500 hover:text-stone-700'
+              }`}
+            >
+              {linkType === 'direct' && (
+                <motion.span
+                  layoutId="linkTypeActiveBgEdit"
+                  className="absolute inset-0 bg-white rounded-lg shadow-xs z-0"
+                  transition={{ type: 'tween', ease: 'easeInOut', duration: 0.32 }}
+                />
+              )}
+              <span className="relative z-10">{t("Trực Tiếp")}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setLinkType('indirect')}
+              className={`flex-1 py-2 text-sm font-bold rounded-lg relative transition-colors z-10 ${
+                linkType === 'indirect' ? 'text-stone-900' : 'text-stone-500 hover:text-stone-700'
+              }`}
+            >
+              {linkType === 'indirect' && (
+                <motion.span
+                  layoutId="linkTypeActiveBgEdit"
+                  className="absolute inset-0 bg-white rounded-lg shadow-xs z-0"
+                  transition={{ type: 'tween', ease: 'easeInOut', duration: 0.32 }}
+                />
+              )}
+              <span className="relative z-10">Landing Page</span>
+            </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6 edit-demo-form">
+          <form onSubmit={handleSubmit} className="space-y-4 edit-demo-form">
             <div>
-              <label className="block text-sm font-bold text-stone-700 mb-2">{t("Tên bài hát")}<span className="text-red-500">*</span></label>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tên bài hát")}<span className="text-red-500">*</span></label>
               <input name="title" required value={title} onChange={e => setTitle(e.target.value)} placeholder={t("Nhập tên bài hát...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-stone-700 mb-2">{t("Phần mở rộng (Link bài hát)")}</label>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Phần mở rộng (Link bài hát)")}</label>
               <div className="flex items-center gap-2 border border-stone-300 rounded-xl px-4 py-3 bg-white focus-within:border-stone-900 focus-within:ring-2 focus-within:ring-stone-900 transition-shadow">
                 <span className="text-stone-400 font-mono text-sm opacity-60 hidden sm:inline">/</span>
                 <input name="slug" value={slug} onChange={e => {setSlug(generateSlug(e.target.value)); setIsSlugEdited(true);}} placeholder="ten-bai-hat..." className="w-full focus:outline-none bg-transparent" />
@@ -15951,22 +16284,22 @@ function AdminEditDemo() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ca sĩ thể hiện")}</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Ca sĩ thể hiện")}</label>
                 <input name="singer" value={singer} onChange={e => setSinger(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
               </div>
               <div>
-                <label className="block text-sm font-bold text-stone-700 mb-2">{t("Sáng tác")}</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Sáng tác")}</label>
                 <input name="composer" value={composer} onChange={e => setComposer(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
               </div>
               <div>
-                <label className="block text-sm font-bold text-stone-700 mb-2">{t("Music Producer")}</label>
-                <input name="musicProducer" value={musicProducer} onChange={e => setMusicProducer(e.target.value)} placeholder="Chưa rõ" className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Music Producer")}</label>
+                <input name="musicProducer" value={musicProducer} onChange={e => setMusicProducer(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
               <div>
-                <label className="block text-sm font-bold text-stone-700 mb-2">{t("Bìa Đĩa (Dùng làm thumbnail)")}</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Bìa Đĩa (Dùng làm thumbnail)")}</label>
                 <div 
                   onDragOver={(e) => { e.preventDefault(); setIsDraggingCover(true); }}
                   onDragLeave={() => setIsDraggingCover(false)}
@@ -15991,7 +16324,7 @@ function AdminEditDemo() {
                   )}
                   <div className="flex-1 min-w-[150px]">
                     <div className="flex items-center gap-2">
-                      <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${coverUploadProgress === 100 || uploadedCoverUrl || demo?.coverUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('coverEditUpload')?.click()}>
+                      <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${coverUploadProgress === 100 || uploadedCoverUrl || demo?.coverUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('coverEditUpload')?.click()}>
                           <Upload className="w-4 h-4"/>
                           <span className="max-w-[150px] truncate"></span>
                             {coverUploadProgress > 0 && coverUploadProgress < 100 
@@ -16025,7 +16358,7 @@ function AdminEditDemo() {
  
               {linkType === 'direct' && (
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ảnh Nền (Nếu có)")}</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Ảnh Nền (Nếu có)")}</label>
                   <div 
                     onDragOver={(e) => { e.preventDefault(); setIsDraggingBg(true); }}
                     onDragLeave={() => setIsDraggingBg(false)}
@@ -16050,7 +16383,7 @@ function AdminEditDemo() {
                     )}
                     <div className="flex-1 min-w-[150px]">
                       <div className="flex items-center gap-2">
-                        <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${bgUploadProgress === 100 || uploadedBgUrl || demo?.backgroundUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('bgEditUpload')?.click()}>
+                        <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${bgUploadProgress === 100 || uploadedBgUrl || demo?.backgroundUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('bgEditUpload')?.click()}>
                             <Upload className="w-4 h-4"/>
                             <span className="max-w-[150px] truncate"></span>
                               {bgUploadProgress > 0 && bgUploadProgress < 100 
@@ -16088,7 +16421,7 @@ function AdminEditDemo() {
               <>
                 <div className="grid grid-cols-1 gap-6">
                    <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">{t("File Nhạc (Audio)")}<span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("File Nhạc (Audio)")}<span className="text-red-500">*</span></label>
                   <div 
                     onDragOver={(e) => { e.preventDefault(); setIsDraggingAudio(true); }}
                     onDragLeave={() => setIsDraggingAudio(false)}
@@ -16129,7 +16462,7 @@ function AdminEditDemo() {
                       )}
                       <div className="flex-1 min-w-[150px]">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${audioUploadProgress === 100 || (uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com')) || (demo?.audioUrl && !uploadedAudioUrl) ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('audioEditUpload')?.click()}>
+                          <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${audioUploadProgress === 100 || (uploadedAudioUrl && !uploadedAudioUrl.includes('drive.google.com') && !uploadedAudioUrl.includes('docs.google.com')) || (demo?.audioUrl && !uploadedAudioUrl) ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('audioEditUpload')?.click()}>
                               <Upload className="w-4 h-4"/>
                               <span className="max-w-[200px] truncate"></span>
                                 {audioUploadProgress > 0 && audioUploadProgress < 100 
@@ -16177,20 +16510,20 @@ function AdminEditDemo() {
                 <div className="bg-stone-50 p-6 rounded-2xl border border-stone-200 mt-4 mb-4">
                   <div className="flex items-center gap-3 mb-2">
                     <input type="checkbox" id="isBrandEditDirect" checked={isBrand} onChange={e => setIsBrand(e.target.checked)} className="w-5 h-5 accent-indigo-500 rounded border-stone-300" />
-                    <label htmlFor="isBrandEditDirect" className="font-bold text-stone-700 text-sm cursor-pointer">{t("Là nhạc thương hiệu (Brand Music)")}</label>
+                    <label htmlFor="isBrandEditDirect" className="font-semibold text-stone-700 text-sm cursor-pointer">{t("Là nhạc thương hiệu (Brand Music)")}</label>
                   </div>
                   {isBrand && (
                     <div className="grid grid-cols-1 gap-4 pt-2">
                       <div>
-                        <label className="block text-sm font-bold text-stone-700 mb-2">{t("Tên đối tác")}<span className="text-red-500">*</span></label>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tên đối tác")}<span className="text-red-500">*</span></label>
                         <input type="text" value={brandName} onChange={e => setBrandName(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder="VD: Vingroup" />
                       </div>
                       <div>
-                        <label className="block text-sm font-bold text-stone-700 mb-2">{t("Brief khách hàng (nếu có)")}</label>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Brief khách hàng (nếu có)")}</label>
                         <textarea rows={3} value={brandBrief} onChange={e => setBrandBrief(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder={t("Nhập brief khách hàng...")} />
                       </div>
                       <div>
-                        <label className="block text-sm font-bold text-stone-700 mb-2 flex justify-between items-center">
+                        <label className="block text-sm font-semibold text-stone-700 mb-2 flex justify-between items-center">
                           <span>{t("Video Tham Khảo (Tối đa 5 video)")}</span>
                           {brandReferenceVideos.length < 5 && (
                             <button type="button" onClick={() => setBrandReferenceVideos([...brandReferenceVideos, ""])} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-indigo-200"><Plus className="w-3 h-3"/>{t("Thêm video")}</button>
@@ -16204,7 +16537,7 @@ function AdminEditDemo() {
                         ))}
                       </div>
                       <div>
-                        <label className="block text-sm font-bold text-stone-700 mb-2">{t("Logo đối tác (Upload)")}</label>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Logo đối tác (Upload)")}</label>
                         <div 
                           onDragOver={(e) => { e.preventDefault(); setIsDraggingBrandLogo(true); }}
                           onDragLeave={() => setIsDraggingBrandLogo(false)}
@@ -16236,7 +16569,7 @@ function AdminEditDemo() {
                           )}
                           <div className="flex-1 min-w-[150px]">
                              <div className="flex items-center gap-2">
-                               <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${brandLogoUploadProgress === 100 || uploadedBrandLogoUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('brandLogoEditUpload')?.click()}>
+                               <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${brandLogoUploadProgress === 100 || uploadedBrandLogoUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('brandLogoEditUpload')?.click()}>
                                    <Upload className="w-4 h-4"/>
                                    <span className="max-w-[150px] truncate">{brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? `Đang tải ${brandLogoUploadProgress}%` : (uploadedBrandLogoName ? formatFileName(uploadedBrandLogoName) : t("Chọn logo"))}</span>
                                </button>
@@ -16275,7 +16608,7 @@ function AdminEditDemo() {
 
                 <div>
                   <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
-                    <label className="block text-sm font-bold text-stone-700">{t("Lời bài hát")}</label>
+                    <label className="block text-sm font-semibold text-stone-700">{t("Lời bài hát")}</label>
                     <div className="flex flex-wrap gap-1.5 items-center">
                       {[
                         { label: 'Intro', value: 'Intro', className: 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200' },
@@ -16312,13 +16645,15 @@ function AdminEditDemo() {
 
               <div className="grid grid-cols-1 gap-6 pt-4 border-t border-stone-100">
                   <div className="w-full">
-                    <label className="block text-sm font-bold text-stone-700 mb-2">{t("Template Giao Diện")}</label>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Template Giao Diện")}</label>
                     <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 min-w-0">
-                      <select name="template" value={template} onChange={(e) => setTemplate(e.target.value)} className="w-full min-w-0 border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white shadow-sm">
-                        {templateConfigs.map((tc: any) => (
-                          <option key={tc.id} value={tc.id}>{t(tc.name)}</option>
-                        ))}
-                      </select>
+                      <CustomSelect
+                        value={template}
+                        onChange={val => setTemplate(val)}
+                        options={templateConfigs.map((tc: any) => ({ value: tc.id, label: t(tc.name) }))}
+                        className="w-full"
+                      />
+                      <input type="hidden" name="template" value={template} />
                       <button 
                         type="button" 
                         disabled={!title.trim()}
@@ -16338,20 +16673,20 @@ function AdminEditDemo() {
                 <div className="bg-stone-50 p-6 rounded-2xl border border-stone-200 mt-4 mb-4">
                   <div className="flex items-center gap-3 mb-2">
                     <input type="checkbox" id="isBrandCreate" checked={isBrand} onChange={e => setIsBrand(e.target.checked)} className="w-5 h-5 accent-indigo-500 rounded border-stone-300" />
-                    <label htmlFor="isBrandCreate" className="font-bold text-stone-700 text-sm cursor-pointer">{t("Là nhạc thương hiệu (Brand Music)")}</label>
+                    <label htmlFor="isBrandCreate" className="font-semibold text-stone-700 text-sm cursor-pointer">{t("Là nhạc thương hiệu (Brand Music)")}</label>
                   </div>
                   {isBrand && (
                     <div className="grid grid-cols-1 gap-4 pt-2">
                       <div>
-                        <label className="block text-sm font-bold text-stone-700 mb-2">{t("Tên đối tác")}<span className="text-red-500">*</span></label>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tên đối tác")}<span className="text-red-500">*</span></label>
                         <input type="text" value={brandName} onChange={e => setBrandName(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder="VD: Vingroup" />
                       </div>
                       <div>
-                        <label className="block text-sm font-bold text-stone-700 mb-2">{t("Brief khách hàng (nếu có)")}</label>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Brief khách hàng (nếu có)")}</label>
                         <textarea rows={3} value={brandBrief} onChange={e => setBrandBrief(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder={t("Nhập brief khách hàng...")} />
                       </div>
                       <div>
-                        <label className="block text-sm font-bold text-stone-700 mb-2 flex justify-between items-center">
+                        <label className="block text-sm font-semibold text-stone-700 mb-2 flex justify-between items-center">
                           <span>{t("Video Tham Khảo (Tối đa 5 video)")}</span>
                           {brandReferenceVideos.length < 5 && (
                             <button type="button" onClick={() => setBrandReferenceVideos([...brandReferenceVideos, ""])} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-indigo-200"><Plus className="w-3 h-3"/>{t("Thêm video")}</button>
@@ -16365,7 +16700,7 @@ function AdminEditDemo() {
                         ))}
                       </div>
                                             <div>
-                        <label className="block text-sm font-bold text-stone-700 mb-2">{t("Logo đối tác (Upload)")}</label>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Logo đối tác (Upload)")}</label>
                         <div 
                           onDragOver={(e) => { e.preventDefault(); setIsDraggingBrandLogo(true); }}
                           onDragLeave={() => setIsDraggingBrandLogo(false)}
@@ -16397,7 +16732,7 @@ function AdminEditDemo() {
                           )}
                           <div className="flex-1 min-w-[150px]">
                              <div className="flex items-center gap-2">
-                               <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${brandLogoUploadProgress === 100 || uploadedBrandLogoUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('brandLogoCreateUpload')?.click()}>
+                               <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${brandLogoUploadProgress === 100 || uploadedBrandLogoUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('brandLogoCreateUpload')?.click()}>
                                    <Upload className="w-4 h-4"/>
                                    <span className="max-w-[150px] truncate">{brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? `Đang tải ${brandLogoUploadProgress}%` : (uploadedBrandLogoName ? formatFileName(uploadedBrandLogoName) : t("Chọn logo"))}</span>
                                </button>
@@ -16438,23 +16773,23 @@ function AdminEditDemo() {
                 <h3 className="font-bold text-stone-800 text-lg">{t("Liên kết phát nhạc")}</h3>
                 <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">Zing MP3</label>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">Zing MP3</label>
                     <input name="linkZing" value={linkZing} onChange={e => setLinkZing(e.target.value)} placeholder={t("Nhập link Zing MP3...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">Spotify</label>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">Spotify</label>
                     <input name="linkSpotify" value={linkSpotify} onChange={e => setLinkSpotify(e.target.value)} placeholder={t("Nhập link Spotify...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">Apple Music</label>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">Apple Music</label>
                     <input name="linkApple" value={linkApple} onChange={e => setLinkApple(e.target.value)} placeholder={t("Nhập link Apple Music...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">YouTube Music</label>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">YouTube Music</label>
                     <input name="linkYoutubeMusic" value={linkYoutubeMusic} onChange={e => setLinkYoutubeMusic(e.target.value)} placeholder={t("Nhập link YouTube Music...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">YouTube MV</label>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">YouTube MV</label>
                     <input name="linkYoutube" value={linkYoutube} onChange={e => setLinkYoutube(e.target.value)} placeholder={t("Nhập link YouTube MV...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
                   </div>
                 </div>
@@ -16467,7 +16802,7 @@ function AdminEditDemo() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-stone-100">
                   {!isReleased ? (
                     <div>
-                      <label className="block text-sm font-bold text-stone-700 mb-2">{t("Mật khẩu bảo vệ (tùy chọn)")}</label>
+                      <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Mật khẩu bảo vệ (tùy chọn)")}</label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-3.5 w-5 h-5 text-stone-400" />
                         <input name="password" value={password} onChange={e => setPassword(e.target.value)} placeholder={t("Bỏ trống nếu không cần")} className="w-full border border-stone-300 rounded-xl pl-10 pr-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
@@ -16479,18 +16814,23 @@ function AdminEditDemo() {
                     </div>
                   )}
                    <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">{t("Hiển thị (Trạng thái phát hành)")}</label>
-                     <select name="status" defaultValue={demo.status} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white">
-                      <option value="public">{t("Công khai")}</option>
-                      <option value="hidden">{t("Ẩn")}</option>
-                    </select>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Hiển thị (Trạng thái phát hành)")}</label>
+                     <CustomSelect
+                       value={status}
+                       onChange={val => setStatus(val)}
+                       options={[
+                         { value: 'public', label: t("Công khai") },
+                         { value: 'hidden', label: t("Ẩn") }
+                       ]}
+                     />
+                     <input type="hidden" name="status" value={status} />
                   </div>
                 </div>
 
                 <AchievementEditor achievements={achievements} onChange={setAchievements} />
 
                 <div className="mt-6 mb-6">
-                  <label className="block text-sm font-bold text-stone-700 mb-2">{t("Link Google Drive tải nhạc")}</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Link Google Drive tải nhạc")}</label>
                   <div className="relative">
                     <FolderDown className="absolute left-3 top-3.5 w-5 h-5 text-stone-400" />
                     <input 
@@ -16514,12 +16854,12 @@ function AdminEditDemo() {
                           setPassword('');
                         }
                       }} className="w-6 h-6 rounded border-stone-300 text-stone-900 focus:ring-stone-900 transition-all cursor-pointer" />
-                      <label htmlFor="isReleasedForm" className="block text-sm font-bold text-stone-700 cursor-pointer select-none mb-0">{t("Đã phát hành")}</label>
+                      <label htmlFor="isReleasedForm" className="block text-sm font-semibold text-stone-700 cursor-pointer select-none mb-0">{t("Đã phát hành")}</label>
                     </div>
                     
                     {isReleased && (
                       <div className="flex items-center gap-2">
-                        <input name="releaseYear" value={releaseYear} onChange={e => setReleaseYear(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder={t("2026")} className="w-16 border border-stone-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow text-sm text-center bg-white" maxLength={4} />
+                        <input name="releaseYear" value={releaseYear} onChange={e => setReleaseYear(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder={t("2026")} className="w-32 border border-stone-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow text-sm text-center bg-white" maxLength={4} />
                       </div>
                     )}
                   </div>
@@ -16563,14 +16903,14 @@ function AdminEditDemo() {
               </>
             )}
 
-            <div className="flex flex-col gap-4 mt-8">
+            <div className="flex flex-col gap-4 mt-6">
               {demo.isDraft ? (
-                <div className="flex flex-col sm:flex-row gap-4 w-full">
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:justify-end">
                   <button 
                     disabled={loading} 
                     type="button" 
                     onClick={() => saveDemo(true)}
-                    className="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-900 border border-stone-300 text-lg font-bold py-4 rounded-xl transition-colors disabled:opacity-80 flex justify-center items-center gap-2"
+                    className="btn-glass-draft text-stone-900 text-sm sm:text-base font-bold py-2.5 px-5 sm:px-6 rounded-xl transition-all duration-300 disabled:opacity-80 flex justify-center items-center gap-2 active:scale-[0.98] shadow-sm sm:flex-initial sm:min-w-[150px]"
                   >
                     <FileText className="w-5 h-5 text-amber-500" />
                     {loading ? t("Đang lưu...") : t("Lưu Bản Nháp")}
@@ -16580,19 +16920,19 @@ function AdminEditDemo() {
                     disabled={loading} 
                     type="button" 
                     onClick={() => saveDemo(false)}
-                    className="flex-1 bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] text-lg font-bold py-4 rounded-xl transition-colors disabled:opacity-80 flex justify-center items-center gap-2"
+                    className="btn-black-gradient-blur text-white text-sm sm:text-base font-bold py-2.5 px-5 sm:px-6 rounded-xl disabled:opacity-80 flex justify-center items-center gap-2 active:scale-[0.98] sm:flex-initial sm:min-w-[150px]"
                   >
                     <Sparkles className="w-5 h-5 text-yellow-400" />
                     {loading ? t("Đang xuất bản...") : t("Xuất Bản")}
                   </button>
                 </div>
               ) : (
-                <div className="flex flex-col sm:flex-row gap-4 w-full">
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:justify-end">
                   <button 
                     disabled={loading} 
                     type="button" 
                     onClick={() => saveDemo(false)}
-                    className="flex-1 bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] text-lg font-bold py-4 rounded-xl hover:bg-stone-800 transition-colors disabled:opacity-80 flex justify-center items-center gap-2 shadow-sm"
+                    className="btn-black-gradient-blur text-white text-sm sm:text-base font-bold py-2.5 px-5 sm:px-6 rounded-xl disabled:opacity-80 flex justify-center items-center gap-2 active:scale-[0.98] sm:flex-initial sm:min-w-[150px]"
                   >
                     <FileText className="w-5 h-5 text-amber-500" />
                     {loading ? t("Đang lưu...") : t("Lưu Thay Đổi")}
@@ -16617,7 +16957,7 @@ function AdminEditDemo() {
                           }
                         }
                       }} 
-                      className="flex-1 border-2 border-red-200 text-red-500 hover:bg-red-50 text-lg font-bold py-4 rounded-xl transition-colors disabled:opacity-80 flex justify-center items-center gap-2 shadow-sm"
+                      className="border-2 border-red-200 text-red-500 hover:bg-red-50 text-sm sm:text-base font-semibold py-2.5 px-5 sm:px-6 rounded-xl transition-all disabled:opacity-80 flex justify-center items-center gap-2 active:scale-[0.98] sm:flex-initial sm:min-w-[150px] shadow-sm"
                     >
                       <Lock className="w-5 h-5 text-red-500" />
                       Làm mới Secret Link
@@ -16644,7 +16984,7 @@ function AdminEditDemo() {
               title: title,
               singer: singer || appData?.artistName || t("Nghệ sĩ"),
               composer: composer || appData?.artistName || t("Nghệ sĩ"),
-              musicProducer: musicProducer,
+              musicProducer: musicProducer || undefined,
               audioUrl: uploadedAudioUrl || demo?.audioUrl,
               coverUrl: uploadedCoverUrl || demo?.coverUrl || randomSlideUrl || (appData?.slideshowImages && appData.slideshowImages.length > 0 ? appData.slideshowImages[0] : '') || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80",
               backgroundUrl: uploadedBgUrl || demo?.backgroundUrl,
@@ -16834,9 +17174,9 @@ function AdminPlaylistEdit() {
       </header>
 
       <div className="max-w-3xl mx-auto px-6 py-8">
-        <div className="bg-white rounded-3xl border border-stone-200 shadow-sm p-8 space-y-8">
+        <div className="bg-white p-5 md:p-6 rounded-2xl border border-stone-200 shadow-sm space-y-6">
           <div>
-            <label className="block text-sm font-bold text-stone-700 mb-2">{t("Tên Playlist")}</label>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tên Playlist")}</label>
             <input 
                value={title} 
                onChange={e => setTitle(e.target.value)} 
@@ -16846,14 +17186,19 @@ function AdminPlaylistEdit() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-stone-100">
             <div>
-               <label className="block text-sm font-bold text-stone-700 mb-2">{t("Hiển Thị")}</label>
-               <select value={isDraft ? 'true' : 'false'} onChange={e => setIsDraft(e.target.value === 'true')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white">
-                  <option value="false">{t("Công khai (hiện ở trang chủ)")}</option>
-                  <option value="true">{t("Riêng tư / Bản nháp (ẩn khỏi trang chủ)")}</option>
-               </select>
+               <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Hiển Thị")}</label>
+               <div className="relative">
+                 <select value={isDraft ? 'true' : 'false'} onChange={e => setIsDraft(e.target.value === 'true')} className="w-full border border-stone-300 rounded-xl pl-4 pr-10 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white appearance-none cursor-pointer hover:border-stone-400 transition-colors">
+                    <option value="false">{t("Công khai (hiện ở trang chủ)")}</option>
+                    <option value="true">{t("Riêng tư / Bản nháp (ẩn khỏi trang chủ)")}</option>
+                 </select>
+                 <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                 </div>
+               </div>
             </div>
             <div>
-               <label className="block text-sm font-bold text-stone-700 mb-2">{t("Mật khẩu Playlist (tùy chọn)")}</label>
+               <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Mật khẩu Playlist (tùy chọn)")}</label>
                <div className="relative">
                  <Lock className="absolute left-3 top-3.5 w-5 h-5 text-stone-400" />
                  <input type="text" value={password} onChange={e => setPassword(e.target.value)} placeholder={t("Bỏ trống nếu không cần")} className="w-full border border-stone-300 rounded-xl pl-10 pr-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
@@ -16863,7 +17208,7 @@ function AdminPlaylistEdit() {
 
           <div className="pt-4 border-t border-stone-100">
              <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-bold text-stone-700">{t("Secret Link (Link Bí Mật)")}</label>
+                <label className="block text-sm font-semibold text-stone-700">{t("Secret Link (Link Bí Mật)")}</label>
                 <button type="button" onClick={async () => {
                    if (!secretLink || (globalShowConfirm && await globalShowConfirm(t("Tạo mới Secret Link? Link cũ sẽ không thể truy cập nữa."), t("Xác nhận tạo mới")))) {
                       setSecretLink(Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
@@ -16889,12 +17234,12 @@ function AdminPlaylistEdit() {
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ảnh bìa Playlist (Kích thước vuông)")}</label>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Ảnh bìa Playlist (Kích thước vuông)")}</label>
             <div className="flex flex-wrap gap-4 items-center">
               {coverUrlPreview && <img src={getPreviewUrl(coverUrlPreview)} className="w-24 h-24 rounded-xl object-cover border border-stone-200 shadow-sm" />}
               <button 
                 type="button" 
-                className={`w-24 h-24 rounded-xl flex items-center justify-center relative overflow-hidden transition-colors border shadow-sm ${coverProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} 
+                className={`w-24 h-24 rounded-xl flex items-center justify-center relative overflow-hidden transition-colors border shadow-sm ${coverProgress === 100 ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} 
                 onClick={() => document.getElementById('playlistCoverUpload')?.click()}
               >
                   {coverProgress > 0 && coverProgress < 100 && (
@@ -16929,7 +17274,7 @@ function AdminPlaylistEdit() {
 
           <div>
              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-stone-700">{t("Danh sách bài hát (Kéo thả để sắp xếp)")}</h3>
+                <h3 className="text-sm font-semibold text-stone-700">{t("Danh sách bài hát (Kéo thả để sắp xếp)")}</h3>
                 <button 
                   type="button"
                   onClick={() => setShowAddModal(true)}
@@ -17074,10 +17419,19 @@ function AdminPlaylistEdit() {
 function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl }: any) {
   const [aboutData, setAboutData] = useState(data.aboutMe || {});
   const [avatarProgress, setAvatarProgress] = useState(0);
+  const [socials, setSocials] = useState({
+    socialFacebook: data.socialFacebook || '',
+    socialInstagram: data.socialInstagram || '',
+    socialYoutube: data.socialYoutube || '',
+    socialTiktok: data.socialTiktok || '',
+  });
   
   const handleSave = (e: any) => {
     e.preventDefault();
-    onSave({ aboutMe: aboutData });
+    onSave({ 
+      aboutMe: aboutData,
+      ...socials
+    });
   };
 
   const handleChange = (field: string) => (e: any) => {
@@ -17088,12 +17442,20 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl }: 
   
   
   return (
-    <motion.div key="about" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar">
+    <motion.div key="about" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
       <div className="max-w-2xl pb-10">
-        <h2 className="text-2xl font-bold mb-8 flex items-center gap-2"><User className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />{t("Về Tôi")}</h2>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-stone-100 pb-4">
+          <div>
+            <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+              <User className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />
+              {t("Về Tôi")}
+            </h2>
+            <p className="text-xs text-stone-500 mt-1">{t("Cài đặt thông tin giới thiệu và câu chuyện nghệ sĩ của bạn")}</p>
+          </div>
+        </div>
         <form onSubmit={handleSave} className="space-y-6">
           <div>
-            <label className="block text-sm font-bold text-stone-700 mb-2">{t("Avatar Nghệ Sĩ")}</label>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Avatar Nghệ Sĩ")}</label>
             <div 
               className="flex items-center gap-4 p-4 rounded-3xl border-2 border-dashed border-stone-200 bg-stone-50/50 hover:border-stone-300 transition-colors"
               onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
@@ -17120,7 +17482,7 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl }: 
               )}
               <div className="flex-1 min-w-[150px]">
                 <div className="flex items-center gap-2">
-                  <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${avatarProgress === 100 || aboutData.avatarUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'border-stone-300 bg-stone-50 text-stone-500 hover:bg-stone-100'}`} onClick={() => document.getElementById('aboutAvatarUpload')?.click()}>
+                  <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${avatarProgress === 100 || aboutData.avatarUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('aboutAvatarUpload')?.click()}>
                       <Upload className="w-4 h-4"/>
                       <span className="max-w-[150px] truncate">{avatarProgress > 0 && avatarProgress < 100 ? `Đang tải ${avatarProgress}%` : (aboutData.avatarUrl ? t("Thay đổi") : t("Chọn ảnh"))}</span>
                   </button>
@@ -17152,41 +17514,92 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl }: 
             </div>
           </div>
           <div>
-            <label className="block text-sm font-bold text-stone-700 mb-2">{t("Danh Xưng")}</label>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Danh Xưng")}</label>
             <input value={aboutData.role || ''} onChange={handleChange('role')} placeholder={t("Ca nhạc sĩ, producer...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
           </div>
           <div>
-            <label className="block text-sm font-bold text-stone-700 mb-2">{t("Giới thiệu nghệ sĩ")}</label>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Giới thiệu nghệ sĩ")}</label>
             <textarea value={aboutData.intro || ''} onChange={handleChange('intro')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 min-h-[100px]" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-bold text-stone-700 mb-2">{t("Tên Thật")}</label>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tên Thật")}</label>
               <input value={aboutData.realName || ''} onChange={handleChange('realName')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
             </div>
             <div>
-              <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ngày Sinh")}</label>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Ngày Sinh")}</label>
               <input value={aboutData.dob || ''} onChange={handleChange('dob')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
             </div>
             <div>
-              <label className="block text-sm font-bold text-stone-700 mb-2">{t("Địa Chỉ")}</label>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Địa Chỉ")}</label>
               <input value={aboutData.address || ''} onChange={handleChange('address')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
             </div>
             <div>
-              <label className="block text-sm font-bold text-stone-700 mb-2">{t("Công Ty")}</label>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Công Ty")}</label>
               <input value={aboutData.company || ''} onChange={handleChange('company')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
             </div>
             <div>
-              <label className="block text-sm font-bold text-stone-700 mb-2">{t("Email")}</label>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Email")}</label>
               <input value={aboutData.email || ''} onChange={handleChange('email')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
             </div>
             <div>
-              <label className="block text-sm font-bold text-stone-700 mb-2">{t("SĐT")}</label>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("SĐT")}</label>
               <input value={aboutData.phone || ''} onChange={handleChange('phone')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
             </div>
           </div>
+
+          {/* Mạng Xã Hội */}
+          <div className="pt-6 border-t border-stone-100 mt-4">
+            <h3 className="text-lg font-bold text-stone-900 mb-2 flex items-center gap-2">
+              <Globe className="w-5 h-5 text-indigo-600 animate-[pulse_2s_infinite]" />
+              {t("Mạng xã hội")}
+            </h3>
+            <p className="text-xs text-stone-500 mb-4">{t("Liên kết các kênh mạng xã hội chính thức của bạn")}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Facebook</label>
+                <input 
+                  value={socials.socialFacebook} 
+                  onChange={(e) => setSocials({ ...socials, socialFacebook: e.target.value })} 
+                  className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" 
+                  placeholder="https://facebook.com/..." 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Instagram</label>
+                <input 
+                  value={socials.socialInstagram} 
+                  onChange={(e) => setSocials({ ...socials, socialInstagram: e.target.value })} 
+                  className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" 
+                  placeholder="https://instagram.com/..." 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">YouTube</label>
+                <input 
+                  value={socials.socialYoutube} 
+                  onChange={(e) => setSocials({ ...socials, socialYoutube: e.target.value })} 
+                  className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" 
+                  placeholder="https://youtube.com/..." 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">TikTok</label>
+                <input 
+                  value={socials.socialTiktok} 
+                  onChange={(e) => setSocials({ ...socials, socialTiktok: e.target.value })} 
+                  className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" 
+                  placeholder="https://tiktok.com/@..." 
+                />
+              </div>
+            </div>
+          </div>
           
-          <button type="submit" className="bg-stone-900 text-white font-bold py-3 px-6 rounded-xl hover:bg-stone-800 transition-colors w-full cursor-pointer">{t("Lưu cài đặt")}</button>
+          <div className="flex items-center gap-4 border-t border-stone-100 pt-6 mt-6">
+            <button type="submit" className="bg-stone-900 text-white shadow-sm hover:shadow-md hover:bg-stone-800 active:scale-[0.98] px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer">
+              {t("Lưu cài đặt")}
+            </button>
+          </div>
         </form>
 
       </div>
@@ -17415,9 +17828,17 @@ function AdminBioEdit({ data, t, onSave }: any) {
   
   
   return (
-    <motion.div key="bio" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar">
+    <motion.div key="bio" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
       <div className="max-w-4xl pb-10">
-        <h2 className="text-2xl font-bold mb-8 flex items-center gap-2"><BookOpen className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />{t("Tiểu Sử")}</h2>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-stone-100 pb-4">
+          <div>
+            <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+              <BookOpen className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />
+              {t("Tiểu Sử")}
+            </h2>
+            <p className="text-xs text-stone-500 mt-1">{t("Quản lý học vấn và kinh nghiệm hoạt động nghệ thuật của bạn")}</p>
+          </div>
+        </div>
         <form onSubmit={handleSave} className="space-y-10">
           
           {/* Education section */}
@@ -17430,7 +17851,12 @@ function AdminBioEdit({ data, t, onSave }: any) {
             </div>
             <div className="space-y-4">
               {education.map((edu, idx) => (
-                <div key={idx} className="bg-white border border-stone-200 rounded-xl p-4 flex gap-4">
+                <div key={idx} className="bg-white border border-stone-200 rounded-xl p-4 flex flex-col gap-4 relative">
+                  <div className="flex justify-end">
+                    <button type="button" onClick={() => removeEdu(idx)} className="text-stone-400 hover:text-red-500 p-2 cursor-pointer">
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
                   <div className="flex-1 space-y-3">
                     <div className="flex gap-4">
                       <div className="w-1/3">
@@ -17476,9 +17902,6 @@ function AdminBioEdit({ data, t, onSave }: any) {
                       />
                     </div>
                   </div>
-                  <button type="button" onClick={() => removeEdu(idx)} className="text-stone-400 hover:text-red-500 self-start p-2 cursor-pointer">
-                    <Trash2 className="w-5 h-5" />
-                  </button>
                 </div>
               ))}
             </div>
@@ -17494,7 +17917,12 @@ function AdminBioEdit({ data, t, onSave }: any) {
             </div>
             <div className="space-y-4">
               {experience.map((exp, idx) => (
-                <div key={idx} className="bg-white border border-stone-200 rounded-xl p-4 flex gap-4">
+                <div key={idx} className="bg-white border border-stone-200 rounded-xl p-4 flex flex-col gap-4 relative">
+                  <div className="flex justify-end">
+                    <button type="button" onClick={() => removeExp(idx)} className="text-stone-400 hover:text-red-500 p-2 cursor-pointer">
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
                   <div className="flex-1 space-y-3">
                     <div className="flex gap-4">
                       <div className="w-1/3">
@@ -17540,15 +17968,16 @@ function AdminBioEdit({ data, t, onSave }: any) {
                       />
                     </div>
                   </div>
-                  <button type="button" onClick={() => removeExp(idx)} className="text-stone-400 hover:text-red-500 self-start p-2 cursor-pointer">
-                    <Trash2 className="w-5 h-5" />
-                  </button>
                 </div>
               ))}
             </div>
           </div>
 
-          <button type="submit" className="bg-stone-900 text-white font-bold py-3 px-6 rounded-xl hover:bg-stone-800 transition-colors w-full cursor-pointer">{t("Lưu cài đặt")}</button>
+          <div className="flex items-center gap-4 border-t border-stone-100 pt-6 mt-4">
+            <button type="submit" className="bg-stone-900 text-white shadow-sm hover:shadow-md hover:bg-stone-800 active:scale-[0.98] px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer">
+              {t("Lưu cài đặt")}
+            </button>
+          </div>
         </form>
       </div>
     </motion.div>
@@ -17608,8 +18037,15 @@ function AdminMenuEdit({ data, t, onSave }: any) {
 
   return (
     <div className="py-1">
-      <h2 className="text-2xl font-bold mb-8 flex items-center gap-2"><List className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />{t("Quản lý Menu")}</h2>
-      <p className="text-sm text-stone-500 mb-6">{t("Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.")}</p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-stone-100 pb-4">
+        <div>
+          <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+            <List className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />
+            {t("Quản lý Menu")}
+          </h2>
+          <p className="text-xs text-stone-500 mt-1">{t("Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.")}</p>
+        </div>
+      </div>
       
       <div className="space-y-3 mb-6">
         {menus.map((m: any, i: number) => (
@@ -17659,11 +18095,11 @@ function AdminMenuEdit({ data, t, onSave }: any) {
         ))}
       </div>
       
-      <div className="flex gap-4">
-        <button type="button" onClick={addCustomMenu} className="bg-stone-100 hover:bg-stone-200 text-stone-700 px-4 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 cursor-pointer">
-          <Plus className="w-4 h-4" /> {t("Thêm Menu Mới")}
+      <div className="flex items-center gap-4 border-t border-stone-100 pt-6 mt-6">
+        <button type="button" onClick={addCustomMenu} className="btn-white-glass-smoke px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1.5 shadow-sm hover:scale-[1.01] cursor-pointer">
+          <Plus className="w-4 h-4 text-stone-500" /> {t("Thêm Menu Mới")}
         </button>
-        <button type="button" onClick={handleSave} className="bg-stone-900 hover:bg-stone-800 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer">
+        <button type="button" onClick={handleSave} className="bg-stone-900 text-white shadow-sm hover:shadow-md hover:bg-stone-800 active:scale-[0.98] px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer">
           {t("Lưu Menu")}
         </button>
       </div>
@@ -17705,13 +18141,15 @@ function AdminLayoutEdit({ data, t, onSave }: any) {
 
   return (
     <div className="py-1">
-      <h2 className="text-2xl font-bold mb-8 flex items-center gap-2">
-        <LayoutTemplate className="w-6 h-6 text-teal-600 animate-[pulse_2.5s_infinite]" />
-        {t("Bố Cục Trang Chủ")}
-      </h2>
-      <p className="text-sm text-stone-500 mb-6">
-        {t("Kéo thả các phần dưới đây để sắp xếp thứ tự hiển thị của chúng ở trang chủ nghệ sĩ.")}
-      </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-stone-100 pb-4">
+        <div>
+          <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+            <LayoutTemplate className="w-6 h-6 text-teal-600 animate-[pulse_2.5s_infinite]" />
+            {t("Bố Cục Trang Chủ")}
+          </h2>
+          <p className="text-xs text-stone-500 mt-1">{t("Kéo thả các phần dưới đây để sắp xếp thứ tự hiển thị của chúng ở trang chủ nghệ sĩ.")}</p>
+        </div>
+      </div>
 
       <div className="space-y-3 mb-6">
         {layoutSections.map((sec, i) => (
@@ -17742,13 +18180,15 @@ function AdminLayoutEdit({ data, t, onSave }: any) {
         ))}
       </div>
 
-      <button 
-        type="button" 
-        onClick={handleSave} 
-        className="bg-stone-900 hover:bg-stone-800 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer shadow-sm"
-      >
-        {t("Lưu Bố Cục")}
-      </button>
+      <div className="flex items-center gap-4 border-t border-stone-100 pt-6 mt-6">
+        <button 
+          type="button" 
+          onClick={handleSave} 
+          className="bg-stone-900 text-white shadow-sm hover:shadow-md hover:bg-stone-800 active:scale-[0.98] px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer"
+        >
+          {t("Lưu Bố Cục")}
+        </button>
+      </div>
     </div>
   );
 }
