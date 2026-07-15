@@ -1159,8 +1159,9 @@ async function startServer() {
     }
     
     // Check subdomain (e.g. abc.chorus.vn) or custom domain
-    if (!ext && req.headers.host) {
-      const host = req.headers.host.replace(/^www\./, '').toLowerCase().trim();
+    const hostHeader = req.get('x-forwarded-host') || req.get('host');
+    if (!ext && hostHeader) {
+      const host = hostHeader.replace(/^www\./, '').toLowerCase().trim();
       const matchedArtist = artists.find(a => {
         const cd = a.customDomain || '';
         const ew = a.externalWebsiteUrl || '';
@@ -1322,8 +1323,9 @@ async function startServer() {
     }
     
     // Check if accessing an unregistered subdomain of .chorus.vn
-    if (req.headers.host) {
-      const host = req.headers.host.replace(/^www\./, '').toLowerCase().trim();
+    const hostHeader = req.get('x-forwarded-host') || req.get('host');
+    if (hostHeader) {
+      const host = hostHeader.replace(/^www\./, '').toLowerCase().trim();
       if (host.endsWith('.chorus.vn') && host !== 'chorus.vn') {
         const sub = host.replace('.chorus.vn', '');
         if (sub) {
@@ -2366,13 +2368,17 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const { artistName, username, extension, password, verified, dbConfig, isPublic, hasExternalWebsite, externalWebsiteUrl, artistBio, isSpecial } = req.body;
-    if (!artistName || !username || !extension || !password) {
-      return res.status(400).json({ error: 'Vui lòng điền đầy đủ các thông tin bắt buộc!' });
+    const { artistName, username, extension, password, email, verified, dbConfig, isPublic, hasExternalWebsite, externalWebsiteUrl, artistBio, isSpecial } = req.body;
+    if (!artistName || !username || !extension || !password || !email) {
+      return res.status(400).json({ error: 'Vui lòng điền đầy đủ các thông tin bắt buộc (Bao gồm Email)!' });
     }
     
     if (artists.some(a => a.username.toLowerCase() === username.toLowerCase().trim() || a.extension.toLowerCase() === extension.toLowerCase().trim())) {
       return res.status(400).json({ error: 'Username hoặc Phân mở rộng đã tồn tại!' });
+    }
+    
+    if (artists.some(a => a.email && a.email.toLowerCase().trim() === email.toLowerCase().trim())) {
+      return res.status(400).json({ error: 'Email này đã được sử dụng!' });
     }
     
     const hashedPassword = bcrypt.hashSync(password, 10);
@@ -2381,6 +2387,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       artistName,
       username: username.toLowerCase().trim(),
       extension: extension.toLowerCase().trim(),
+      email: email.toLowerCase().trim(),
       password: hashedPassword,
       verified: !!verified,
       isPublic: isPublic !== false,
@@ -2824,6 +2831,34 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     res.json({ success: true, token: newPassword });
   });
 
+  app.post('/api/admin/change-email', async (req: any, res) => {
+    if (!isRequestAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const artist = req.artist;
+    if (!artist) {
+      return res.status(404).json({ error: 'Không tìm thấy nghệ sĩ!' });
+    }
+
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Vui lòng cung cấp email!' });
+    }
+    
+    // Check if email already exists for another artist
+    const existing = artists.find(a => a.email && a.email.toLowerCase().trim() === email.toLowerCase().trim() && a.username !== artist.username);
+    if (existing) {
+      return res.status(400).json({ error: 'Email này đã được sử dụng bởi nghệ sĩ khác!' });
+    }
+
+    const data = await loadData((req as any).artist?.username);
+    
+    artist.email = email.toLowerCase().trim();
+    await saveArtists(artists);
+    
+    res.json({ success: true, email: artist.email });
+  });
+
   app.post('/api/admin/set-member-password', async (req: any, res) => {
     if (!isRequestAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -2890,6 +2925,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       isSpecial: !!req.artist?.isSpecial || req.artist?.username === 'acxuantai',
       username: req.artist?.username,
       extension: req.artist?.extension,
+      email: req.artist?.email || '',
       pendingNameChange: req.artist?.pendingNameChange,
       pendingUsernameChange: req.artist?.pendingUsernameChange,
       pendingExtensionChange: req.artist?.pendingExtensionChange,

@@ -5918,8 +5918,8 @@ function Home() {
                                         transition={{ duration: 0.4, ease: "easeOut" }}
                                         className="flex flex-col justify-center w-full"
                                       >
-                                        <h3 className={`font-bold transition-colors ${demo.achievements?.length ? 'text-[11px] sm:text-[13px] group-hover:text-amber-400 leading-tight whitespace-normal break-words' : 'text-base sm:text-lg group-hover:text-rose-400 truncate'}`}>
-                                          <span className="relative inline-flex items-center overflow-visible">
+                                        <h3 className={`font-bold transition-colors ${demo.achievements?.length ? 'text-[11px] sm:text-[13px] group-hover:text-amber-400 leading-tight whitespace-normal break-words' : 'text-base sm:text-lg group-hover:text-rose-400 line-clamp-2 break-words'}`} title={demo.title}>
+                                          <span className="relative inline overflow-visible">
                                             <HoverTranslate text={demo.title} format={true} />
                                           </span>
                                         </h3>
@@ -8982,7 +8982,8 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
             {renderArtistNameWithLinks(demo.singer || demo.author || (demo as any)?.defaultArtistName || 'Nghệ sĩ', systemArtists)}
           </p>
           <p 
-            className={`text-xs md:text-sm text-center mb-1 md:mb-6 relative z-30 ${templateType === '6' ? 'font-semibold text-[#fef08a]' : 'font-medium opacity-60'}`}
+            className={`text-xs md:text-sm text-center mb-1 md:mb-6 relative z-30 ${templateType === '6' ? 'font-semibold text-pink-700' : 'font-medium opacity-60'}`}
+            style={{ color: customConfig?.authorColor || undefined }}
           >
             {t.sAuth} {renderArtistNameWithLinks(demo.composer || (demo as any)?.defaultArtistName || 'Nghệ sĩ', systemArtists)}
           </p>
@@ -9043,7 +9044,8 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
           )}
           <div className={`flex items-center justify-between mb-4 ml-4 pr-4 ${forceMobile ? 'mt-0' : 'mt-0 md:mt-0'} ${templateType === '6' ? '' : 'opacity-50'}`}>
             <h3 
-              className={`text-[11px] md:text-sm uppercase tracking-widest ${templateType === '6' ? 'font-black text-[#fef08a]' : 'font-bold'}`}
+              className={`text-[11px] md:text-sm uppercase tracking-widest ${templateType === '6' ? 'font-black text-pink-700' : 'font-bold'}`}
+              style={{ color: customConfig?.authorColor || undefined }}
             >
               {t.lyric}
             </h3>
@@ -9060,7 +9062,8 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
                     setToast('Đã copy lời bài hát!');
                     setTimeout(() => setToast(''), 3000);
                   }}
-                  className={`transition-all flex items-center gap-1.5 uppercase tracking-wider cursor-pointer ${templateType === '6' ? 'hover:scale-105 text-[11px] md:text-xs font-black text-[#fef08a]' : 'hover:opacity-100 text-xs font-bold'}`}
+                  className={`transition-all flex items-center gap-1.5 uppercase tracking-wider cursor-pointer ${templateType === '6' ? 'hover:scale-105 text-[11px] md:text-xs font-black text-pink-700' : 'hover:opacity-100 text-xs font-bold'}`}
+                  style={{ color: customConfig?.authorColor || undefined }}
                   title="Copy lời bài hát"
                 >
                   <Copy className="w-3.5 h-3.5" />
@@ -9072,7 +9075,8 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
                   href={demo.linkDrive}
                   target="_blank"
                   rel="noreferrer"
-                  className={`transition-all flex items-center gap-1.5 uppercase tracking-wider cursor-pointer ${templateType === '6' ? 'hover:scale-105 text-[11px] md:text-xs font-black text-[#fef08a]' : 'hover:opacity-100 text-xs font-bold'}`}
+                  className={`transition-all flex items-center gap-1.5 uppercase tracking-wider cursor-pointer ${templateType === '6' ? 'hover:scale-105 text-[11px] md:text-xs font-black text-pink-700' : 'hover:opacity-100 text-xs font-bold'}`}
+                  style={{ color: customConfig?.authorColor || undefined }}
                   title="Tải nhạc từ Google Drive"
                 >
                   <Download className="w-3.5 h-3.5" />
@@ -9659,14 +9663,22 @@ function AdminTemplatesSettings({ isPCPreviewMode, setIsPCPreviewMode }: { isPCP
 
 function AdminTemplateEdit({ config, demos, onBack, onSave, isPCPreviewMode, setIsPCPreviewMode, templateName }: any) {
     const { t } = useAdminTranslation();
+    const { lang } = useContext(LanguageContext);
     const [name, setName] = useState(config.name);
     const [bgColor, setBgColor] = useState(config.bgColor || '');
     const [titleColor, setTitleColor] = useState(config.titleColor || '');
     const [lyricsColor, setLyricsColor] = useState(config.lyricsColor || '');
+    const [authorColor, setAuthorColor] = useState(config.authorColor || '');
     const [waveColor, setWaveColor] = useState(config.waveColor || '');
     const [previewSongId, setPreviewSongId] = useState(demos[0]?.id || '');
 
-    const currentConfig = { ...config, name, bgColor, titleColor, lyricsColor, waveColor };
+    const currentConfig = { ...config, name, bgColor, titleColor, lyricsColor, authorColor, waveColor };
+
+    const authorColorLabel = lang === 'en' ? "Composer color" : 
+                             lang === 'ko' ? "작곡가 색상" : 
+                             lang === 'ja' ? "作曲家カラー" : 
+                             lang === 'th' ? "สีของผู้แต่ง" : 
+                             lang === 'zh' ? "作曲家颜色" : "Màu Tên tác giả";
 
     const renderColorPickerField = (
       label: string, 
@@ -9739,6 +9751,7 @@ function AdminTemplateEdit({ config, demos, onBack, onSave, isPCPreviewMode, set
                  <div className={`space-y-4 pt-4 border-t border-stone-200 ${isPCPreviewMode ? 'text-sm' : ''}`}>
                     {renderColorPickerField("Màu nền tùy chỉnh", bgColor, setBgColor, "VD: #111827")}
                     {renderColorPickerField("Màu chữ tiêu đề", titleColor, setTitleColor, "VD: #ffffff")}
+                    {renderColorPickerField(authorColorLabel, authorColor, setAuthorColor, "VD: #fef08a")}
                     {renderColorPickerField("Màu lời bài hát", lyricsColor, setLyricsColor, "VD: #eeeeee")}
                     {renderColorPickerField("Màu sóng âm", waveColor, setWaveColor, "VD: #10b981")}
                  </div>
@@ -10724,6 +10737,10 @@ function AdminDashboard() {
   };
 
   // Passwords Tab States
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminEmailError, setAdminEmailError] = useState('');
+  const [adminEmailSuccess, setAdminEmailSuccess] = useState('');
+
   const [oldAdminPass, setOldAdminPass] = useState('');
   const [newAdminPass, setNewAdminPass] = useState('');
   const [confirmAdminPass, setConfirmAdminPass] = useState('');
@@ -10773,6 +10790,9 @@ function AdminDashboard() {
         if (resData.ogImageUrl) setOgImageUrlPreview(resData.ogImageUrl);
         if (resData.memberPassword) {
           setMemberPassInput(resData.memberPassword);
+        }
+        if (resData.email) {
+          setAdminEmail(resData.email);
         }
       })
       .catch(err => {
@@ -11062,6 +11082,41 @@ function AdminDashboard() {
       }
     } catch (err) {
       setAdminPassError(t("Lỗi kết nối máy chủ!"));
+    }
+  };
+
+  const handleAdminEmailChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminEmailError('');
+    setAdminEmailSuccess('');
+    
+    if (!adminEmail) {
+      setAdminEmailError(t("Vui lòng nhập địa chỉ email!"));
+      return;
+    }
+    
+    try {
+      const res = await fetch('/api/admin/change-email', {
+        method: 'POST',
+        headers: {
+          'x-artist-extension': getArtistExtensionFromUrl(),
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getAdminToken() || ''}`
+        },
+        body: JSON.stringify({ email: adminEmail })
+      });
+      const resData = await res.json();
+      
+      if (res.ok) {
+        setAdminEmail(resData.email);
+        setAdminEmailSuccess(t("Cập nhật email thành công!"));
+        setToast(t("Cập nhật email thành công!"));
+        setTimeout(() => setToast(''), 3000);
+      } else {
+        setAdminEmailError(resData.error || t("Đã có lỗi xảy ra!"));
+      }
+    } catch (err) {
+      setAdminEmailError(t("Lỗi kết nối máy chủ!"));
     }
   };
 
@@ -12931,6 +12986,38 @@ function AdminDashboard() {
           {activeTab === 'security' && (
             <motion.div key="security" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
             <div className="max-w-2xl space-y-12 py-1">
+              <div>
+                <h2 className="text-2xl font-bold mb-2 text-stone-900 flex items-center gap-2"><Lock className="w-6 h-6 text-indigo-600" />{t("Cập Nhật Email Quản Trị")}</h2>
+                <p className="text-sm text-stone-500 mb-6">{t("Bạn sẽ dùng email này để đăng nhập vào trang quản trị thay cho username (nếu muốn).")}</p>
+                
+                <form onSubmit={handleAdminEmailChange} className="space-y-4 max-w-md">
+                  <div>
+                    <label className="block text-sm font-bold text-stone-700 mb-2">{t("Địa chỉ Email")}</label>
+                    <input 
+                      type="email"
+                      value={adminEmail}
+                      onChange={(e: any) => setAdminEmail(e.target.value)}
+                      className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono"
+                      placeholder={t("Nhập email...")}
+                      required
+                    />
+                  </div>
+                  
+                  {adminEmailError && (
+                    <p className="text-red-600 text-sm font-bold bg-red-50 border border-red-200 rounded-xl px-4 py-2">{adminEmailError}</p>
+                  )}
+                  {adminEmailSuccess && (
+                    <p className="text-emerald-600 text-sm font-bold bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2">{adminEmailSuccess}</p>
+                  )}
+                  
+                  <div className="pt-2">
+                    <button type="submit" className="bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] px-6 py-3 rounded-xl font-medium">{t("Cập nhật Email")}</button>
+                  </div>
+                </form>
+              </div>
+
+              <div className="h-px bg-stone-200 w-full"></div>
+
               <div>
                 <h2 className="text-2xl font-bold mb-2 text-stone-900 flex items-center gap-2"><Lock className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />{t("Đổi Mật Khẩu Quản Trị (Admin)")}</h2>
                 <p className="text-sm text-stone-500 mb-6">{t("Bạn sẽ dùng mật khẩu này để đăng nhập vào trang quản trị AdminCP này.")}</p>

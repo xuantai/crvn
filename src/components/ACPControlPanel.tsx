@@ -1260,7 +1260,7 @@ export default function ACPControlPanel() {
                         <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider">Đường dẫn</th>
                         <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider">Hiển thị</th>
                         <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider">Trạng Thái Duyệt</th>
-                        <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider">Mật khẩu</th>
+                        <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider">Email</th>
                         <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider">Database</th>
                         <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider text-right pr-6">Hành động</th>
                       </tr>
@@ -1425,7 +1425,13 @@ export default function ACPControlPanel() {
                               </button>
                             </div>
                           </td>
-                          <td className="p-4 text-sm font-mono text-neutral-400">••••••••</td>
+                          <td className="p-4 text-sm text-neutral-400">
+                            {artist.email ? (
+                              <a href={`mailto:${artist.email}`} className="hover:text-white transition-colors">{artist.email}</a>
+                            ) : (
+                              <span className="text-neutral-600 italic">Trống</span>
+                            )}
+                          </td>
                           <td className="p-4">
                             {artist.dbConfig ? (
                               <div className="flex items-center gap-1 bg-purple-500/10 border border-purple-500/15 text-purple-400 px-2 py-0.5 rounded-lg text-[10px] w-fit font-mono font-bold">

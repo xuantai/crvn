@@ -666,7 +666,7 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false, lang = 'v
         style={{ backgroundImage: `url("${bgImage}")` }}
       />
       {/* Dark overlay to improve text readability */}
-      <div className="absolute inset-0 z-0 bg-black/50" />
+      <div className="absolute inset-0 z-0 bg-black/70" />
       
       {/* Dimmer overlay for click outside */}
       <div 
