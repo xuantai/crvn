@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChorusLogo } from './ChorusLogo';
-import { Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X, LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home, Upload, MessageSquare, Send, AlertTriangle, Disc3, Bell, ChevronLeft, Mail, Palette } from 'lucide-react';
+import { Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X, LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home, Upload, MessageSquare, Send, AlertTriangle, Disc3, Bell, ChevronLeft, Mail, Palette, LayoutTemplate, GripVertical, Type } from 'lucide-react';
 
 
 interface Artist {
@@ -171,6 +171,7 @@ export default function ACPControlPanel() {
   const [menuBioVi, setMenuBioVi] = useState('Tiểu Sử');
   const [featuresTitle, setFeaturesTitle] = useState('');
   const [featuresSub, setFeaturesSub] = useState('');
+  const [globalLayoutSections, setGlobalLayoutSections] = useState<string[]>(['title', 'spotify', 'vault', 'mv']);
   const [statusBadge, setStatusBadge] = useState('');
 
   const [isSavingLanding, setIsSavingLanding] = useState(false);
@@ -226,6 +227,27 @@ export default function ACPControlPanel() {
   useEffect(() => {
     setArtistCurrentPage(0);
   }, [searchQuery, artistPageSize]);
+
+  
+  const getLayoutSectionName = (sec: string) => {
+    if (sec === 'title') return "Tiêu Đề (Tên & Giới thiệu ngắn)";
+    if (sec === 'spotify') return "Spotify Playlist / Album";
+    if (sec === 'vault') return "Kho Nhạc (Danh sách Đề mô / Ra Rồi)";
+    if (sec === 'mv') return "MV Đã Phát Hành (YouTube Videos)";
+    return sec;
+  };
+  const handleDragStartLayout = (e: any, index: number) => {
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
+  const handleDropLayout = (e: any, dropIndex: number) => {
+    const dragIndex = parseInt(e.dataTransfer.getData('text/plain'));
+    if (dragIndex === dropIndex) return;
+    const newList = [...globalLayoutSections];
+    const draggedItem = newList[dragIndex];
+    newList.splice(dragIndex, 1);
+    newList.splice(dropIndex, 0, draggedItem);
+    setGlobalLayoutSections(newList);
+  };
 
   const fetchSentMails = async () => {
     try {
@@ -314,6 +336,7 @@ export default function ACPControlPanel() {
         setMenuVaultVi(data.menuVaultVi || 'Kho Nhạc');
         setMenuAboutVi(data.menuAboutVi || 'Về Tôi');
         setMenuBioVi(data.menuBioVi || 'Tiểu Sử');
+        setGlobalLayoutSections(data.globalLayoutSections || ['title', 'spotify', 'vault', 'mv']);
       }
     } catch (err) {
       console.error(err);
@@ -912,6 +935,7 @@ export default function ACPControlPanel() {
           menuVaultVi,
           menuAboutVi,
           menuBioVi,
+          globalLayoutSections,
           cloudSyncEnabled,
           templateNames
         })
@@ -1496,6 +1520,42 @@ export default function ACPControlPanel() {
                 <p className="text-neutral-400 text-xs mt-1">
                   Điều chỉnh tiêu đề, slogan, phần mô tả chính và chữ chân trang xuất hiện trên trang chủ.
                 </p>
+              </div>
+
+              {/* Layout settings */}
+              <div className="bg-neutral-900/30 border border-white/5 rounded-2xl p-4 sm:p-6 mb-8">
+                <div className="mb-4">
+                  <h2 className="text-lg font-black flex items-center gap-2 text-teal-400">
+                    <LayoutTemplate className="w-5 h-5" />
+                    <span>Bố cục nghệ sĩ mặc định</span>
+                  </h2>
+                  <p className="text-neutral-400 text-xs mt-1">
+                    Kéo thả các phần dưới đây để sắp xếp thứ tự hiển thị mặc định của trang chủ nghệ sĩ. (Áp dụng cho nghệ sĩ chưa tự tùy chỉnh).
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  {globalLayoutSections.map((sec, i) => (
+                    <div 
+                      key={sec} 
+                      draggable 
+                      onDragStart={(e) => handleDragStartLayout(e, i)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => handleDropLayout(e, i)}
+                      className="flex items-center gap-4 bg-black/40 border border-white/5 hover:border-white/10 rounded-xl p-3 cursor-grab active:cursor-grabbing transition-all hover:shadow-sm select-none"
+                    >
+                      <GripVertical className="text-neutral-500 w-4 h-4 shrink-0" />
+                      <div className="flex-1">
+                        <div className="font-bold text-neutral-200 text-xs">
+                          {getLayoutSectionName(sec)}
+                        </div>
+                      </div>
+                      <div className="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center text-[10px] font-bold text-neutral-400">
+                        {i + 1}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <form onSubmit={handleSaveLandingConfig} className="space-y-6">

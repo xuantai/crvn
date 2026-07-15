@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Disc, Music, Apple, Youtube, Play, Share2, X, ExternalLink, ArrowLeft, Check, Edit3, FileText } from 'lucide-react';
+import { Disc, Music, Apple, Youtube, Play, Share2, X, ExternalLink, ArrowLeft, Check, Edit3, FileText, Download } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 interface IndirectBioCardProps {
@@ -17,12 +17,14 @@ interface IndirectBioCardProps {
     linkApple?: string;
     linkYoutubeMusic?: string;
     linkYoutube?: string;
+    linkDrive?: string;
     isBrand?: boolean;
     brandName?: string;
     brandColor?: string;
     brandLogoUrl?: string;
     brandBrief?: string;
     brandReferenceVideos?: string[];
+    achievements?: any[];
   };
   onClose?: () => void;
   isStandalone?: boolean;
@@ -601,6 +603,18 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false, lang = 'v
       color: 'bg-[#FF0000]/10 hover:bg-[#FF0000]/20 border border-[#FF0000]/30 text-[#FF0000]',
       description: 'Xem MV chính thức trên YouTube',
     },
+    {
+      id: 'drive',
+      name: 'Google Drive',
+      url: demo.linkDrive,
+      icon: (
+        <motion.div animate={{ scale: [1, 1.15, 1], filter: ['drop-shadow(0px 0px 0px rgba(255, 255, 255, 0))', 'drop-shadow(0px 0px 12px rgba(255, 255, 255, 0.8))', 'drop-shadow(0px 0px 0px rgba(255, 255, 255, 0))'] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 2.5 }}>
+          <Download className="w-6 h-6 text-white" />
+        </motion.div>
+      ),
+      color: 'bg-white/10 hover:bg-white/20 border border-white/30 text-white',
+      description: 'Tải nhạc gốc từ Google Drive',
+    },
   ].filter(l => !!l.url);
 
   useEffect(() => {
@@ -693,21 +707,21 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false, lang = 'v
         {/* Windows-like Header with title and compact Edit & Share actions */}
         <motion.div 
           variants={itemVariants}
-          className="relative w-full bg-white/5 border-b border-white/10 px-5 py-3 flex items-center justify-between backdrop-blur-xl overflow-hidden"
+          className={`relative w-full border-b border-white/10 px-5 py-3 flex items-center justify-between backdrop-blur-xl overflow-hidden ${demo.isBrand ? 'bg-transparent' : 'bg-white/5'}`}
         >
           {demo.isBrand && demo.brandLogoUrl && (
-            <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+            <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden bg-black/40">
               <motion.img 
                 src={demo.brandLogoUrl} 
-                className="absolute inset-0 w-full h-full object-cover opacity-[0.05] blur-xl pointer-events-none" 
+                className="absolute inset-0 w-full h-full object-cover opacity-[0.2] blur-2xl pointer-events-none" 
                 alt="" 
                 referrerPolicy="no-referrer"
                 animate={{
-                  scale: [1.1, 1.22, 1.1],
-                  opacity: [0.03, 0.07, 0.03]
+                  scale: [1.1, 1.25, 1.1],
+                  opacity: [0.15, 0.3, 0.15]
                 }}
                 transition={{
-                  duration: 8,
+                  duration: 10,
                   repeat: Infinity,
                   ease: "easeInOut"
                 }}

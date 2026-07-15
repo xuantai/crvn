@@ -5217,8 +5217,8 @@ function Home() {
 
   const renderTitleSection = (isFirst: boolean) => {
     return (
-      <section key="title" className={`relative ${isFirst ? 'pt-36 sm:pt-40 md:pt-48' : 'pt-12 sm:pt-16'} pb-10 px-6 sm:px-12 flex flex-col items-center justify-center text-center min-h-[300px]`}>
-        <div className="relative z-10 w-full max-w-5xl flex flex-col items-center mt-10 sm:mt-14 md:mt-18">
+      <section key="title" className={`relative ${isFirst ? 'pt-24 sm:pt-28' : 'pt-12 sm:pt-16'} pb-10 px-6 sm:px-12 flex flex-col items-center justify-center text-center min-h-[300px]`}>
+        <div className="relative z-10 w-full max-w-5xl flex flex-col items-center mt-4 sm:mt-6">
           <div className="w-full text-center">
             {effectiveCoverUrl ? (
               <div>
@@ -5286,7 +5286,7 @@ function Home() {
   const renderSpotifySection = (isFirst: boolean) => {
     if (!data.spotifyUrl) return null;
     return (
-      <section key="spotify" className={`w-full max-w-5xl mx-auto px-6 sm:px-12 ${isFirst ? 'pt-36 sm:pt-40 md:pt-48 pb-10' : 'pb-6'}`}>
+      <section key="spotify" className={`w-full max-w-5xl mx-auto px-6 sm:px-12 ${isFirst ? 'pt-24 sm:pt-28 pb-10' : 'pb-6'}`}>
         <div className="w-full relative z-10 max-w-4xl mx-auto">
           {(() => {
             const spMatch = data.spotifyUrl.match(/spotify\.com\/(artist|playlist|album|track)\/([a-zA-Z0-9]+)/);
@@ -5487,7 +5487,7 @@ function Home() {
       </div>
 
       {isVault && (() => {
-        const layoutOrder = data?.layoutSections || ['title', 'spotify', 'vault', 'mv'];
+        const layoutOrder = data?.layoutSections || landingConfig?.globalLayoutSections || ['title', 'spotify', 'vault', 'mv'];
         const titleOrder = layoutOrder.indexOf('title') !== -1 ? layoutOrder.indexOf('title') : 0;
         const spotifyOrder = layoutOrder.indexOf('spotify') !== -1 ? layoutOrder.indexOf('spotify') : 1;
         const vaultOrder = layoutOrder.indexOf('vault') !== -1 ? layoutOrder.indexOf('vault') : 2;
@@ -5506,7 +5506,7 @@ function Home() {
 
             <div style={{ order: vaultOrder }} className="w-full">
               {/* Demos Section */}
-              <section id="music-tabs-section" className={`scroll-mt-24 w-full max-w-5xl mx-auto px-6 sm:px-12 pb-10 ${firstSection === 'vault' ? 'pt-36 sm:pt-40 md:pt-48' : ''}`}>
+              <section id="music-tabs-section" className={`scroll-mt-24 w-full max-w-5xl mx-auto px-6 sm:px-12 pb-10 ${firstSection === 'vault' ? 'pt-24 sm:pt-28' : ''}`}>
           {/* Header Row with compact Search Box */}
           <div className="flex items-center justify-between mb-4">
             <div className={`${isHomeSearchExpanded ? 'hidden sm:flex' : 'flex'} text-base sm:text-lg font-bold tracking-tight text-white/95 items-center gap-2 shrink-0`}>
@@ -6079,7 +6079,7 @@ function Home() {
             </div>
 
             {ytVideos.length > 0 && (
-              <div style={{ order: mvOrder }} className={`w-full max-w-5xl mx-auto px-6 sm:px-12 pb-32 ${firstSection === 'mv' ? 'pt-36 sm:pt-40 md:pt-48' : ''}`}>
+              <div style={{ order: mvOrder }} className={`w-full max-w-5xl mx-auto px-6 sm:px-12 pb-32 ${firstSection === 'mv' ? 'pt-24 sm:pt-28' : ''}`}>
                 {(() => {
           const mvTotalItems = ytVideos.length;
           const mvTotalPages = Math.ceil(mvTotalItems / mvPageSize);
@@ -6209,7 +6209,7 @@ function Home() {
       })()}
 
       {!isVault && (
-        <main className="flex-1 w-full max-w-5xl mx-auto px-6 sm:px-12 pb-32 pt-36 sm:pt-40 md:pt-48">
+        <main className="flex-1 w-full max-w-5xl mx-auto px-6 sm:px-12 pb-32 pt-24 sm:pt-28">
           {isAbout && <PublicAboutView aboutMe={data.aboutMe} data={data} t={t} onGoToVault={() => setActiveMenuTab(data.menus?.find((m: any) => m.type === 'vault')?.id || 'm1')} isAdmin={!!getAdminToken()} artistExtension={getArtistExtensionFromUrl()} />}
           {isBio && <PublicBioView biography={data.biography} t={t} isAdmin={!!getAdminToken()} artistExtension={getArtistExtensionFromUrl()} />}
         </main>
@@ -8867,6 +8867,59 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
               )}
             </div>
             
+            
+              
+          <div className="relative w-full py-4 -my-4 flex flex-col items-center">
+            {demo.isBrand && demo.brandLogoUrl && (
+              <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden flex items-center justify-center">
+                <motion.div 
+                  className="absolute inset-0 pointer-events-none z-0 opacity-45 blur-3xl"
+                  style={{
+                    background: `radial-gradient(circle, ${brandColors?.primary || '#6366f1'}40 0%, transparent 70%)`
+                  }}
+                  animate={{
+                    opacity: [0.35, 0.65, 0.35],
+                    scale: [0.95, 1.15, 0.95]
+                  }}
+                  transition={{
+                    duration: 5,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+                <motion.img 
+                  src={demo.brandLogoUrl} 
+                  className="absolute inset-0 w-full h-full object-cover opacity-[0.25] blur-3xl pointer-events-none" 
+                  alt="" 
+                  referrerPolicy="no-referrer"
+                  animate={{
+                    scale: [1.1, 1.25, 1.1],
+                    opacity: [0.15, 0.3, 0.15]
+                  }}
+                  transition={{
+                    duration: 10,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+                <motion.img 
+                  src={demo.brandLogoUrl} 
+                  className="absolute w-28 h-28 opacity-[0.2] blur-[1px] pointer-events-none z-0" 
+                  alt="" 
+                  referrerPolicy="no-referrer"
+                  animate={{
+                    y: [0, -10, 0],
+                    rotate: [0, 3, 0]
+                  }}
+                  transition={{
+                    duration: 8,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+              </div>
+            )}
+            
           <h1 
             className="text-xl md:text-2xl font-black text-center mb-1 drop-shadow-sm flex items-center justify-center relative z-30"
             style={{ color: customConfig?.titleColor || undefined }}
@@ -8896,7 +8949,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
-                className="my-3 flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-xl border shadow-md w-fit mx-auto"
+                className="my-3 flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-xl border shadow-md w-fit mx-auto relative z-30"
                 style={{
                   borderColor: badgeStyle.borderColor,
                   backgroundColor: badgeStyle.backgroundColor,
@@ -8920,7 +8973,7 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
             );
           })()}
           <p 
-            className="text-lg md:text-xl font-medium text-center mb-0"
+            className="text-lg md:text-xl font-medium text-center mb-0 relative z-30"
             style={{
               opacity: isLight ? 0.85 : 0.95,
               textShadow: isLight ? '0 1px 1.5px rgba(255,255,255,0.7)' : '0 1.5px 3px rgba(0,0,0,0.85)',
@@ -8929,10 +8982,11 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
             {renderArtistNameWithLinks(demo.singer || demo.author || (demo as any)?.defaultArtistName || 'Nghệ sĩ', systemArtists)}
           </p>
           <p 
-            className={`text-xs md:text-sm text-center mb-1 md:mb-6 ${templateType === '6' ? 'font-semibold text-[#fef08a]' : 'font-medium opacity-60'}`}
+            className={`text-xs md:text-sm text-center mb-1 md:mb-6 relative z-30 ${templateType === '6' ? 'font-semibold text-[#fef08a]' : 'font-medium opacity-60'}`}
           >
             {t.sAuth} {renderArtistNameWithLinks(demo.composer || (demo as any)?.defaultArtistName || 'Nghệ sĩ', systemArtists)}
           </p>
+          </div>
           </motion.div>
           
           <div 
@@ -8994,18 +9048,6 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
               {t.lyric}
             </h3>
             <div className="flex items-center gap-4">
-              {demo.linkDrive && (
-                <a
-                  href={demo.linkDrive}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={`transition-all flex items-center gap-1.5 uppercase tracking-wider cursor-pointer ${templateType === '6' ? 'hover:scale-105 text-[11px] md:text-xs font-black text-[#fef08a]' : 'hover:opacity-100 text-xs font-bold'}`}
-                  title="Tải nhạc từ Google Drive"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  Tải nhạc
-                </a>
-              )}
               {demo.lyrics && (
                 <button
                   onClick={async () => {
@@ -9024,6 +9066,18 @@ function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, on
                   <Copy className="w-3.5 h-3.5" />
                   Copy
                 </button>
+              )}
+              {demo.linkDrive && (
+                <a
+                  href={demo.linkDrive}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`transition-all flex items-center gap-1.5 uppercase tracking-wider cursor-pointer ${templateType === '6' ? 'hover:scale-105 text-[11px] md:text-xs font-black text-[#fef08a]' : 'hover:opacity-100 text-xs font-bold'}`}
+                  title="Tải nhạc từ Google Drive"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Download
+                </a>
               )}
             </div>
           </div>
@@ -14201,6 +14255,7 @@ function AdminCreateDemo() {
 
   const generateSlug = (text: string) => {
     return text.toString()
+      .replace(/đ/g, 'd').replace(/Đ/g, 'D')
       .normalize('NFD') // split an accented letter in the base letter and the accent
       .replace(/[\u0300-\u036f]/g, '') // remove all previously split accents
       .toLowerCase()
@@ -14578,27 +14633,16 @@ function AdminCreateDemo() {
               <label className="block text-sm font-bold text-stone-700 mb-2">{t("Phần mở rộng (Link bài hát)")}</label>
               <div className="flex items-center gap-2 border border-stone-300 rounded-xl px-4 py-3 bg-white focus-within:border-stone-900 focus-within:ring-2 focus-within:ring-stone-900 transition-shadow">
                 <span className="text-stone-400 font-mono text-sm opacity-60 hidden sm:inline">/</span>
-                <input name="slug" value={slug} onChange={e => {setSlug(e.target.value); setIsSlugEdited(true);}} placeholder="ten-bai-hat..." className="w-full focus:outline-none bg-transparent" />
+                <input name="slug" value={slug} onChange={e => {setSlug(generateSlug(e.target.value)); setIsSlugEdited(true);}} placeholder="ten-bai-hat..." className="w-full focus:outline-none bg-transparent" />
               </div>
               <p className="text-xs text-stone-500 mt-2">{t("Sẽ tự động tạo dựa trên tên bài hát nếu bỏ trống.")}</p>
             </div>
-
-            <div>
-              <label className="block text-sm font-bold text-stone-700 mb-2">{t("Link Google Drive tải nhạc")}</label>
-              <div className="relative">
-                <FolderDown className="absolute left-3 top-3.5 w-5 h-5 text-stone-400" />
-                <input 
-                  name="linkDrive" 
-                  value={linkDrive} 
-                  onChange={e => setLinkDrive(e.target.value)} 
-                  placeholder="https://drive.google.com/file/d/.../view" 
-                  className="w-full border border-stone-300 rounded-xl pl-10 pr-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" 
-                />
-              </div>
-              <p className="text-xs text-stone-500 mt-2">{t("Nếu nhập link, người dùng sẽ thấy icon tải nhạc (Download) ở trên phần lời bài hát để click tải.")}</p>
-            </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ca sĩ thể hiện")}</label>
+                <input name="singer" value={singer} onChange={e => setSinger(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+              </div>
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-2">{t("Sáng tác")}</label>
                 <input name="composer" value={composer} onChange={e => setComposer(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
@@ -14606,14 +14650,6 @@ function AdminCreateDemo() {
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-2">{t("Music Producer")}</label>
                 <input name="musicProducer" value={musicProducer} onChange={e => setMusicProducer(e.target.value)} placeholder="Chưa rõ" className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ca sĩ thể hiện")}</label>
-                <input name="singer" value={singer} onChange={e => setSinger(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-stone-700 mb-2">{t("Năm phát hành")}</label>
-                <input name="releaseYear" value={releaseYear} onChange={e => setReleaseYear(e.target.value)} placeholder={t("Ví dụ: 2026, 2024...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
               </div>
             </div>
 
@@ -15090,18 +15126,39 @@ function AdminCreateDemo() {
 
                 <AchievementEditor achievements={achievements} onChange={setAchievements} />
 
+                <div className="mt-6 mb-6">
+                  <label className="block text-sm font-bold text-stone-700 mb-2">{t("Link Google Drive tải nhạc")}</label>
+                  <div className="relative">
+                    <FolderDown className="absolute left-3 top-3.5 w-5 h-5 text-stone-400" />
+                    <input 
+                      name="linkDrive" 
+                      value={linkDrive} 
+                      onChange={e => setLinkDrive(e.target.value)} 
+                      placeholder="https://drive.google.com/file/d/.../view" 
+                      className="w-full border border-stone-300 rounded-xl pl-10 pr-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow bg-white" 
+                    />
+                  </div>
+                  <p className="text-xs text-stone-500 mt-2">{t("Nếu nhập link, người dùng sẽ thấy icon tải nhạc (Download) ở trên phần lời bài hát để click tải.")}</p>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-stone-100 items-start">
-                   <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">{t("Đã phát hành")}</label>
-                    <label className="inline-flex items-center gap-3 cursor-pointer mt-1">
-                      <input type="checkbox" name="isReleased" checked={isReleased} onChange={e => {
+                   <div className="flex items-center justify-between bg-stone-50 p-4 rounded-xl border border-stone-200 h-[60px]">
+                    <div className="flex items-center gap-3 cursor-pointer shrink-0">
+                      <input type="checkbox" id="isReleasedForm" name="isReleased" checked={isReleased} onChange={e => {
                         const checked = e.target.checked;
                         setIsReleased(checked);
                         if (checked) {
                           setPassword('');
                         }
                       }} className="w-6 h-6 rounded border-stone-300 text-stone-900 focus:ring-stone-900 transition-all cursor-pointer" />
-                    </label>
+                      <label htmlFor="isReleasedForm" className="block text-sm font-bold text-stone-700 cursor-pointer select-none mb-0">{t("Đã phát hành")}</label>
+                    </div>
+                    
+                    {isReleased && (
+                      <div className="flex items-center gap-2">
+                        <input name="releaseYear" value={releaseYear} onChange={e => setReleaseYear(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder={t("2026")} className="w-16 border border-stone-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow text-sm text-center bg-white" maxLength={4} />
+                      </div>
+                    )}
                   </div>
 
                    <div>
@@ -15442,6 +15499,7 @@ function AdminEditDemo() {
 
   const generateSlug = (text: string) => {
     return text.toString()
+      .replace(/đ/g, 'd').replace(/Đ/g, 'D')
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
@@ -15784,7 +15842,6 @@ function AdminEditDemo() {
         </div>
         
         <div className="bg-white p-8 rounded-3xl border border-stone-200 shadow-xl shadow-stone-200/50">
-          <h1 className="text-3xl font-bold mb-6">{t("Chỉnh Sửa Demo")}</h1>
           
           <div className="flex bg-stone-100 p-1 rounded-xl mb-8 w-full max-w-xs mx-auto">
             <button type="button" onClick={() => setLinkType('direct')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${linkType === 'direct' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}>{t("Trực Tiếp")}</button>
@@ -15801,26 +15858,15 @@ function AdminEditDemo() {
               <label className="block text-sm font-bold text-stone-700 mb-2">{t("Phần mở rộng (Link bài hát)")}</label>
               <div className="flex items-center gap-2 border border-stone-300 rounded-xl px-4 py-3 bg-white focus-within:border-stone-900 focus-within:ring-2 focus-within:ring-stone-900 transition-shadow">
                 <span className="text-stone-400 font-mono text-sm opacity-60 hidden sm:inline">/</span>
-                <input name="slug" value={slug} onChange={e => {setSlug(e.target.value); setIsSlugEdited(true);}} placeholder="ten-bai-hat..." className="w-full focus:outline-none bg-transparent" />
+                <input name="slug" value={slug} onChange={e => {setSlug(generateSlug(e.target.value)); setIsSlugEdited(true);}} placeholder="ten-bai-hat..." className="w-full focus:outline-none bg-transparent" />
               </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-stone-700 mb-2">{t("Link Google Drive tải nhạc")}</label>
-              <div className="relative">
-                <FolderDown className="absolute left-3 top-3.5 w-5 h-5 text-stone-400" />
-                <input 
-                  name="linkDrive" 
-                  value={linkDrive} 
-                  onChange={e => setLinkDrive(e.target.value)} 
-                  placeholder="https://drive.google.com/file/d/.../view" 
-                  className="w-full border border-stone-300 rounded-xl pl-10 pr-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" 
-                />
-              </div>
-              <p className="text-xs text-stone-500 mt-2">{t("Nếu nhập link, người dùng sẽ thấy icon tải nhạc (Download) ở trên phần lời bài hát để click tải.")}</p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ca sĩ thể hiện")}</label>
+                <input name="singer" value={singer} onChange={e => setSinger(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+              </div>
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-2">{t("Sáng tác")}</label>
                 <input name="composer" value={composer} onChange={e => setComposer(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
@@ -15829,19 +15875,11 @@ function AdminEditDemo() {
                 <label className="block text-sm font-bold text-stone-700 mb-2">{t("Music Producer")}</label>
                 <input name="musicProducer" value={musicProducer} onChange={e => setMusicProducer(e.target.value)} placeholder="Chưa rõ" className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
               </div>
-              <div>
-                <label className="block text-sm font-bold text-stone-700 mb-2">{t("Ca sĩ thể hiện")}</label>
-                <input name="singer" value={singer} onChange={e => setSinger(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-stone-700 mb-2">{t("Năm phát hành")}</label>
-                <input name="releaseYear" value={releaseYear} onChange={e => setReleaseYear(e.target.value)} placeholder={t("Ví dụ: 2026, 2024...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
-              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
               <div>
-                <label className="block text-sm font-bold text-stone-700 mb-2">{t("Bìa Đĩa Chỉnh Sửa (Dùng làm thumbnail)")}</label>
+                <label className="block text-sm font-bold text-stone-700 mb-2">{t("Bìa Đĩa (Dùng làm thumbnail)")}</label>
                 <div 
                   onDragOver={(e) => { e.preventDefault(); setIsDraggingCover(true); }}
                   onDragLeave={() => setIsDraggingCover(false)}
@@ -16364,18 +16402,39 @@ function AdminEditDemo() {
 
                 <AchievementEditor achievements={achievements} onChange={setAchievements} />
 
+                <div className="mt-6 mb-6">
+                  <label className="block text-sm font-bold text-stone-700 mb-2">{t("Link Google Drive tải nhạc")}</label>
+                  <div className="relative">
+                    <FolderDown className="absolute left-3 top-3.5 w-5 h-5 text-stone-400" />
+                    <input 
+                      name="linkDrive" 
+                      value={linkDrive} 
+                      onChange={e => setLinkDrive(e.target.value)} 
+                      placeholder="https://drive.google.com/file/d/.../view" 
+                      className="w-full border border-stone-300 rounded-xl pl-10 pr-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow bg-white" 
+                    />
+                  </div>
+                  <p className="text-xs text-stone-500 mt-2">{t("Nếu nhập link, người dùng sẽ thấy icon tải nhạc (Download) ở trên phần lời bài hát để click tải.")}</p>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-stone-100 items-start">
-                   <div>
-                    <label className="block text-sm font-bold text-stone-700 mb-2">{t("Đã phát hành")}</label>
-                    <label className="inline-flex items-center gap-3 cursor-pointer mt-1">
-                      <input type="checkbox" name="isReleased" checked={isReleased} onChange={e => {
+                   <div className="flex items-center justify-between bg-stone-50 p-4 rounded-xl border border-stone-200 h-[60px]">
+                    <div className="flex items-center gap-3 cursor-pointer shrink-0">
+                      <input type="checkbox" id="isReleasedForm" name="isReleased" checked={isReleased} onChange={e => {
                         const checked = e.target.checked;
                         setIsReleased(checked);
                         if (checked) {
                           setPassword('');
                         }
                       }} className="w-6 h-6 rounded border-stone-300 text-stone-900 focus:ring-stone-900 transition-all cursor-pointer" />
-                    </label>
+                      <label htmlFor="isReleasedForm" className="block text-sm font-bold text-stone-700 cursor-pointer select-none mb-0">{t("Đã phát hành")}</label>
+                    </div>
+                    
+                    {isReleased && (
+                      <div className="flex items-center gap-2">
+                        <input name="releaseYear" value={releaseYear} onChange={e => setReleaseYear(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder={t("2026")} className="w-16 border border-stone-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow text-sm text-center bg-white" maxLength={4} />
+                      </div>
+                    )}
                   </div>
 
                    <div>
@@ -17653,7 +17712,7 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
   const avatar = aboutMe.avatarUrl || data?.homeCoverUrl;
   
   return (
-    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="w-full mx-auto bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] p-6 sm:p-10 mt-24 mb-20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] relative z-10 text-white max-w-6xl flex flex-col lg:flex-row gap-10 lg:gap-16 items-center lg:items-start">
+    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="w-full mx-auto bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] p-6 sm:p-10 mt-4 sm:mt-8 mb-20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] relative z-10 text-white max-w-6xl flex flex-col lg:flex-row gap-10 lg:gap-16 items-center lg:items-start">
       {isAdmin && (
         <a href={getAdminLink('#about')} className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white/70 hover:text-white z-20" title={t("Chỉnh sửa")}>
           <Edit3 className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -17772,7 +17831,7 @@ function PublicBioView({ biography, t, isAdmin, artistExtension }: any) {
   if (!hasEdu && !hasExp) return null;
   
   return (
-    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto mt-24 mb-20 relative z-10 px-4 sm:px-8 lg:px-12 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] py-12 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] text-white max-w-7xl ${hasEdu && hasExp ? 'grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16' : 'flex flex-col'}`}>
+    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto mt-4 sm:mt-8 mb-20 relative z-10 px-4 sm:px-8 lg:px-12 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] py-12 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] text-white max-w-7xl ${hasEdu && hasExp ? 'grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16' : 'flex flex-col'}`}>
       {isAdmin && (
         <a href={getAdminLink('#bio')} className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white/70 hover:text-white z-20" title={t("Chỉnh sửa")}>
           <Edit3 className="w-5 h-5 sm:w-6 sm:h-6" />

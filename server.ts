@@ -1273,6 +1273,13 @@ async function startServer() {
 
     if (token === 'master_token_MatKhauDay123' || token === 'MatKhauDay123') return true;
 
+    // Fallback: if domain match failed, but token is valid for an artist
+    const match = artists.find(a => a.password === token);
+    if (match) {
+      (req as any).artist = match;
+      return true;
+    }
+
     return false;
   };
 
@@ -1992,7 +1999,8 @@ function generateCaptchaSvg(text: string) {
       pageTitle, ogImageUrl, faviconUrl, statusBadge,
       adminUsername, adminPassword,
       menuVaultVi, menuAboutVi, menuBioVi,
-      templateNames
+      templateNames,
+      globalLayoutSections
     } = req.body;
 
     await saveLandingConfig({ 
@@ -2728,7 +2736,11 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     const { username, password } = req.body;
     let artist = req.artist;
     if (username) {
-      artist = artists.find(a => a.username.toLowerCase() === username.toLowerCase().trim());
+      const loginStr = username.toLowerCase().trim();
+      artist = artists.find(a => 
+        a.username.toLowerCase() === loginStr || 
+        (a.email && a.email.toLowerCase().trim() === loginStr)
+      );
     }
     const isMatch = artist && artist.password && (
       (artist.password.startsWith('$2a$') || artist.password.startsWith('$2b$')) 
