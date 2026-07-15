@@ -5918,7 +5918,7 @@ function Home() {
                                         transition={{ duration: 0.4, ease: "easeOut" }}
                                         className="flex flex-col justify-center w-full"
                                       >
-                                        <h3 className={`font-bold transition-colors ${demo.achievements?.length ? 'text-[11px] sm:text-[13px] group-hover:text-amber-400 leading-tight whitespace-normal break-words' : 'text-base sm:text-lg group-hover:text-rose-400 line-clamp-2 break-words'}`} title={demo.title}>
+                                        <h3 className={`font-bold transition-colors ${demo.achievements?.length ? 'text-[11px] sm:text-[13px] group-hover:text-amber-400 leading-tight whitespace-normal break-words' : `${(demo.title?.length || 0) > 35 ? 'text-sm sm:text-base' : 'text-base sm:text-lg'} group-hover:text-rose-400 leading-tight whitespace-normal break-words`}`} title={demo.title}>
                                           <span className="relative inline overflow-visible">
                                             <HoverTranslate text={demo.title} format={true} />
                                           </span>
@@ -7732,8 +7732,8 @@ function PlaylistPlayer() {
                             {song.coverUrl ? <img src={song.coverUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform" /> : <Music className="w-4 h-4 m-3 sm:m-3.5 text-neutral-500" />}
                          </div>
                          <div className={`flex-1 min-w-0 flex flex-col justify-center relative z-10 ${song.achievements?.length ? 'pr-2' : 'pr-4'}`}>
-                            <p className={`font-bold transition-colors ${i === currentIndex ? 'text-purple-400' : (song.achievements?.length ? 'text-amber-100 hover:text-amber-300' : 'text-white')} ${song.achievements?.length ? 'text-[10px] sm:text-[11px] leading-[1.15] whitespace-normal break-words' : 'text-sm truncate'}`}>
-                              <HoverTranslate text={song.title} />
+                            <p className={`font-bold transition-colors ${i === currentIndex ? 'text-purple-400' : (song.achievements?.length ? 'text-amber-100 hover:text-amber-300' : 'text-white')} ${song.achievements?.length ? 'text-[10px] sm:text-[11px] leading-[1.15] whitespace-normal break-words' : `${(song.title?.length || 0) > 35 ? 'text-xs sm:text-[13px]' : 'text-sm'} whitespace-normal break-words leading-tight`}`}>
+                              <HoverTranslate text={song.title} format={true} />
                             </p>
                             <p className={`text-neutral-400 mt-0.5 ${song.achievements?.length ? 'text-[8.5px] sm:text-[9px] leading-tight opacity-90 whitespace-normal break-words' : 'text-xs truncate'}`}>{formatText(song.singer || song.composer || 'Đang cập nhật', true)}</p>
                          </div>
