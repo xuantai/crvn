@@ -121,6 +121,7 @@ export default function ACPControlPanel() {
 
   // Form states (Artist)
   const [artistName, setArtistName] = useState('');
+  const [artistEmail, setArtistEmail] = useState('');
   const [artistUsername, setArtistUsername] = useState('');
   const [artistExtension, setArtistExtension] = useState('');
   const [artistPassword, setArtistPassword] = useState('');
@@ -570,8 +571,8 @@ export default function ACPControlPanel() {
     e.preventDefault();
     setFormErr('');
     
-    if (!artistName || !artistUsername || !artistExtension || !artistPassword) {
-      setFormErr('Vui lòng điền đầy đủ thông tin bắt buộc!');
+    if (!artistName || !artistUsername || !artistExtension || !artistPassword || !artistEmail) {
+      setFormErr('Vui lòng điền đầy đủ thông tin bắt buộc (Bao gồm Email)!');
       return;
     }
 
@@ -586,6 +587,7 @@ export default function ACPControlPanel() {
           artistName,
           username: artistUsername,
           extension: artistExtension,
+          email: artistEmail,
           password: artistPassword,
           verified: artistVerified,
           isPublic: artistIsPublic,
@@ -2567,6 +2569,18 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                   onChange={(e) => setArtistBio(e.target.value)}
                   className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
                   placeholder="vd: Thiên đường nhạc của..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Email (Đăng nhập & Bảo mật) *</label>
+                <input 
+                  type="email" 
+                  required
+                  value={artistEmail}
+                  onChange={(e) => setArtistEmail(e.target.value)}
+                  className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
+                  placeholder="vd: artist@example.com"
                 />
               </div>
 

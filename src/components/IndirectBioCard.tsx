@@ -665,6 +665,9 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false, lang = 'v
         className="absolute inset-0 z-0 bg-cover bg-center filter blur-3xl opacity-60 scale-110 transition-all duration-1000 saturate-200"
         style={{ backgroundImage: `url("${bgImage}")` }}
       />
+      {/* Dark overlay to improve text readability */}
+      <div className="absolute inset-0 z-0 bg-black/50" />
+      
       {/* Dimmer overlay for click outside */}
       <div 
         className="absolute inset-0 z-[5] cursor-pointer" 
