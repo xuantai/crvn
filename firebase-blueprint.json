@@ -1,5 +1,57 @@
 {
   "entities": {
+    "FAQ": {
+      "title": "FAQ",
+      "description": "Frequently asked questions and terms of use",
+      "type": "object",
+      "properties": {
+        "question": {
+          "type": "string"
+        },
+        "answer": {
+          "type": "string"
+        }
+      },
+      "required": ["question", "answer"]
+    },
+    "ProhibitedKeyword": {
+      "title": "ProhibitedKeyword",
+      "description": "Keywords that should be blurred",
+      "type": "object",
+      "properties": {
+        "keyword": {
+          "type": "string"
+        }
+      },
+      "required": ["keyword"]
+    },
+    "Role": {
+      "title": "Role",
+      "description": "User roles and permissions",
+      "type": "object",
+      "properties": {
+        "roleName": {
+          "type": "string"
+        },
+        "maxPosts": {
+          "type": "number"
+        },
+        "allowedFeatures": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "pricing": {
+          "type": "object",
+          "properties": {
+            "monthlyOriginal": { "type": "number" },
+            "monthlyPromo": { "type": "number" },
+            "yearlyOriginal": { "type": "number" },
+            "yearlyPromo": { "type": "number" }
+          }
+        }
+      },
+      "required": ["roleName", "maxPosts", "allowedFeatures"]
+    },
     "AppData": {
       "title": "AppData",
       "description": "System state including custom artist settings, song lists, albums, and credentials",
@@ -101,6 +153,18 @@
     "/app_data/{docId}": {
       "schema": "AppData",
       "description": "The core configuration collection storing full system state including passwords and all music metadata"
+    },
+    "/faq/{docId}": {
+      "schema": "FAQ",
+      "description": "Frequently asked questions"
+    },
+    "/prohibited_keywords/{docId}": {
+      "schema": "ProhibitedKeyword",
+      "description": "List of prohibited keywords"
+    },
+    "/roles/{docId}": {
+      "schema": "Role",
+      "description": "List of user roles"
     }
   }
 }

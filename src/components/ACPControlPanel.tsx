@@ -83,7 +83,7 @@ export default function ACPControlPanel() {
       });
     });
   };
-  const [activeTab, setActiveTab] = useState<'artists' | 'landing' | 'tickets' | 'templates'>('artists');
+  const [activeTab, setActiveTab] = useState<'artists' | 'landing' | 'tickets' | 'templates' | 'faq' | 'keywords' | 'content' | 'roles'>('artists');
   const [showComposeModal, setShowComposeModal] = useState(false);
   const [artistCurrentPage, setArtistCurrentPage] = useState(0);
   const [artistPageSize, setArtistPageSize] = useState<number>(20); // 20, 50, 100
@@ -180,6 +180,44 @@ export default function ACPControlPanel() {
   const [isTranslatingTemplates, setIsTranslatingTemplates] = useState(false);
   const [landingSuccessMsg, setLandingSuccessMsg] = useState('');
   const [subscribers, setSubscribers] = useState<string[]>([]);
+
+  // FAQ & Terms States
+  const [faqs, setFaqs] = useState<any[]>([]);
+  const [faqQ, setFaqQ] = useState('');
+  const [faqA, setFaqA] = useState('');
+  const [editingFaqIdx, setEditingFaqIdx] = useState<number | null>(null);
+
+  // Forbidden Keywords States
+  const [keywords, setKeywords] = useState<string[]>([]);
+  const [newKeyword, setNewKeyword] = useState('');
+
+  // Content Management States (Flagged songs)
+  const [flaggedSongs, setFlaggedSongs] = useState<any[]>([]);
+  const [loadingFlagged, setLoadingFlagged] = useState(false);
+  const [editingSong, setEditingSong] = useState<any | null>(null);
+  const [editSongTitle, setEditSongTitle] = useState('');
+  const [editSongLyrics, setEditSongLyrics] = useState('');
+  const [submittingSongEdit, setSubmittingSongEdit] = useState(false);
+
+  // Roles & Permissions States
+  const [roles, setRoles] = useState<any[]>([]);
+  const [editingRoleIdx, setEditingRoleIdx] = useState<number | null>(null);
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [roleName, setRoleName] = useState('');
+  const [roleMaxPosts, setRoleMaxPosts] = useState(10);
+  const [roleAccessControl, setRoleAccessControl] = useState(false);
+  const [roleDemoPassword, setRoleDemoPassword] = useState(false);
+  const [roleSecretLink, setRoleSecretLink] = useState(false);
+  const [roleCustomDomain, setRoleCustomDomain] = useState(false);
+  const [roleBio, setRoleBio] = useState(false);
+  const [roleAboutMe, setRoleAboutMe] = useState(false);
+  const [roleUiEdit, setRoleUiEdit] = useState(false);
+  const [roleExclusiveUi, setRoleExclusiveUi] = useState(false);
+  const [roleDatabase, setRoleDatabase] = useState(false);
+  const [roleSubscriptionPricing, setRoleSubscriptionPricing] = useState(false);
+
+  // Artist Role ID
+  const [artistRoleId, setArtistRoleId] = useState('');
 
   const uploadWithProgress = (file: File, setProgress: (p: number) => void): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -338,6 +376,9 @@ export default function ACPControlPanel() {
         setMenuAboutVi(data.menuAboutVi || 'Về Tôi');
         setMenuBioVi(data.menuBioVi || 'Tiểu Sử');
         setGlobalLayoutSections(data.globalLayoutSections || ['title', 'spotify', 'vault', 'mv']);
+        setFaqs(data.faq || []);
+        setKeywords(data.forbiddenKeywords || []);
+        setRoles(data.roles || []);
       }
     } catch (err) {
       console.error(err);
@@ -596,7 +637,8 @@ export default function ACPControlPanel() {
           externalWebsiteUrl: artistExternalWebsiteUrl,
           defaultLanguage: artistDefaultLanguage,
           artistBio,
-          isSpecial: artistIsSpecial
+          isSpecial: artistIsSpecial,
+          roleId: artistRoleId
         })
       });
 
@@ -677,7 +719,8 @@ export default function ACPControlPanel() {
           externalWebsiteUrl: artistExternalWebsiteUrl,
           defaultLanguage: artistDefaultLanguage,
           artistBio,
-          isSpecial: artistIsSpecial
+          isSpecial: artistIsSpecial,
+          roleId: artistRoleId
         })
       });
 
@@ -1011,6 +1054,248 @@ export default function ACPControlPanel() {
     }
   };
 
+  // --- FAQ & Terms Handlers ---
+  const handleSaveFaq = async (updatedFaqs: any[]) => {
+    try {
+      const res = await fetch('/api/acp/landing-config', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ faq: updatedFaqs })
+      });
+      if (res.ok) {
+        setFaqs(updatedFaqs);
+        setToast('Đã lưu FAQ thành công!');
+        setTimeout(() => setToast(null), 3000);
+      } else {
+        const d = await res.json();
+        setToast(d.error || 'Lỗi khi lưu FAQ');
+        setTimeout(() => setToast(null), 3000);
+      }
+    } catch (err) {
+      setToast('Lỗi kết nối máy chủ!');
+      setTimeout(() => setToast(null), 3000);
+    }
+  };
+
+  const handleAddOrEditFaq = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!faqQ.trim() || !faqA.trim()) return;
+    let newFaqs = [...faqs];
+    if (editingFaqIdx !== null) {
+      newFaqs[editingFaqIdx] = { q: faqQ, a: faqA };
+      setEditingFaqIdx(null);
+    } else {
+      newFaqs.push({ q: faqQ, a: faqA });
+    }
+    setFaqQ('');
+    setFaqA('');
+    handleSaveFaq(newFaqs);
+  };
+
+  const handleDeleteFaq = (idx: number) => {
+    const newFaqs = faqs.filter((_, i) => i !== idx);
+    handleSaveFaq(newFaqs);
+  };
+
+  // --- Forbidden Keywords Handlers ---
+  const handleSaveKeywords = async (updatedKeywords: string[]) => {
+    try {
+      const res = await fetch('/api/acp/landing-config', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ forbiddenKeywords: updatedKeywords })
+      });
+      if (res.ok) {
+        setKeywords(updatedKeywords);
+        setToast('Đã cập nhật danh sách từ khóa bị cấm!');
+        setTimeout(() => setToast(null), 3000);
+      } else {
+        const d = await res.json();
+        setToast(d.error || 'Lỗi khi lưu từ khóa');
+        setTimeout(() => setToast(null), 3000);
+      }
+    } catch (err) {
+      setToast('Lỗi kết nối máy chủ!');
+      setTimeout(() => setToast(null), 3000);
+    }
+  };
+
+  const handleAddKeyword = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newKeyword.trim()) return;
+    const word = newKeyword.trim().toLowerCase();
+    if (keywords.includes(word)) {
+      setToast('Từ khóa đã tồn tại!');
+      setTimeout(() => setToast(null), 3000);
+      return;
+    }
+    const updated = [...keywords, word];
+    setNewKeyword('');
+    handleSaveKeywords(updated);
+  };
+
+  const handleDeleteKeyword = (word: string) => {
+    const updated = keywords.filter(w => w !== word);
+    handleSaveKeywords(updated);
+  };
+
+  // --- Content Moderation Handlers (Flagged Songs) ---
+  const fetchFlaggedSongs = async () => {
+    setLoadingFlagged(true);
+    try {
+      const res = await fetch('/api/acp/flagged-songs', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setFlaggedSongs(data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingFlagged(false);
+    }
+  };
+
+  const handleUpdateSong = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSong) return;
+    setSubmittingSongEdit(true);
+    try {
+      const res = await fetch('/api/acp/songs/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          username: editingSong.username,
+          songId: editingSong.songId,
+          title: editSongTitle,
+          lyrics: editSongLyrics
+        })
+      });
+      if (res.ok) {
+        setToast('Đã cập nhật bài hát thành công!');
+        setEditingSong(null);
+        fetchFlaggedSongs();
+        setTimeout(() => setToast(null), 3000);
+      } else {
+        const d = await res.json();
+        setToast(d.error || 'Lỗi khi cập nhật bài hát');
+        setTimeout(() => setToast(null), 3000);
+      }
+    } catch (err) {
+      setToast('Lỗi kết nối máy chủ!');
+      setTimeout(() => setToast(null), 3000);
+    } finally {
+      setSubmittingSongEdit(false);
+    }
+  };
+
+  const handleDeleteSong = async (song: any) => {
+    const ok = await showConfirm(
+      `Bạn có chắc chắn muốn gỡ bỏ bài hát "${song.title}" của nghệ sĩ ${song.artistName}? Hệ thống sẽ tự động gửi thư cảnh báo cho thành viên này.`,
+      'Gỡ bỏ bài hát'
+    );
+    if (!ok) return;
+
+    try {
+      const res = await fetch('/api/acp/songs/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          username: song.username,
+          songId: song.songId,
+          songTitle: song.title,
+          flaggedKeywords: song.matchingKeywords
+        })
+      });
+      if (res.ok) {
+        setToast('Đã gỡ bài hát và gửi thông báo thành công!');
+        fetchFlaggedSongs();
+        setTimeout(() => setToast(null), 3000);
+      } else {
+        const d = await res.json();
+        setToast(d.error || 'Lỗi khi gỡ bài hát');
+        setTimeout(() => setToast(null), 3000);
+      }
+    } catch (err) {
+      setToast('Lỗi kết nối!');
+      setTimeout(() => setToast(null), 3000);
+    }
+  };
+
+  // --- Roles & Permissions Handlers ---
+  const handleSaveRoles = async (updatedRoles: any[]) => {
+    try {
+      const res = await fetch('/api/acp/landing-config', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ roles: updatedRoles })
+      });
+      if (res.ok) {
+        setRoles(updatedRoles);
+        setToast('Đã lưu cấu hình phân quyền!');
+        setTimeout(() => setToast(null), 3000);
+      } else {
+        const d = await res.json();
+        setToast(d.error || 'Lỗi khi lưu phân quyền');
+        setTimeout(() => setToast(null), 3000);
+      }
+    } catch (err) {
+      setToast('Lỗi kết nối máy chủ!');
+      setTimeout(() => setToast(null), 3000);
+    }
+  };
+
+  const handleSaveRoleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!roleName.trim()) return;
+    const newRole = {
+      name: roleName.trim(),
+      maxPosts: Number(roleMaxPosts),
+      accessControl: roleAccessControl,
+      demoPassword: roleDemoPassword,
+      secretLink: roleSecretLink,
+      customDomain: roleCustomDomain,
+      bio: roleBio,
+      aboutMe: roleAboutMe,
+      uiEdit: roleUiEdit,
+      exclusiveUi: roleExclusiveUi,
+      database: roleDatabase,
+      subscriptionPricing: roleSubscriptionPricing
+    };
+
+    let updatedRoles = [...roles];
+    if (editingRoleIdx !== null) {
+      updatedRoles[editingRoleIdx] = newRole;
+      setEditingRoleIdx(null);
+    } else {
+      updatedRoles.push(newRole);
+    }
+    setShowRoleModal(false);
+    handleSaveRoles(updatedRoles);
+  };
+
+  useEffect(() => {
+    if (token && activeTab === 'content') {
+      fetchFlaggedSongs();
+    }
+  }, [token, activeTab]);
+
   const openEditModal = (artist: Artist) => {
     setEditingArtist(artist);
     setArtistName(artist.artistName);
@@ -1025,6 +1310,7 @@ export default function ACPControlPanel() {
     setArtistDefaultLanguage(artist.defaultLanguage || 'vi');
     setArtistBio(artist.artistBio || '');
     setArtistIsSpecial(!!artist.isSpecial);
+    setArtistRoleId((artist as any).roleId || '');
     setShowEditModal(true);
   };
 
@@ -1041,6 +1327,7 @@ export default function ACPControlPanel() {
     setArtistDefaultLanguage('vi');
     setArtistBio('');
     setArtistIsSpecial(false);
+    setArtistRoleId('');
     setFormErr('');
   };
 
@@ -1141,58 +1428,118 @@ export default function ACPControlPanel() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Tab Selection Navigation */}
-        <div className="flex border-b border-white/5 mb-8">
-          <button
-            onClick={() => setActiveTab('artists')}
-            className={`py-4 px-6 text-sm font-black border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === 'artists'
-                ? 'border-purple-500 text-white'
-                : 'border-transparent text-neutral-400 hover:text-white'
-            }`}
-          >
-            <Users className="w-4 h-4" />
-            <span>Quản lý nghệ sĩ</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('landing')}
-            className={`py-4 px-6 text-sm font-black border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === 'landing'
-                ? 'border-purple-500 text-white'
-                : 'border-transparent text-neutral-400 hover:text-white'
-            }`}
-          >
-            <Layout className="w-4 h-4" />
-            <span>Cấu hình trang chủ</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('tickets')}
-            className={`py-4 px-6 text-sm font-black border-b-2 transition-all flex items-center gap-2 cursor-pointer relative ${
-              activeTab === 'tickets'
-                ? 'border-purple-500 text-white'
-                : 'border-transparent text-neutral-400 hover:text-white'
-            }`}
-          >
-            <MessageSquare className="w-4 h-4" />
-            <span>Hộp Thư</span>
-            {tickets.filter(t => t.type === 'remove' && t.status === 'open').length > 0 && (
-              <span className="flex h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('templates')}
-            className={`py-4 px-6 text-sm font-black border-b-2 transition-all flex items-center gap-2 cursor-pointer relative ${
-              activeTab === 'templates'
-                ? 'border-purple-500 text-white'
-                : 'border-transparent text-neutral-400 hover:text-white'
-            }`}
-          >
-            <Palette className="w-4 h-4" />
-            <span>Giao Diện</span>
-          </button>
-        </div>
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Vertical Sidebar */}
+          <aside className="w-full lg:w-64 shrink-0 bg-neutral-900/30 border border-white/5 p-4 rounded-[2rem] flex flex-col gap-2.5 h-fit backdrop-blur-md">
+            <h3 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-1.5 px-4 select-none opacity-80">
+              Quản trị hệ thống
+            </h3>
+            
+            <button
+              onClick={() => setActiveTab('artists')}
+              className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+                activeTab === 'artists'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <Users className="w-4.5 h-4.5" />
+              <span>Quản lý nghệ sĩ</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('landing')}
+              className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+                activeTab === 'landing'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <Layout className="w-4.5 h-4.5" />
+              <span>Cấu hình trang chủ</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('tickets')}
+              className={`flex items-center justify-between px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+                activeTab === 'tickets'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-3.5">
+                <MessageSquare className="w-4.5 h-4.5" />
+                <span>Hộp thư trợ giúp</span>
+              </div>
+              {tickets.filter(t => t.type === 'remove' && t.status === 'open').length > 0 && (
+                <span className="flex h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+              )}
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('templates')}
+              className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+                activeTab === 'templates'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <Palette className="w-4.5 h-4.5" />
+              <span>Giao Diện</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('faq')}
+              className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+                activeTab === 'faq'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <HelpCircle className="w-4.5 h-4.5" />
+              <span>FAQ & Điều khoản</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('keywords')}
+              className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+                activeTab === 'keywords'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <Lock className="w-4.5 h-4.5" />
+              <span>Từ khóa bị cấm</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('content')}
+              className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+                activeTab === 'content'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <Edit2 className="w-4.5 h-4.5" />
+              <span>Quản lý nội dung</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('roles')}
+              className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+                activeTab === 'roles'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <Shield className="w-4.5 h-4.5" />
+              <span>Phân quyền</span>
+            </button>
+          </aside>
 
-        {activeTab === 'artists' ? (
+          {/* Main Content Area */}
+          <div className="flex-1 min-w-0 space-y-8">
+            {activeTab === 'artists' ? (
           <>
             {/* Banner stat cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -2485,7 +2832,551 @@ export default function ACPControlPanel() {
                 })}
               </div>
           </div>
+        ) : activeTab === 'faq' ? (
+          <div className="bg-neutral-900/30 border border-white/5 rounded-3xl p-6 sm:p-8 backdrop-blur-md space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-5">
+              <div>
+                <h2 className="text-xl font-black flex items-center gap-2">
+                  <HelpCircle className="w-5 h-5 text-purple-400" />
+                  Quản lý FAQ & Điều khoản sử dụng
+                </h2>
+                <p className="text-sm text-neutral-400 mt-1">Thiết lập câu hỏi thường gặp và quy định sử dụng dịch vụ của hệ thống.</p>
+              </div>
+            </div>
+
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4.5 text-xs text-amber-200/90 leading-relaxed flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="block text-amber-400 font-bold mb-1">CHÚ TRỌNG VẤN ĐỀ BẢN QUYỀN & CHÍNH TRỊ:</strong>
+                Nội dung điều khoản phải ghi rõ uploader hoàn toàn chịu trách nhiệm về bản quyền tác phẩm đã đăng tải. Nghiêm cấm mọi hình thức đăng tải thông tin tiêu cực, chống phá đảng và nhà nước, xuyên tạc chính trị hoặc vi phạm thuần phong mỹ tục.
+              </div>
+            </div>
+
+            <form onSubmit={handleAddOrEditFaq} className="bg-black/30 border border-white/5 rounded-2xl p-5 space-y-4">
+              <h3 className="text-sm font-black text-purple-300">
+                {editingFaqIdx !== null ? 'Chỉnh sửa câu hỏi' : 'Thêm câu hỏi mới'}
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">Câu hỏi (Q)</label>
+                  <input
+                    type="text"
+                    required
+                    value={faqQ}
+                    onChange={(e) => setFaqQ(e.target.value)}
+                    className="w-full bg-neutral-900 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500"
+                    placeholder="Ví dụ: Quy định về bản quyền trên Chorus.vn là gì?"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">Câu trả lời (A)</label>
+                  <textarea
+                    required
+                    rows={3}
+                    value={faqA}
+                    onChange={(e) => setFaqA(e.target.value)}
+                    className="w-full bg-neutral-900 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500"
+                    placeholder="Nêu rõ quy định uploader chịu toàn bộ trách nhiệm..."
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2 justify-end">
+                {editingFaqIdx !== null && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingFaqIdx(null);
+                      setFaqQ('');
+                      setFaqA('');
+                    }}
+                    className="bg-neutral-800 text-neutral-400 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-neutral-700 transition-colors"
+                  >
+                    Hủy bỏ
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  className="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  {editingFaqIdx !== null ? 'Cập nhật' : 'Thêm vào danh sách'}
+                </button>
+              </div>
+            </form>
+
+            <div className="space-y-3">
+              <h3 className="text-sm font-black text-neutral-300 px-1">Danh sách câu hỏi ({faqs.length})</h3>
+              {faqs.length === 0 ? (
+                <div className="bg-neutral-900/10 border border-dashed border-white/5 rounded-2xl p-8 text-center text-neutral-500 text-xs">
+                  Chưa có nội dung FAQ nào được cấu hình. Các mục mặc định quy định uploader chịu trách nhiệm và bản quyền sẽ tự động hiển thị ở Trang chủ nếu để trống.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {faqs.map((f: any, idx: number) => (
+                    <div key={idx} className="bg-neutral-900/40 border border-white/5 rounded-2xl p-4 flex items-start justify-between gap-4">
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-bold text-white flex items-center gap-1.5">
+                          <span className="text-purple-400 font-mono">Q:</span> {f.q}
+                        </h4>
+                        <p className="text-xs text-neutral-400 leading-relaxed pl-5 whitespace-pre-wrap">
+                          <span className="text-neutral-500 font-bold font-mono">A:</span> {f.a}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          onClick={() => {
+                            setEditingFaqIdx(idx);
+                            setFaqQ(f.q);
+                            setFaqA(f.a);
+                          }}
+                          className="p-2 bg-neutral-800/60 hover:bg-neutral-700/60 text-purple-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+                          title="Chỉnh sửa"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteFaq(idx)}
+                          className="p-2 bg-neutral-800/60 hover:bg-rose-950/60 text-neutral-500 hover:text-rose-400 rounded-lg transition-colors cursor-pointer"
+                          title="Xóa bỏ"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : activeTab === 'keywords' ? (
+          <div className="bg-neutral-900/30 border border-white/5 rounded-3xl p-6 sm:p-8 backdrop-blur-md space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-5">
+              <div>
+                <h2 className="text-xl font-black flex items-center gap-2">
+                  <Lock className="w-5 h-5 text-purple-400" />
+                  Mục từ khóa bị cấm
+                </h2>
+                <p className="text-sm text-neutral-400 mt-1">Quản lý các từ ngữ nhạy cảm. Hệ thống sẽ tự động làm mờ các từ khóa này trong Lyrics của thành viên.</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleAddKeyword} className="bg-black/30 border border-white/5 rounded-2xl p-5 space-y-4">
+              <h3 className="text-sm font-black text-purple-300">Thêm từ khóa mới</h3>
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  required
+                  value={newKeyword}
+                  onChange={(e) => setNewKeyword(e.target.value)}
+                  className="flex-1 bg-neutral-900 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500"
+                  placeholder="Ví dụ: bạo lực, chính trị, vi-phạm"
+                />
+                <button
+                  type="submit"
+                  className="bg-purple-600 hover:bg-purple-500 text-white px-6 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" /> Thêm từ khóa
+                </button>
+              </div>
+              <p className="text-[10px] text-neutral-500 leading-normal">
+                * Từ khóa sẽ được phân tách tự động và chuẩn hóa viết thường để khớp chính xác không phân biệt hoa thường.
+              </p>
+            </form>
+
+            <div className="space-y-3">
+              <h3 className="text-sm font-black text-neutral-300 px-1">Tất cả từ khóa ({keywords.length})</h3>
+              {keywords.length === 0 ? (
+                <div className="bg-neutral-900/10 border border-dashed border-white/5 rounded-2xl p-8 text-center text-neutral-500 text-xs">
+                  Chưa có từ khóa bị cấm nào. Vui lòng thêm từ khóa để kích hoạt tính năng kiểm duyệt tự động.
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2.5 bg-black/20 border border-white/5 rounded-2xl p-5">
+                  {keywords.map((kw: string, idx: number) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-1.5 bg-neutral-800 border border-white/5 text-white pl-3.5 pr-2.5 py-1.5 rounded-full text-xs font-bold shadow-sm hover:border-rose-500/30 hover:bg-rose-950/20 group transition-all"
+                    >
+                      <span className="font-mono">{kw}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteKeyword(kw)}
+                        className="text-neutral-500 hover:text-rose-400 p-0.5 rounded-full hover:bg-neutral-700/50 transition-colors cursor-pointer"
+                        title="Xóa từ khóa này"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : activeTab === 'content' ? (
+          <div className="bg-neutral-900/30 border border-white/5 rounded-3xl p-6 sm:p-8 backdrop-blur-md space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-5">
+              <div>
+                <h2 className="text-xl font-black flex items-center gap-2">
+                  <Edit2 className="w-5 h-5 text-purple-400" />
+                  Quản lý nội dung & Kiểm duyệt demo
+                </h2>
+                <p className="text-sm text-neutral-400 mt-1">Danh sách các demo chứa từ khóa bị cấm tự động phát hiện trên toàn hệ thống.</p>
+              </div>
+              <button
+                onClick={fetchFlaggedSongs}
+                disabled={loadingFlagged}
+                className="bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-bold px-4 py-2 rounded-xl text-xs transition-colors flex items-center gap-2 cursor-pointer shrink-0 h-fit"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingFlagged ? 'animate-spin' : ''}`} />
+                Làm mới danh sách
+              </button>
+            </div>
+
+            {loadingFlagged ? (
+              <div className="flex flex-col items-center justify-center p-12 space-y-3">
+                <RefreshCw className="w-8 h-8 text-purple-500 animate-spin" />
+                <p className="text-xs text-neutral-400">Đang rà soát toàn bộ tác phẩm trên hệ thống...</p>
+              </div>
+            ) : flaggedSongs.length === 0 ? (
+              <div className="bg-neutral-900/10 border border-dashed border-white/5 rounded-2xl p-12 text-center text-neutral-500 text-xs flex flex-col items-center justify-center gap-3">
+                <Check className="w-10 h-10 text-emerald-500 bg-emerald-500/10 p-2.5 rounded-full" />
+                <span>Không phát hiện bài hát vi phạm từ khóa nào trên hệ thống!</span>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {flaggedSongs.map((song: any, idx: number) => (
+                  <div key={idx} className="bg-neutral-900/40 border border-rose-500/15 rounded-2xl p-5 flex flex-col gap-4 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-rose-500" />
+                    
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                      <div>
+                        <h3 className="text-sm font-black text-rose-300 flex items-center gap-2">
+                          <span className="text-white">{song.title}</span>
+                          <span className="text-[10px] bg-rose-500/10 border border-rose-500/20 text-rose-400 px-2 py-0.5 rounded-full font-black">
+                            Vi phạm từ khóa
+                          </span>
+                        </h3>
+                        <p className="text-xs text-neutral-400 mt-1">
+                          Nghệ sĩ sở hữu: <strong className="text-white">{song.artistName}</strong> (@{song.username})
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => {
+                            setEditingSong(song);
+                            setEditSongTitle(song.title);
+                            setEditSongLyrics(song.lyrics || '');
+                          }}
+                          className="bg-purple-600 hover:bg-purple-500 text-white font-bold px-3.5 py-1.5 rounded-xl text-xs transition-colors flex items-center gap-1 cursor-pointer"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" /> Sửa bài hát
+                        </button>
+                        <button
+                          onClick={() => handleDeleteSong(song)}
+                          className="bg-rose-950/40 hover:bg-rose-900/40 text-rose-400 border border-rose-500/15 font-bold px-3.5 py-1.5 rounded-xl text-xs transition-all flex items-center gap-1 cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> Gỡ bỏ bài hát
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="bg-black/30 border border-white/5 rounded-xl p-3.5 space-y-2">
+                      <div className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">Từ khóa bị dính:</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {song.matchingKeywords.map((kw: string, i: number) => (
+                          <span key={i} className="bg-rose-500/10 border border-rose-500/20 text-rose-300 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold">
+                            {kw}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="text-xs text-neutral-500 font-mono line-clamp-2 bg-black/10 rounded-lg p-2.5">
+                      {song.lyrics || "(Không có lời bài hát)"}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {editingSong && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                <div className="bg-neutral-900 border border-white/5 rounded-[2rem] p-6 sm:p-8 max-w-lg w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
+                  <button
+                    onClick={() => setEditingSong(null)}
+                    className="absolute top-6 right-6 text-neutral-500 hover:text-white bg-white/5 p-1.5 rounded-lg cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                  <h3 className="text-lg font-black tracking-tight text-white mb-4 flex items-center gap-2">
+                    <Edit2 className="w-5 h-5 text-purple-400" /> Chỉnh sửa bài hát vi phạm
+                  </h3>
+                  <form onSubmit={handleUpdateSong} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Tiêu đề bài hát *</label>
+                      <input
+                        type="text"
+                        required
+                        value={editSongTitle}
+                        onChange={(e) => setEditSongTitle(e.target.value)}
+                        className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Lời bài hát (Lyrics) *</label>
+                      <textarea
+                        required
+                        rows={10}
+                        value={editSongLyrics}
+                        onChange={(e) => setEditSongLyrics(e.target.value)}
+                        className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-xs font-mono"
+                      />
+                    </div>
+                    <div className="flex gap-2 justify-end pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setEditingSong(null)}
+                        className="bg-neutral-800 text-neutral-300 py-3 px-6 rounded-xl hover:bg-neutral-700 transition-all text-xs font-bold cursor-pointer"
+                      >
+                        Hủy
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={submittingSongEdit}
+                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white py-3 px-6 rounded-xl transition-all text-xs font-bold cursor-pointer flex items-center gap-2"
+                      >
+                        {submittingSongEdit ? 'Đang lưu...' : 'Lưu thay đổi'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : activeTab === 'roles' ? (
+          <div className="bg-neutral-900/30 border border-white/5 rounded-3xl p-6 sm:p-8 backdrop-blur-md space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-5">
+              <div>
+                <h2 className="text-xl font-black flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-purple-400" />
+                  Hệ thống Phân quyền & Vai trò (Roles)
+                </h2>
+                <p className="text-sm text-neutral-400 mt-1">Thiết lập các nhóm phân quyền giới hạn tính năng và số lượng bài hát upload cho thành viên.</p>
+              </div>
+              <button
+                onClick={() => {
+                  setEditingRoleIdx(null);
+                  setRoleName('');
+                  setRoleMaxPosts(10);
+                  setRoleAccessControl(false);
+                  setRoleDemoPassword(false);
+                  setRoleSecretLink(false);
+                  setRoleCustomDomain(false);
+                  setRoleBio(false);
+                  setRoleAboutMe(false);
+                  setRoleUiEdit(false);
+                  setRoleExclusiveUi(false);
+                  setRoleDatabase(false);
+                  setRoleSubscriptionPricing(false);
+                  setShowRoleModal(true);
+                }}
+                className="bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
+              >
+                <Plus className="w-4 h-4" /> Tạo gói phân quyền mới
+              </button>
+            </div>
+
+            {roles.length === 0 ? (
+              <div className="bg-neutral-900/10 border border-dashed border-white/5 rounded-2xl p-12 text-center text-neutral-500 text-xs flex flex-col items-center justify-center gap-3">
+                <Shield className="w-10 h-10 text-neutral-600" />
+                <span>Chưa có gói phân quyền tùy chỉnh nào được thiết lập.</span>
+                <p className="max-w-md text-[11px] leading-relaxed">
+                  Tất cả thành viên mặc định sẽ hoạt động ở chế độ toàn quyền không giới hạn cho đến khi bạn tạo các gói phân quyền giới hạn ở đây và gắn cho họ.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {roles.map((r: any, idx: number) => (
+                  <div key={idx} className="bg-neutral-900/40 border border-white/5 hover:border-white/10 rounded-2xl p-5 space-y-4 transition-all relative">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="text-base font-black text-white flex items-center gap-2">
+                          <Shield className="w-4 h-4 text-purple-400" /> {r.name}
+                        </h3>
+                        <p className="text-xs text-neutral-400 mt-1">
+                          Giới hạn tải nhạc: <strong className="text-purple-300">{r.maxPosts === -1 || r.maxPosts === 'unlimited' ? 'Không giới hạn' : `${r.maxPosts} bài`}</strong>
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          onClick={() => {
+                            setEditingRoleIdx(idx);
+                            setRoleName(r.name);
+                            setRoleMaxPosts(r.maxPosts === -1 || r.maxPosts === 'unlimited' ? -1 : Number(r.maxPosts));
+                            setRoleAccessControl(!!r.accessControl);
+                            setRoleDemoPassword(!!r.demoPassword);
+                            setRoleSecretLink(!!r.secretLink);
+                            setRoleCustomDomain(!!r.customDomain);
+                            setRoleBio(!!r.bio);
+                            setRoleAboutMe(!!r.aboutMe);
+                            setRoleUiEdit(!!r.uiEdit);
+                            setRoleExclusiveUi(!!r.exclusiveUi);
+                            setRoleDatabase(!!r.database);
+                            setRoleSubscriptionPricing(!!r.subscriptionPricing);
+                            setShowRoleModal(true);
+                          }}
+                          className="p-1.5 bg-neutral-800/60 hover:bg-neutral-700/60 text-purple-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+                          title="Sửa phân quyền"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            const newRoles = roles.filter((_, i) => i !== idx);
+                            handleSaveRoles(newRoles);
+                          }}
+                          className="p-1.5 bg-neutral-800/60 hover:bg-rose-950/60 text-neutral-500 hover:text-rose-400 rounded-lg transition-colors cursor-pointer"
+                          title="Xóa phân quyền"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-white/5 pt-3.5 space-y-2">
+                      <div className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">Tính năng được mở khóa:</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {r.accessControl && <span className="bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">Mật khẩu kho nhạc</span>}
+                        {r.demoPassword && <span className="bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">Mật khẩu demo</span>}
+                        {r.secretLink && <span className="bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">Link bí mật</span>}
+                        {r.customDomain && <span className="bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">Tên miền riêng</span>}
+                        {r.bio && <span className="bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">Bio/Tiểu sử</span>}
+                        {r.aboutMe && <span className="bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">About me/Giới thiệu</span>}
+                        {r.uiEdit && <span className="bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">Tùy biến giao diện</span>}
+                        {r.exclusiveUi && <span className="bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">Giao diện độc quyền</span>}
+                        {r.database && <span className="bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">Sao lưu DB</span>}
+                        {r.subscriptionPricing && <span className="bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">Bán nhạc/Hội viên</span>}
+                        {!r.accessControl && !r.demoPassword && !r.secretLink && !r.customDomain && !r.bio && !r.aboutMe && !r.uiEdit && !r.exclusiveUi && !r.database && !r.subscriptionPricing && (
+                          <span className="text-[10px] text-neutral-500 italic">Không có tính năng nâng cao nào</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {showRoleModal && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                <div className="bg-neutral-900 border border-white/5 rounded-[2rem] p-6 sm:p-8 max-w-lg w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
+                  <button
+                    onClick={() => setShowRoleModal(false)}
+                    className="absolute top-6 right-6 text-neutral-500 hover:text-white bg-white/5 p-1.5 rounded-lg cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                  <h3 className="text-xl font-black text-white mb-6 flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-purple-400" />
+                    {editingRoleIdx !== null ? 'Chỉnh sửa gói phân quyền' : 'Tạo gói phân quyền mới'}
+                  </h3>
+                  <form onSubmit={handleSaveRoleSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Tên gói phân quyền *</label>
+                      <input
+                        type="text"
+                        required
+                        value={roleName}
+                        onChange={(e) => setRoleName(e.target.value)}
+                        className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-sm"
+                        placeholder="vd: Silver, Gold, Platinum..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Giới hạn số lượng tải nhạc</label>
+                      <select
+                        value={roleMaxPosts}
+                        onChange={(e) => setRoleMaxPosts(Number(e.target.value))}
+                        className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-sm"
+                      >
+                        <option value={10}>Tối đa 10 bài hát</option>
+                        <option value={20}>Tối đa 20 bài hát</option>
+                        <option value={50}>Tối đa 50 bài hát</option>
+                        <option value={100}>Tối đa 100 bài hát</option>
+                        <option value={-1}>Không giới hạn bài hát (-1)</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-3 pt-2">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-0.5">Mở khóa tính năng nâng cao</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-black/20 p-4 rounded-xl border border-white/5 text-xs">
+                        <label className="flex items-center gap-2.5 cursor-pointer text-neutral-300 hover:text-white select-none">
+                          <input type="checkbox" checked={roleAccessControl} onChange={(e) => setRoleAccessControl(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 bg-black/50 border-white/10" />
+                          <span>Mật khẩu kho nhạc</span>
+                        </label>
+                        <label className="flex items-center gap-2.5 cursor-pointer text-neutral-300 hover:text-white select-none">
+                          <input type="checkbox" checked={roleDemoPassword} onChange={(e) => setRoleDemoPassword(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 bg-black/50 border-white/10" />
+                          <span>Mật khẩu demo</span>
+                        </label>
+                        <label className="flex items-center gap-2.5 cursor-pointer text-neutral-300 hover:text-white select-none">
+                          <input type="checkbox" checked={roleSecretLink} onChange={(e) => setRoleSecretLink(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 bg-black/50 border-white/10" />
+                          <span>Đường link bí mật</span>
+                        </label>
+                        <label className="flex items-center gap-2.5 cursor-pointer text-neutral-300 hover:text-white select-none">
+                          <input type="checkbox" checked={roleCustomDomain} onChange={(e) => setRoleCustomDomain(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 bg-black/50 border-white/10" />
+                          <span>Hỗ trợ Tên miền riêng</span>
+                        </label>
+                        <label className="flex items-center gap-2.5 cursor-pointer text-neutral-300 hover:text-white select-none">
+                          <input type="checkbox" checked={roleBio} onChange={(e) => setRoleBio(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 bg-black/50 border-white/10" />
+                          <span>Tiểu sử/Bio phong phú</span>
+                        </label>
+                        <label className="flex items-center gap-2.5 cursor-pointer text-neutral-300 hover:text-white select-none">
+                          <input type="checkbox" checked={roleAboutMe} onChange={(e) => setRoleAboutMe(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 bg-black/50 border-white/10" />
+                          <span>Giới thiệu/About me</span>
+                        </label>
+                        <label className="flex items-center gap-2.5 cursor-pointer text-neutral-300 hover:text-white select-none">
+                          <input type="checkbox" checked={roleUiEdit} onChange={(e) => setRoleUiEdit(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 bg-black/50 border-white/10" />
+                          <span>Tùy biến Giao diện</span>
+                        </label>
+                        <label className="flex items-center gap-2.5 cursor-pointer text-neutral-300 hover:text-white select-none">
+                          <input type="checkbox" checked={roleExclusiveUi} onChange={(e) => setRoleExclusiveUi(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 bg-black/50 border-white/10" />
+                          <span>Giao diện Độc quyền</span>
+                        </label>
+                        <label className="flex items-center gap-2.5 cursor-pointer text-neutral-300 hover:text-white select-none">
+                          <input type="checkbox" checked={roleDatabase} onChange={(e) => setRoleDatabase(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 bg-black/50 border-white/10" />
+                          <span>Sao lưu DB cá nhân</span>
+                        </label>
+                        <label className="flex items-center gap-2.5 cursor-pointer text-neutral-300 hover:text-white select-none">
+                          <input type="checkbox" checked={roleSubscriptionPricing} onChange={(e) => setRoleSubscriptionPricing(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 bg-black/50 border-white/10" />
+                          <span>Bán nhạc/Gói hội viên</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 justify-end pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowRoleModal(false)}
+                        className="bg-neutral-800 text-neutral-300 py-3 px-6 rounded-xl hover:bg-neutral-700 transition-all text-xs font-bold cursor-pointer"
+                      >
+                        Hủy
+                      </button>
+                      <button
+                        type="submit"
+                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white py-3 px-6 rounded-xl transition-all text-xs font-bold cursor-pointer"
+                      >
+                        Lưu gói phân quyền
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
         ) : null}
+          </div>
+        </div>
       </main>
 
       {/* New Artist Info Modal */}
@@ -2576,6 +3467,22 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                   className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
                   placeholder="vd: Thiên đường nhạc của..."
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Phân quyền tài khoản (Role)</label>
+                <select
+                  value={artistRoleId}
+                  onChange={(e) => setArtistRoleId(e.target.value)}
+                  className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-sm"
+                >
+                  <option value="" className="bg-neutral-900 text-white">Mặc định (Toàn quyền hệ thống)</option>
+                  {roles.map((r: any, idx: number) => (
+                    <option key={idx} value={r.name} className="bg-neutral-900 text-white">
+                      {r.name} (Giới hạn: {r.maxPosts === -1 || r.maxPosts === 'unlimited' ? 'Không giới hạn' : `${r.maxPosts} bài`})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -2783,6 +3690,22 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                   className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
                   placeholder="vd: Thiên đường nhạc của..."
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Phân quyền tài khoản (Role)</label>
+                <select
+                  value={artistRoleId}
+                  onChange={(e) => setArtistRoleId(e.target.value)}
+                  className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-sm"
+                >
+                  <option value="" className="bg-neutral-900 text-white">Mặc định (Toàn quyền hệ thống)</option>
+                  {roles.map((r: any, idx: number) => (
+                    <option key={idx} value={r.name} className="bg-neutral-900 text-white">
+                      {r.name} (Giới hạn: {r.maxPosts === -1 || r.maxPosts === 'unlimited' ? 'Không giới hạn' : `${r.maxPosts} bài`})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

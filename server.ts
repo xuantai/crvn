@@ -2002,7 +2002,8 @@ function generateCaptchaSvg(text: string) {
       adminUsername, adminPassword,
       menuVaultVi, menuAboutVi, menuBioVi,
       templateNames,
-      globalLayoutSections
+      globalLayoutSections,
+      faq, forbiddenKeywords, roles
     } = req.body;
 
     await saveLandingConfig({ 
@@ -2022,7 +2023,10 @@ function generateCaptchaSvg(text: string) {
       menuVaultVi: menuVaultVi || 'Kho Nhạc',
       menuAboutVi: menuAboutVi || 'Về Tôi',
       menuBioVi: menuBioVi || 'Tiểu Sử',
-      templateNames: templateNames || {}
+      templateNames: templateNames || {},
+      faq: faq !== undefined ? faq : (landingConfig as any).faq,
+      forbiddenKeywords: forbiddenKeywords !== undefined ? forbiddenKeywords : (landingConfig as any).forbiddenKeywords,
+      roles: roles !== undefined ? roles : (landingConfig as any).roles
     });
 
     res.json({ success: true, landingConfig });
@@ -2368,7 +2372,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const { artistName, username, extension, password, email, verified, dbConfig, isPublic, hasExternalWebsite, externalWebsiteUrl, artistBio, isSpecial } = req.body;
+    const { artistName, username, extension, password, email, verified, dbConfig, isPublic, hasExternalWebsite, externalWebsiteUrl, artistBio, isSpecial, roleId } = req.body;
     if (!artistName || !username || !extension || !password || !email) {
       return res.status(400).json({ error: 'Vui lòng điền đầy đủ các thông tin bắt buộc (Bao gồm Email)!' });
     }
@@ -2395,7 +2399,8 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       memberPassword: "",
       hasExternalWebsite: !!hasExternalWebsite,
       externalWebsiteUrl: externalWebsiteUrl || "",
-      isSpecial: !!isSpecial
+      isSpecial: !!isSpecial,
+      roleId: roleId || ""
     };
     
     artists.push(newArtist);
@@ -2418,7 +2423,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const { originalUsername, artistName, extension, password, verified, dbConfig, isPublic, approveNameChange, rejectNameChange, approveUsernameChange, rejectUsernameChange, approveExtensionChange, rejectExtensionChange, hasExternalWebsite, externalWebsiteUrl, email, activated, emailVerified, defaultLanguage, artistBio, isSpecial } = req.body;
+    const { originalUsername, artistName, extension, password, verified, dbConfig, isPublic, approveNameChange, rejectNameChange, approveUsernameChange, rejectUsernameChange, approveExtensionChange, rejectExtensionChange, hasExternalWebsite, externalWebsiteUrl, email, activated, emailVerified, defaultLanguage, artistBio, isSpecial, roleId } = req.body;
     const artistIdx = artists.findIndex(a => a.username === originalUsername);
     if (artistIdx === -1) {
       return res.status(404).json({ error: 'Không tìm thấy nghệ sĩ!' });
@@ -2490,6 +2495,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       artist.emailVerified = emailVerified !== undefined ? !!emailVerified : artist.emailVerified;
       artist.defaultLanguage = defaultLanguage !== undefined ? defaultLanguage : (artist.defaultLanguage || 'vi');
       artist.isSpecial = isSpecial !== undefined ? !!isSpecial : artist.isSpecial;
+      artist.roleId = roleId !== undefined ? roleId : artist.roleId;
       
       const data = await loadData(artist.username);
       data.artistName = artist.artistName;
@@ -2733,6 +2739,143 @@ ${JSON.stringify(geminiInput, null, 2)}`;
         await loadArtists();
       }
       res.json({ success: true, ticket: mapTicket(ticket) });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // --- ACP FLAGGED SONGS, WORDS, AND ROLES API ---
+  app.get('/api/acp/flagged-songs', async (req, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    try {
+      if (artists.length === 0) {
+        await loadArtists();
+      }
+      const forbiddenKeywords = (landingConfig as any).forbiddenKeywords || [];
+      if (forbiddenKeywords.length === 0) {
+        return res.json([]);
+      }
+
+      const flagged = [];
+      for (const artist of artists) {
+        try {
+          const data = await loadData(artist.username);
+          if (data && data.demos) {
+            for (const d of data.demos) {
+              if (d.deleted) continue;
+              const title = d.title || '';
+              const lyrics = d.lyrics || '';
+              const matching = forbiddenKeywords.filter((kw: string) => {
+                const escaped = kw.trim().replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                if (!escaped) return false;
+                const regex = new RegExp(escaped, 'i');
+                return regex.test(title) || regex.test(lyrics);
+              });
+
+              if (matching.length > 0) {
+                flagged.push({
+                  artistName: artist.artistName,
+                  username: artist.username,
+                  songId: d.id,
+                  title: d.title,
+                  lyrics: d.lyrics,
+                  matchingKeywords: matching
+                });
+              }
+            }
+          }
+        } catch (e) {
+          // ignore individual artist file issues
+        }
+      }
+      res.json(flagged);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post('/api/acp/songs/update', async (req, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const { username, songId, title, lyrics } = req.body;
+    if (!username || !songId) {
+      return res.status(400).json({ error: 'Thiếu thông tin bắt buộc!' });
+    }
+    try {
+      const data = await loadData(username);
+      if (!data || !data.demos) {
+        return res.status(404).json({ error: 'Không tìm thấy dữ liệu nghệ sĩ!' });
+      }
+      const songIdx = data.demos.findIndex((d: any) => d.id === songId);
+      if (songIdx === -1) {
+        return res.status(404).json({ error: 'Không tìm thấy bài hát!' });
+      }
+
+      data.demos[songIdx].title = title || data.demos[songIdx].title;
+      data.demos[songIdx].lyrics = lyrics || data.demos[songIdx].lyrics;
+      await saveData(username, data);
+
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post('/api/acp/songs/delete', async (req, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const { username, songId, songTitle, flaggedKeywords } = req.body;
+    if (!username || !songId) {
+      return res.status(400).json({ error: 'Thiếu thông tin bắt buộc!' });
+    }
+    try {
+      const data = await loadData(username);
+      if (!data || !data.demos) {
+        return res.status(404).json({ error: 'Không tìm thấy dữ liệu nghệ sĩ!' });
+      }
+      const songIdx = data.demos.findIndex((d: any) => d.id === songId);
+      if (songIdx === -1) {
+        return res.status(404).json({ error: 'Không tìm thấy bài hát!' });
+      }
+
+      data.demos[songIdx].deleted = true;
+      data.demos[songIdx].deletedAt = Date.now();
+      await saveData(username, data);
+
+      // Create notification ticket in member's inbox (hộp thư thành viên)
+      await loadTickets();
+      const ticketId = crypto.randomBytes(8).toString('hex');
+      const kwString = Array.isArray(flaggedKeywords) ? flaggedKeywords.join(', ') : 'từ khóa nhạy cảm';
+      const description = `Bài hát "${songTitle}" đã bị gỡ bởi quản trị viên do chứa từ khóa bị cấm: ${kwString}.`;
+      
+      const newTicket = {
+        id: ticketId,
+        type: 'remove',
+        songId: songId,
+        songTitle: songTitle,
+        sourceArtist: 'system',
+        reporterArtist: username, // The owner artist, so they see it in their inbox!
+        description,
+        status: 'open',
+        createdAt: new Date().toISOString(),
+        messages: [
+          {
+            id: crypto.randomBytes(8).toString('hex'),
+            sender: 'system',
+            senderName: 'Hệ thống Admin',
+            text: `Chào bạn, bài hát "${songTitle}" đã bị gỡ bỏ khỏi hồ sơ của bạn do chứa các từ khóa không được phép: ${kwString}. Vui lòng liên hệ hỗ trợ nếu cần giải đáp thêm.`,
+            createdAt: new Date().toISOString()
+          }
+        ]
+      };
+      tickets.push(newTicket);
+      await saveTickets(tickets);
+
+      res.json({ success: true });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }

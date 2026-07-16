@@ -4686,6 +4686,45 @@ const AutoTranslate = ({ text, className = "" }: { text: string; className?: str
   return <span className={className}>{translated}</span>;
 };
 
+const renderTextWithBannedKeywords = (textVal: string, keywords: string[], formatTextFn?: (t: string) => any) => {
+  if (!textVal) return "";
+  if (!keywords || keywords.length === 0) {
+    return formatTextFn ? formatTextFn(textVal) : textVal;
+  }
+  const escaped = keywords
+    .map(kw => kw.trim())
+    .filter(Boolean)
+    .map(kw => kw.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'));
+  if (escaped.length === 0) {
+    return formatTextFn ? formatTextFn(textVal) : textVal;
+  }
+  try {
+    const regex = new RegExp(`(${escaped.join('|')})`, 'gi');
+    const parts = textVal.split(regex);
+    return (
+      <>
+        {parts.map((part, idx) => {
+          const isBanned = keywords.some(kw => kw.trim().toLowerCase() === part.trim().toLowerCase());
+          if (isBanned) {
+            return (
+              <span
+                key={idx}
+                className="select-none filter blur-[4.5px] hover:blur-[1.5px] transition-all duration-300 cursor-help inline-block bg-white/5 px-1.5 py-0.5 rounded border border-white/5 mx-0.5"
+                title="Từ khóa bị cấm"
+              >
+                {part}
+              </span>
+            );
+          }
+          return formatTextFn ? formatTextFn(part) : part;
+        })}
+      </>
+    );
+  } catch (e) {
+    return formatTextFn ? formatTextFn(textVal) : textVal;
+  }
+};
+
 const HoverTranslate = ({ text, className = "", format = false, style }: { text: string; className?: string, format?: boolean, style?: React.CSSProperties }) => {
   const { lang, artistData, landingConfig } = useContext(LanguageContext);
   const [translated, setTranslated] = useState(text);
@@ -4712,6 +4751,7 @@ const HoverTranslate = ({ text, className = "", format = false, style }: { text:
   }, [lang, text, artistData, landingConfig]);
 
   const output = (isHovered && lang !== 'vi') ? translated : text;
+  const keywords = landingConfig?.forbiddenKeywords || [];
 
   return (
     <span 
@@ -4720,7 +4760,7 @@ const HoverTranslate = ({ text, className = "", format = false, style }: { text:
       onMouseEnter={() => setIsHovered(true)} 
       onMouseLeave={() => setIsHovered(false)}
     >
-      {format ? formatText(output) : output}
+      {renderTextWithBannedKeywords(output, keywords, format ? formatText : undefined)}
     </span>
   );
 };
@@ -4746,7 +4786,7 @@ const LanguageSwitcher = ({ isRelative = false, pushDown = false }: { isRelative
   const langs = ['vi', 'en', 'ko', 'ja', 'th', 'zh'];
 
   return (
-    <div className={isRelative ? "relative z-[9999]" : `fixed right-6 z-[9999] pointer-events-auto transition-all duration-500 ease-in-out ${pushDown ? 'top-20' : 'top-6'}`}>
+    <div className={isRelative ? "relative z-[9999]" : `fixed right-6 z-[9999] pointer-events-auto transition-all duration-500 ease-in-out top-6 sm:top-8`}>
       <div 
         className={`flex items-center gap-2 ${isRelative ? 'bg-stone-100 hover:bg-stone-200 border border-stone-300 text-stone-850 h-10 px-3.5' : 'bg-black/30 hover:bg-black/50 border border-white/20 text-white px-4 py-2 shadow-lg'} rounded-full backdrop-blur-xl cursor-pointer transition-all hover:pr-5 group`}
         onClick={(e) => {
@@ -9381,7 +9421,7 @@ function SocialCarousel({ data, pushDown = false }: { data: AppData, pushDown?: 
   if (socials.length === 0) return null;
 
   return (
-    <div className={`fixed left-6 z-[105] flex flex-col items-center gap-3 transition-all duration-500 ease-in-out ${pushDown ? 'top-20' : 'top-6'}`}>
+    <div className={`fixed left-6 z-[105] flex flex-col items-center gap-3 transition-all duration-500 ease-in-out top-6 sm:top-8`}>
       <button 
         onClick={() => { setIsOpen(!isOpen); console.log('Clicked, new state:', !isOpen); }}
         className="relative flex items-center justify-center w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 hover:scale-110 shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all cursor-pointer"

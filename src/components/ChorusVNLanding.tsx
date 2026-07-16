@@ -260,6 +260,63 @@ const FALLBACK_SLIDESHOW = [
   "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=600&auto=format&fit=crop&q=80"
 ];
 
+const defaultFaqs: Record<'vi' | 'en' | 'ko', Array<{ q: string; a: string }>> = {
+  vi: [
+    {
+      q: "Tôi có thể tải nhạc/demo lên Chorus.vn bằng cách nào?",
+      a: "Để đảm bảo chất lượng hệ thống trong giai đoạn thử nghiệm giới hạn, hiện tại chúng tôi chỉ cấp tài khoản cho các nghệ sĩ tham gia chương trình thử nghiệm nội bộ. Khi tài khoản của bạn được ban quản trị phê duyệt, bạn sẽ có trang cá nhân riêng dưới dạng tennghesi.chorus.vn để tự do đăng tải và quản lý các tác phẩm âm nhạc của mình."
+    },
+    {
+      q: "Quy định về bản quyền và trách nhiệm người đăng tải (uploader) như thế nào?",
+      a: "Người đăng tải (uploader) hoàn toàn chịu trách nhiệm trước pháp luật về bản quyền của tất cả tác phẩm âm nhạc, hình ảnh và thông tin đã tải lên hệ thống. Chorus.vn nghiêm cấm mọi hình thức đăng tải thông tin tiêu cực, chống phá, xuyên tạc chính trị hoặc vi phạm thuần phong mỹ tục."
+    },
+    {
+      q: "Làm thế nào để bảo mật các bản thu demo chưa phát hành?",
+      a: "Chorus.vn hỗ trợ tính năng thiết lập mật mã bảo vệ riêng biệt cho từng bản ghi demo. Ngoài ra, bạn có thể tạo và gửi đường liên kết chia sẻ trực tiếp (Secret Link) bảo mật cho đối tác, ca sĩ, nhạc sĩ phối khí để họ nghe thử trực tiếp mà không cần nhập mật khẩu."
+    },
+    {
+      q: "Hệ thống có tự động dịch thông tin sang các ngôn ngữ khác không?",
+      a: "Có! Hệ thống tích hợp công nghệ AI thông minh (Gemini) tự động dịch toàn bộ thông tin hồ sơ, tiêu đề bài hát, phần mô tả, lời nhạc (lyrics) sang 5 ngôn ngữ phổ biến (Anh, Nhật, Hàn, Trung, Thái). Khán giả quốc tế truy cập từ quốc gia nào sẽ tự động nhìn thấy ngôn ngữ tương ứng."
+    }
+  ],
+  en: [
+    {
+      q: "How can I upload music/demos to Chorus.vn?",
+      a: "To ensure system quality during this limited testing phase, we currently only provision accounts for artists in our internal testing program. Once approved by the administration, you will have your own profile page at yourname.chorus.vn to freely upload and manage your music works."
+    },
+    {
+      q: "What are the rules regarding copyright and uploader responsibility?",
+      a: "Uploaders are fully legally responsible for the copyrights of all music works, images, and information uploaded to the system. Chorus.vn strictly prohibits any form of posting negative content, subversive political materials, or anything violating fine customs and traditions."
+    },
+    {
+      q: "How can I secure unreleased demos?",
+      a: "Chorus.vn supports password protection settings for each demo recording. Additionally, you can generate and share a secure direct link (Secret Link) for partners, singers, and arrangers to listen directly without entering a password."
+    },
+    {
+      q: "Does the system automatically translate information into other languages?",
+      a: "Yes! The system integrates intelligent AI technology (Gemini) to automatically translate all profile information, song titles, descriptions, and lyrics into 5 popular languages (English, Japanese, Korean, Chinese, Thai). International visitors will automatically see their corresponding native language based on their country of origin."
+    }
+  ],
+  ko: [
+    {
+      q: "Chorus.vn에 음악/데모를 어떻게 업로드할 수 있나요?",
+      a: "제한된 테스트 기간 동안 시스템 품질을 보장하기 위해 현재 내부 테스트 프로그램 참여 아티스트에게만 계정을 발급하고 있습니다. 운영진의 승인을 받으면 본인의 개인 페이지(예: tennghesi.chorus.vn)를 가질 수 있으며, 이곳에서 자유롭게 음악 저작물을 업로드하고 관리할 수 있습니다."
+    },
+    {
+      q: "저작권 및 업로더(uploader) 책임에 대한 규정은 어떻게 되나요?",
+      a: "업로더(uploader)는 시스템에 올린 모든 음악 작품, 이미지, 정보의 저작권에 대해 법적으로 전적인 책임을 집니다. Chorus.vn은 부정적인 정보, 파괴 행위, 정치적 선동 또는 미풍양속을 해치는 내용의 업로드를 엄격히 금지합니다."
+    },
+    {
+      q: "미발표 데모 레코딩을 어떻게 안전하게 보호하나요?",
+      a: "Chorus.vn은 각 데모 레코딩에 대해 개별 비밀번호 보호 설정 기능을 지원합니다. 또한 파트너, 가수, 편곡자 등이 비밀번호 입력 없이 즉시 들을 수 있도록 보안 다이렉트 공유 링크(Secret Link)를 생성하여 전달할 수 있습니다."
+    },
+    {
+      q: "시스템이 자동으로 정보를 다른 언어로 번역해 주나요?",
+      a: "네! 시스템에는 인공지능(Gemini) 기술이 탑재되어 아티스트 프로필 정보, 노래 제목, 설명, 가사 등을 5개 주요 언어(영어, 일본어, 한국어, 중국어, 태국어)로 자동 번역합니다. 해외 관객이 접속하면 해당 국가의 언어가 자동으로 노출됩니다."
+    }
+  ]
+};
+
 const slideVariants = {
   enter: (direction: number) => ({
     x: direction > 0 ? 400 : -400,
@@ -699,6 +756,7 @@ export default function ChorusVNLanding() {
   const [slideDirection, setSlideDirection] = useState<number>(1);
   const [isPreloading, setIsPreloading] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -765,6 +823,38 @@ export default function ChorusVNLanding() {
   const [lang, setLang] = useState<'vi' | 'en' | 'ko'>(
     (localStorage.getItem('preferredLang') as 'vi' | 'en' | 'ko') || 'vi'
   );
+
+  useEffect(() => {
+    const cached = localStorage.getItem('preferredLang');
+    if (!cached) {
+      fetch('https://ipapi.co/json/')
+        .then((res) => res.json())
+        .then((data) => {
+          const country = data.country_code;
+          if (country === 'VN') {
+            setLang('vi');
+            localStorage.setItem('preferredLang', 'vi');
+          } else if (country === 'KR') {
+            setLang('ko');
+            localStorage.setItem('preferredLang', 'ko');
+          } else {
+            setLang('en');
+            localStorage.setItem('preferredLang', 'en');
+          }
+        })
+        .catch(() => {
+          const browserLang = navigator.language || '';
+          let defaultL: 'vi' | 'en' | 'ko' = 'en';
+          if (browserLang.startsWith('vi')) {
+            defaultL = 'vi';
+          } else if (browserLang.startsWith('ko')) {
+            defaultL = 'ko';
+          }
+          setLang(defaultL);
+          localStorage.setItem('preferredLang', defaultL);
+        });
+    }
+  }, []);
 
   const [config, setConfig] = useState<LandingConfig>({
     tagline: '✧ SẮP RA MẮT',
@@ -1603,6 +1693,98 @@ export default function ChorusVNLanding() {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-12 md:py-24 relative bg-neutral-50/50 border-b border-neutral-200/40">
+        <div className="max-w-4xl mx-auto px-6 sm:px-10">
+          <div className="text-center max-w-2xl mx-auto mb-10 md:mb-16 space-y-4">
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-950 font-sans">
+              {lang === 'vi' ? 'Câu hỏi thường gặp (FAQ)' : lang === 'ko' ? '자주 묻는 질문 (FAQ)' : 'Frequently Asked Questions (FAQ)'}
+            </h2>
+            <p className="text-neutral-500 text-sm max-w-lg mx-auto font-medium leading-relaxed">
+              {lang === 'vi' 
+                ? 'Giải đáp những thắc mắc phổ biến về quy trình đăng tải, bảo mật và quyền sở hữu tác phẩm.' 
+                : lang === 'ko' 
+                ? '업로드 절차, 보안 및 저작권에 대한 자주 묻는 질문을 확인하세요.' 
+                : 'Answers to common questions about uploading, security, and content ownership.'}
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {(config as any).faq && (config as any).faq.length > 0 ? (config as any).faq.map((faq: any, idx: number) => {
+              const isOpen = openFaqIdx === idx;
+              return (
+                <div 
+                  key={idx} 
+                  className="bg-white border border-neutral-200/60 rounded-2xl md:rounded-[1.5rem] overflow-hidden transition-all duration-300 hover:border-neutral-300 shadow-xs"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaqIdx(isOpen ? null : idx)}
+                    className="w-full text-left p-5 md:p-6 flex items-center justify-between gap-4 font-extrabold text-neutral-900 hover:text-black focus:outline-none transition-colors cursor-pointer select-none"
+                  >
+                    <span className="text-sm md:text-base leading-snug">{faq.q}</span>
+                    <span className={`text-neutral-400 shrink-0 transform transition-transform duration-300 ${isOpen ? 'rotate-45 text-neutral-900' : ''}`}>
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                      </svg>
+                    </span>
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                      >
+                        <div className="px-5 pb-5 md:px-6 md:pb-6 text-neutral-550 text-xs sm:text-sm leading-relaxed border-t border-neutral-100 pt-4 bg-neutral-50/40 whitespace-pre-wrap">
+                          {faq.a}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            }) : (defaultFaqs[lang as 'vi' | 'en' | 'ko'] || defaultFaqs['vi']).map((faq: any, idx: number) => {
+              const isOpen = openFaqIdx === idx;
+              return (
+                <div 
+                  key={idx} 
+                  className="bg-white border border-neutral-200/60 rounded-2xl md:rounded-[1.5rem] overflow-hidden transition-all duration-300 hover:border-neutral-300 shadow-xs"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaqIdx(isOpen ? null : idx)}
+                    className="w-full text-left p-5 md:p-6 flex items-center justify-between gap-4 font-extrabold text-neutral-900 hover:text-black focus:outline-none transition-colors cursor-pointer select-none"
+                  >
+                    <span className="text-sm md:text-base leading-snug">{faq.q}</span>
+                    <span className={`text-neutral-400 shrink-0 transform transition-transform duration-300 ${isOpen ? 'rotate-45 text-neutral-900' : ''}`}>
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                      </svg>
+                    </span>
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                      >
+                        <div className="px-5 pb-5 md:px-6 md:pb-6 text-neutral-500 text-xs sm:text-sm leading-relaxed border-t border-neutral-100 pt-4 bg-neutral-50/40 whitespace-pre-wrap">
+                          {faq.a}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
