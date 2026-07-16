@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, EyeOff, Music, BadgeCheck, Lock, Globe, ArrowRight, Sparkles, Disc3, CheckCircle2, ListMusic, X, AlertCircle, Mail, ChevronLeft, ChevronRight, UserPlus, RefreshCw, Search } from 'lucide-react';
+import { Eye, EyeOff, Music, BadgeCheck, Lock, Globe, ArrowRight, Sparkles, Disc3, CheckCircle2, ListMusic, X, AlertCircle, Mail, ChevronLeft, ChevronRight, UserPlus, RefreshCw, Search, LogOut, UserCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChorusLogo } from './ChorusLogo';
 
@@ -38,6 +38,7 @@ interface LandingConfig {
   statusBadge?: string;
   featuresTitle?: string;
   featuresSub?: string;
+  roles?: any[];
 }
 
 const dict = {
@@ -758,6 +759,57 @@ export default function ChorusVNLanding() {
   const [isMobile, setIsMobile] = useState(false);
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(null);
 
+  const [loggedInArtist, setLoggedInArtist] = useState<{username: string, extension: string, artistName: string} | null>(null);
+  const [showComingSoonModal, setShowComingSoonModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (token) {
+      fetch('/api/admin/check', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.isAdmin && data.artist) {
+          setLoggedInArtist(data.artist);
+        }
+      });
+    }
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    setIsLoggingIn(true);
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: loginUsername, password: loginPassword })
+      });
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('adminToken', data.token);
+        localStorage.setItem(`adminToken_${data.extension}`, data.token);
+        setLoggedInArtist(data.artist);
+        setShowLoginModal(false);
+        setLoginUsername('');
+        setLoginPassword('');
+      } else {
+        setLoginError(data.error || 'Login failed');
+      }
+    } catch (err) {
+      setLoginError('Error logging in');
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -820,40 +872,60 @@ export default function ChorusVNLanding() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [subscribeSuccess, setSubscribeSuccess] = useState(false);
   const [subscribeError, setSubscribeError] = useState('');
-  const [lang, setLang] = useState<'vi' | 'en' | 'ko'>(
-    (localStorage.getItem('preferredLang') as 'vi' | 'en' | 'ko') || 'vi'
-  );
+  const [lang, setLang] = useState<'vi' | 'en' | 'ko'>(() => {
+    const isManual = localStorage.getItem('manualLangSelected') === 'true';
+    if (isManual) {
+      const cached = localStorage.getItem('preferredLang');
+      if (cached === 'vi' || cached === 'en' || cached === 'ko') {
+        return cached;
+      }
+    }
+    // Auto-detect synchronously (crucial for Chrome DevTools Sensors testing)
+    const browserLang = navigator.language || '';
+    if (browserLang.startsWith('vi')) return 'vi';
+    if (browserLang.startsWith('ko')) return 'ko';
+
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (tz) {
+        if (tz.includes('Seoul') || tz.includes('Pyongyang')) return 'ko';
+        if (tz.includes('Ho_Chi_Minh')) return 'vi';
+      }
+    } catch (e) {}
+
+    return 'en';
+  });
 
   useEffect(() => {
-    const cached = localStorage.getItem('preferredLang');
-    if (!cached) {
-      fetch('https://ipapi.co/json/')
-        .then((res) => res.json())
-        .then((data) => {
-          const country = data.country_code;
-          if (country === 'VN') {
-            setLang('vi');
-            localStorage.setItem('preferredLang', 'vi');
-          } else if (country === 'KR') {
-            setLang('ko');
-            localStorage.setItem('preferredLang', 'ko');
-          } else {
-            setLang('en');
-            localStorage.setItem('preferredLang', 'en');
-          }
-        })
-        .catch(() => {
-          const browserLang = navigator.language || '';
-          let defaultL: 'vi' | 'en' | 'ko' = 'en';
-          if (browserLang.startsWith('vi')) {
-            defaultL = 'vi';
-          } else if (browserLang.startsWith('ko')) {
-            defaultL = 'ko';
-          }
-          setLang(defaultL);
-          localStorage.setItem('preferredLang', defaultL);
-        });
-    }
+    const isManual = localStorage.getItem('manualLangSelected') === 'true';
+    if (isManual) return;
+
+    fetch('https://ipapi.co/json/')
+      .then((res) => res.json())
+      .then((data) => {
+        const isManualCheck = localStorage.getItem('manualLangSelected') === 'true';
+        if (isManualCheck) return;
+        const country = data.country_code;
+        if (country === 'VN') {
+          setLang('vi');
+        } else if (country === 'KR') {
+          setLang('ko');
+        } else {
+          setLang('en');
+        }
+      })
+      .catch(() => {
+        const isManualCheck = localStorage.getItem('manualLangSelected') === 'true';
+        if (isManualCheck) return;
+        const browserLang = navigator.language || '';
+        let defaultL: 'vi' | 'en' | 'ko' = 'en';
+        if (browserLang.startsWith('vi')) {
+          defaultL = 'vi';
+        } else if (browserLang.startsWith('ko')) {
+          defaultL = 'ko';
+        }
+        setLang(defaultL);
+      });
   }, []);
 
   const [config, setConfig] = useState<LandingConfig>({
@@ -1348,6 +1420,17 @@ export default function ChorusVNLanding() {
             </div>
           </Link>
 
+          {/* Navigation links */}
+          <nav className="hidden md:flex items-center gap-6 text-xs font-black uppercase tracking-wider text-neutral-500">
+            <a href="#pricing" onClick={(e) => { e.preventDefault(); setShowComingSoonModal(true); }} className="hover:text-black transition-colors cursor-pointer">
+              {lang === 'vi' ? 'Bảng giá' : (lang === 'ko' ? '요금제' : 'Pricing')}
+            </a>
+            <a href="#discover" onClick={(e) => { e.preventDefault(); setShowComingSoonModal(true); }} className="hover:text-black transition-colors cursor-pointer">
+              {lang === 'vi' ? 'Khám Phá' : (lang === 'ko' ? '탐색' : 'Discover')}
+            </a>
+
+          </nav>
+
           {/* Action Header: Status Badge & Language Segmented Toggler */}
           <div className="flex items-center gap-4">
             {/* Status Badge */}
@@ -1366,6 +1449,7 @@ export default function ChorusVNLanding() {
                   onClick={() => {
                     setLang(l);
                     localStorage.setItem('preferredLang', l);
+                    localStorage.setItem('manualLangSelected', 'true');
                   }}
                   className={`px-3.5 py-1.5 rounded-lg text-[10px] font-extrabold uppercase transition-all cursor-pointer relative z-10 ${
                     lang === l
@@ -1460,29 +1544,74 @@ export default function ChorusVNLanding() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
-          className="flex justify-center"
+          className="flex flex-col items-center justify-center gap-4 mt-6"
         >
-          <motion.button
-            onClick={() => setShowRegisterModal(true)}
-            animate={{ 
-              boxShadow: ['0px 0px 0px 0px rgba(0,0,0,0.8)', '0px 0px 20px 6px rgba(0,0,0,0.25)', '0px 0px 0px 0px rgba(0,0,0,0.8)'],
-            }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-black text-white font-black text-sm md:text-base py-5 px-10 rounded-full uppercase tracking-wider flex items-center gap-2.5 cursor-pointer relative overflow-hidden group shadow-lg border border-neutral-800"
-          >
-            {/* Subtle animated gradient overlay */}
-            <motion.div 
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent z-0"
-              animate={{ x: ['-200%', '200%'] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-            />
-            <span className="relative z-10">
-              {lang === 'vi' ? 'TẠO KHO NHẠC CÁ NHÂN NGAY.' : (lang === 'ko' ? '지금 나만의 음악 보관소 만들기' : 'CREATE PERSONAL MUSIC VAULT NOW')}
-            </span>
-            <ArrowRight className="w-4 h-4 stroke-[2.5] relative z-10 group-hover:translate-x-1 transition-transform" />
-          </motion.button>
+          {loggedInArtist ? (
+            <a href={(loggedInArtist as any).verified === false ? `/${loggedInArtist.extension}/help` : `/${loggedInArtist.extension}`} className="bg-black text-white font-black text-sm md:text-base py-5 px-10 rounded-full uppercase tracking-wider flex items-center gap-2.5 cursor-pointer relative overflow-hidden group shadow-lg border border-neutral-800 transition-all hover:scale-105 active:scale-95">
+              <span className="relative z-10">
+                {(loggedInArtist as any).verified === false ? (lang === 'vi' ? 'Hướng Dẫn Sử Dụng' : 'User Guide') : (lang === 'vi' ? 'VÀO KHO NHẠC CỦA BẠN' : 'ENTER YOUR VAULT')}
+              </span>
+              <ArrowRight className="w-4 h-4 stroke-[2.5] relative z-10 group-hover:translate-x-1 transition-transform" />
+            </a>
+          ) : (
+            <motion.button
+              onClick={() => setShowRegisterModal(true)}
+              animate={{ 
+                boxShadow: ['0px 0px 0px 0px rgba(0,0,0,0.8)', '0px 0px 20px 6px rgba(0,0,0,0.25)', '0px 0px 0px 0px rgba(0,0,0,0.8)'],
+              }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-black text-white font-black text-sm md:text-base py-5 px-10 rounded-full uppercase tracking-wider flex items-center gap-2.5 cursor-pointer relative overflow-hidden group shadow-lg border border-neutral-800"
+            >
+              {/* Subtle animated gradient overlay */}
+              <motion.div 
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent z-0"
+                animate={{ x: ['-200%', '200%'] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              />
+              <span className="relative z-10">
+                {lang === 'vi' ? 'TẠO KHO NHẠC CÁ NHÂN NGAY.' : (lang === 'ko' ? '지금 나만의 음악 보관소 만들기' : 'CREATE PERSONAL MUSIC VAULT NOW')}
+              </span>
+              <ArrowRight className="w-4 h-4 stroke-[2.5] relative z-10 group-hover:translate-x-1 transition-transform" />
+            </motion.button>
+          )}
+
+          {loggedInArtist ? (
+            <div className="mt-4 flex items-center justify-center">
+              <div className="flex items-center bg-white rounded-full p-1 border border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
+                <a href={`/${loggedInArtist.extension}/admin`} className="px-4 py-2 text-sm font-bold text-neutral-800 hover:text-indigo-600 transition-colors flex items-center gap-2">
+                  <UserCircle className="w-4 h-4" />
+                  {lang === 'vi' ? `Xin Chào, ${loggedInArtist.artistName}` : `Hello, ${loggedInArtist.artistName}`}
+                </a>
+                <div className="w-px h-5 bg-neutral-200 mx-1"></div>
+                <button 
+                  onClick={async () => {
+                    try {
+                      const keysToRemove = [];
+                      for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (key && key.startsWith('adminToken')) {
+                          keysToRemove.push(key);
+                        }
+                      }
+                      keysToRemove.forEach(k => localStorage.removeItem(k));
+                      await fetch('/api/admin/logout', { method: 'POST' });
+                      window.location.reload();
+                    } catch (e) {}
+                  }}
+                  title={lang === 'vi' ? 'Đăng xuất' : 'Logout'}
+                  className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4 stroke-[2]" />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-2 text-sm text-neutral-500 font-medium">
+              {lang === 'vi' ? 'Bạn đã có tài khoản?' : 'Already have an account?'} <button onClick={() => setShowLoginModal(true)} className="text-black font-bold hover:underline transition-all cursor-pointer">{lang === 'vi' ? 'Đăng Nhập Ngay.' : 'Login Now.'}</button>
+            </div>
+          )}
         </motion.div>
       </section>
 
@@ -1634,7 +1763,7 @@ export default function ChorusVNLanding() {
       </section>
 
       {/* Features Showcase Grid */}
-      <section className="py-12 md:py-24 bg-white/40 border-t border-b border-neutral-200/40 relative">
+      <section id="features" className="py-12 md:py-24 bg-white/40 border-t border-b border-neutral-200/40 relative">
         <div className="max-w-7xl mx-auto px-6 sm:px-10">
           <div className="text-center max-w-2xl mx-auto mb-10 md:mb-20 space-y-4">
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-950 font-sans">
@@ -1694,6 +1823,151 @@ export default function ChorusVNLanding() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-12 md:py-24 relative bg-neutral-100/50 border-b border-neutral-200/40">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10">
+          <div className="text-center max-w-2xl mx-auto mb-10 md:mb-20 space-y-4">
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-950 font-sans">
+              {lang === 'vi' ? 'Bảng Giá Hội Viên' : lang === 'ko' ? '멤버십 요금제' : 'Membership Pricing'}
+            </h2>
+            <p className="text-neutral-500 text-sm max-w-lg mx-auto font-medium leading-relaxed">
+              {lang === 'vi' 
+                ? 'Lựa chọn gói thành viên phù hợp để mở khóa các tính năng nâng cao và dung lượng lưu trữ tối ưu.' 
+                : lang === 'ko' 
+                ? '고급 기능과 최적의 저장 공간을 잠금 해제하기 위해 적절한 요금제를 선택하세요.' 
+                : 'Choose the right membership package to unlock advanced features and optimal storage capacity.'}
+            </p>
+          </div>
+
+          {!config.roles || config.roles.length === 0 ? (
+            <div className="bg-white/60 border border-dashed border-neutral-200 rounded-[3rem] p-16 text-center max-w-md mx-auto">
+              <p className="text-neutral-500 text-sm">
+                {lang === 'vi' 
+                  ? 'Thông tin bảng giá đang được cập nhật.' 
+                  : lang === 'ko' 
+                  ? '요금제 정보를 업데이트하고 있습니다.' 
+                  : 'Pricing information is being updated.'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-center">
+              {config.roles.map((r: any, idx: number) => {
+                const maxPostsText = r.maxPosts === -1 || r.maxPosts === 'unlimited'
+                  ? (lang === 'vi' ? 'Không giới hạn bài hát' : lang === 'ko' ? '무제한 곡 업로드' : 'Unlimited songs')
+                  : (lang === 'vi' ? `Tối đa ${r.maxPosts} bài hát` : lang === 'ko' ? `최대 ${r.maxPosts}곡 업로드` : `Up to ${r.maxPosts} songs`);
+
+                return (
+                  <div 
+                    key={idx} 
+                    className="bg-white border border-neutral-200/60 hover:border-neutral-300 rounded-[2.5rem] p-8 flex flex-col justify-between transition-all shadow-sm hover:shadow-md relative overflow-hidden"
+                  >
+                    <div>
+                      {/* Badge if subscriptionPricing is true */}
+                      {r.subscriptionPricing && (
+                        <div className="absolute top-4 right-4 bg-purple-100 text-purple-700 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
+                          {lang === 'vi' ? 'Phổ biến' : lang === 'ko' ? '인기' : 'Popular'}
+                        </div>
+                      )}
+
+                      <h3 className="text-xl font-extrabold text-neutral-900 mb-2">{r.name}</h3>
+                      
+                      <div className="flex items-baseline gap-1 my-4">
+                        <span className="text-3xl font-black text-neutral-950">{r.price || (lang === 'vi' ? 'Miễn phí' : lang === 'ko' ? '무료' : 'Free')}</span>
+                      </div>
+
+                      <div className="border-t border-neutral-100 my-6"></div>
+
+                      <ul className="space-y-3 text-neutral-600 text-xs sm:text-sm font-medium">
+                        <li className="flex items-center gap-2.5">
+                          <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+                          <span>{maxPostsText}</span>
+                        </li>
+                        {r.accessControl && (
+                          <li className="flex items-center gap-2.5">
+                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+                            <span>{lang === 'vi' ? 'Mật khẩu bảo mật kho nhạc' : lang === 'ko' ? '보관함 비밀번호 설정' : 'Secure Vault Password'}</span>
+                          </li>
+                        )}
+                        {r.demoPassword && (
+                          <li className="flex items-center gap-2.5">
+                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+                            <span>{lang === 'vi' ? 'Mật khẩu bảo mật demo' : lang === 'ko' ? '데모 비밀번호 설정' : 'Secure Demo Password'}</span>
+                          </li>
+                        )}
+                        {r.secretLink && (
+                          <li className="flex items-center gap-2.5">
+                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+                            <span>{lang === 'vi' ? 'Tạo đường dẫn bí mật' : lang === 'ko' ? '비밀 링크 생성' : 'Secret Link Generation'}</span>
+                          </li>
+                        )}
+                        {r.customDomain && (
+                          <li className="flex items-center gap-2.5">
+                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+                            <span>{lang === 'vi' ? 'Hỗ trợ tên miền riêng' : lang === 'ko' ? '개인 도메인 연결' : 'Custom Domain Support'}</span>
+                          </li>
+                        )}
+                        {r.bio && (
+                          <li className="flex items-center gap-2.5">
+                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+                            <span>{lang === 'vi' ? 'Trang tiểu sử (Bio) chi tiết' : lang === 'ko' ? '상세 바이오 페이지' : 'Detailed Rich Bio'}</span>
+                          </li>
+                        )}
+                        {r.aboutMe && (
+                          <li className="flex items-center gap-2.5">
+                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+                            <span>{lang === 'vi' ? 'Mục Giới thiệu (About Me)' : lang === 'ko' ? '소개 섹션 (About Me)' : 'About Me Section'}</span>
+                          </li>
+                        )}
+                        {r.uiEdit && (
+                          <li className="flex items-center gap-2.5">
+                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+                            <span>{lang === 'vi' ? 'Tùy biến giao diện linh hoạt' : lang === 'ko' ? '유연한 테마 사용자 지정' : 'Flexible UI Customization'}</span>
+                          </li>
+                        )}
+                        {r.exclusiveUi && (
+                          <li className="flex items-center gap-2.5">
+                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+                            <span>{lang === 'vi' ? 'Giao diện độc quyền cao cấp' : lang === 'ko' ? '독점 프리미엄 테마' : 'Exclusive Premium UI'}</span>
+                          </li>
+                        )}
+                        {r.database && (
+                          <li className="flex items-center gap-2.5">
+                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+                            <span>{lang === 'vi' ? 'Sao lưu dữ liệu cá nhân' : lang === 'ko' ? '개인 데이터 백업' : 'Personal Data Backup'}</span>
+                          </li>
+                        )}
+                        {r.subscriptionPricing && (
+                          <li className="flex items-center gap-2.5">
+                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+                            <span>{lang === 'vi' ? 'Bán nhạc & Gói hội viên' : lang === 'ko' ? '음악 판매 및 회원제' : 'Sell Music & Membership'}</span>
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+
+                    <div className="mt-8">
+                      <button
+                        onClick={() => {
+                          const registerBtn = document.querySelector('button[id="register-navbar-btn"]') || document.querySelector('button[onClick*="setShowRegisterModal"]');
+                          if (registerBtn) {
+                            (registerBtn as HTMLButtonElement).click();
+                          } else {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }
+                        }}
+                        className="w-full bg-neutral-950 text-white hover:bg-neutral-800 transition-all text-xs font-bold py-4 px-6 rounded-2xl cursor-pointer text-center block"
+                      >
+                        {lang === 'vi' ? 'Đăng ký ngay' : lang === 'ko' ? '지금 신청하기' : 'Register Now'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
@@ -2141,6 +2415,124 @@ export default function ChorusVNLanding() {
                   </form>
                 )}
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Login Modal */}
+      <AnimatePresence>
+        {showLoginModal && (
+          <div className="fixed inset-0 z-50 flex justify-center items-center p-4">
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => { if (!isLoggingIn) setShowLoginModal(false); }}
+              className="fixed inset-0 bg-neutral-950/45 backdrop-blur-sm"
+            ></motion.div>
+
+            {/* Modal Body */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-white rounded-2xl w-full max-w-md shadow-2xl relative z-10 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="p-6 md:p-8">
+                <button
+                  onClick={() => setShowLoginModal(false)}
+                  className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-900 transition-colors bg-neutral-100 hover:bg-neutral-200 p-2 rounded-full"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+                <div className="mb-6">
+                  <h3 className="text-xl font-black text-neutral-900 font-sans tracking-tight">Đăng Nhập Nghệ Sĩ</h3>
+                  <p className="text-sm text-neutral-500 mt-1">Đăng nhập để quản lý kho nhạc của bạn.</p>
+                </div>
+
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div>
+                    <label className="block text-[11px] font-black text-neutral-500 uppercase tracking-wider mb-1">
+                      Tên Đăng Nhập
+                    </label>
+                    <input
+                      type="text"
+                      value={loginUsername}
+                      onChange={e => setLoginUsername(e.target.value)}
+                      className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 focus:bg-white transition-all font-medium"
+                      placeholder="Nhập tên đăng nhập..."
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-black text-neutral-500 uppercase tracking-wider mb-1">
+                      Mật Khẩu
+                    </label>
+                    <input
+                      type="password"
+                      value={loginPassword}
+                      onChange={e => setLoginPassword(e.target.value)}
+                      className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 focus:bg-white transition-all font-medium"
+                      placeholder="Nhập mật khẩu..."
+                      required
+                    />
+                  </div>
+
+                  {loginError && (
+                    <div className="p-3 bg-red-50 text-red-600 border border-red-100 rounded-xl text-xs font-bold flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                      <span>{loginError}</span>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isLoggingIn}
+                    className="w-full bg-black hover:bg-neutral-800 text-white font-extrabold py-4 px-6 rounded-xl text-xs transition-all cursor-pointer shadow-sm uppercase tracking-wider flex items-center justify-center gap-2 mt-4"
+                  >
+                    {isLoggingIn ? t('loading') : 'Đăng Nhập'}
+                    {!isLoggingIn && <ArrowRight className="w-4 h-4" />}
+                  </button>
+                </form>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+
+      {/* Coming Soon Modal */}
+      <AnimatePresence>
+        {showComingSoonModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[999] overflow-y-auto">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl relative text-center"
+            >
+              <button 
+                onClick={() => setShowComingSoonModal(false)}
+                className="absolute top-4 right-4 p-2 bg-neutral-100 text-neutral-500 hover:text-neutral-900 rounded-full transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <div className="w-16 h-16 bg-neutral-100 rounded-2xl mx-auto flex items-center justify-center mb-6">
+                <Sparkles className="w-8 h-8 text-indigo-500" />
+              </div>
+              <h3 className="text-2xl font-black text-neutral-900 mb-2">Tính năng đang phát triển!</h3>
+              <p className="text-neutral-500 text-sm mb-6 leading-relaxed">
+                Chúng tôi đang nỗ lực hoàn thiện tính năng này để mang lại trải nghiệm tốt nhất cho bạn. Vui lòng quay lại sau nhé!
+              </p>
+              <button
+                onClick={() => setShowComingSoonModal(false)}
+                className="w-full bg-black text-white font-bold py-3.5 px-6 rounded-2xl hover:bg-neutral-800 transition-colors"
+              >
+                Đã hiểu
+              </button>
             </motion.div>
           </div>
         )}

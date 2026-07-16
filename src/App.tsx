@@ -2,7 +2,7 @@ import { createPortal } from "react-dom";
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
 import { ChorusLogo } from './components/ChorusLogo';
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { UserCircle, BookOpen, User, Settings, Play, Music, Lock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, List, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, RefreshCw, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, Palette, LayoutTemplate} from 'lucide-react';
+import { UserCircle, BookOpen, User, Settings, Play, Music, Lock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, List, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, RefreshCw, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, Palette, LayoutTemplate, Award, History, HelpCircle } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { AppData, DemoSong, TemplateConfig, Achievement } from './types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -781,12 +781,12 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Màu lời bài hát": "Màu lời bài hát",
     "Màu sóng âm": "Màu sóng âm",
     "Hãy chọn bài hát để xem.": "Hãy chọn bài hát để xem.",
-    "Giao diện xem trên máy tính": "Giao diện xem trên máy tính",
+    "Chủ đề xem trên máy tính": "Chủ đề xem trên máy tính",
     "Lưu cài đặt": "Lưu cài đặt",
     "Đang tải...": "Đang tải...",
-    "Chỉnh Sửa Giao Diện": "Chỉnh Sửa Giao Diện",
-    "Kéo thả để sắp xếp lại thứ tự hiển thị của giao diện khi chọn. Nhấn vào Giao Diện để chỉnh sửa chi tiết.": "Kéo thả để sắp xếp lại thứ tự hiển thị của giao diện khi chọn. Nhấn vào Giao Diện để chỉnh sửa chi tiết.",
-    "Chưa có bài hát nào dùng giao diện này": "Chưa có bài hát nào dùng giao diện này",
+    "Chỉnh Sửa Chủ Đề": "Chỉnh Sửa Chủ Đề",
+    "Kéo thả để sắp xếp lại thứ tự hiển thị của chủ đề khi chọn. Nhấn vào Chủ Đề để chỉnh sửa chi tiết.": "Kéo thả để sắp xếp lại thứ tự hiển thị của chủ đề khi chọn. Nhấn vào Chủ Đề để chỉnh sửa chi tiết.",
+    "Chưa có bài hát nào dùng chủ đề này": "Chưa có bài hát nào dùng chủ đề này",
     "Đăng Bài Hát Mới": "Đăng Bài Hát Mới",
     "Đã lưu cấu hình!": "Đã lưu cấu hình!",
     "(Chưa đặt tiêu đề)": "(Chưa đặt tiêu đề)",
@@ -841,7 +841,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Chưa tải nhạc": "Chưa tải nhạc",
     "Chỉnh Sửa Demo": "Chỉnh Sửa Demo",
     "Chỉnh sửa": "Chỉnh sửa",
-    "Giao diện": "Giao diện",
+    "Chủ đề": "Chủ đề",
     "Chỉnh sửa playlist": "Chỉnh sửa playlist",
     "Chọn": "Chọn",
     "Chọn Playlist": "Chọn Playlist",
@@ -881,7 +881,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Dịch tự động (AI)": "Dịch tự động (AI)",
     "Favicon (Icon trên trình duyệt)": "Favicon (Icon trên trình duyệt)",
     "File Nhạc (Audio)": "File Nhạc (Audio)",
-    "Giao Diện": "Giao Diện",
+    "Chủ Đề": "Chủ Đề",
     "Landing Page": "Landing Page",
     "Giá trị (Points to)": "Giá trị (Points to)",
     "Giá trị / Nội dung chi tiết": "Giá trị / Nội dung chi tiết",
@@ -1040,7 +1040,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Playlist": "Playlist",
     "Quay lại": "Quay lại",
     "Quản lý": "Quản lý",
-    "Quản lý bài hát, danh sách phát, giao diện và cài đặt nghệ sĩ": "Quản lý bài hát, danh sách phát, giao diện và cài đặt nghệ sĩ",
+    "Quản lý bài hát, danh sách phát, chủ đề và cài đặt nghệ sĩ": "Quản lý bài hát, danh sách phát, chủ đề và cài đặt nghệ sĩ",
     "Ra rồi": "Ra rồi",
     "Reset Toàn Bộ Secret Link": "Reset Toàn Bộ Secret Link",
     "Riêng tư / Bản nháp (ẩn khỏi trang chủ)": "Riêng tư / Bản nháp (ẩn khỏi trang chủ)",
@@ -1053,7 +1053,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Sử dụng link sau để truy cập trực tiếp (không cần nhập mật khẩu playlist):": "Sử dụng link sau để truy cập trực tiếp (không cần nhập mật khẩu playlist):",
     "Tab 1 (Nhạc phát hành)": "Tab 1 (Nhạc phát hành)",
     "Tab 2 (Nhạc đề mô)": "Tab 2 (Nhạc đề mô)",
-    "Template Giao Diện": "Template Giao Diện",
+    "Template Chủ Đề": "Template Chủ Đề",
     "Thay đổi": "Thay đổi",
     "Thiết Lập Mật Khẩu Thành Viên": "Thiết Lập Mật Khẩu Thành Viên",
     "Thiếu thông tin": "Thiếu thông tin",
@@ -1123,8 +1123,8 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Vui lòng đợi ảnh nền tải lên xong!": "Vui lòng đợi ảnh nền tải lên xong!",
     "Vui vẻ (Ấm áp)": "Vui vẻ (Ấm áp)",
     "Ví dụ: 2026, 2024...": "Ví dụ: 2026, 2024...",
-    "Xem giao diện máy tính": "Xem giao diện máy tính",
-    "Xem giao diện điện thoại": "Xem giao diện điện thoại",
+    "Xem chủ đề máy tính": "Xem chủ đề máy tính",
+    "Xem chủ đề điện thoại": "Xem chủ đề điện thoại",
     "Xuất Bản": "Xuất Bản",
     "Xác nhận": "Xác nhận",
     "Xác nhận gỡ bài": "Xác nhận gỡ bài",
@@ -1223,7 +1223,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Top Trending YouTube": "Top Trending YouTube",
     "Viral TikTok": "Viral TikTok",
     "Views YouTube": "Lượt xem YouTube",
-    "Xem trước giao diện": "Xem trước giao diện",
+    "Xem trước chủ đề": "Xem trước chủ đề",
     "Trở về": "Trở về",
     "Trở về Dashboard": "Trở về Dashboard",
     "Trở về Trang chủ": "Trở về Trang chủ",
@@ -1287,12 +1287,12 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Màu lời bài hát": "Lyrics Color",
     "Màu sóng âm": "Waveform Color",
     "Hãy chọn bài hát để xem.": "Please select a song to preview.",
-    "Giao diện xem trên máy tính": "Desktop Preview Mode",
+    "Chủ đề xem trên máy tính": "Desktop Preview Mode",
     "Lưu cài đặt": "Save Settings",
     "Đang tải...": "Loading...",
-    "Chỉnh Sửa Giao Diện": "Interface Editor",
-    "Kéo thả để sắp xếp lại thứ tự hiển thị của giao diện khi chọn. Nhấn vào Giao Diện để chỉnh sửa chi tiết.": "Drag and drop to reorder interfaces. Click on an Interface to edit details.",
-    "Chưa có bài hát nào dùng giao diện này": "No songs are using this interface yet",
+    "Chỉnh Sửa Chủ Đề": "Interface Editor",
+    "Kéo thả để sắp xếp lại thứ tự hiển thị của chủ đề khi chọn. Nhấn vào Chủ Đề để chỉnh sửa chi tiết.": "Drag and drop to reorder interfaces. Click on an Interface to edit details.",
+    "Chưa có bài hát nào dùng chủ đề này": "No songs are using this interface yet",
     "Đăng Bài Hát Mới": "Publish New Song",
     "Đã lưu cấu hình!": "Configuration saved!",
     "(Chưa đặt tiêu đề)": "(Untitled)",
@@ -1347,7 +1347,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Chưa tải nhạc": "Music Not Uploaded",
     "Chỉnh Sửa Demo": "Edit Demo",
     "Chỉnh sửa": "Edit",
-    "Giao diện": "Interface",
+    "Chủ đề": "Interface",
     "Chỉnh sửa playlist": "Edit Playlist",
     "Chọn": "Select",
     "Chọn Playlist": "Select Playlist",
@@ -1387,7 +1387,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Dịch tự động (AI)": "Auto Translate (AI)",
     "Favicon (Icon trên trình duyệt)": "Favicon (Browser Icon)",
     "File Nhạc (Audio)": "Music File (Audio)",
-    "Giao Diện": "Interface",
+    "Chủ Đề": "Interface",
     "Landing Page": "Landing Page",
     "Giá trị (Points to)": "Value (Points to)",
     "Giá trị / Nội dung chi tiết": "Value / Detailed Content",
@@ -1546,7 +1546,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Playlist": "Playlists",
     "Quay lại": "Back",
     "Quản lý": "Manage",
-    "Quản lý bài hát, danh sách phát, giao diện và cài đặt nghệ sĩ": "Manage songs, playlists, layouts, and artist settings",
+    "Quản lý bài hát, danh sách phát, chủ đề và cài đặt nghệ sĩ": "Manage songs, playlists, layouts, and artist settings",
     "Reset Toàn Bộ Secret Link": "Reset All Secret Links",
     "Riêng tư / Bản nháp (ẩn khỏi trang chủ)": "Private / Draft (hidden from homepage)",
     "Secret Link (Chia sẻ trực tiếp xem không hỏi mật khẩu)": "Secret Link (Direct sharing without password prompt)",
@@ -1558,7 +1558,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Sử dụng link sau để truy cập trực tiếp (không cần nhập mật khẩu playlist):": "Use the following link to access directly (no playlist password required):",
     "Tab 1 (Nhạc phát hành)": "Tab 1 (Released Music)",
     "Tab 2 (Nhạc đề mô)": "Tab 2 (Demo Music)",
-    "Template Giao Diện": "Interface Template",
+    "Template Chủ Đề": "Interface Template",
     "Thay đổi": "Change",
     "Thiết Lập Mật Khẩu Thành Viên": "Set Member Password",
     "Thiếu thông tin": "Missing information",
@@ -1628,8 +1628,8 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Vui lòng đợi ảnh nền tải lên xong!": "Please wait for the background image to finish uploading!",
     "Vui vẻ (Ấm áp)": "Cheerful (Warm)",
     "Ví dụ: 2026, 2024...": "Example: 2026, 2024...",
-    "Xem giao diện máy tính": "View Desktop Layout",
-    "Xem giao diện điện thoại": "View Mobile Layout",
+    "Xem chủ đề máy tính": "View Desktop Layout",
+    "Xem chủ đề điện thoại": "View Mobile Layout",
     "Xuất Bản": "Publish",
     "Xác nhận": "Confirm",
     "Xác nhận gỡ bài": "Confirm Post Removal",
@@ -1728,7 +1728,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Top Trending YouTube": "Top Trending YouTube",
     "Viral TikTok": "Viral TikTok",
     "Views YouTube": "YouTube Views",
-    "Xem trước giao diện": "Preview Layout",
+    "Xem trước chủ đề": "Preview Layout",
     "Trở về": "Go Back",
     "Trở về Dashboard": "Back to Dashboard",
     "Trở về Trang chủ": "Back to Homepage",
@@ -1792,12 +1792,12 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Màu lời bài hát": "가사 글자색",
     "Màu sóng âm": "음파 색상",
     "Hãy chọn bài hát để xem.": "프리뷰할 곡을 선택하세요.",
-    "Giao diện xem trên máy tính": "데스크톱 미리보기 모드",
+    "Chủ đề xem trên máy tính": "데스크톱 미리보기 모드",
     "Lưu cài đặt": "설정 저장",
     "Đang tải...": "로딩 중...",
-    "Chỉnh Sửa Giao Diện": "인터페이스 편집",
-    "Kéo thả để sắp xếp lại thứ tự hiển thị của giao diện khi chọn. Nhấn vào Giao Diện để chỉnh sửa chi tiết.": "드래그 앤 ド롭으로 인터페이스 순서를 변경하세요. 세부 정보를 수정하려면 인터페이스를 클릭하세요.",
-    "Chưa có bài hát nào dùng giao diện này": "이 인터페이스를 사용하는 곡이 없습니다",
+    "Chỉnh Sửa Chủ Đề": "인터페이스 편집",
+    "Kéo thả để sắp xếp lại thứ tự hiển thị của chủ đề khi chọn. Nhấn vào Chủ Đề để chỉnh sửa chi tiết.": "드래그 앤 ド롭으로 인터페이스 순서를 변경하세요. 세부 정보를 수정하려면 인터페이스를 클릭하세요.",
+    "Chưa có bài hát nào dùng chủ đề này": "이 인터페이스를 사용하는 곡이 없습니다",
     "Đăng Bài Hát Mới": "새 노래 게시",
     "Đã lưu cấu hình!": "설정 저장됨!",
     "(Chưa đặt tiêu đề)": "(제목 없음)",
@@ -1852,7 +1852,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Chưa tải nhạc": "음악 업로드 안 됨",
     "Chỉnh Sửa Demo": "데모 수정",
     "Chỉnh sửa": "수정",
-    "Giao diện": "인터페이스",
+    "Chủ đề": "인터페이스",
     "Chỉnh sửa playlist": "재생목록 수정",
     "Chọn": "선택",
     "Chọn Playlist": "재생목록 선택",
@@ -1892,7 +1892,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Dịch tự động (AI)": "자동 번역 (AI)",
     "Favicon (Icon trên trình duyệt)": "파비콘 (브라우저 아이콘)",
     "File Nhạc (Audio)": "음악 파일 (오디오)",
-    "Giao Diện": "인터페이스",
+    "Chủ Đề": "인터페이스",
     "Landing Page": "랜딩 페이지",
     "Giá trị (Points to)": "값 (가리키는 곳)",
     "Giá trị / Nội dung chi tiết": "값 / 상세 내용",
@@ -2051,7 +2051,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Playlist": "플레이리스트",
     "Quay lại": "뒤로 가기",
     "Quản lý": "관리",
-    "Quản lý bài hát, danh sách phát, giao diện và cài đặt nghệ sĩ": "노래, 플레이리스트, 레이아웃 및 아티스트 설정 관리",
+    "Quản lý bài hát, danh sách phát, chủ đề và cài đặt nghệ sĩ": "노래, 플레이리스트, 레이아웃 및 아티스트 설정 관리",
     "Reset Toàn Bộ Secret Link": "모든 비밀 링크 초기화",
     "Riêng tư / Bản nháp (ẩn khỏi trang chủ)": "비공개 / 초안 (홈페이지에서 숨김)",
     "Secret Link (Chia sẻ trực tiếp xem không hỏi mật khẩu)": "비밀 링크 (비밀번호 없이 직접 공유)",
@@ -2063,7 +2063,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Sử dụng link sau để truy cập trực tiếp (không cần nhập mật khẩu playlist):": "다음 링크를 사용하여 직접 액세스하세요 (재생목록 비밀번호 불필요):",
     "Tab 1 (Nhạc phát hành)": "탭 1 (발매된 음악)",
     "Tab 2 (Nhạc đề mô)": "탭 2 (데모 음악)",
-    "Template Giao Diện": "인터페이스 템플릿",
+    "Template Chủ Đề": "인터페이스 템플릿",
     "Thay đổi": "변경",
     "Thiết Lập Mật Khẩu Thành Viên": "멤버 비밀번호 설정",
     "Thiếu thông tin": "정보 부족",
@@ -2133,8 +2133,8 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Vui lòng đợi ảnh nền tải lên xong!": "배경 이미지가 업로드될 때까지 기다려주세요!",
     "Vui vẻ (Ấm áp)": "즐거운 (따뜻한)",
     "Ví dụ: 2026, 2024...": "예: 2026, 2024...",
-    "Xem giao diện máy tính": "데스크톱 레이아웃 보기",
-    "Xem giao diện điện thoại": "모바일 레이아웃 보기",
+    "Xem chủ đề máy tính": "데스크톱 레이아웃 보기",
+    "Xem chủ đề điện thoại": "모바일 레이아웃 보기",
     "Xuất Bản": "게시",
     "Xác nhận": "확인",
     "Xác nhận gỡ bài": "게시물 제거 확인",
@@ -2233,7 +2233,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Top Trending YouTube": "유튜브 인기 급상승 동영상",
     "Viral TikTok": "틱톡 바이럴",
     "Views YouTube": "유튜브 조회수",
-    "Xem trước giao diện": "레이아웃 미리보기",
+    "Xem trước chủ đề": "레이아웃 미리보기",
     "Trở về": "돌아가기",
     "Trở về Dashboard": "대시보드로 돌아가기",
     "Trở về Trang chủ": "홈페이지로 돌아가기",
@@ -2297,12 +2297,12 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Màu lời bài hát": "歌詞文字色",
     "Màu sóng âm": "音波の色",
     "Hãy chọn bài hát để xem.": "プレビューする曲を選択してください。",
-    "Giao diện xem trên máy tính": "デスクトッププレビューモード",
+    "Chủ đề xem trên máy tính": "デスクトッププレビューモード",
     "Lưu cài đặt": "設定を保存",
     "Đang tải...": "読み込み中...",
-    "Chỉnh Sửa Giao Diện": "インターフェース編集",
-    "Kéo thả để sắp xếp lại thứ tự hiển thị của giao diện khi chọn. Nhấn vào Giao Diện để chỉnh sửa chi tiết.": "ドラッグ＆ドロップでインターフェースの順序を並べ替えます。詳細を編集するにはインターフェースをクリックしてください。",
-    "Chưa có bài hát nào dùng giao diện này": "このインターフェースを使用している曲はまだありません",
+    "Chỉnh Sửa Chủ Đề": "インターフェース編集",
+    "Kéo thả để sắp xếp lại thứ tự hiển thị của chủ đề khi chọn. Nhấn vào Chủ Đề để chỉnh sửa chi tiết.": "ドラッグ＆ドロップでインターフェースの順序を並べ替えます。詳細を編集するにはインターフェースをクリックしてください。",
+    "Chưa có bài hát nào dùng chủ đề này": "このインターフェースを使用している曲はまだありません",
     "Đăng Bài Hát Mới": "新しい曲を投稿",
     "Đã lưu cấu hình!": "構成を保存しました！",
     "(Chưa đặt tiêu đề)": "(タイトル未設定)",
@@ -2357,7 +2357,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Chưa tải nhạc": "音楽がアップロードされていません",
     "Chỉnh Sửa Demo": "デモを編集",
     "Chỉnh sửa": "編集",
-    "Giao diện": "インターフェース",
+    "Chủ đề": "インターフェース",
     "Chỉnh sửa playlist": "プレイリストを編集",
     "Chọn": "選択",
     "Chọn Playlist": "プレイリストを選択",
@@ -2397,7 +2397,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Dịch tự động (AI)": "自動翻訳 (AI)",
     "Favicon (Icon trên trình duyệt)": "ファビコン (ブラウザアイコン)",
     "File Nhạc (Audio)": "音楽ファイル (オーディオ)",
-    "Giao Diện": "インターフェース",
+    "Chủ Đề": "インターフェース",
     "Landing Page": "ランディングページ",
     "Giá trị (Points to)": "値 (参照先)",
     "Giá trị / Nội dung chi tiết": "値 / 詳細内容",
@@ -2556,7 +2556,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Playlist": "プレイリスト",
     "Quay lại": "戻る",
     "Quản lý": "管理",
-    "Quản lý bài hát, danh sách phát, giao diện và cài đặt nghệ sĩ": "曲、プレイリスト、レイアウト、アーティスト設定 of 管理",
+    "Quản lý bài hát, danh sách phát, chủ đề và cài đặt nghệ sĩ": "曲、プレイリスト、レイアウト、アーティスト設定 of 管理",
     "Reset Toàn Bộ Secret Link": "すべてのシークレットリンクをリセット",
     "Riêng tư / Bản nháp (ẩn khỏi trang chủ)": "プライベート / ドラフト（ホームページから非表示）",
     "Secret Link (Chia sẻ trực tiếp xem không hỏi mật khẩu)": "シークレットリンク（パスワード不要で直接共有）",
@@ -2568,7 +2568,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Sử dụng link sau để truy cập trực tiếp (không cần nhập mật khẩu playlist):": "以下のリンクを使用して直接アクセスしてください（プレイリストのパスワードは不要です）：",
     "Tab 1 (Nhạc phát hành)": "タブ 1（リリース楽曲）",
     "Tab 2 (Nhạc đề mô)": "タブ 2（デモ楽曲）",
-    "Template Giao Diện": "インターフェーステンプレート",
+    "Template Chủ Đề": "インターフェーステンプレート",
     "Thay đổi": "変更",
     "Thiết Lập Mật Khẩu Thành Viên": "メンバーパスワードの設定",
     "Thiếu thông tin": "情報不足",
@@ -2638,8 +2638,8 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Vui lòng đợi ảnh nền tải lên xong!": "背景画像のアップロードが終わるまでお待ちください！",
     "Vui vẻ (Ấm áp)": "楽しい（温かい）",
     "Ví dụ: 2026, 2024...": "例：2026, 2024...",
-    "Xem giao diện máy tính": "デスクトップ表示を確認",
-    "Xem giao diện điện thoại": "モバイル表示を確認",
+    "Xem chủ đề máy tính": "デスクトップ表示を確認",
+    "Xem chủ đề điện thoại": "モバイル表示を確認",
     "Xuất Bản": "公開",
     "Xác nhận": "確認",
     "Xác nhận gỡ bài": "投稿削除を確認",
@@ -2738,7 +2738,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Top Trending YouTube": "YouTube 急上昇",
     "Viral TikTok": "TikTok バイラル",
     "Views YouTube": "YouTube 視聴回数",
-    "Xem trước giao diện": "レイアウトをプレビュー",
+    "Xem trước chủ đề": "レイアウトをプレビュー",
     "Trở về": "戻る",
     "Trở về Dashboard": "ダッシュボードに戻る",
     "Trở về Trang chủ": "ホームページに戻る",
@@ -2802,12 +2802,12 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Màu lời bài hát": "สีข้อความเนื้อเพลง",
     "Màu sóng âm": "สีคลื่นเสียง",
     "Hãy chọn bài hát để xem.": "กรุณาเลือกเพลงที่จะแสดงตัวอย่าง",
-    "Giao diện xem trên máy tính": "โหมดการแสดงตัวอย่างบนเดสก์ท็อป",
+    "Chủ đề xem trên máy tính": "โหมดการแสดงตัวอย่างบนเดสก์ท็อป",
     "Lưu cài đặt": "บันทึกการตั้งค่า",
     "Đang tải...": "กำลังโหลด...",
-    "Chỉnh Sửa Giao Diện": "แก้ไขอินเทอร์เฟซ",
-    "Kéo thả để sắp xếp lại thứ tự hiển thị của giao diện khi chọn. Nhấn vào Giao Diện để chỉnh sửa chi tiết.": "ลากและวางเพื่อจัดเรียงลำดับอินเทอร์เฟซ คลิกที่อินเทอร์เฟซเพื่อแก้ไขรายละเอียด",
-    "Chưa có bài hát nào dùng giao diện này": "ยังไม่มีเพลงที่ใช้อินเทอร์เฟซนี้",
+    "Chỉnh Sửa Chủ Đề": "แก้ไขอินเทอร์เฟซ",
+    "Kéo thả để sắp xếp lại thứ tự hiển thị của chủ đề khi chọn. Nhấn vào Chủ Đề để chỉnh sửa chi tiết.": "ลากและวางเพื่อจัดเรียงลำดับอินเทอร์เฟซ คลิกที่อินเทอร์เฟซเพื่อแก้ไขรายละเอียด",
+    "Chưa có bài hát nào dùng chủ đề này": "ยังไม่มีเพลงที่ใช้อินเทอร์เฟซนี้",
     "Đăng Bài Hát Mới": "โพสต์เพลงใหม่",
     "Đã lưu cấu hình!": "บันทึกโครงสร้างแล้ว!",
     "(Chưa đặt tiêu đề)": "(ยังไม่ได้ตั้งชื่อ)",
@@ -2862,7 +2862,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Chưa tải nhạc": "ยังไม่ได้อัปโหลดเพลง",
     "Chỉnh Sửa Demo": "แก้ไขเดโม",
     "Chỉnh sửa": "แก้ไข",
-    "Giao diện": "อินเทอร์เฟซ",
+    "Chủ đề": "อินเทอร์เฟซ",
     "Chỉnh sửa playlist": "แก้ไขเพลย์ลิสต์",
     "Chọn": "เลือก",
     "Chọn Playlist": "เลือกเพลย์ลิสต์",
@@ -2902,7 +2902,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Dịch tự động (AI)": "แปลอัตโนมัติ (AI)",
     "Favicon (Icon trên trình duyệt)": "แฟวิคอน (ไอคอนบนเบราว์เซอร์)",
     "File Nhạc (Audio)": "ไฟล์เพลง (เสียง)",
-    "Giao Diện": "อินเตอร์フェース",
+    "Chủ Đề": "อินเตอร์フェース",
     "Landing Page": "แลนดิ้งเพจ",
     "Giá trị (Points to)": "ค่า (Points to)",
     "Giá trị / Nội dung chi tiết": "ค่า / เนื้อหาโดยละเอียด",
@@ -3061,7 +3061,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Playlist": "เพลย์ลิสต์",
     "Quay lại": "ย้อนกลับ",
     "Quản lý": "จัดการ",
-    "Quản lý bài hát, danh sách phát, giao diện và cài đặt nghệ sĩ": "จัดการเพลง เพลย์ลิสต์ เลย์เอาต์ และการตั้งค่าศิลปิน",
+    "Quản lý bài hát, danh sách phát, chủ đề và cài đặt nghệ sĩ": "จัดการเพลง เพลย์ลิสต์ เลย์เอาต์ และการตั้งค่าศิลปิน",
     "Reset Toàn Bộ Secret Link": "รีเซ็ต Secret Link ทั้งหมด",
     "Riêng tư / Bản nháp (ẩn khỏi trang chủ)": "ส่วนตัว / ฉบับร่าง (ซ่อนจากหน้าหลัก)",
     "Secret Link (Chia sẻ trực tiếp xem không hỏi mật khẩu)": "Secret Link (แชร์โดยตรงไม่ต้องใช้รหัสผ่าน)",
@@ -3073,7 +3073,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Sử dụng link sau để truy cập trực tiếp (không cần nhập mật khẩu playlist):": "ใช้ลิงก์ต่อไปนี้เพื่อเข้าถึงโดยตรง (ไม่ต้องใส่รหัสผ่านเพลย์ลิสต์):",
     "Tab 1 (Nhạc phát hành)": "แท็บ 1 (เพลงที่ปล่อยแล้ว)",
     "Tab 2 (Nhạc đề mô)": "แท็บ 2 (เพลงเดโม)",
-    "Template Giao Diện": "เทมเพลตหน้าจอ",
+    "Template Chủ Đề": "เทมเพลตหน้าจอ",
     "Thay đổi": "เปลี่ยน",
     "Thiết Lập Mật Khẩu Thành Viên": "ตั้งค่ารหัสผ่านสมาชิก",
     "Thiếu thông tin": "ข้อมูลไม่ครบถ้วน",
@@ -3143,8 +3143,8 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Vui lòng đợi ảnh nền tải lên xong!": "โปรดรอให้รูปภาพพื้นหลังอัปโหลดเสร็จ!",
     "Vui vẻ (Ấm áp)": "ร่าเริง (อบอุ่น)",
     "Ví dụ: 2026, 2024...": "ตัวอย่าง: 2026, 2024...",
-    "Xem giao diện máy tính": "ดูรูปแบบหน้าจอคอมพิวเตอร์",
-    "Xem giao diện điện thoại": "ดูรูปแบบหน้าจอมือถือ",
+    "Xem chủ đề máy tính": "ดูรูปแบบหน้าจอคอมพิวเตอร์",
+    "Xem chủ đề điện thoại": "ดูรูปแบบหน้าจอมือถือ",
     "Xuất Bản": "เผยแพร่",
     "Xác nhận": "ยืนยัน",
     "Xác nhận gỡ bài": "ยืนยันการลบโพสต์",
@@ -3243,7 +3243,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Top Trending YouTube": "ยอดนิยมบน YouTube",
     "Viral TikTok": "ไวรัลบน TikTok",
     "Views YouTube": "ยอดวิว YouTube",
-    "Xem trước giao diện": "ดูตัวอย่างเลย์เอาต์",
+    "Xem trước chủ đề": "ดูตัวอย่างเลย์เอาต์",
     "Trở về": "ย้อนกลับ",
     "Trở về Dashboard": "กลับไปที่แดชบอร์ด",
     "Trở về Trang chủ": "กลับไปที่หน้าแรก",
@@ -3308,12 +3308,12 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Màu lời bài hát": "歌词文字颜色",
     "Màu sóng âm": "音波颜色",
     "Hãy chọn bài hát để xem.": "请选择要预览的歌曲。",
-    "Giao diện xem trên máy tính": "电脑预览模式",
+    "Chủ đề xem trên máy tính": "电脑预览模式",
     "Lưu cài đặt": "保存设置",
     "Đang tải...": "加载中...",
-    "Chỉnh Sửa Giao Diện": "编辑界面",
-    "Kéo thả để sắp xếp lại thứ tự hiển thị của giao diện khi chọn. Nhấn vào Giao Diện để chỉnh sửa chi tiết.": "拖拽以重新排序界面。点击界面以编辑详细信息。",
-    "Chưa có bài hát nào dùng giao diện này": "尚无歌曲使用此界面",
+    "Chỉnh Sửa Chủ Đề": "编辑界面",
+    "Kéo thả để sắp xếp lại thứ tự hiển thị của chủ đề khi chọn. Nhấn vào Chủ Đề để chỉnh sửa chi tiết.": "拖拽以重新排序界面。点击界面以编辑详细信息。",
+    "Chưa có bài hát nào dùng chủ đề này": "尚无歌曲使用此界面",
     "Đăng Bài Hát Mới": "发布新歌曲",
     "Đã lưu cấu hình!": "配置已保存！",
     "(Chưa đặt tiêu đề)": "(未命名)",
@@ -3368,7 +3368,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Chưa tải nhạc": "未上传音乐",
     "Chỉnh Sửa Demo": "编辑演示",
     "Chỉnh sửa": "编辑",
-    "Giao diện": "界面",
+    "Chủ đề": "界面",
     "Chỉnh sửa playlist": "编辑播放列表",
     "Chọn": "选择",
     "Chọn Playlist": "选择播放列表",
@@ -3408,7 +3408,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Dịch tự động (AI)": "自动翻译 (AI)",
     "Favicon (Icon trên trình duyệt)": "网站图标 (浏览器图标)",
     "File Nhạc (Audio)": "音乐文件 (音频)",
-    "Giao Diện": "界面",
+    "Chủ Đề": "界面",
     "Landing Page": "落地页",
     "Giá trị (Points to)": "值 (指向)",
     "Giá trị / Nội dung chi tiết": "值 / 详细内容",
@@ -3567,7 +3567,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Playlist": "播放列表",
     "Quay lại": "返回",
     "Quản lý": "管理",
-    "Quản lý bài hát, danh sách phát, giao diện và cài đặt nghệ sĩ": "管理歌曲、播放列表、布局和歌手设置",
+    "Quản lý bài hát, danh sách phát, chủ đề và cài đặt nghệ sĩ": "管理歌曲、播放列表、布局和歌手设置",
     "Reset Toàn Bộ Secret Link": "重置所有秘密链接",
     "Riêng tư / Bản nháp (ẩn khỏi trang chủ)": "私密 / 草稿（首页隐藏）",
     "Secret Link (Chia sẻ trực tiếp xem không hỏi mật khẩu)": "秘密链接（无需密码直接分享查看）",
@@ -3579,7 +3579,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Sử dụng link sau để truy cập trực tiếp (không cần nhập mật khẩu playlist):": "使用以下链接直接访问（无需播放列表密码）：",
     "Tab 1 (Nhạc phát hành)": "标签 1（已发布音乐）",
     "Tab 2 (Nhạc đề mô)": "标签 2（Demo 音乐）",
-    "Template Giao Diện": "界面模板",
+    "Template Chủ Đề": "界面模板",
     "Thay đổi": "更改",
     "Thiết Lập Mật Khẩu Thành Viên": "设置成员密码",
     "Thiếu thông tin": "信息缺失",
@@ -3649,8 +3649,8 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Vui lòng đợi ảnh nền tải lên xong!": "请等待背景图上传完成！",
     "Vui vẻ (Ấm áp)": "愉快（温暖）",
     "Ví dụ: 2026, 2024...": "例如：2026, 2024...",
-    "Xem giao diện máy tính": "查看电脑版布局",
-    "Xem giao diện điện thoại": "查看手机版布局",
+    "Xem chủ đề máy tính": "查看电脑版布局",
+    "Xem chủ đề điện thoại": "查看手机版布局",
     "Xuất Bản": "发布",
     "Xác nhận": "确认",
     "Xác nhận gỡ bài": "确认删除文章",
@@ -3749,7 +3749,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Top Trending YouTube": "YouTube 热门趋势",
     "Viral TikTok": "TikTok 病毒式传播",
     "Views YouTube": "YouTube 播放量",
-    "Xem trước giao diện": "预览布局",
+    "Xem trước chủ đề": "预览布局",
     "Trở về": "返回",
     "Trở về Dashboard": "返回控制台",
     "Trở về Trang chủ": "返回首页",
@@ -3808,7 +3808,7 @@ interface LangContextType {
   landingConfig?: any;
   setLandingConfig?: (data: any) => void;
 }
-const LanguageContext = createContext<LangContextType>({ lang: 'vi', setLang: () => {} });
+export const LanguageContext = createContext<LangContextType>({ lang: 'vi', setLang: () => {} });
 
 // Thumbnail fallback handled server-side now
 
@@ -4061,6 +4061,7 @@ const uploadGlobal = async (file: File, setProgress?: (p: number) => void): Prom
 
 import ACPControlPanel from './components/ACPControlPanel';
 import ChorusVNLanding from './components/ChorusVNLanding';
+import HelpPage from './components/HelpPage';
 
 // ---- ADMIN LOGIN & REQUIRE ADMIN ----
 
@@ -4319,6 +4320,8 @@ function AnimatedRoutes() {
       <Routes location={location} key={location.pathname}>
         {/* Core Root Routes */}
         <Route path="/" element={isSubdomain ? <Home /> : <ChorusVNLanding />} />
+                        <Route path="/help" element={<HelpPage />} />
+        <Route path="/:artistExtension/help" element={<HelpPage />} />
         <Route path="/acp" element={<ACPControlPanel />} />
         <Route path="/mem" element={<MemberLogin />} />
         <Route path="/demo/:id" element={<DemoPlayer />} />
@@ -4347,6 +4350,7 @@ function AnimatedRoutes() {
 function AdminFloatingControls({ onLogout }: { onLogout: () => void }) {
   const location = useLocation();
   const isAdmin = !!getAdminToken(location.pathname);
+  const isLandingPage = location.pathname === '/' && !getArtistExtensionFromUrl();
   const [isPageLoading, setIsPageLoading] = useState(true);
   const { artistData } = useContext(LanguageContext);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -4470,6 +4474,7 @@ const AdminFloatingAddButton = () => {
   const location = useLocation();
   const { t } = useAdminTranslation();
   const [showTooltip, setShowTooltip] = useState(false);
+  const isLandingPage = location.pathname === '/' && !getArtistExtensionFromUrl();
 
   // Thỉnh thoảng hiện tooltip
   useEffect(() => {
@@ -4485,7 +4490,7 @@ const AdminFloatingAddButton = () => {
   const isAdminPath = location.pathname.startsWith('/admin') || location.pathname.includes('/admin');
   const isFormPage = location.pathname.includes('/new') || location.pathname.includes('/edit');
 
-  const shouldShow = isAdmin && isAdminPath && !isFormPage;
+  const shouldShow = isAdmin && isAdminPath && !isFormPage && !isLandingPage;
 
   return (
     <AnimatePresence>
@@ -4570,7 +4575,32 @@ const AdminFloatingAddButton = () => {
 };
 
 export default function App() {
-  const [lang, setLang] = useState(() => localStorage.getItem('preferredLang') || 'vi');
+  const [lang, setLang] = useState(() => {
+    const isManual = localStorage.getItem('manualLangSelected') === 'true';
+    if (isManual) {
+      return localStorage.getItem('preferredLang') || 'vi';
+    }
+    // Auto-detect synchronously (crucial for Chrome DevTools Sensors testing)
+    const browserLang = navigator.language || '';
+    if (browserLang.startsWith('vi')) return 'vi';
+    if (browserLang.startsWith('ko')) return 'ko';
+    if (browserLang.startsWith('ja')) return 'ja';
+    if (browserLang.startsWith('th')) return 'th';
+    if (browserLang.startsWith('zh')) return 'zh';
+
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (tz) {
+        if (tz.includes('Seoul') || tz.includes('Pyongyang')) return 'ko';
+        if (tz.includes('Tokyo')) return 'ja';
+        if (tz.includes('Bangkok')) return 'th';
+        if (tz.includes('Taipei') || tz.includes('Shanghai') || tz.includes('Hong_Kong') || tz.includes('Beijing') || tz.includes('Chongqing')) return 'zh';
+        if (tz.includes('Ho_Chi_Minh')) return 'vi';
+      }
+    } catch (e) {}
+
+    return 'en';
+  });
   const [artistData, setArtistData] = useState<any>(null);
   const [landingConfig, setLandingConfig] = useState<any>(null);
 
@@ -4590,7 +4620,16 @@ export default function App() {
   }, []);
 
   const handleLogout = async () => {
-    removeAdminToken();
+    // Completely wipe all admin tokens
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('adminToken')) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+    
     try {
       await fetch('/api/admin/logout', { method: 'POST' });
     } catch (e) {}
@@ -4599,12 +4638,17 @@ export default function App() {
   };
 
   useEffect(() => {
-    const preferred = localStorage.getItem('preferredLang');
-    if (preferred) {
-      setLang(preferred);
+    const isManual = localStorage.getItem('manualLangSelected') === 'true';
+    if (isManual) {
+      const preferred = localStorage.getItem('preferredLang');
+      if (preferred) {
+        setLang(preferred);
+      }
       return;
     }
     fetch('https://get.geojs.io/v1/ip/country.json').then(r=>r.json()).then(res => {
+      const isManualCheck = localStorage.getItem('manualLangSelected') === 'true';
+      if (isManualCheck) return;
       const code = res.country;
       if (code === 'KR') setLang('ko');
       else if (code === 'JP') setLang('ja');
@@ -4612,7 +4656,9 @@ export default function App() {
       else if (code === 'CN' || code === 'TW') setLang('zh');
       else if (code === 'US' || code === 'GB' || code === 'AU' || code === 'CA') setLang('en');
       else setLang('vi');
-    }).catch(()=>setLang('vi'));
+    }).catch(() => {
+      // Keep synchronous detection fallback if API fails
+    });
   }, []);
 
   // Cơ chế tự động khôi phục Ảnh từ Server cục bộ nếu Link Firebase Storage bị Die/Chặn trong nước
@@ -4814,6 +4860,7 @@ const LanguageSwitcher = ({ isRelative = false, pushDown = false }: { isRelative
                 onClick={() => { 
                   setLang(l); 
                   localStorage.setItem('preferredLang', l);
+                  localStorage.setItem('manualLangSelected', 'true');
                   setOpen(false); 
                 }}
                 className={`px-6 py-3.5 text-sm font-medium transition-colors text-left flex items-center justify-between min-w-[140px] ${isRelative ? 'border-b border-stone-100 last:border-0' : 'border-b border-white/5 last:border-0'} ${lang === l ? (isRelative ? 'bg-stone-100 text-stone-900 font-bold' : 'bg-white/10 text-white') : (isRelative ? 'text-stone-600 hover:bg-stone-50 hover:text-stone-905' : 'text-neutral-400 hover:bg-white/5 hover:text-white')}`}
@@ -7946,7 +7993,7 @@ function formatBriefText(text: string | null | undefined) {
   });
 }
 
-function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, onAlmostEnded, playlistContext, previewConfig, previewData }: any = {}) {
+export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, onEnd, onAlmostEnded, playlistContext, previewConfig, previewData }: any = {}) {
   const { lang, landingConfig, artistData } = useContext(LanguageContext);
   const t = useMemo(() => {
     const baseDict = translations[lang] || translations['vi'];
@@ -9717,9 +9764,9 @@ function AdminTemplatesSettings({ isPCPreviewMode, setIsPCPreviewMode }: { isPCP
         <div>
           <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
             <Palette className="w-6 h-6 text-rose-500 animate-[pulse_2.5s_infinite]" />
-            {t("Chỉnh Sửa Giao Diện")}
+            {t("Chỉnh Sửa Chủ Đề")}
           </h2>
-          <p className="text-xs text-stone-500 mt-1">{t("Kéo thả để sắp xếp lại thứ tự hiển thị của giao diện khi chọn. Nhấn vào Giao Diện để chỉnh sửa chi tiết.")}</p>
+          <p className="text-xs text-stone-500 mt-1">{t("Kéo thả để sắp xếp lại thứ tự hiển thị của chủ đề khi chọn. Nhấn vào Chủ Đề để chỉnh sửa chi tiết.")}</p>
         </div>
         {toast && <span className="bg-emerald-100 text-emerald-700 font-bold px-4 py-2 rounded-xl text-sm animate-pulse">{toast}</span>}
       </div>
@@ -9764,7 +9811,7 @@ function AdminTemplatesSettings({ isPCPreviewMode, setIsPCPreviewMode }: { isPCP
           )}
           {isExpanded && activeDemos.length === 0 && (
             <div className="pl-14 pr-4 py-2 bg-stone-50/50 rounded-xl border border-stone-100 text-sm italic text-stone-400">
-               {t("Chưa có bài hát nào dùng giao diện này")}
+               {t("Chưa có bài hát nào dùng chủ đề này")}
             </div>
           )}
           </div>
@@ -9836,7 +9883,7 @@ function AdminTemplateEdit({ config, demos, onBack, onSave, isPCPreviewMode, set
                  <button 
                      onClick={() => setIsPCPreviewMode && setIsPCPreviewMode(!isPCPreviewMode)} 
                      className={`hidden md:flex items-center justify-center p-2 rounded-lg border transition-all duration-300 ${isPCPreviewMode ? 'border-stone-800 bg-stone-100 text-stone-900' : 'border-stone-200 bg-transparent text-stone-450 hover:text-stone-700 hover:border-stone-400'} shadow-sm`}
-                     title={t("Giao diện xem trên máy tính")}
+                     title={t("Chủ đề xem trên máy tính")}
                  >
                      <Monitor className="w-5 h-5 stroke-[1.5]" />
                  </button>
@@ -9849,7 +9896,7 @@ function AdminTemplateEdit({ config, demos, onBack, onSave, isPCPreviewMode, set
              <div className={`w-full h-auto md:h-full ${isPCPreviewMode ? 'md:w-[260px] p-4 space-y-4' : 'md:w-[400px] p-6 md:p-8 space-y-6'} bg-white flex-shrink-0 border-b md:border-b-0 md:border-r overflow-visible md:overflow-y-auto custom-scrollbar`}>
                  <div>
                      <h3 className={`${isPCPreviewMode ? 'text-lg' : 'text-2xl'} font-black mb-1`}>{t("Chỉnh sửa")}</h3>
-                     <p className="inline-block bg-stone-100 text-stone-500 font-mono text-xs px-2 py-0.5 rounded-md mt-1">{t("Giao diện")} #{config.id} - {templateName || (DEFAULT_VI_NAMES[config.id] ? t(DEFAULT_VI_NAMES[config.id]) : config.name)}</p>
+                     <p className="inline-block bg-stone-100 text-stone-500 font-mono text-xs px-2 py-0.5 rounded-md mt-1">{t("Chủ đề")} #{config.id} - {templateName || (DEFAULT_VI_NAMES[config.id] ? t(DEFAULT_VI_NAMES[config.id]) : config.name)}</p>
                  </div>
                  
                  <div>
@@ -10286,10 +10333,13 @@ function AdminDashboard() {
   }, [location.search]);
   
   // Chorus Repost & Ticket States
+  const [showMembershipModal, setShowMembershipModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [isTranslatingAll, setIsTranslatingAll] = useState(false);
   const [otherSongs, setOtherSongs] = useState<any[]>([]);
   const [ticketsList, setTicketsList] = useState<any[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
+  const [previewAvatar, setPreviewAvatar] = useState<string | null>(null);
   const [chatMessageText, setChatMessageText] = useState('');
   
   // General Feedback Popup State
@@ -11290,6 +11340,174 @@ function AdminDashboard() {
           {toast}
         </div>
       )}
+
+      {/* Modal So sánh Gói Thành Viên */}
+      <AnimatePresence>
+        {showMembershipModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[999] overflow-y-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white border border-stone-200 shadow-2xl rounded-3xl p-6 w-full max-w-2xl relative"
+            >
+              <button
+                onClick={() => setShowMembershipModal(false)}
+                className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-900 rounded-full hover:bg-stone-100 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <h3 className="text-xl font-black text-stone-900 mb-2 flex items-center gap-2">
+                <Award className="w-6 h-6 text-amber-500" />
+                {t("So Sánh Gói Thành Viên")}
+              </h3>
+              <p className="text-xs text-stone-500 mb-6">{t("Xem và so sánh quyền lợi giữa các gói thành viên của bạn.")}</p>
+
+              {/* Grid of plans */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto pr-1">
+                {((data as any)?.roles && (data as any).roles.length > 0 ? (data as any).roles : [
+                  { id: 'free', name: 'Gói Miễn Phí', price: '0', features: ['Quản lý bài hát cơ bản', 'Upload tối đa 5 bản nhạc demo', 'Chủ đề cơ bản'] },
+                  { id: 'pro', name: 'Gói Chuyên Nghiệp', price: '199.000', features: ['Không giới hạn số bài hát', 'Tự tùy biến chủ đề', 'Hỗ trợ nâng cao', 'Sử dụng tên miền riêng'] }
+                ]).map((role: any) => {
+                  const isActive = data?.roleId === role.id || data?.roleId === role.name;
+                  return (
+                    <div
+                      key={role.id || role.name}
+                      className={`border p-5 rounded-2xl flex flex-col justify-between transition-all relative ${
+                        isActive
+                          ? 'border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-600/25'
+                          : 'border-stone-200 bg-stone-50/50 hover:bg-stone-50'
+                      }`}
+                    >
+                      {isActive && (
+                        <span className="absolute -top-2.5 right-4 bg-indigo-600 text-white text-[9px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                          {t("Bạn đang ở gói này")}
+                        </span>
+                      )}
+                      
+                      <div>
+                        <h4 className="font-extrabold text-stone-900 text-base mb-1">{role.name}</h4>
+                        <div className="flex items-baseline gap-1 mb-4">
+                          <span className="text-xl font-black text-stone-900">
+                            {role.price ? `${parseInt(role.price).toLocaleString('vi-VN')} ₫` : '0 ₫'}
+                          </span>
+                          <span className="text-xs text-stone-500">/ tháng</span>
+                        </div>
+
+                        {/* Features list */}
+                        <ul className="space-y-2 text-xs text-stone-600">
+                          {(Array.isArray(role.features) ? role.features : (role.features || '').split('\n').filter(Boolean)).map((feat: string, idx: number) => (
+                            <li key={idx} className="flex items-start gap-1.5">
+                              <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                              <span>{feat}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="border-t border-stone-200/60 mt-6 pt-4 flex justify-end">
+                <button
+                  onClick={() => setShowMembershipModal(false)}
+                  className="px-5 py-2.5 bg-stone-900 hover:bg-stone-850 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
+                >
+                  {t("Đóng")}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal Lịch sử Kích Hoạt */}
+      <AnimatePresence>
+        {showHistoryModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[999]">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white border border-stone-200 shadow-2xl rounded-3xl p-6 w-full max-w-md relative"
+            >
+              <button
+                onClick={() => setShowHistoryModal(false)}
+                className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-900 rounded-full hover:bg-stone-100 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <h3 className="text-xl font-black text-stone-900 mb-2 flex items-center gap-2">
+                <History className="w-6 h-6 text-blue-500" />
+                {t("Lịch Sử Kích Hoạt & Nâng Cấp")}
+              </h3>
+              <p className="text-xs text-stone-500 mb-6">{t("Thông tin ngày đăng ký kích hoạt tài khoản và lịch sử thay đổi gói dịch vụ.")}</p>
+
+              {/* Timeline list */}
+              <div className="space-y-6 relative before:absolute before:inset-y-1 before:left-3.5 before:w-0.5 before:bg-stone-200/80">
+                {/* 1. Ngày kích hoạt thành viên */}
+                <div className="flex gap-4 relative">
+                  <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center border border-emerald-200 shrink-0 z-10">
+                    <CheckCircle className="w-4 h-4 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-stone-900 text-sm">{t("Kích Hoạt Thành Viên")}</h4>
+                    <p className="text-xs text-stone-500 mt-0.5">
+                      {t("Ngày kích hoạt:")}{" "}
+                      <strong className="text-stone-800">
+                        {data?.activatedAt 
+                          ? new Date(data.activatedAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) 
+                          : (data?.createdAt 
+                              ? new Date(data.createdAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) 
+                              : '16/07/2026')}
+                      </strong>
+                    </p>
+                    <span className="inline-block text-[10px] font-extrabold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full mt-2 uppercase tracking-wide">
+                      {t("Hoạt động")}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 2. Ngày nâng cấp gói */}
+                <div className="flex gap-4 relative">
+                  <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center border border-indigo-200 shrink-0 z-10">
+                    <Sparkles className="w-4 h-4 text-indigo-600 animate-[pulse_2s_infinite]" />
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-stone-900 text-sm">{t("Nâng Cấp Gói")}</h4>
+                    <p className="text-xs text-stone-500 mt-0.5">
+                      {t("Ngày cập nhật gói gần nhất:")}{" "}
+                      <strong className="text-stone-800">
+                        {data?.roleUpgradedAt 
+                          ? new Date(data.roleUpgradedAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) 
+                          : t("Chưa nâng cấp")}
+                      </strong>
+                    </p>
+                    <span className="inline-block text-[10px] font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full mt-2 uppercase tracking-wide">
+                      {(() => {
+                        const matchedRole = (data as any)?.roles?.find((r: any) => r.id === data?.roleId || r.name === data?.roleId);
+                        return matchedRole ? matchedRole.name : (data?.roleId || t("Thành viên"));
+                      })()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-stone-200/60 mt-6 pt-4 flex justify-end">
+                <button
+                  onClick={() => setShowHistoryModal(false)}
+                  className="px-5 py-2.5 bg-stone-900 hover:bg-stone-850 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
+                >
+                  {t("Đóng")}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
       <header className="bg-white border-b border-stone-200 sticky top-0 z-[100] shadow-xs">
         <div className="max-w-6xl mx-auto px-6 h-16 w-full flex items-center justify-between">
           <div className="flex items-center gap-2 select-none">
@@ -11302,6 +11520,15 @@ function AdminDashboard() {
           </div>
           <div className="flex items-center gap-3">
             <LanguageSwitcher isRelative={true} />
+            {data?.activated !== false && (
+              <Link 
+                to={getArtistLink("/help")} 
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-purple-50 hover:bg-purple-100 text-purple-600 border border-purple-200 shadow-sm transition-all duration-300 animate-[fade-in_0.3s_ease-out]"
+                title={t("Trợ giúp / Quản lý tài khoản")}
+              >
+                <HelpCircle className="w-4 h-4 stroke-[2]" />
+              </Link>
+            )}
             <Link 
               to={getArtistLink("/")} 
               className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 shadow-sm transition-all duration-300 animate-[fade-in_0.3s_ease-out]"
@@ -11330,6 +11557,85 @@ function AdminDashboard() {
                 : 'hidden md:flex flex-col w-16 bg-white border-r border-stone-200 shrink-0 py-4 items-center space-y-4 relative shadow-xs')
             : 'w-full md:w-64 shrink-0 flex flex-col md:sticky md:top-[88px] self-start relative md:bg-white md:border md:border-stone-200/60 md:rounded-[2rem] md:p-5 md:shadow-[0_8px_30px_rgb(0,0,0,0.015)] md:backdrop-blur-md md:gap-5'
         }`}>
+          {/* Khung Tài Khoản */}
+          {!effectiveSidebarCollapsed && (
+            <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-4 relative group select-none">
+              <div className="flex flex-col items-center text-center">
+                <div className="relative w-16 h-16 mb-2 rounded-full overflow-hidden border border-stone-200 shadow-sm cursor-pointer group/avatar">
+                  <img
+                    src={(previewAvatar !== null ? previewAvatar : (data?.aboutMe?.avatarUrl || data?.homeCoverUrl)) || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=150&q=80"}
+                    alt="Artist Avatar"
+                    className="w-full h-full object-cover transition-all group-hover/avatar:brightness-75"
+                    referrerPolicy="no-referrer"
+                  />
+                  {/* Nút đổi ava hiện ra khi rê chuột */}
+                  <button
+                    onClick={() => setActiveTab('about')}
+                    className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 text-white opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 text-[10px] font-bold"
+                  >
+                    <Camera className="w-4 h-4 mb-0.5" />
+                    <span>Đổi ảnh</span>
+                  </button>
+                </div>
+
+                <h4 className="text-sm font-black text-stone-900 leading-tight">
+                  {data?.artistName || 'Nghệ Sĩ'}
+                </h4>
+                
+                <p className="text-[10px] font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full mt-1.5 uppercase tracking-wider">
+                  {(() => {
+                    const matchedRole = (data as any)?.roles?.find((r: any) => r.id === data?.roleId || r.name === data?.roleId);
+                    return matchedRole ? matchedRole.name : (data?.roleId || 'Thành viên');
+                  })()}
+                </p>
+
+                {/* Gói Thành Viên & Lịch Sử & Bảo Mật Links */}
+                <div className="w-full border-t border-stone-200/60 mt-4 pt-3 flex flex-col gap-2.5 text-xs text-stone-500 font-bold">
+                  <button
+                    onClick={() => setShowMembershipModal(true)}
+                    className="flex items-center gap-2 hover:text-stone-900 transition-colors w-full text-left"
+                  >
+                    <Award className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>{t("Gói Thành Viên")}</span>
+                  </button>
+
+                  <button
+                    onClick={() => setShowHistoryModal(true)}
+                    className="flex items-center gap-2 hover:text-stone-900 transition-colors w-full text-left"
+                  >
+                    <History className="w-4 h-4 text-blue-500 shrink-0" />
+                    <span>{t("Lịch Sử Kích Hoạt")}</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('security')}
+                    className={`flex items-center gap-2 hover:text-stone-900 transition-colors w-full text-left ${activeTab === 'security' ? 'text-indigo-600' : ''}`}
+                  >
+                    <Lock className="w-4 h-4 text-stone-400 shrink-0" />
+                    <span>{t("Bảo Mật & Email")}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {effectiveSidebarCollapsed && (
+            <div className="flex flex-col items-center mb-4">
+              <button
+                onClick={() => setActiveTab('about')}
+                className="w-10 h-10 rounded-full overflow-hidden border border-stone-200 hover:border-stone-400 transition-colors cursor-pointer relative group"
+                title={t("Tài Khoản (Bấm để chuyển về mục giới thiệu)")}
+              >
+                <img
+                  src={(previewAvatar !== null ? previewAvatar : (data?.aboutMe?.avatarUrl || data?.homeCoverUrl)) || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=150&q=80"}
+                  alt="Artist Avatar"
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </button>
+            </div>
+          )}
+
           {!effectiveSidebarCollapsed && (
             <h3 className="text-[10px] font-extrabold text-stone-400 uppercase tracking-widest mb-2 px-4 hidden md:block select-none opacity-80">
               {t("Quản lý")}
@@ -11452,7 +11758,7 @@ function AdminDashboard() {
                     } ${
                       isTemplatesActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
                     }`} 
-                    title={t("Giao Diện")}
+                    title={t("Chủ Đề")}
                   >
                     {isTemplatesActive && (
                       <motion.span
@@ -11482,7 +11788,7 @@ function AdminDashboard() {
                         transition={isTemplatesActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
                         className="relative z-10"
                       >
-                        {t("Giao Diện")}
+                        {t("Chủ Đề")}
                       </motion.span>
                     )}
                   </button>
@@ -11750,48 +12056,7 @@ function AdminDashboard() {
                     )}
                   </button>
 
-                  {/* 6. Bảo Mật */}
-                  <button
-                    onClick={() => setActiveTab('security')}
-                    className={`flex items-center transition-all relative group ${
-                      effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
-                    } ${
-                      isSecurityActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
-                    }`}
-                    title={t("Bảo Mật")}
-                  >
-                    {isSecurityActive && (
-                      <motion.span
-                        layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
-                        style={{ transition: 'none' }}
-                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
-                      />
-                    )}
-                    <motion.div
-                      animate={isSecurityActive ? {
-                        rotate: [-5, 5, -5],
-                        y: [-1, 1, -1]
-                      } : { rotate: 0, y: 0 }}
-                      transition={isSecurityActive ? {
-                        repeat: Infinity,
-                        duration: 1.7,
-                        ease: "easeInOut"
-                      } : { duration: 0.2 }}
-                      className="relative z-10 flex items-center justify-center"
-                    >
-                      <Lock className={`w-5 h-5 relative z-10 transition-colors ${isSecurityActive ? 'text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
-                    </motion.div>
-                    {!effectiveSidebarCollapsed && (
-                      <motion.span 
-                        animate={isSecurityActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
-                        transition={isSecurityActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
-                        className="relative z-10"
-                      >
-                        {t("Bảo Mật")}
-                      </motion.span>
-                    )}
-                  </button>
+
 
                   {/* 7. Hộp Thư (moved to Hồ Sơ & Mở Rộng section) */}
                   <button
@@ -12698,7 +12963,14 @@ function AdminDashboard() {
 
           
           {activeTab === 'about' && (
-             <AdminAboutEdit data={data} t={t} onSave={handleCustomSave} uploadWithProgress={uploadWithProgress} getPreviewUrl={getPreviewUrl} />
+             <AdminAboutEdit 
+  data={data} 
+  t={t} 
+  onSave={(newData: any) => { setPreviewAvatar(null); handleCustomSave(newData); }} 
+  uploadWithProgress={uploadWithProgress} 
+  getPreviewUrl={getPreviewUrl} 
+  onPreviewAvatar={(url: string | null) => setPreviewAvatar(url)}
+/>
           )}
           {activeTab === 'bio' && (
              <AdminBioEdit data={data} t={t} onSave={handleCustomSave} />
@@ -12995,12 +13267,6 @@ function AdminDashboard() {
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Link Profile Spotify</label>
                   <input name="spotifyUrl" defaultValue={data.spotifyUrl} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" placeholder="https://open.spotify.com/artist/..." />
                 </div>
-                <hr className="border-stone-200" />
-                <div>
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Mật khẩu chung cho các Demo")}</label>
-                  <input name="globalPassword" defaultValue={data.globalPassword} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono" placeholder={t("Để trống nếu không muốn dùng mật khẩu chung")} autoComplete="new-password" data-lpignore="true" data-1p-ignore="true" />
-                  <p className="text-sm text-stone-500 mt-2">{t("Tất cả các link ở trang chủ nếu chưa đặt mật khẩu riêng thì sẽ được bảo vệ bởi mật khẩu chung này.")}</p>
-                </div>
                 {/* Cấu hình tên miền riêng (Custom Domain) */}
                 {(data as any).isSpecial && (
                   <div className="bg-gradient-to-br from-amber-50 to-orange-50/50 border border-amber-200/60 rounded-2xl p-6 shadow-sm">
@@ -13131,21 +13397,6 @@ function AdminDashboard() {
                     <button type="submit" className="bg-stone-900 text-white shadow-sm hover:shadow-md hover:bg-stone-800 active:scale-[0.98] px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer">
                       {t("Lưu thay đổi")}
                     </button>
-                    <button type="button" onClick={async () => {
-                      if (!confirm(t("Bạn có chắc muốn làm mới toàn bộ Secret Link? Các Secret Link cũ sẽ không còn hoạt động, tự động chuyển về đường dẫn gốc yêu cầu mật khẩu."))) return;
-                      const res = await fetch('/api/admin/reset-secret-links', {
-                        method: 'POST',
-                        headers: {
-                          'x-artist-extension': getArtistExtensionFromUrl(),
-                          'Authorization': `Bearer ${getAdminToken() || ''}`
-                        }
-                      });
-                      if (res.ok) {
-                        setToast(t("Đã reset toàn bộ Secret Link thành công!"));
-                        setTimeout(() => setToast(''), 3000);
-                        loadData();
-                      }
-                    }} className="text-red-500 hover:text-red-600 font-bold sm:ml-auto px-4 py-2 bg-red-50/50 hover:bg-red-50 border border-red-100 rounded-xl text-xs transition-all duration-200 cursor-pointer">{t("Reset Toàn Bộ Secret Link")}</button>
                   </div>
               </form>
             </div>
@@ -13200,6 +13451,40 @@ function AdminDashboard() {
           {activeTab === 'security' && (
             <motion.div key="security" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
             <div className="max-w-2xl space-y-12 pb-10">
+              <div>
+                <div className="flex flex-col gap-1 mb-6 border-b border-stone-100 pb-4">
+                  <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+                    <Lock className="w-6 h-6 text-indigo-600" />
+                    {t("Mật khẩu chung và Bảo mật Demo")}
+                  </h2>
+                </div>
+                <form onSubmit={handleProfileSave} className="space-y-4 max-w-md">
+                  <div>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Mật khẩu chung cho các Demo")}</label>
+                    <input name="globalPassword" defaultValue={data.globalPassword} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 font-mono" placeholder={t("Để trống nếu không muốn dùng mật khẩu chung")} autoComplete="new-password" data-lpignore="true" data-1p-ignore="true" />
+                    <p className="text-sm text-stone-500 mt-2">{t("Tất cả các link ở trang chủ nếu chưa đặt mật khẩu riêng thì sẽ được bảo vệ bởi mật khẩu chung này.")}</p>
+                  </div>
+                  <div className="pt-4 border-t border-stone-100 mt-6 flex flex-wrap gap-4 items-center">
+                    <button type="submit" className="bg-stone-900 text-white shadow-sm hover:shadow-md hover:bg-stone-800 active:scale-[0.98] px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer">{t("Lưu thay đổi")}</button>
+                    <button type="button" onClick={async () => {
+                      if (!confirm(t("Bạn có chắc muốn làm mới toàn bộ Secret Link? Các Secret Link cũ sẽ không còn hoạt động, tự động chuyển về đường dẫn gốc yêu cầu mật khẩu."))) return;
+                      const res = await fetch('/api/admin/reset-secret-links', {
+                        method: 'POST',
+                        headers: {
+                          'x-artist-extension': getArtistExtensionFromUrl(),
+                          'Authorization': `Bearer ${getAdminToken() || ''}`
+                        }
+                      });
+                      if (res.ok) {
+                        setToast(t("Đã reset toàn bộ Secret Link thành công!"));
+                        setTimeout(() => setToast(''), 3000);
+                        loadData();
+                      }
+                    }} className="text-red-500 hover:text-red-600 font-bold px-4 py-2 bg-red-50/50 hover:bg-red-50 border border-red-100 rounded-xl text-xs transition-all duration-200 cursor-pointer">{t("Reset Toàn Bộ Secret Link")}</button>
+                  </div>
+                </form>
+              </div>
+              <div className="h-px bg-stone-100 w-full"></div>
               <div>
                 <div className="flex flex-col gap-1 mb-6 border-b border-stone-100 pb-4">
                   <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
@@ -14321,10 +14606,10 @@ function TemplatePickerModal({
               <ArrowLeft className="w-5 h-5"/> {t("Trở về")}
           </button>
           <div className="flex items-center gap-4">
-              <button onClick={() => setIsPCPreviewMode(false)} className={`flex items-center justify-center p-2 rounded-lg transition-all duration-300 ${!isPCPreviewMode ? 'border-2 border-stone-850 bg-transparent text-stone-900' : 'border border-stone-200 bg-transparent text-stone-400 hover:text-stone-700 hover:border-stone-400'} shadow-sm`} title={t("Xem giao diện điện thoại")}>
+              <button onClick={() => setIsPCPreviewMode(false)} className={`flex items-center justify-center p-2 rounded-lg transition-all duration-300 ${!isPCPreviewMode ? 'border-2 border-stone-850 bg-transparent text-stone-900' : 'border border-stone-200 bg-transparent text-stone-400 hover:text-stone-700 hover:border-stone-400'} shadow-sm`} title={t("Xem chủ đề điện thoại")}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-smartphone"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
               </button>
-              <button onClick={() => setIsPCPreviewMode(true)} className={`hidden md:flex items-center justify-center p-2 rounded-lg transition-all duration-300 ${isPCPreviewMode ? 'border-2 border-stone-850 bg-transparent text-stone-900' : 'border border-stone-200 bg-transparent text-stone-400 hover:text-stone-700 hover:border-stone-400'} shadow-sm`} title={t("Xem giao diện máy tính")}>
+              <button onClick={() => setIsPCPreviewMode(true)} className={`hidden md:flex items-center justify-center p-2 rounded-lg transition-all duration-300 ${isPCPreviewMode ? 'border-2 border-stone-850 bg-transparent text-stone-900' : 'border border-stone-200 bg-transparent text-stone-400 hover:text-stone-700 hover:border-stone-400'} shadow-sm`} title={t("Xem chủ đề máy tính")}>
                 <Monitor className="w-5 h-5 stroke-[1.5]"/>
               </button>
               <button type="button" onClick={() => onSelect(selectedId)} className="bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] px-5 py-2 rounded-xl text-sm font-bold shadow hover:bg-stone-800">{t("Chọn")}</button>
@@ -14343,10 +14628,10 @@ function TemplatePickerModal({
          </div>
          <div className="flex-1 w-full min-h-[500px] md:min-h-0 bg-stone-900 relative overflow-hidden flex items-center justify-center py-6 md:py-0 shrink-0">
             <div className="absolute top-4 right-4 z-[100] flex gap-2">
-               <button onClick={() => setIsPCPreviewMode(false)} className={`flex items-center justify-center p-2 rounded-lg border transition-all duration-300 ${!isPCPreviewMode ? 'border-white/60 bg-transparent text-white' : 'border-white/20 bg-transparent text-white/40 hover:text-white/60 hover:border-white/40'} shadow-sm`} title={t("Xem giao diện điện thoại")}>
+               <button onClick={() => setIsPCPreviewMode(false)} className={`flex items-center justify-center p-2 rounded-lg border transition-all duration-300 ${!isPCPreviewMode ? 'border-white/60 bg-transparent text-white' : 'border-white/20 bg-transparent text-white/40 hover:text-white/60 hover:border-white/40'} shadow-sm`} title={t("Xem chủ đề điện thoại")}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-smartphone"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
                </button>
-               <button onClick={() => setIsPCPreviewMode(true)} className={`hidden md:flex items-center justify-center p-2 rounded-lg border transition-all duration-300 ${isPCPreviewMode ? 'border-white/60 bg-transparent text-white' : 'border-white/20 bg-transparent text-white/40 hover:text-white/60 hover:border-white/40'} shadow-sm`} title={t("Xem giao diện máy tính")}>
+               <button onClick={() => setIsPCPreviewMode(true)} className={`hidden md:flex items-center justify-center p-2 rounded-lg border transition-all duration-300 ${isPCPreviewMode ? 'border-white/60 bg-transparent text-white' : 'border-white/20 bg-transparent text-white/40 hover:text-white/60 hover:border-white/40'} shadow-sm`} title={t("Xem chủ đề máy tính")}>
                   <Monitor className="w-5 h-5 stroke-[1.5]"/>
                </button>
             </div>
@@ -15373,7 +15658,7 @@ function AdminCreateDemo() {
 
               <div className="grid grid-cols-1 gap-6 pt-4 border-t border-stone-100">
                   <div className="w-full">
-                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Template Giao Diện")}</label>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Template Chủ Đề")}</label>
                     <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 min-w-0">
                       <CustomSelect
                         value={template}
@@ -15388,7 +15673,7 @@ function AdminCreateDemo() {
                         onClick={() => setShowTemplatePicker(true)} 
                         className={`px-6 py-3 border border-transparent shrink-0 shadow-sm text-white font-medium rounded-xl flex items-center justify-center gap-2 transition-all ${(!title.trim()) ? 'bg-stone-300 text-stone-500 cursor-not-allowed opacity-60' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/10'}`}
                       >
-                        <Eye className="w-5 h-5" /> {t("Xem trước giao diện")}
+                        <Eye className="w-5 h-5" /> {t("Xem trước chủ đề")}
                       </button>
                     </div>
                   </div>
@@ -16685,7 +16970,7 @@ function AdminEditDemo() {
 
               <div className="grid grid-cols-1 gap-6 pt-4 border-t border-stone-100">
                   <div className="w-full">
-                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Template Giao Diện")}</label>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Template Chủ Đề")}</label>
                     <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 min-w-0">
                       <CustomSelect
                         value={template}
@@ -16700,7 +16985,7 @@ function AdminEditDemo() {
                         onClick={() => setShowTemplatePicker(true)} 
                         className={`px-6 py-3 border border-transparent shrink-0 shadow-sm text-white font-medium rounded-xl flex items-center justify-center gap-2 transition-all ${(!title.trim()) ? 'bg-stone-300 text-stone-500 cursor-not-allowed opacity-60' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/10'}`}
                       >
-                        <Eye className="w-5 h-5" /> {t("Xem trước giao diện")}
+                        <Eye className="w-5 h-5" /> {t("Xem trước chủ đề")}
                       </button>
                     </div>
                   </div>
@@ -17456,7 +17741,7 @@ function AdminPlaylistEdit() {
 }
 
 
-function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl }: any) {
+function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl, onPreviewAvatar }: any) {
   const [aboutData, setAboutData] = useState(data.aboutMe || {});
   const [avatarProgress, setAvatarProgress] = useState(0);
   const [socials, setSocials] = useState({
@@ -17506,6 +17791,7 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl }: 
                       try {
                           const url = await uploadWithProgress(file, setAvatarProgress);
                           setAboutData({ ...aboutData, avatarUrl: url });
+                          if (onPreviewAvatar) onPreviewAvatar(url);
                       } catch (err) {
                           alert(t("Lỗi upload"));
                           setAvatarProgress(0);
@@ -17529,7 +17815,7 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl }: 
                   {avatarProgress > 0 && avatarProgress < 100 ? (
                     <button type="button" onClick={() => setAvatarProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
                   ) : (aboutData.avatarUrl ? (
-                    <button type="button" onClick={() => { setAboutData({ ...aboutData, avatarUrl: '' }); setAvatarProgress(0); (document.getElementById('aboutAvatarUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                    <button type="button" onClick={() => { setAboutData({ ...aboutData, avatarUrl: '' }); setAvatarProgress(0); (document.getElementById('aboutAvatarUpload') as HTMLInputElement).value = ''; if (onPreviewAvatar) onPreviewAvatar(''); }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
                   ) : null)}
                 </div>
                 {avatarProgress > 0 && avatarProgress < 100 && (
@@ -17546,6 +17832,7 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl }: 
                 try {
                   const url = await uploadWithProgress(e.target.files[0], setAvatarProgress);
                   setAboutData({ ...aboutData, avatarUrl: url });
+                          if (onPreviewAvatar) onPreviewAvatar(url);
                 } catch (err) {
                   alert(t("Lỗi upload"));
                   setAvatarProgress(0);

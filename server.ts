@@ -2138,7 +2138,7 @@ function generateCaptchaSvg(text: string) {
         }
       });
 
-      for (const lang of targetLangs) {
+      await Promise.all(targetLangs.map(async (lang) => {
         const targetLanguageName = lang === 'en' ? 'English' : 
                                    lang === 'ko' ? 'Korean' : 
                                    lang === 'ja' ? 'Japanese' : 
@@ -2185,7 +2185,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
         } catch (langErr: any) {
           console.error(`Error translating landing config to ${targetLanguageName}:`, langErr.message || langErr);
         }
-      }
+      }));
 
       (config as any).staticTranslations = staticTranslations;
       await saveLandingConfig(config);
@@ -2269,7 +2269,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
         }
       });
 
-      for (const lang of targetLangs) {
+      await Promise.all(targetLangs.map(async (lang) => {
         const targetLanguageName = lang === 'en' ? 'English' : 
                                    lang === 'ko' ? 'Korean' : 
                                    lang === 'ja' ? 'Japanese' : 
@@ -2315,7 +2315,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
         } catch (langErr: any) {
           console.error(`Error translating templates to ${targetLanguageName}:`, langErr.message || langErr);
         }
-      }
+      }));
 
       (config as any).staticTranslations = staticTranslations;
       await saveLandingConfig(config);
@@ -2491,11 +2491,25 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       artist.hasExternalWebsite = hasExternalWebsite !== undefined ? !!hasExternalWebsite : artist.hasExternalWebsite;
       artist.externalWebsiteUrl = externalWebsiteUrl !== undefined ? externalWebsiteUrl : artist.externalWebsiteUrl;
       artist.email = email !== undefined ? email : artist.email;
-      artist.activated = activated !== undefined ? !!activated : (artist.activated !== false);
+      if (activated !== undefined) {
+        const isNowActivated = !!activated;
+        if (isNowActivated && !artist.activated) {
+          artist.activatedAt = new Date().toISOString();
+        }
+        artist.activated = isNowActivated;
+      } else {
+        artist.activated = (artist.activated !== false);
+      }
       artist.emailVerified = emailVerified !== undefined ? !!emailVerified : artist.emailVerified;
       artist.defaultLanguage = defaultLanguage !== undefined ? defaultLanguage : (artist.defaultLanguage || 'vi');
       artist.isSpecial = isSpecial !== undefined ? !!isSpecial : artist.isSpecial;
-      artist.roleId = roleId !== undefined ? roleId : artist.roleId;
+      
+      if (roleId !== undefined && roleId !== artist.roleId) {
+        artist.roleUpgradedAt = new Date().toISOString();
+        artist.roleId = roleId;
+      } else {
+        artist.roleId = artist.roleId || "";
+      }
       
       const data = await loadData(artist.username);
       data.artistName = artist.artistName;
@@ -2909,14 +2923,16 @@ ${JSON.stringify(geminiInput, null, 2)}`;
   });
 
   app.post('/api/admin/logout', (req: any, res) => {
-    const artist = req.artist;
+    const cookies = req.headers.cookie ? Object.fromEntries(req.headers.cookie.split('; ').map(c => c.split('='))) : {};
     const cookieHeaders = [
       'adminToken=; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=0',
       'adminToken=; Path=/; HttpOnly; Max-Age=0'
     ];
-    if (artist) {
-      cookieHeaders.push(`adminToken_${artist.username}=; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=0`);
-      cookieHeaders.push(`adminToken_${artist.username}=; Path=/; HttpOnly; Max-Age=0`);
+    for (const key of Object.keys(cookies)) {
+      if (key.startsWith('adminToken')) {
+        cookieHeaders.push(`${key}=; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=0`);
+        cookieHeaders.push(`${key}=; Path=/; HttpOnly; Max-Age=0`);
+      }
     }
     res.setHeader('Set-Cookie', cookieHeaders);
     res.json({ success: true });
@@ -3072,7 +3088,12 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       pendingNameChange: req.artist?.pendingNameChange,
       pendingUsernameChange: req.artist?.pendingUsernameChange,
       pendingExtensionChange: req.artist?.pendingExtensionChange,
-      systemIp: landingConfig.systemIp || ''
+      systemIp: landingConfig.systemIp || '',
+      roleId: req.artist?.roleId || '',
+      activatedAt: req.artist?.activatedAt || '',
+      roleUpgradedAt: req.artist?.roleUpgradedAt || '',
+      createdAt: req.artist?.createdAt || '',
+      roles: (landingConfig as any).roles || []
     });
   });
 
@@ -5242,7 +5263,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     delay = 1500
   ): Promise<any> {
     let attempt = 0;
-    const modelsToTry = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-3.1-flash-lite'];
+    const modelsToTry = ['gemini-3.5-flash', 'gemini-3.1-flash-lite'];
     
     while (attempt < retries) {
       const currentModel = attempt >= 1 ? modelsToTry[attempt % modelsToTry.length] : model;
@@ -5360,7 +5381,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         }
       });
       
-      for (const lang of targetLangs) {
+      await Promise.all(targetLangs.map(async (lang) => {
         const targetLanguageName = lang === 'en' ? 'English' : 
                                    lang === 'ko' ? 'Korean' : 
                                    lang === 'ja' ? 'Japanese' : 
@@ -5379,7 +5400,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
 
           const response = await generateContentWithRetry(
             ai,
-            'gemini-2.5-flash',
+            'gemini-3.5-flash',
             prompt
           );
 
@@ -5407,7 +5428,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
         } catch (langErr: any) {
           console.error(`Error translating to ${targetLanguageName}:`, langErr.message || langErr);
         }
-      }
+      }));
       
       data.staticTranslations = staticTranslations;
       await saveData(data);
@@ -5473,7 +5494,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
         }
       });
       
-      for (const lang of targetLangs) {
+      await Promise.all(targetLangs.map(async (lang) => {
         const targetLanguageName = lang === 'en' ? 'English' : 
                                    lang === 'ko' ? 'Korean' : 
                                    lang === 'ja' ? 'Japanese' : 
@@ -5492,7 +5513,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
 
           const response = await generateContentWithRetry(
             ai,
-            'gemini-2.5-flash',
+            'gemini-3.5-flash',
             prompt
           );
 
@@ -5520,7 +5541,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
         } catch (langErr: any) {
           console.error(`Error translating to ${targetLanguageName}:`, langErr.message || langErr);
         }
-      }
+      }));
       
       data.staticTranslations = staticTranslations;
       await saveData(username, data);

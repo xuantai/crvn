@@ -215,6 +215,7 @@ export default function ACPControlPanel() {
   const [roleExclusiveUi, setRoleExclusiveUi] = useState(false);
   const [roleDatabase, setRoleDatabase] = useState(false);
   const [roleSubscriptionPricing, setRoleSubscriptionPricing] = useState(false);
+  const [rolePrice, setRolePrice] = useState('');
 
   // Artist Role ID
   const [artistRoleId, setArtistRoleId] = useState('');
@@ -1276,7 +1277,8 @@ export default function ACPControlPanel() {
       uiEdit: roleUiEdit,
       exclusiveUi: roleExclusiveUi,
       database: roleDatabase,
-      subscriptionPricing: roleSubscriptionPricing
+      subscriptionPricing: roleSubscriptionPricing,
+      price: rolePrice.trim()
     };
 
     let updatedRoles = [...roles];
@@ -3167,6 +3169,7 @@ export default function ACPControlPanel() {
                 onClick={() => {
                   setEditingRoleIdx(null);
                   setRoleName('');
+                  setRolePrice('');
                   setRoleMaxPosts(10);
                   setRoleAccessControl(false);
                   setRoleDemoPassword(false);
@@ -3206,6 +3209,9 @@ export default function ACPControlPanel() {
                         <p className="text-xs text-neutral-400 mt-1">
                           Giới hạn tải nhạc: <strong className="text-purple-300">{r.maxPosts === -1 || r.maxPosts === 'unlimited' ? 'Không giới hạn' : `${r.maxPosts} bài`}</strong>
                         </p>
+                        <p className="text-xs text-neutral-400 mt-0.5">
+                          Giá gói: <strong className="text-amber-400">{r.price || 'Miễn phí'}</strong>
+                        </p>
                       </div>
 
                       <div className="flex items-center gap-1.5 shrink-0">
@@ -3213,6 +3219,7 @@ export default function ACPControlPanel() {
                           onClick={() => {
                             setEditingRoleIdx(idx);
                             setRoleName(r.name);
+                            setRolePrice(r.price || '');
                             setRoleMaxPosts(r.maxPosts === -1 || r.maxPosts === 'unlimited' ? -1 : Number(r.maxPosts));
                             setRoleAccessControl(!!r.accessControl);
                             setRoleDemoPassword(!!r.demoPassword);
@@ -3290,6 +3297,17 @@ export default function ACPControlPanel() {
                         onChange={(e) => setRoleName(e.target.value)}
                         className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-sm"
                         placeholder="vd: Silver, Gold, Platinum..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Giá tiền (vd: Miễn phí, 99.000đ/tháng...)</label>
+                      <input
+                        type="text"
+                        value={rolePrice}
+                        onChange={(e) => setRolePrice(e.target.value)}
+                        className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-sm"
+                        placeholder="vd: 99.000đ/tháng hoặc Miễn phí..."
                       />
                     </div>
 

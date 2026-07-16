@@ -1,0 +1,42 @@
+{
+  "pageTitle": "Kho nhạc của Cheng",
+  "artistName": "Cheng",
+  "artistBio": "Góc nhỏ của",
+  "defaultLanguage": "vi",
+  "homeCoverUrl": "/uploads/c8w6d657alb/1784240187766-914540749-1784240187769.jpg",
+  "faviconUrl": "",
+  "ogImageUrl": "",
+  "youtubePlaylistUrl": "",
+  "spotifyUrl": "",
+  "releasedSongs": [],
+  "demos": [],
+  "playlists": [],
+  "menus": [
+    {
+      "id": "m1",
+      "type": "vault",
+      "title": "Kho Nhạc",
+      "isVisible": true
+    },
+    {
+      "id": "m2",
+      "type": "about",
+      "title": "Về Tôi",
+      "isVisible": true
+    },
+    {
+      "id": "m3",
+      "type": "bio",
+      "title": "Tiểu Sử",
+      "isVisible": true
+    }
+  ],
+  "aboutMe": {},
+  "biography": {
+    "education": [],
+    "experience": []
+  },
+  "adminPassword": "$2b$10$9oY7nKAQd.ERZe0HcdMzP.EAId0lxLXSDvAN5zAsSaVJlhLzBIiYa",
+  "memberPassword": "",
+  "username": "cheng"
+}
