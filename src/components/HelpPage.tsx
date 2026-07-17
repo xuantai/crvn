@@ -2,21 +2,49 @@ import React, { useState, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronRight, Settings, LogIn, FileText, Layout, Copy, Repeat, Lock, Link as LinkIcon, Save, Eye, Plus, ChevronLeft, Globe, Camera, X } from 'lucide-react';
-import { LanguageContext, DemoPlayer } from '../App';
+import { LanguageContext } from '../App';
 
 
 
 const TEMPLATES = [
   { id: '1', name: 'Vui vẻ (Ấm áp)' },
   { id: '2', name: 'Căng Cực (Sôi động)' },
-  { id: '3', name: 'Lạnh (Buồn)' },
-  { id: '4', name: 'Thư giãn (Nhẹ nhàng)' }
+  { id: '3', name: 'Buồn (Sâu lắng)' },
+  { id: '4', name: 'Thư giãn (Nhẹ nhàng)' },
+  { id: '5', name: 'Đáng yêu (Đỏ, Nhảy múa)' },
+  { id: '6', name: 'Hạnh Phúc (Hồng, Hoa rơi)' },
+  { id: '7', name: 'Học Đường (Trắng, Lá vàng rơi)' },
+  { id: '8', name: 'Tổ Quốc (Đỏ, Cờ phấp phới)' },
+  { id: '9', name: 'Cầu Vồng' },
+  { id: '10', name: 'Hip Hop (Đường phố)' },
+  { id: '11', name: 'Kỳ bí (Đen vàng, Trăng khói mưa)' },
+  { id: '12', name: 'Cổ điển (Nâu, retro)' },
+  { id: '13', name: 'Hoàng hôn (Cam đỏ trời chiều)' },
+  { id: '14', name: 'Đại Dương (Sóng biển)' },
+  { id: '15', name: 'Retro 8-Bit (Game)' },
+  { id: '16', name: 'Xếp hình Puzzle' },
+  { id: '17', name: 'Cổ vũ (Mây, mặt trời)' },
+  { id: '18', name: 'Pháo hoa (Năm mới)' }
 ];
 
-export default function HelpPage() {
-  const { lang } = useContext(LanguageContext);
+export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
+  const { lang, landingConfig } = useContext(LanguageContext);
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState('account');
+
+  // Helper functions
+  const getArtistExtensionFromUrl = (customPath?: string) => {
+    const currentPath = customPath !== undefined ? customPath : window.location.pathname;
+    const parts = currentPath.split('/').filter(Boolean);
+    if (parts.length > 0 && parts[0] !== 'acp' && parts[0] !== 'mem' && parts[0] !== 'demo' && parts[0] !== 'song' && parts[0] !== 'playlist' && parts[0] !== 'admin' && parts[0] !== 'help') {
+      return parts[0].toLowerCase().trim();
+    }
+    return '';
+  };
+  const ext = getArtistExtensionFromUrl(location.pathname);
+  const tokenKey = ext ? `adminToken_${ext}` : 'adminToken';
+  const token = localStorage.getItem(tokenKey);
+
+  const [activeTab, setActiveTab] = useState(token ? 'account' : 'login');
   const [showTooltip, setShowTooltip] = useState(false);
   const [artistData, setArtistData] = useState<any>(null);
   
@@ -38,26 +66,17 @@ export default function HelpPage() {
   
   const [avatarUrl, setAvatarUrl] = useState('');
   const [avatarProgress, setAvatarProgress] = useState(0);
+  const [isAvatarChanged, setIsAvatarChanged] = useState(false);
+  const [avatarSuccess, setAvatarSuccess] = useState('');
+  const [avatarError, setAvatarError] = useState('');
 
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTheme, setSelectedTheme] = useState(TEMPLATES[0].id);
 
-  // Helper functions
-  const getArtistExtensionFromUrl = (customPath?: string) => {
-    const currentPath = customPath !== undefined ? customPath : window.location.pathname;
-    const parts = currentPath.split('/').filter(Boolean);
-    if (parts.length > 0 && parts[0] !== 'acp' && parts[0] !== 'mem' && parts[0] !== 'demo' && parts[0] !== 'song' && parts[0] !== 'playlist' && parts[0] !== 'admin' && parts[0] !== 'help') {
-      return parts[0].toLowerCase().trim();
-    }
-    return '';
-  };
-  const ext = getArtistExtensionFromUrl(location.pathname);
-  const tokenKey = ext ? `adminToken_${ext}` : 'adminToken';
-  const token = localStorage.getItem(tokenKey);
-
   useEffect(() => {
     if (!token) {
-      window.location.href = ext ? `/${ext}` : '/';
+      setIsLoading(false);
+      setActiveTab('login');
       return;
     }
     
@@ -67,20 +86,27 @@ export default function HelpPage() {
     .then(res => res.json())
     .then(data => {
       if (data.isAdmin && data.artist) {
-        setArtistData(data.artist);
+        localStorage.setItem('activeAdminActivated', data.artist.activated !== false ? 'true' : 'false');
+        if (data.artist.extension) {
+          localStorage.setItem('activeAdminExtension', data.artist.extension);
+        }
+        localStorage.setItem('activeAdminName', data.artist.artistName || data.artist.username || data.artist.extension);
+        setArtistData({ ...data.artist, aboutMe: data.aboutMe });
         setEmail(data.artist.email || '');
         setUsername(data.artist.pendingUsernameChange || data.artist.username || '');
         setExtension(data.artist.pendingExtensionChange || data.artist.extension || '');
         setArtistName(data.artist.pendingNameChange || data.artist.artistName || '');
         
-        fetch('/api/data', {
-          headers: { 'x-artist-extension': ext }
-        }).then(r => r.json()).then(d => {
-           setAvatarUrl(d.aboutMe?.avatarUrl || d.homeCoverUrl || '');
-        }).catch(() => {});
+        const checkAvatar = data.avatarUrl || '';
+        setAvatarUrl(checkAvatar);
+        localStorage.setItem('activeAdminAvatar', checkAvatar);
       } else {
-        window.location.href = ext ? `/${ext}` : '/';
+        // If token is invalid, just act as guest
+        setActiveTab('login');
       }
+    })
+    .catch(() => {
+      setActiveTab('login');
     })
     .finally(() => setIsLoading(false));
   }, [token, ext]);
@@ -146,19 +172,58 @@ export default function HelpPage() {
       setAvatarProgress(1);
       const url = await uploadWithProgress(file, setAvatarProgress);
       setAvatarUrl(url);
-      await fetch('/api/profile', {
+      setIsAvatarChanged(true);
+      setAvatarSuccess('');
+      setAvatarError('');
+      setAvatarProgress(0);
+    } catch(err) {
+      console.error(err);
+      setAvatarProgress(0);
+      setAvatarError('Tải lên thất bại');
+    }
+  };
+
+  const handleAvatarSave = async () => {
+    setAvatarSuccess('');
+    setAvatarError('');
+    try {
+      const res = await fetch('/api/profile', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
           'x-artist-extension': ext
         },
-        body: JSON.stringify({ homeCoverUrl: url })
+        body: JSON.stringify({ 
+          homeCoverUrl: avatarUrl,
+          aboutMe: {
+            ...(artistData?.aboutMe || {}),
+            avatarUrl: avatarUrl
+          }
+        })
       });
-      setAvatarProgress(0);
-    } catch(err) {
-      console.error(err);
-      setAvatarProgress(0);
+      const data = await res.json();
+      if (res.ok) {
+        setAvatarSuccess('Đã lưu avatar thành công!');
+        setIsAvatarChanged(false);
+        localStorage.setItem('activeAdminAvatar', avatarUrl);
+        window.dispatchEvent(new Event('admin-session-change'));
+        setArtistData((prev: any) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            homeCoverUrl: avatarUrl,
+            aboutMe: {
+              ...(prev.aboutMe || {}),
+              avatarUrl: avatarUrl
+            }
+          };
+        });
+      } else {
+        setAvatarError(data.error || 'Có lỗi xảy ra');
+      }
+    } catch (err) {
+      setAvatarError('Lỗi kết nối');
     }
   };
 
@@ -232,24 +297,29 @@ export default function HelpPage() {
     return <div className="min-h-screen bg-neutral-50 flex items-center justify-center font-sans text-neutral-500">Đang tải...</div>;
   }
 
+  const isActivated = artistData ? (artistData.activated !== false) : (localStorage.getItem('activeAdminActivated') !== 'false');
+  const backTarget = (ext && isActivated) ? `/${ext}` : '/';
+
   return (
     <div className="min-h-screen bg-neutral-50 font-sans flex flex-col md:flex-row">
       {/* Sidebar */}
       <div className="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-neutral-200 p-6 shrink-0 md:h-screen md:sticky md:top-0 overflow-y-auto">
-        <Link to={`/${ext}`} className="flex items-center gap-2 text-neutral-500 hover:text-black transition-colors mb-8 text-sm font-bold w-fit">
+        <Link to={backTarget} className="flex items-center gap-2 text-neutral-500 hover:text-black transition-colors mb-8 text-sm font-bold w-fit">
           <ChevronLeft className="w-4 h-4" /> Quay lại
         </Link>
         <h2 className="text-xl font-black tracking-tight text-neutral-900 mb-6">Trợ Giúp</h2>
         <div className="space-y-6">
-          <div>
-            <div className="text-[10px] font-black text-neutral-400 uppercase tracking-wider mb-2 px-3">Cài Đặt</div>
-            <button
-              onClick={() => setActiveTab('account')}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'account' ? 'bg-black text-white' : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'}`}
-            >
-              <Settings className="w-4 h-4" /> Cài đặt tài khoản
-            </button>
-          </div>
+          {token && (
+            <div>
+              <div className="text-[10px] font-black text-neutral-400 uppercase tracking-wider mb-2 px-3">Cài Đặt</div>
+              <button
+                onClick={() => setActiveTab('account')}
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'account' ? 'bg-black text-white' : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'}`}
+              >
+                <Settings className="w-4 h-4" /> Cài đặt tài khoản
+              </button>
+            </div>
+          )}
           <div>
             <div className="text-[10px] font-black text-neutral-400 uppercase tracking-wider mb-2 px-3">Hướng dẫn</div>
             <div className="space-y-1">
@@ -297,14 +367,27 @@ export default function HelpPage() {
                   </div>
                   <div className="space-y-2">
                     <input type="file" id="avatarUploadHelp" className="hidden" accept="image/*" onChange={handleAvatarChange} />
-                    <button 
-                      type="button"
-                      onClick={() => document.getElementById('avatarUploadHelp')?.click()} 
-                      className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-900 text-sm font-bold rounded-xl transition-colors flex items-center gap-2"
-                    >
-                      <Camera className="w-4 h-4" /> Thay Đổi Avatar
-                    </button>
+                    <div className="flex flex-wrap gap-2 items-center">
+                      <button 
+                        type="button"
+                        onClick={() => document.getElementById('avatarUploadHelp')?.click()} 
+                        className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-900 text-sm font-bold rounded-xl transition-colors flex items-center gap-2 cursor-pointer"
+                      >
+                        <Camera className="w-4 h-4" /> Chọn Ảnh Mới
+                      </button>
+                      {isAvatarChanged && (
+                        <button 
+                          type="button"
+                          onClick={handleAvatarSave} 
+                          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center gap-2 shadow-md shadow-emerald-200 cursor-pointer"
+                        >
+                          <Save className="w-4 h-4" /> Lưu Avatar
+                        </button>
+                      )}
+                    </div>
                     <p className="text-xs text-neutral-500">Hỗ trợ JPG, PNG. Khuyến nghị 500x500px.</p>
+                    {avatarSuccess && <div className="text-emerald-600 text-xs font-bold mt-1">{avatarSuccess}</div>}
+                    {avatarError && <div className="text-red-600 text-xs font-bold mt-1">{avatarError}</div>}
                   </div>
                 </div>
               </div>
@@ -550,34 +633,38 @@ export default function HelpPage() {
               <p className="text-neutral-500 text-sm mb-8">Trải nghiệm các giao diện khác nhau cho kho nhạc của bạn.</p>
               
               <div className="flex flex-col lg:flex-row gap-8">
-                <div className="flex-1 space-y-3">
+                <div className="flex-1 space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                   {TEMPLATES.map((t, idx) => (
                     <div key={t.id} onClick={() => setSelectedTheme(t.id)} className={`p-4 bg-white border rounded-xl cursor-pointer transition-colors flex items-center justify-between group ${selectedTheme === t.id ? 'border-black ring-1 ring-black' : 'border-neutral-200 hover:border-black'}`}>
                       <div className="font-bold text-neutral-800">{t.name}</div>
                       <ChevronRight className="w-4 h-4 text-neutral-300 group-hover:text-black transition-colors" />
                     </div>
                   ))}
-                  <div className="text-xs text-neutral-500 mt-4">Bấm vào các chủ đề trên để xem trước giao diện trên điện thoại demo bên cạnh. (Tính năng xem trước sẽ sớm được cập nhật).</div>
+                  <div className="text-xs text-neutral-500 mt-4 pb-4">Bấm vào các chủ đề trên để xem trước giao diện trên điện thoại demo bên cạnh. Bạn có thể vuốt trên màn hình điện thoại để xem trọn vẹn.</div>
                 </div>
                 
                 <div className="w-full lg:w-72 shrink-0 flex justify-center">
                   <div className="w-[280px] h-[580px] bg-black rounded-[3rem] p-3 shadow-2xl relative">
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-black rounded-b-2xl z-20"></div>
                     <div className="w-full h-full bg-stone-100 rounded-[2.25rem] overflow-hidden relative">
-                      <div className="absolute inset-0 flex flex-col pointer-events-none scale-[0.8] origin-top-left w-[125%] h-[125%]">
-                        <DemoPlayer 
-                           songIdP="demo" 
-                           previewConfig={{...{ id: selectedTheme, templateTheme: '1' }, isPCPreviewMode: false}} 
-                           previewData={{
-                             title: "Bài Hát Mẫu Demo",
-                             artist: "Admin",
-                             coverUrl: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&q=80",
-                             backgroundUrl: "https://images.unsplash.com/photo-1614113489855-66422ad300a4?w=500&q=80",
-                             lyrics: "Đây là bài hát mẫu...\nĐể bạn xem trước giao diện...",
-                             isReleased: false,
-                             status: 'public'
-                           }}
-                        />
+                      <div className="absolute inset-0 flex flex-col scale-[0.8] origin-top-left w-[125%] h-[125%]">
+                        {DemoPlayer ? (
+                          <DemoPlayer 
+                             songIdP="demo" 
+                             previewConfig={{...{ id: selectedTheme, templateTheme: '1' }, isPCPreviewMode: false}} 
+                             previewData={{
+                               title: landingConfig?.demoSongInfo?.title || "Bài Hát Mẫu Demo",
+                               artist: landingConfig?.demoSongInfo?.artist || "Admin",
+                               coverUrl: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&q=80",
+                               backgroundUrl: "https://images.unsplash.com/photo-1614113489855-66422ad300a4?w=500&q=80",
+                               lyrics: landingConfig?.demoSongInfo?.lyrics || "[Verse 1]\nCon phố quen bước chân ai vừa qua\nLắng nghe tiếng mưa rơi nhẹ trên hiên nhà\nTa gom góp những mảnh ký ức cũ\nĐể viết lại bản tình ca còn ấp ủ.\n\n[Chorus]\nVà ngày mai nắng sẽ lại về trên đôi vai\nCho những giấc mơ không còn chút ưu tư dài\nTa mỉm cười với chính mình hôm nay\nĐể hy vọng lại đong đầy trên đôi bàn tay.\n\n[Verse 2]\nCó những lúc lặng lẽ nhìn về phía xa\nTìm lại chút dư âm ngày tháng nhạt nhòa\nĐừng buồn nhé khi đường đời nhiều sỏi đá\nBởi sau cơn mưa, bầu trời sẽ lại xanh lạ.\n\n[Bridge]\nThời gian trôi, chẳng chờ đợi một ai\nDù phía trước là đường dài hay chông gai\nTa vẫn đứng đây, vững tin vào ngày mới\nGửi vào gió những yêu thương ta đã tới.\n\n[Chorus]\nVà ngày mai nắng sẽ lại về trên đôi vai\nCho những giấc mơ không còn chút ưu tư dài\nTa mỉm cười với chính mình hôm nay\nĐể hy vọng lại đong đầy trên đôi bàn tay.\n\n[Outro]\nNắng vẫn trong, tình vẫn ấm...\nCho riêng ta một khoảng trời bình yên.",
+                               isReleased: false,
+                               status: 'public'
+                             }}
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center h-full text-xs text-neutral-400">Đang tải demo...</div>
+                        )}
                       </div>
                     </div>
                   </div>

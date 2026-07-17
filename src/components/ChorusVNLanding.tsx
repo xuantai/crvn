@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, EyeOff, Music, BadgeCheck, Lock, Globe, ArrowRight, Sparkles, Disc3, CheckCircle2, ListMusic, X, AlertCircle, Mail, ChevronLeft, ChevronRight, UserPlus, RefreshCw, Search, LogOut, UserCircle } from 'lucide-react';
+import { Eye, EyeOff, Music, BadgeCheck, Lock, Globe, ArrowRight, Sparkles, Disc3, CheckCircle2, ListMusic, X, AlertCircle, Mail, ChevronLeft, ChevronRight, UserPlus, RefreshCw, Search, LogOut, UserCircle, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChorusLogo } from './ChorusLogo';
 
@@ -768,17 +768,31 @@ export default function ChorusVNLanding() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
+    const activeExt = localStorage.getItem('activeAdminExtension');
+    const token = activeExt ? localStorage.getItem(`adminToken_${activeExt}`) : localStorage.getItem('adminToken');
     if (token) {
       fetch('/api/admin/check', {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'x-artist-extension': activeExt || ''
+        }
       })
       .then(res => res.json())
       .then(data => {
         if (data.isAdmin && data.artist) {
-          setLoggedInArtist(data.artist);
+          const avatar = data.avatarUrl || '';
+          setLoggedInArtist({
+            ...data.artist,
+            avatarUrl: avatar
+          });
+          localStorage.setItem('activeAdminAvatar', avatar);
+          localStorage.setItem('activeAdminExtension', data.artist.extension);
+          localStorage.setItem('activeAdminName', data.artist.artistName || data.artist.username);
+        } else {
+          setLoggedInArtist(null);
         }
-      });
+      })
+      .catch(() => {});
     }
   }, []);
 
@@ -794,12 +808,30 @@ export default function ChorusVNLanding() {
       });
       const data = await res.json();
       if (data.success) {
-        localStorage.setItem('adminToken', data.token);
-        localStorage.setItem(`adminToken_${data.extension}`, data.token);
-        setLoggedInArtist(data.artist);
+        const avatar = data.avatarUrl || '';
+        if ((window as any).syncLoginSession) {
+          (window as any).syncLoginSession(
+            data.token,
+            data.extension,
+            data.artist?.artistName || data.artist?.username || data.extension,
+            avatar,
+            data.artist && data.artist.activated !== false
+          );
+        } else {
+          localStorage.setItem('adminToken', data.token);
+          localStorage.setItem(`adminToken_${data.extension}`, data.token);
+          localStorage.setItem('activeAdminExtension', data.extension);
+          localStorage.setItem('activeAdminName', data.artist?.artistName || data.artist?.username || data.extension);
+          localStorage.setItem('activeAdminAvatar', avatar);
+        }
+        setLoggedInArtist({
+          ...data.artist,
+          avatarUrl: avatar
+        });
         setShowLoginModal(false);
         setLoginUsername('');
         setLoginPassword('');
+        window.dispatchEvent(new Event('admin-session-change'));
       } else {
         setLoginError(data.error || 'Login failed');
       }
@@ -842,13 +874,17 @@ export default function ChorusVNLanding() {
   const [regSuccess, setRegSuccess] = useState('');
   const [regSubmitting, setRegSubmitting] = useState(false);
   const registerModalBodyRef = useRef<HTMLDivElement>(null);
+  const captchaRequestIdRef = useRef<number>(0);
 
   const fetchCaptcha = async () => {
+    const reqId = ++captchaRequestIdRef.current;
     try {
       const res = await fetch('/api/public/captcha');
       const data = await res.json();
-      setCaptchaToken(data.token);
-      setCaptchaSvg(data.svg);
+      if (reqId === captchaRequestIdRef.current) {
+        setCaptchaToken(data.token);
+        setCaptchaSvg(data.svg);
+      }
     } catch (e) {
       console.error("Failed to load captcha:", e);
     }
@@ -1547,9 +1583,9 @@ export default function ChorusVNLanding() {
           className="flex flex-col items-center justify-center gap-4 mt-6"
         >
           {loggedInArtist ? (
-            <a href={(loggedInArtist as any).verified === false ? `/${loggedInArtist.extension}/help` : `/${loggedInArtist.extension}`} className="bg-black text-white font-black text-sm md:text-base py-5 px-10 rounded-full uppercase tracking-wider flex items-center gap-2.5 cursor-pointer relative overflow-hidden group shadow-lg border border-neutral-800 transition-all hover:scale-105 active:scale-95">
+            <a href={(loggedInArtist as any).activated === false ? `/${loggedInArtist.extension}/help` : `/${loggedInArtist.extension}`} className="bg-black text-white font-black text-sm md:text-base py-5 px-10 rounded-full uppercase tracking-wider flex items-center gap-2.5 cursor-pointer relative overflow-hidden group shadow-lg border border-neutral-800 transition-all hover:scale-105 active:scale-95">
               <span className="relative z-10">
-                {(loggedInArtist as any).verified === false ? (lang === 'vi' ? 'Hướng Dẫn Sử Dụng' : 'User Guide') : (lang === 'vi' ? 'VÀO KHO NHẠC CỦA BẠN' : 'ENTER YOUR VAULT')}
+                {(loggedInArtist as any).activated === false ? (lang === 'vi' ? 'Hướng Dẫn Sử Dụng' : 'User Guide') : (lang === 'vi' ? 'VÀO KHO NHẠC CỦA BẠN' : 'ENTER YOUR VAULT')}
               </span>
               <ArrowRight className="w-4 h-4 stroke-[2.5] relative z-10 group-hover:translate-x-1 transition-transform" />
             </a>
@@ -1576,37 +1612,17 @@ export default function ChorusVNLanding() {
               <ArrowRight className="w-4 h-4 stroke-[2.5] relative z-10 group-hover:translate-x-1 transition-transform" />
             </motion.button>
           )}
-
           {loggedInArtist ? (
-            <div className="mt-4 flex items-center justify-center">
-              <div className="flex items-center bg-white rounded-full p-1 border border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
-                <a href={`/${loggedInArtist.extension}/admin`} className="px-4 py-2 text-sm font-bold text-neutral-800 hover:text-indigo-600 transition-colors flex items-center gap-2">
-                  <UserCircle className="w-4 h-4" />
-                  {lang === 'vi' ? `Xin Chào, ${loggedInArtist.artistName}` : `Hello, ${loggedInArtist.artistName}`}
-                </a>
-                <div className="w-px h-5 bg-neutral-200 mx-1"></div>
-                <button 
-                  onClick={async () => {
-                    try {
-                      const keysToRemove = [];
-                      for (let i = 0; i < localStorage.length; i++) {
-                        const key = localStorage.key(i);
-                        if (key && key.startsWith('adminToken')) {
-                          keysToRemove.push(key);
-                        }
-                      }
-                      keysToRemove.forEach(k => localStorage.removeItem(k));
-                      await fetch('/api/admin/logout', { method: 'POST' });
-                      window.location.reload();
-                    } catch (e) {}
-                  }}
-                  title={lang === 'vi' ? 'Đăng xuất' : 'Logout'}
-                  className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors cursor-pointer"
-                >
-                  <LogOut className="w-4 h-4 stroke-[2]" />
-                </button>
+            (loggedInArtist as any).activated !== false && (
+              <div className="mt-4 flex items-center justify-center">
+                <div className="flex items-center bg-white rounded-full p-1 border border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
+                  <a href={`/${loggedInArtist.extension}/admin`} className="px-4 py-2 text-sm font-bold text-neutral-800 hover:text-indigo-600 transition-colors flex items-center gap-2">
+                    <Settings className="w-4 h-4" />
+                    {lang === 'vi' ? 'Vào Bảng Điều Khiển' : 'Go to Dashboard'}
+                  </a>
+                </div>
               </div>
-            </div>
+            )
           ) : (
             <div className="mt-2 text-sm text-neutral-500 font-medium">
               {lang === 'vi' ? 'Bạn đã có tài khoản?' : 'Already have an account?'} <button onClick={() => setShowLoginModal(true)} className="text-black font-bold hover:underline transition-all cursor-pointer">{lang === 'vi' ? 'Đăng Nhập Ngay.' : 'Login Now.'}</button>
@@ -2177,28 +2193,17 @@ export default function ChorusVNLanding() {
                     <div className="w-16 h-16 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center mx-auto text-emerald-600 animate-bounce">
                       <CheckCircle2 className="w-8 h-8" />
                     </div>
-                                        <div className="space-y-4 text-left bg-neutral-50 p-6 rounded-2xl border border-neutral-100">
-                      <h4 className="text-base font-bold text-neutral-900 text-center mb-2">{t('registerSuccessTitle')}</h4>
-                      <p className="text-neutral-600 text-sm leading-relaxed text-center mb-4">
-                        {t('registerSuccessApproval')}
+                    <div className="space-y-4 text-center bg-neutral-50 p-6 rounded-2xl border border-neutral-100">
+                      <h4 className="text-xl font-black text-neutral-900 text-center">Đăng ký thành công.</h4>
+                      <p className="text-neutral-600 text-sm leading-relaxed text-center">
+                        Trong thời gian chờ quản trị viên kích hoạt tài khoản, bạn có thể khám phá các tính năng của chorus.vn nhé.
                       </p>
-                      
-                      <div className="space-y-2 text-sm text-neutral-700 bg-white p-4 rounded-xl border border-neutral-200 text-left">
-                        <p className="font-bold text-emerald-700 text-center border-b border-neutral-100 pb-2 mb-3">
-                          {t('registerSuccessInfoTitle').replace('{artistName}', regArtistName)}
-                        </p>
-                        <p><span className="font-medium">{t('registerSuccessArtistName')}:</span> {regArtistName}</p>
-                        <p><span className="font-medium">{t('registerSuccessUsername')}:</span> {regUsername}</p>
-                        <p><span className="font-medium">{t('registerSuccessWebsite')}:</span> <span className="font-mono text-emerald-600">{regExtension}.chorus.vn</span></p>
-                        <p><span className="font-medium">{t('registerSuccessAdmin')}:</span> <span className="font-mono text-blue-600">{regExtension}.chorus.vn/admin</span></p>
-                        <p><span className="font-medium">{t('registerSuccessAdminUser')}:</span> {regUsername}</p>
-                      </div>
                     </div>
                     <button
                       onClick={() => setShowRegisterModal(false)}
                       className="w-full bg-black hover:bg-neutral-800 text-white font-extrabold py-3.5 px-6 rounded-xl text-xs transition-all cursor-pointer shadow-sm"
                     >
-                      {t('closeWindow')}
+                      Khám Phá Ngay
                     </button>
                   </div>
                 ) : (
@@ -2237,6 +2242,29 @@ export default function ChorusVNLanding() {
                         if (res.ok) {
                           setRegSuccess(data.message || 'Đăng ký thành công!');
                           console.log('%c[Registration Success] Approve this user in /acp control panel', 'color: green; font-weight: bold;');
+                          
+                          // Auto-login!
+                          if (data.token && data.extension) {
+                            const avatar = data.artist?.aboutMe?.avatarUrl || data.artist?.homeCoverUrl || '';
+                            if ((window as any).syncLoginSession) {
+                              (window as any).syncLoginSession(
+                                data.token,
+                                data.extension,
+                                data.artist?.artistName || data.artist?.username || data.extension,
+                                avatar,
+                                false // newly registered is not activated yet
+                              );
+                            } else {
+                              localStorage.setItem('adminToken', data.token);
+                              localStorage.setItem(`adminToken_${data.extension}`, data.token);
+                              localStorage.setItem('activeAdminExtension', data.extension);
+                              localStorage.setItem('activeAdminName', data.artist?.artistName || data.artist?.username || data.extension);
+                              localStorage.setItem('activeAdminAvatar', avatar);
+                              localStorage.setItem('activeAdminActivated', 'false');
+                            }
+                            setLoggedInArtist(data.artist);
+                            window.dispatchEvent(new Event('admin-session-change'));
+                          }
                         } else {
                           setRegError(data.error || 'Có lỗi xảy ra, vui lòng thử lại!');
                           fetchCaptcha(); // reload captcha on error

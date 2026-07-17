@@ -449,12 +449,17 @@ async function saveTickets(list: any[]) {
 
 function mapTicket(t: any) {
   if (!t) return t;
-  const repArtist = (artists || []).find(a => a.username === t.reporterArtist);
+  const repArtist = (artists || []).find(a => a.username === t.reporterArtist || a.extension === t.reporterArtist);
+  const srcArtist = (artists || []).find(a => a.username === t.sourceArtist || a.extension === t.sourceArtist);
   return {
     ...t,
     reporter: {
       username: t.reporterArtist,
       name: repArtist ? repArtist.artistName : t.reporterArtist
+    },
+    uploader: {
+      username: t.sourceArtist,
+      name: srcArtist ? srcArtist.artistName : t.sourceArtist
     }
   };
 }
@@ -1605,6 +1610,7 @@ function generateCaptchaSvg(text: string) {
     const CAPTCHA_SECRET = 'chorus_vn_captcha_secret_key_123';
     const hash = crypto.createHmac('sha256', CAPTCHA_SECRET).update(text.toLowerCase() + ':' + expiry).digest('hex');
     const token = `${expiry}:${hash}`;
+    console.log(`[Captcha Generated] Text: "${text}", Expiry: ${expiry}, Token: "${token}"`);
     res.json({ token, svg });
   });
 
@@ -1628,7 +1634,7 @@ function generateCaptchaSvg(text: string) {
       const CAPTCHA_SECRET = 'chorus_vn_captcha_secret_key_123';
       const expectedHash = crypto.createHmac('sha256', CAPTCHA_SECRET).update(captchaAnswer.toLowerCase().trim() + ':' + expiry).digest('hex');
       if (hash !== expectedHash) {
-        console.warn(`[Register Request] Captcha mismatch! Answer provided: "${captchaAnswer}", Expected hash check failed.`);
+        console.warn(`[Register Request] Captcha mismatch! Answer provided: "${captchaAnswer}" (normalized: "${captchaAnswer.toLowerCase().trim()}"), Expected hash: "${expectedHash}", Received hash in token: "${hash}"`);
         return res.status(400).json({ error: 'Mã xác nhận Captcha không chính xác!' });
       }
     } catch (e: any) {
@@ -1709,9 +1715,18 @@ function generateCaptchaSvg(text: string) {
     };
     await saveData(newArtist.username, defaultData);
 
+    res.setHeader('Set-Cookie', [
+      `adminToken_${newArtist.username}=${newArtist.password}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`,
+      `adminToken=${newArtist.password}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`
+    ]);
+
     res.json({
       success: true,
-      message: 'Đăng ký thành viên thành công! Tài khoản đang chờ Ban quản trị duyệt kích hoạt.'
+      message: 'Đăng ký thành viên thành công! Tài khoản đang chờ Ban quản trị duyệt kích hoạt.',
+      token: newArtist.password,
+      extension: newArtist.extension,
+      username: newArtist.username,
+      artist: newArtist
     });
   });
 
@@ -2001,7 +2016,7 @@ function generateCaptchaSvg(text: string) {
       pageTitle, ogImageUrl, faviconUrl, statusBadge,
       adminUsername, adminPassword,
       menuVaultVi, menuAboutVi, menuBioVi,
-      templateNames,
+      templateNames, demoSongInfo,
       globalLayoutSections,
       faq, forbiddenKeywords, roles
     } = req.body;
@@ -2023,7 +2038,7 @@ function generateCaptchaSvg(text: string) {
       menuVaultVi: menuVaultVi || 'Kho Nhạc',
       menuAboutVi: menuAboutVi || 'Về Tôi',
       menuBioVi: menuBioVi || 'Tiểu Sử',
-      templateNames: templateNames || {},
+      templateNames: templateNames || {}, demoSongInfo,
       faq: faq !== undefined ? faq : (landingConfig as any).faq,
       forbiddenKeywords: forbiddenKeywords !== undefined ? forbiddenKeywords : (landingConfig as any).forbiddenKeywords,
       roles: roles !== undefined ? roles : (landingConfig as any).roles
@@ -2896,7 +2911,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
   });
 
   // Dynamic Multi-Artist Admin/Member authentication endpoints
-  app.post('/api/admin/login', (req: any, res) => {
+  app.post('/api/admin/login', async (req: any, res) => {
     const { username, password } = req.body;
     let artist = req.artist;
     if (username) {
@@ -2912,11 +2927,13 @@ ${JSON.stringify(geminiInput, null, 2)}`;
         : artist.password === password
     );
     if (isMatch) {
+      const data = await loadData(artist.username);
+      const avatarUrl = data.aboutMe?.avatarUrl || data.homeCoverUrl || '';
       res.setHeader('Set-Cookie', [
         `adminToken_${artist.username}=${artist.password}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`,
         `adminToken=${artist.password}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`
       ]);
-      res.json({ success: true, token: artist.password, extension: artist.extension, username: artist.username, artist });
+      res.json({ success: true, token: artist.password, extension: artist.extension, username: artist.username, artist, avatarUrl });
     } else {
       res.status(401).json({ error: 'Username hoặc mật khẩu không chính xác!' });
     }
@@ -2938,9 +2955,11 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     res.json({ success: true });
   });
 
-  app.get('/api/admin/check', (req: any, res) => {
+  app.get('/api/admin/check', async (req: any, res) => {
     if (isRequestAdmin(req)) {
-      res.json({ isAdmin: true, memberPassword: req.artist?.memberPassword || '', artist: req.artist });
+      const data = await loadData(req.artist.username);
+      const avatarUrl = data.aboutMe?.avatarUrl || data.homeCoverUrl || '';
+      res.json({ isAdmin: true, memberPassword: req.artist?.memberPassword || '', artist: req.artist, avatarUrl, homeCoverUrl: data.homeCoverUrl, aboutMe: data.aboutMe });
     } else {
       res.json({ isAdmin: false });
     }
@@ -4139,10 +4158,6 @@ app.get('/api/admin/tickets', async (req: any, res) => {
   }
   
   const mappedTickets = tickets.map(mapTicket);
-
-  if (req.artist?.username === 'acxuantai') {
-    return res.json(mappedTickets);
-  }
   
   const filtered = mappedTickets.filter(
     t => t.reporterArtist === req.artist?.username || t.sourceArtist === req.artist?.username

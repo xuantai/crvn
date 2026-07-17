@@ -3888,13 +3888,88 @@ const getArtistLink = (subPath: string = '', customPath?: string) => {
 const getAdminTokenKey = (customPath?: string) => getArtistExtensionFromUrl(customPath) ? `adminToken_${getArtistExtensionFromUrl(customPath)}` : 'adminToken';
 const getMemberTokenKey = (customPath?: string) => getArtistExtensionFromUrl(customPath) ? `memberToken_${getArtistExtensionFromUrl(customPath)}` : 'memberToken';
 
+const getActiveAdminSession = () => {
+  let activeExt = localStorage.getItem('activeAdminExtension');
+  let activeToken = activeExt ? localStorage.getItem(`adminToken_${activeExt}`) : null;
+  
+  if (!activeExt || !activeToken) {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('adminToken_')) {
+        const ext = key.replace('adminToken_', '');
+        const token = localStorage.getItem(key);
+        if (ext && token) {
+          activeExt = ext;
+          activeToken = token;
+          localStorage.setItem('activeAdminExtension', ext);
+          break;
+        }
+      }
+    }
+  }
+  
+  if (!activeExt && localStorage.getItem('adminToken')) {
+    activeToken = localStorage.getItem('adminToken');
+  }
+  
+  let activeName = localStorage.getItem('activeAdminName');
+  if (!activeName && activeExt) {
+    activeName = activeExt;
+    localStorage.setItem('activeAdminName', activeExt);
+  }
+  
+  const activeActivated = localStorage.getItem('activeAdminActivated') !== 'false';
+  const activeAvatar = localStorage.getItem('activeAdminAvatar') || '';
+  
+  return {
+    activeExt: activeExt || '',
+    activeToken: activeToken || '',
+    activeName: activeName || '',
+    activeActivated,
+    activeAvatar
+  };
+};
+
 const getAdminToken = (customPath?: string) => localStorage.getItem(getAdminTokenKey(customPath));
 const setAdminToken = (token: string, customPath?: string) => localStorage.setItem(getAdminTokenKey(customPath), token);
-const removeAdminToken = (customPath?: string) => localStorage.removeItem(getAdminTokenKey(customPath));
+const removeAdminToken = (customPath?: string) => {
+  const origRemove = (window as any).__originalRemoveItem__ || localStorage.removeItem;
+  const key = getAdminTokenKey(customPath);
+  origRemove.call(localStorage, key);
+  const ext = getArtistExtensionFromUrl(customPath);
+  if (ext) {
+    origRemove.call(localStorage, `adminToken_${ext}`);
+    origRemove.call(localStorage, `${ext}_adminToken`);
+  }
+  // Check if any other adminTokens are left in localStorage
+  let hasAnyToken = false;
+  const keys = Object.keys(localStorage);
+  for (const k of keys) {
+    if (k && (k === 'adminToken' || k.includes('adminToken_') || k.endsWith('_adminToken'))) {
+      hasAnyToken = true;
+      break;
+    }
+  }
+  if (!hasAnyToken) {
+    origRemove.call(localStorage, 'activeAdminExtension');
+    origRemove.call(localStorage, 'activeAdminName');
+    origRemove.call(localStorage, 'activeAdminActivated');
+    origRemove.call(localStorage, 'activeAdminAvatar');
+  }
+};
 
 const getMemberToken = (customPath?: string) => localStorage.getItem(getMemberTokenKey(customPath));
 const setMemberToken = (token: string, customPath?: string) => localStorage.setItem(getMemberTokenKey(customPath), token);
-const removeMemberToken = (customPath?: string) => localStorage.removeItem(getMemberTokenKey(customPath));
+const removeMemberToken = (customPath?: string) => {
+  const origRemove = (window as any).__originalRemoveItem__ || localStorage.removeItem;
+  const key = getMemberTokenKey(customPath);
+  origRemove.call(localStorage, key);
+  const ext = getArtistExtensionFromUrl(customPath);
+  if (ext) {
+    origRemove.call(localStorage, `memberToken_${ext}`);
+    origRemove.call(localStorage, `${ext}_memberToken`);
+  }
+};
 
 
 // Patch window.fetch to automatically route to artist collections using Object.defineProperty to support read-only (getter-only) envs
@@ -3914,12 +3989,24 @@ const customFetch = function(this: any, input: any, init: any) {
         if (!init.headers) {
           init.headers = {};
         }
+        
+        let hasArtistHeader = false;
         if (Array.isArray(init.headers)) {
-          init.headers.push(['x-artist-extension', ext]);
+          hasArtistHeader = init.headers.some(([k]) => k.toLowerCase() === 'x-artist-extension');
         } else if (init.headers instanceof Headers) {
-          init.headers.set('x-artist-extension', ext);
+          hasArtistHeader = init.headers.has('x-artist-extension');
         } else {
-          (init.headers as any)['x-artist-extension'] = ext;
+          hasArtistHeader = !!(init.headers as any)['x-artist-extension'] || !!(init.headers as any)['X-Artist-Extension'];
+        }
+
+        if (!hasArtistHeader) {
+          if (Array.isArray(init.headers)) {
+            init.headers.push(['x-artist-extension', ext]);
+          } else if (init.headers instanceof Headers) {
+            init.headers.set('x-artist-extension', ext);
+          } else {
+            (init.headers as any)['x-artist-extension'] = ext;
+          }
         }
       } else {
         init = {
@@ -3954,11 +4041,17 @@ try {
   }
 }
 
-// Patch localStorage to separate session credentials per artist
+// Patch localStorage to separate session credentials per artist, while bypassing global synced keys
 const originalGetItem = localStorage.getItem;
 localStorage.getItem = function(key) {
   const ext = getArtistExtensionFromUrl();
-  if (ext && key !== 'masterToken') {
+  const isGlobalKey = key === 'masterToken' || 
+                      key.includes('adminToken') || 
+                      key.includes('activeAdmin') || 
+                      key.includes('memberToken') ||
+                      key === 'preferredLang' ||
+                      key === 'manualLangSelected';
+  if (ext && !isGlobalKey) {
     return originalGetItem.call(this, `${ext}_${key}`);
   }
   return originalGetItem.call(this, key);
@@ -3967,7 +4060,13 @@ localStorage.getItem = function(key) {
 const originalSetItem = localStorage.setItem;
 localStorage.setItem = function(key, value) {
   const ext = getArtistExtensionFromUrl();
-  if (ext && key !== 'masterToken') {
+  const isGlobalKey = key === 'masterToken' || 
+                      key.includes('adminToken') || 
+                      key.includes('activeAdmin') || 
+                      key.includes('memberToken') ||
+                      key === 'preferredLang' ||
+                      key === 'manualLangSelected';
+  if (ext && !isGlobalKey) {
     return originalSetItem.call(this, `${ext}_${key}`, value);
   }
   return originalSetItem.call(this, key, value);
@@ -3976,10 +4075,64 @@ localStorage.setItem = function(key, value) {
 const originalRemoveItem = localStorage.removeItem;
 localStorage.removeItem = function(key) {
   const ext = getArtistExtensionFromUrl();
-  if (ext && key !== 'masterToken') {
+  const isGlobalKey = key === 'masterToken' || 
+                      key.includes('adminToken') || 
+                      key.includes('activeAdmin') || 
+                      key.includes('memberToken') ||
+                      key === 'preferredLang' ||
+                      key === 'manualLangSelected';
+  if (ext && !isGlobalKey) {
     return originalRemoveItem.call(this, `${ext}_${key}`);
   }
   return originalRemoveItem.call(this, key);
+};
+
+// Expose original localStorage methods and session functions globally for robust sync
+(window as any).__originalGetItem__ = originalGetItem;
+(window as any).__originalSetItem__ = originalSetItem;
+(window as any).__originalRemoveItem__ = originalRemoveItem;
+
+(window as any).clearAllSessions = async () => {
+  const keys = Object.keys(localStorage);
+  keys.forEach(key => {
+    if (
+      key.includes('adminToken') || 
+      key.includes('activeAdmin') || 
+      key.includes('memberToken')
+    ) {
+      originalRemoveItem.call(localStorage, key);
+    }
+  });
+  window.dispatchEvent(new Event('admin-session-change'));
+  window.dispatchEvent(new Event('storage'));
+  
+  try {
+    await Promise.all([
+      fetch('/api/admin/logout', { method: 'POST' }),
+      fetch('/api/member/logout', { method: 'POST' })
+    ]);
+  } catch (e) {}
+};
+
+(window as any).syncLoginSession = (token: string, extension: string, artistName: string, avatar: string, activated?: boolean) => {
+  // Save globally in un-prefixed space
+  originalSetItem.call(localStorage, 'adminToken', token);
+  originalSetItem.call(localStorage, `adminToken_${extension}`, token);
+  originalSetItem.call(localStorage, 'activeAdminExtension', extension);
+  originalSetItem.call(localStorage, 'activeAdminName', artistName);
+  originalSetItem.call(localStorage, 'activeAdminAvatar', avatar);
+  originalSetItem.call(localStorage, 'activeAdminActivated', activated !== false ? 'true' : 'false');
+  
+  // Save in prefixed space for that artist extension to bypass separation patch
+  originalSetItem.call(localStorage, `${extension}_adminToken`, token);
+  originalSetItem.call(localStorage, `${extension}_adminToken_${extension}`, token);
+  originalSetItem.call(localStorage, `${extension}_activeAdminExtension`, extension);
+  originalSetItem.call(localStorage, `${extension}_activeAdminName`, artistName);
+  originalSetItem.call(localStorage, `${extension}_activeAdminAvatar`, avatar);
+  originalSetItem.call(localStorage, `${extension}_activeAdminActivated`, activated !== false ? 'true' : 'false');
+
+  window.dispatchEvent(new Event('admin-session-change'));
+  window.dispatchEvent(new Event('storage'));
 };
 
 const formatFileName = (name: string, maxLen = 22) => {
@@ -4108,7 +4261,26 @@ function AdminLogin() {
       });
       if (res.ok) {
         const data = await res.json();
-        setAdminToken(data.token || pwd);
+        if (data.extension) {
+          const avatar = data.artist?.aboutMe?.avatarUrl || data.artist?.homeCoverUrl || '';
+          if ((window as any).syncLoginSession) {
+            (window as any).syncLoginSession(
+              data.token || pwd,
+              data.extension,
+              data.artistName || data.username || data.extension,
+              avatar,
+              data.artist && data.artist.activated !== false
+            );
+          } else {
+            setAdminToken(data.token || pwd, `/${data.extension}`);
+            localStorage.setItem('activeAdminExtension', data.extension);
+            localStorage.setItem('activeAdminName', data.artistName || data.username || data.extension);
+            localStorage.setItem('activeAdminActivated', data.artist && data.artist.activated !== false ? 'true' : 'false');
+            localStorage.setItem('activeAdminAvatar', avatar);
+          }
+        } else {
+          setAdminToken(data.token || pwd);
+        }
         const isSubdomain = isArtistContext();
         if (isSubdomain) {
           window.location.href = getAdminLink();
@@ -4297,16 +4469,103 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const ext = getArtistExtensionFromUrl(location.pathname);
   const isSubdomain = isArtistContext();
+  const activeExt = localStorage.getItem('activeAdminExtension');
   
   if (!ext && !isSubdomain) {
-     window.location.href = '/';
+     if (activeExt) {
+       window.location.href = `/${activeExt}/admin`;
+     } else {
+       window.location.href = '/';
+     }
      return null;
   }
   
-  const token = getAdminToken(location.pathname);
+  let token = getAdminToken(location.pathname);
+  if (!token) {
+    // If no token for current extension, but they are logged in as another artist, redirect or sync!
+    let activeToken = activeExt ? localStorage.getItem(`adminToken_${activeExt}`) : null;
+    if (!activeToken) {
+      activeToken = localStorage.getItem('adminToken');
+    }
+    if (!activeToken) {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('adminToken')) {
+          const val = localStorage.getItem(key);
+          if (val) {
+            activeToken = val;
+            break;
+          }
+        }
+      }
+    }
+
+    if (activeToken && activeExt && activeExt === ext) {
+      setAdminToken(activeToken, `/${ext}`);
+      token = activeToken;
+    } else if (activeExt && activeToken && activeExt !== ext) {
+      const activeActivated = localStorage.getItem('activeAdminActivated') !== 'false';
+      if (!activeActivated) {
+        window.location.href = `/${activeExt}/help`;
+      } else {
+        window.location.href = `/${activeExt}/admin`;
+      }
+      return null;
+    }
+  }
+
   if (!token) {
     return <AdminLogin />;
   }
+
+  // Verification and active session check
+  const [isValidated, setIsValidated] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    fetch('/api/admin/check', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'x-artist-extension': ext || ''
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.isAdmin) {
+        if (data.artist) {
+          localStorage.setItem('activeAdminActivated', data.artist.activated !== false ? 'true' : 'false');
+          if (data.artist.extension) {
+            localStorage.setItem('activeAdminExtension', data.artist.extension);
+            // AUTO-REDIRECT IF EXTENSION IN URL DOES NOT MATCH LOGGED IN ARTIST EXTENSION!
+            if (data.artist.extension !== ext) {
+              window.location.href = `/${data.artist.extension}/admin`;
+              return;
+            }
+          }
+          localStorage.setItem('activeAdminName', data.artist.artistName || data.artist.username || data.artist.extension);
+          const avatar = data.avatarUrl || '';
+          localStorage.setItem('activeAdminAvatar', avatar);
+        }
+        if (data.artist && data.artist.activated === false) {
+          // If unactivated, redirect to help page immediately
+          window.location.href = ext ? `/${ext}/help` : '/help';
+        } else {
+          setIsValidated(true);
+        }
+      } else {
+        removeAdminToken();
+        window.location.reload();
+      }
+    })
+    .catch(() => {
+      // Allow access on network error to avoid blocking the user
+      setIsValidated(true);
+    });
+  }, [token, ext]);
+
+  if (isValidated === null) {
+    return <LoadingScreen text="Đang kiểm tra quyền truy cập..." />;
+  }
+
   return <>{children}</>;
 }
 
@@ -4314,14 +4573,51 @@ function AnimatedRoutes() {
   const location = useLocation();
   const isSubdomain = isArtistContext();
 
+  useEffect(() => {
+    const currentExt = getArtistExtensionFromUrl(location.pathname);
+    const { activeExt, activeToken, activeActivated } = getActiveAdminSession();
+
+    // 1. Check if logged in as admin of another artist and visiting their admin or help page
+    const isAdminPage = location.pathname.includes('/admin');
+    const isHelpPage = location.pathname.includes('/help');
+
+    if (activeExt && activeToken && activeExt !== currentExt) {
+      if (isAdminPage || isHelpPage) {
+        if (!activeActivated) {
+          window.location.href = `/${activeExt}/help`;
+        } else {
+          window.location.href = `/${activeExt}/admin`;
+        }
+        return;
+      }
+    }
+
+    // 2. Load and verify inactive status for the current artist's page
+    if (currentExt) {
+      fetch('/api/data').then(res => res.json()).then(data => {
+        if (data && data.error === 'inactive') {
+          // If the page is inactive, and this is the owner:
+          if (activeExt && activeExt === currentExt) {
+            if (window.location.pathname !== `/${currentExt}/help`) {
+              window.location.href = `/${currentExt}/help`;
+            }
+          } else {
+            // If this is another artist or visitor, redirect to home page!
+            window.location.href = '/';
+          }
+        }
+      }).catch(() => {});
+    }
+  }, [location.pathname]);
+
   return (
     <AnimatePresence mode="wait">
       {/* @ts-ignore */}
       <Routes location={location} key={location.pathname}>
         {/* Core Root Routes */}
         <Route path="/" element={isSubdomain ? <Home /> : <ChorusVNLanding />} />
-                        <Route path="/help" element={<HelpPage />} />
-        <Route path="/:artistExtension/help" element={<HelpPage />} />
+                        <Route path="/help" element={<HelpPage DemoPlayer={DemoPlayer} />} />
+        <Route path="/:artistExtension/help" element={<HelpPage DemoPlayer={DemoPlayer} />} />
         <Route path="/acp" element={<ACPControlPanel />} />
         <Route path="/mem" element={<MemberLogin />} />
         <Route path="/demo/:id" element={<DemoPlayer />} />
@@ -4348,123 +4644,110 @@ function AnimatedRoutes() {
 }
 
 function AdminFloatingControls({ onLogout }: { onLogout: () => void }) {
+  return null;
+}
+
+function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void }) {
   const location = useLocation();
-  const isAdmin = !!getAdminToken(location.pathname);
-  const isLandingPage = location.pathname === '/' && !getArtistExtensionFromUrl();
-  const [isPageLoading, setIsPageLoading] = useState(true);
-  const { artistData } = useContext(LanguageContext);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [session, setSession] = useState(getActiveAdminSession());
+  const [avatar, setAvatar] = useState(session.activeAvatar);
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
+    const handleUpdate = () => {
+      const updated = getActiveAdminSession();
+      setSession(updated);
+      setAvatar(updated.activeAvatar);
+    };
+    window.addEventListener('admin-session-change', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    return () => {
+      window.removeEventListener('admin-session-change', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
   }, []);
 
+  const { activeExt, activeName, activeToken } = session;
+
   useEffect(() => {
-    // Reset to loading state on path change
-    setIsPageLoading(true);
-
-    let active = true;
-    let attempts = 0;
-
-    const checkLoading = () => {
-      if (!active) return;
-      
-      const loader = document.getElementById('global-loading-screen');
-      if (loader) {
-        // If loader is present, we must wait. Let's check again in 50ms.
-        setTimeout(checkLoading, 50);
-      } else {
-        // If loader is not present:
-        // We wait a tiny bit (250ms total) to ensure the page had a chance to mount its loader
-        if (attempts < 5) {
-          attempts++;
-          setTimeout(checkLoading, 50);
-        } else {
-          setIsPageLoading(false);
+    if (activeExt) {
+      fetch('/api/data', { cache: 'no-store',
+        headers: { 'x-artist-extension': activeExt }
+      })
+      .then(res => res.json())
+      .then(data => {
+        const fetchedAvatar = data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
+        if (fetchedAvatar) {
+          setAvatar(fetchedAvatar);
+          localStorage.setItem('activeAdminAvatar', fetchedAvatar);
         }
-      }
-    };
+      })
+      .catch(() => {});
+    }
+  }, [activeExt]);
 
-    // Start checking
-    checkLoading();
+  if (!activeExt || !activeName || !activeToken) return null;
 
-    return () => {
-      active = false;
-    };
-  }, [location.pathname]);
-  
-  if (!isAdmin) return null;
+  // Do not show on acp control panel or admin pages or help guide
+  if (location.pathname === '/acp' || location.pathname.includes('/admin') || location.pathname.includes('/help')) return null;
 
-  const isAdminPage = location.pathname.startsWith('/admin') || location.pathname.includes('/admin');
-  if (isAdminPage) return null;
-
-  const isListeningPage = location.pathname.includes('/demo/') || 
-                          location.pathname.includes('/song/') || 
-                          location.pathname.includes('/playlist/');
-
-  if (isListeningPage) return null;
-  if (isPageLoading) return null;
-
-  let pushDown = false;
-  if (artistData) {
-    const defaultMenus = [
-      { id: 'm1', type: 'vault', title: 'Kho Nhạc', isVisible: true },
-      { id: 'm2', type: 'about', title: 'Về Tôi', isVisible: true },
-      { id: 'm3', type: 'bio', title: 'Tiểu Sử', isVisible: true }
-    ];
-    const currentMenus = artistData.menus && artistData.menus.length > 0 ? artistData.menus : defaultMenus;
-    const hasAbout = Boolean(artistData.aboutMe && Object.values(artistData.aboutMe).some(v => v));
-    const hasBio = Boolean(artistData.biography && ((artistData.biography.education && artistData.biography.education.length > 0) || (artistData.biography.experience && artistData.biography.experience.length > 0)));
-    const finalMenus = currentMenus.filter((m: any) => {
-      if (m.type === 'about' && !hasAbout) return false;
-      if (m.type === 'bio' && !hasBio) return false;
-      return true;
-    });
-    const hasNavbar = finalMenus.filter((m: any) => m.isVisible).length > 1;
-    pushDown = hasNavbar && !isScrolled;
-  }
+  const getAvatarUrl = (url: string) => {
+    if (!url) return '';
+    if (url.startsWith('http') || url.startsWith('/') || url.startsWith('data:')) return url;
+    return `/uploads/${activeExt}/${url}`;
+  };
 
   return (
     <AnimatePresence>
-      <motion.div 
-        key={location.pathname}
-        initial={{ opacity: 0, scale: 0.8, y: -10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.8, y: -10 }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className={
-          isListeningPage
-            ? "hidden md:flex md:fixed md:left-6 md:top-1/2 md:-translate-y-1/2 z-[100] md:flex-col md:gap-4 md:translate-x-0"
-            : `fixed transition-all duration-500 ease-in-out ${pushDown ? 'top-20' : 'top-6'} mt-[env(safe-area-inset-top,0px)] left-1/2 -translate-x-1/2 z-[100] flex flex-row gap-4`
-        }
+      <motion.div
+        initial={{ opacity: 0, y: 50, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 50, scale: 0.9 }}
+        transition={{ duration: 0.3 }}
+        className="fixed bottom-6 right-6 z-[99] flex items-center gap-3 bg-stone-950/60 text-white px-4 py-2.5 rounded-2xl border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.2)] backdrop-blur-xl"
       >
-         {isAdminPage ? (
-           <a 
-             href={getArtistLink("/", location.pathname)}
-             className="flex items-center justify-center p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/40 shadow-[0_4px_12px_rgba(0,0,0,0.15)] transition-all duration-300 hover:scale-115"
-             title="Trang chủ"
-           >
-             <HomeIcon className="w-5 h-5 stroke-[1.5]" />
-           </a>
-         ) : (
-           <a 
-             href={getAdminLink('', location.pathname)}
-             className="flex items-center justify-center p-3 rounded-full bg-emerald-500/10 hover:bg-emerald-500/25 backdrop-blur-md text-emerald-400 border border-emerald-500/40 shadow-[0_4px_12px_rgba(16,185,129,0.15)] transition-all duration-300 hover:scale-115 cursor-pointer"
-             title="Cài đặt (Admin)"
-           >
-             <Settings className="w-5 h-5 stroke-[1.5]" />
-           </a>
-         )}
-         <button 
-           onClick={onLogout}
-           className="flex items-center justify-center p-3 rounded-full bg-red-500/10 hover:bg-red-500/25 backdrop-blur-md text-red-400 border border-red-500/40 shadow-[0_4px_12px_rgba(239,68,68,0.15)] transition-all duration-300 hover:scale-115 cursor-pointer"
-           title="Đăng xuất"
-         >
-           <LogOut className="w-5 h-5 stroke-[1.5]" />
-         </button>
+        <div className="flex items-center gap-2">
+          {avatar ? (
+            <img 
+              src={getAvatarUrl(avatar)} 
+              className="w-8 h-8 rounded-full object-cover border border-white/20 shadow-sm shrink-0"
+              alt={activeName}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                if (fallback) fallback.style.display = 'flex';
+              }}
+            />
+          ) : null}
+          <div 
+            className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-500 flex items-center justify-center text-xs font-bold text-white shadow-sm animate-pulse shrink-0"
+            style={{ display: avatar ? 'none' : 'flex' }}
+          >
+            {activeName.charAt(0).toUpperCase()}
+          </div>
+          <div className="text-left flex flex-col justify-center leading-none">
+            <span className="text-[10px] text-yellow-300 font-black uppercase tracking-wider leading-none mb-1 shadow-xs">Nghệ sĩ</span>
+            <span className="text-xs font-black text-white uppercase tracking-wider leading-none max-w-[130px] sm:max-w-[200px] whitespace-normal break-words line-clamp-2">{activeName}</span>
+          </div>
+        </div>
+        <div className="w-px h-6 bg-white/10 mx-1"></div>
+        <div className="flex items-center gap-1.5">
+          {session.activeActivated && (
+            <a 
+              href={`/${activeExt}/admin`} 
+              title="Quản trị"
+              className="p-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center"
+            >
+              <Settings className="w-4 h-4" />
+            </a>
+          )}
+          <button
+            onClick={onLogout}
+            title="Đăng xuất"
+            className="p-2 bg-red-500/10 hover:bg-red-500/25 border border-red-500/30 text-red-400 rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
       </motion.div>
     </AnimatePresence>
   );
@@ -4620,19 +4903,24 @@ export default function App() {
   }, []);
 
   const handleLogout = async () => {
-    // Completely wipe all admin tokens
-    const keysToRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('adminToken')) {
-        keysToRemove.push(key);
-      }
+    if ((window as any).clearAllSessions) {
+      await (window as any).clearAllSessions();
+    } else {
+      // fallback
+      const keysToRemove = Object.keys(localStorage).filter(k => 
+        k.includes('adminToken') || k.includes('activeAdmin') || k.includes('memberToken')
+      );
+      keysToRemove.forEach(k => {
+        if ((window as any).__originalRemoveItem__) {
+          (window as any).__originalRemoveItem__.call(localStorage, k);
+        } else {
+          localStorage.removeItem(k);
+        }
+      });
+      try {
+        await fetch('/api/admin/logout', { method: 'POST' });
+      } catch (e) {}
     }
-    keysToRemove.forEach(k => localStorage.removeItem(k));
-    
-    try {
-      await fetch('/api/admin/logout', { method: 'POST' });
-    } catch (e) {}
     const ext = getArtistExtensionFromUrl();
     window.location.href = ext ? `/${ext}` : '/';
   };
@@ -4696,6 +4984,7 @@ export default function App() {
     <LanguageContext.Provider value={{ lang, setLang, artistData, setArtistData, landingConfig, setLandingConfig }}>
       <BrowserRouter>
         <AdminFloatingControls onLogout={handleLogout} />
+        <UnifiedArtistSessionFloatingWidget onLogout={handleLogout} />
         <AdminFloatingAddButton />
         <AnimatedRoutes />
       </BrowserRouter>
@@ -5162,20 +5451,20 @@ function Home() {
     if (!trimmed) return;
 
     if (value.endsWith(' ')) {
-      const hasReleasedMatches = (data?.demos?.filter(d => (d.linkType === 'indirect' || d.status === 'public') && !d.isDraft)
+      const hasReleasedMatches = ((data?.demos || []).filter(d => (d.linkType === 'indirect' || d.status === 'public') && !d.isDraft)
         .filter(d => d.isReleased || d.linkType === 'indirect') || [])
         .some(d => d.title.toLowerCase().includes(trimmed));
 
-      const hasDemosMatches = (data?.demos?.filter(d => (d.linkType === 'indirect' || d.status === 'public') && !d.isDraft)
+      const hasDemosMatches = ((data?.demos || []).filter(d => (d.linkType === 'indirect' || d.status === 'public') && !d.isDraft)
         .filter(d => !d.isReleased && d.linkType !== 'indirect') || [])
         .some(d => d.title.toLowerCase().includes(trimmed));
 
       const hasAlbumsMatches = (data?.playlists?.filter((playlist: any) => {
-        const songsInPlaylist = data.demos.filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id));
+        const songsInPlaylist = (data?.demos || []).filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id));
         return songsInPlaylist.length > 0;
       }) || []).some((playlist: any) => {
         if (playlist.title.toLowerCase().includes(trimmed)) return true;
-        const songsInPlaylist = data?.demos.filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id)) || [];
+        const songsInPlaylist = (data?.demos || []).filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id)) || [];
         return songsInPlaylist.some(d => d.title.toLowerCase().includes(trimmed));
       });
 
@@ -5260,6 +5549,16 @@ function Home() {
 
   useEffect(() => {
     fetch('/api/data').then(res => res.json()).then(data => {
+      if (data && data.error === 'inactive') {
+        const currentExt = getArtistExtensionFromUrl(window.location.pathname);
+        const activeExt = localStorage.getItem('activeAdminExtension');
+        if (currentExt && activeExt && activeExt === currentExt) {
+          window.location.href = `/${currentExt}/help`;
+        } else {
+          window.location.href = '/';
+        }
+        return;
+      }
       setData(data);
       if (data) {
         if (setArtistData) setArtistData(data);
@@ -5776,17 +6075,17 @@ function Home() {
           {(() => {
             let currentListItems = activeListTab === 'albums' 
               ? (data?.playlists?.filter((playlist: any) => {
-                  const songsInPlaylist = data.demos.filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id));
+                  const songsInPlaylist = (data?.demos || []).filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id));
                   return songsInPlaylist.length > 0;
                 }) || [])
-              : (data?.demos.filter(d => (d.linkType === 'indirect' || d.status === 'public') && !d.isDraft).filter(d => activeListTab === 'demos' ? (!d.isReleased && d.linkType !== 'indirect') : (d.isReleased || d.linkType === 'indirect')) || []);
+              : ((data?.demos || []).filter(d => (d.linkType === 'indirect' || d.status === 'public') && !d.isDraft).filter(d => activeListTab === 'demos' ? (!d.isReleased && d.linkType !== 'indirect') : (d.isReleased || d.linkType === 'indirect')) || []);
 
             if (searchQuery.trim()) {
               const query = searchQuery.trim().toLowerCase();
               if (activeListTab === 'albums') {
                 currentListItems = currentListItems.filter((playlist: any) => {
                   if (playlist.title.toLowerCase().includes(query)) return true;
-                  const songsInPlaylist = data?.demos.filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id)) || [];
+                  const songsInPlaylist = (data?.demos || []).filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id)) || [];
                   return songsInPlaylist.some(d => d.title.toLowerCase().includes(query));
                 });
               } else {
@@ -5852,7 +6151,7 @@ function Home() {
                   >
                     {activeListTab === 'albums' ? (
                       paginatedItems.map((playlist: any) => {
-                        const songsInPlaylist = data.demos.filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id));
+                        const songsInPlaylist = (data?.demos || []).filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id));
                         if (songsInPlaylist.length === 0) return <React.Fragment key={playlist.id} />;
                         
                         let coverUrl = playlist.coverUrl || '';
@@ -7644,6 +7943,20 @@ function PlaylistPlayer() {
   const [protectedInfo, setProtectedInfo] = useState<{ title?: string; coverUrl?: string; artistExtension?: string }>({});
 
   useEffect(() => {
+    fetch('/api/data').then(res => res.json()).then(data => {
+      if (data && data.error === 'inactive') {
+        const currentExt = getArtistExtensionFromUrl(window.location.pathname);
+        const activeExt = localStorage.getItem('activeAdminExtension');
+        if (currentExt && activeExt && activeExt === currentExt) {
+          window.location.href = `/${currentExt}/help`;
+        } else {
+          window.location.href = '/';
+        }
+      }
+    }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
     if (id === 'released') {
       fetch('/api/data')
       .then(res => res.json())
@@ -8026,6 +8339,69 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
   const [unlocked, setUnlocked] = useState(false);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState('');
+
+  // Drag-to-scroll for mobile preview on PC
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startY, setStartY] = useState(0);
+  const [scrollTopPos, setScrollTopPos] = useState(0);
+
+  const handleMouseDown = (e) => {
+    if (!scrollRef.current) return;
+    setIsDragging(true);
+    setStartY(e.pageY - scrollRef.current.offsetTop);
+    setScrollTopPos(scrollRef.current.scrollTop);
+  };
+  const handleMouseLeave = () => setIsDragging(false);
+  const handleMouseUp = () => setIsDragging(false);
+  const handleMouseMove = (e) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const y = e.pageY - scrollRef.current.offsetTop;
+    const walk = (y - startY) * 1.5;
+    scrollRef.current.scrollTop = scrollTopPos - walk;
+  };
+  
+  // Report Popup State inside DemoPlayer
+  const [reportSong, setReportSong] = useState<any | null>(null);
+  const [reportType, setReportType] = useState<'remove' | 'edit'>('edit');
+  const [reportDesc, setReportDesc] = useState('');
+
+  const handleCreateReport = async () => {
+    if (!reportSong || !reportDesc) return;
+    const activeExt = localStorage.getItem('activeAdminExtension');
+    const activeToken = activeExt ? localStorage.getItem(`adminToken_${activeExt}`) : null;
+    try {
+      const res = await fetch('/api/admin/tickets/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-artist-extension': activeExt || '',
+          'Authorization': `Bearer ${activeToken || ''}`
+        },
+        body: JSON.stringify({
+          songId: reportSong.id,
+          songTitle: reportSong.title,
+          sourceArtist: reportSong.sourceArtist.username,
+          type: reportType,
+          description: reportDesc
+        })
+      });
+      if (res.ok) {
+        setToast(t("Đã gửi báo cáo thành công!"));
+        setReportSong(null);
+        setReportDesc('');
+        setTimeout(() => setToast(''), 3000);
+      } else {
+        const err = await res.json();
+        setToast(`Lỗi: ${err.error || t("Gửi báo cáo thất bại")}`);
+        setTimeout(() => setToast(''), 3000);
+      }
+    } catch (err) {
+      setToast(t("Lỗi kết nối máy chủ!"));
+      setTimeout(() => setToast(''), 3000);
+    }
+  };
   const [displayCoverUrl, setDisplayCoverUrl] = useState<string>('');
   const [triedRelative, setTriedRelative] = useState(false);
   const [triedAbsolute, setTriedAbsolute] = useState(false);
@@ -8047,6 +8423,21 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
       })
       .catch(err => console.error("Error fetching public artists:", err));
   }, []);
+
+  useEffect(() => {
+    if (previewConfig || window.location.pathname.includes('/help')) return;
+    fetch('/api/data').then(res => res.json()).then(data => {
+      if (data && data.error === 'inactive') {
+        const currentExt = getArtistExtensionFromUrl(window.location.pathname);
+        const activeExt = localStorage.getItem('activeAdminExtension');
+        if (currentExt && activeExt && activeExt === currentExt) {
+          window.location.href = `/${currentExt}/help`;
+        } else {
+          window.location.href = '/';
+        }
+      }
+    }).catch(() => {});
+  }, [previewConfig]);
 
   // Initialize displayCoverUrl whenever song or previewConfig updates
   useEffect(() => {
@@ -8149,15 +8540,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
         lower = trimmed.toLowerCase();
       }
 
-      const isAnn = lower.includes("pre") || 
-                    lower.includes("chorus") || 
-                    lower.includes("vers") || 
-                    lower.includes("bridge") || 
-                    lower.includes("drop") ||
-                    lower.includes("ending") ||
-                    lower.includes("coda") ||
-                    lower.includes("rap") || lower.includes("intro") || lower.includes("outro");
-
+      const isAnn = /^\[?\s*(pre-?chorus|chorus(?:\s*\d+)?|vers?e?(?:\s*\d+)?|bridge|drop|ending|coda|intro|outro|rap|dk|đk|pk)\s*\]?[:]*$/i.test(lower);
       if (isAnn) {
         let annotation = trimmed;
         if (lower.includes("pre")) annotation = "Pre-Chorus";
@@ -8225,15 +8608,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
         trimmed = textLine.trim();
         lower = trimmed.toLowerCase();
       }
-      
-      const isAnn = lower.includes("pre") || 
-                    lower.includes("chorus") || 
-                    lower.includes("vers") || 
-                    lower.includes("bridge") || 
-                    lower.includes("drop") ||
-                    lower.includes("ending") ||
-                    lower.includes("coda") ||
-                    lower.includes("rap") || lower.includes("intro") || lower.includes("outro");
+      const isAnn = /^\[?\s*(pre-?chorus|chorus(?:\s*\d+)?|vers?e?(?:\s*\d+)?|bridge|drop|ending|coda|intro|outro|rap|dk|đk|pk)\s*\]?[:]*$/i.test(lower);
                     
       if (isAnn) {
         cleanedLines.push({ text: textLine, origIdx: i });
@@ -8381,6 +8756,9 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
      };
   }, [loading, unlocked, isAdmin, playlistSongs, id, onEnd]);
 
+  const previewDataStr = previewData ? JSON.stringify(previewData) : '';
+  const playlistSongsStr = playlistSongs ? JSON.stringify(playlistSongs.map((s: any) => s.id)) : '';
+
   useEffect(() => {
     if (previewData) {
       setDemo(previewData);
@@ -8419,7 +8797,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
         if (!data.requiresPassword || isAdmin || isMember) setUnlocked(true);
         setLoading(false);
       });
-  }, [id, isAdmin, playlistSongs, previewData, playlistId]);
+  }, [id, isAdmin, playlistSongsStr, previewDataStr, playlistId]);
 
   useEffect(() => {
     if (unlocked && window.innerWidth < 768) {
@@ -8512,6 +8890,10 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
   };
 
   const finalDisplayCover = resolveCoverUrl(displayCoverUrl) || displayCoverUrl;
+
+  const activeExt = localStorage.getItem('activeAdminExtension');
+  const songArtistExt = demo?.artistExtension || getArtistExtensionFromUrl();
+  const isOtherArtistSong = activeExt && songArtistExt && activeExt !== songArtistExt;
 
   if (demo?.linkType === 'indirect') {
     return <IndirectBioCard demo={{...demo, coverUrl: finalDisplayCover}} isStandalone={true} lang={lang} />;
@@ -8709,7 +9091,12 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
 
   return (
     <div 
-      className={`min-h-[100dvh] min-w-full px-4 py-8 ${themeClasses} transition-colors duration-1000 relative ${forceMobile ? 'overflow-hidden' : ''}`}
+      ref={scrollRef}
+      onMouseDown={forceMobile ? handleMouseDown : undefined}
+      onMouseLeave={forceMobile ? handleMouseLeave : undefined}
+      onMouseUp={forceMobile ? handleMouseUp : undefined}
+      onMouseMove={forceMobile ? handleMouseMove : undefined}
+      className={`min-h-[100dvh] min-w-full px-4 py-8 ${themeClasses} transition-colors duration-1000 relative ${forceMobile ? 'overflow-y-auto overflow-x-hidden no-scrollbar select-none' : ''}`}
       style={{ backgroundColor: customConfig?.bgColor || undefined }}
     >
       <svg width="0" height="0" className="absolute pointer-events-none">
@@ -8805,6 +9192,25 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
             >
               <Share2 className="w-4.5 h-4.5" />
             </button>
+            {isOtherArtistSong && (
+              <button
+                onClick={() => {
+                  const matchedArtist = systemArtists.find(a => a.extension === (demo?.artistExtension || getArtistExtensionFromUrl()));
+                  setReportSong({
+                    id: demo.id,
+                    title: demo.title,
+                    sourceArtist: {
+                      username: demo.artistExtension || getArtistExtensionFromUrl() || '',
+                      name: matchedArtist?.artistName || matchedArtist?.name || demo.singer || demo.composer || (demo as any)?.defaultArtistName || 'Nghệ sĩ'
+                    }
+                  });
+                }}
+                className="opacity-60 hover:opacity-100 p-2 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center transition-all drop-shadow-md cursor-pointer text-current"
+                title={t("Báo cáo & Yêu cầu bài hát")}
+              >
+                <AlertTriangle className="w-4.5 h-4.5 text-red-500 animate-[pulse_2s_infinite]" />
+              </button>
+            )}
             {isAdmin && demo?.secretKey && (demo?.password || demo?.hasPassword) && (
               <button
                 onClick={async () => {
@@ -9395,6 +9801,81 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                   );
                 })}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Report Song Modal */}
+      {reportSong && (
+        <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-150 animate-in fade-in zoom-in duration-200 text-stone-900">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2.5 bg-stone-100 rounded-xl">
+                <Bell className="w-6 h-6 text-stone-700 animate-bounce" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg text-stone-900">{t("Báo cáo & Yêu cầu bài hát")}</h3>
+                <p className="text-xs text-stone-500">{t("Gửi yêu cầu gỡ hoặc chỉnh sửa cho bài hát này")}</p>
+              </div>
+            </div>
+
+            <div className="bg-stone-50 border border-stone-150 rounded-xl p-3 mb-4 text-xs">
+              <div className="font-bold text-stone-800 truncate">Bài: {reportSong.title}</div>
+              <div className="text-stone-500 mt-0.5">Uploader: <strong>{reportSong.sourceArtist.name}</strong> (@{reportSong.sourceArtist.username})</div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-2">{t("Loại yêu cầu")}</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setReportType('edit')}
+                    className={`p-3 rounded-xl border text-left flex flex-col gap-1.5 transition-all cursor-pointer ${reportType === 'edit' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500/20' : 'border-blue-200 bg-blue-50/30 hover:bg-blue-50'}`}
+                  >
+                    <span className={`font-bold text-xs ${reportType === 'edit' ? 'text-blue-700' : 'text-blue-600'}`}>{t("Yêu cầu chỉnh sửa")}</span>
+                    <span className={`text-[10px] leading-tight ${reportType === 'edit' ? 'text-blue-600' : 'text-stone-500'}`}>{t("Trao đổi với người đăng để cập nhật nội dung")}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setReportType('remove')}
+                    className={`p-3 rounded-xl border text-left flex flex-col gap-1.5 transition-all cursor-pointer ${reportType === 'remove' ? 'border-red-500 bg-red-50 ring-2 ring-red-500/20' : 'border-red-200 bg-red-50/30 hover:bg-red-50'}`}
+                  >
+                    <span className={`font-bold text-xs ${reportType === 'remove' ? 'text-red-700' : 'text-red-600'}`}>{t("Yêu cầu gỡ")}</span>
+                    <span className={`text-[10px] leading-tight ${reportType === 'remove' ? 'text-red-600' : 'text-stone-500'}`}>{t("Tố cáo bài viết vi phạm.")}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-2">{t("Mô tả lý do / Chi tiết")}</label>
+                <textarea
+                  value={reportDesc}
+                  onChange={(e) => setReportDesc(e.target.value)}
+                  placeholder={t("Mô tả cụ thể lý do yêu cầu (ví dụ: Vi phạm bản quyền, sai thông tin ca sĩ, nhạc sĩ...)")}
+                  rows={4}
+                  className="w-full text-sm border border-stone-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-transparent text-stone-900 bg-white"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 justify-end mt-6 pt-4 border-t border-stone-150">
+              <button
+                type="button"
+                onClick={() => { setReportSong(null); setReportDesc(''); }}
+                className="px-4 py-2 border rounded-xl font-bold bg-white text-stone-600 hover:bg-stone-50 text-sm transition-all cursor-pointer"
+              >
+                {t("Hủy bỏ")}
+              </button>
+              <button
+                type="button"
+                onClick={handleCreateReport}
+                disabled={!reportDesc.trim()}
+                className="px-4 py-2 rounded-xl font-bold bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none text-sm cursor-pointer"
+              >
+                {t("Gửi báo cáo")}
+              </button>
             </div>
           </div>
         </div>
@@ -10891,10 +11372,24 @@ function AdminDashboard() {
   };
 
   const handleLogoutAdmin = async () => {
-    removeAdminToken();
-    try {
-      await fetch('/api/admin/logout', { method: 'POST' });
-    } catch (e) {}
+    if ((window as any).clearAllSessions) {
+      await (window as any).clearAllSessions();
+    } else {
+      // fallback
+      const keysToRemove = Object.keys(localStorage).filter(k => 
+        k.includes('adminToken') || k.includes('activeAdmin') || k.includes('memberToken')
+      );
+      keysToRemove.forEach(k => {
+        if ((window as any).__originalRemoveItem__) {
+          (window as any).__originalRemoveItem__.call(localStorage, k);
+        } else {
+          localStorage.removeItem(k);
+        }
+      });
+      try {
+        await fetch('/api/admin/logout', { method: 'POST' });
+      } catch (e) {}
+    }
     const ext = getArtistExtensionFromUrl();
     window.location.href = ext ? `/${ext}` : '/';
   };
@@ -13883,8 +14378,14 @@ function AdminDashboard() {
                                 {getTicketTypeStyle(selectedTicket.type).label}
                               </span>
                             </div>
-                            <p className="text-xs text-stone-500 mt-1">
-                              <span className="hidden sm:inline">{t("Người yêu cầu:")}<strong>{selectedTicket.reporter.name}</strong> <span className="hidden sm:inline">(u/ {selectedTicket.reporter.username})</span></span>
+                            <p className="text-xs text-stone-500 mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                              <span>{t("Người yêu cầu:")} <strong>{selectedTicket.reporter.name}</strong> <span className="text-stone-400 font-mono text-[10px]">(u/ {selectedTicket.reporter.username})</span></span>
+                              {selectedTicket.sourceArtist && selectedTicket.sourceArtist !== 'system' && (
+                                <>
+                                  <span className="text-stone-300">|</span>
+                                  <span>{t("Người đăng tải")}: <strong>{selectedTicket.uploader?.name || selectedTicket.sourceArtist}</strong> <span className="text-stone-400 font-mono text-[10px]">(u/ {selectedTicket.uploader?.username || selectedTicket.sourceArtist})</span></span>
+                                </>
+                              )}
                             </p>
                           </div>
                         </div>

@@ -148,6 +148,9 @@ export default function ACPControlPanel() {
   const [adminPassword, setAdminPassword] = useState('MatKhauDay123');
   const [cloudSyncEnabled, setCloudSyncEnabled] = useState(true);
   const [templateNames, setTemplateNames] = useState<Record<string, string>>({});
+  const [demoSongTitle, setDemoSongTitle] = useState("");
+  const [demoSongArtist, setDemoSongArtist] = useState("");
+  const [demoSongLyrics, setDemoSongLyrics] = useState("");
 
   // Metadata & Custom sharing states
   const [landingPageTitle, setLandingPageTitle] = useState('');
@@ -359,6 +362,9 @@ export default function ACPControlPanel() {
         setAdminPassword(data.adminPassword || 'MatKhauDay123');
         setCloudSyncEnabled(data.cloudSyncEnabled !== false);
         setTemplateNames(data.templateNames || {});
+        setDemoSongTitle(data.demoSongInfo?.title || "");
+        setDemoSongArtist(data.demoSongInfo?.artist || "");
+        setDemoSongLyrics(data.demoSongInfo?.lyrics || "");
         setLandingPageTitle(data.pageTitle || '');
         setLandingOgImageUrl(data.ogImageUrl || '');
         setLandingFaviconUrl(data.faviconUrl || '');
@@ -983,6 +989,7 @@ export default function ACPControlPanel() {
           menuBioVi,
           globalLayoutSections,
           cloudSyncEnabled,
+          demoSongInfo: { title: demoSongTitle, artist: demoSongArtist, lyrics: demoSongLyrics },
           templateNames
         })
       });
@@ -2832,6 +2839,29 @@ export default function ACPControlPanel() {
                     </div>
                   );
                 })}
+              </div>
+              <div className="mt-8 border-t border-white/5 pt-8">
+                <h3 className="text-lg font-black text-white mb-2 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-fuchsia-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+                  Cấu hình Bài Hát Mẫu (Demo)
+                </h3>
+                <p className="text-sm text-neutral-400 mb-6">Thông tin này sẽ được hiển thị khi người dùng xem trước giao diện chưa có dữ liệu thực tế.</p>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-neutral-400 mb-2">Tên bài hát mẫu</label>
+                      <input value={demoSongTitle} onChange={e => setDemoSongTitle(e.target.value)} className="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500" placeholder="VD: Bài Hát Mẫu Demo" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-neutral-400 mb-2">Tên tác giả / Nghệ sĩ mẫu</label>
+                      <input value={demoSongArtist} onChange={e => setDemoSongArtist(e.target.value)} className="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500" placeholder="VD: Admin" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-400 mb-2">Lời bài hát mẫu (Lyrics)</label>
+                    <textarea value={demoSongLyrics} onChange={e => setDemoSongLyrics(e.target.value)} rows={12} className="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500 font-mono" placeholder="Nhập lời bài hát mẫu có kèm tag [Verse 1], [Chorus]..."></textarea>
+                  </div>
+                </div>
               </div>
           </div>
         ) : activeTab === 'faq' ? (
