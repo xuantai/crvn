@@ -3888,9 +3888,29 @@ const getArtistLink = (subPath: string = '', customPath?: string) => {
 const getAdminTokenKey = (customPath?: string) => getArtistExtensionFromUrl(customPath) ? `adminToken_${getArtistExtensionFromUrl(customPath)}` : 'adminToken';
 const getMemberTokenKey = (customPath?: string) => getArtistExtensionFromUrl(customPath) ? `memberToken_${getArtistExtensionFromUrl(customPath)}` : 'memberToken';
 
+const setGlobalCookie = (name: string, value: string) => {
+  const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
+  const domain = (host.endsWith('.chorus.vn') || host === 'chorus.vn') ? 'domain=.chorus.vn;' : '';
+  document.cookie = `${name}=${encodeURIComponent(value)}; ${domain} path=/; max-age=31536000; SameSite=Lax`;
+};
+
+const getGlobalCookie = (name: string) => {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  if (match) return decodeURIComponent(match[2]);
+  return null;
+};
+
+const removeGlobalCookie = (name: string) => {
+  const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
+  const domain = (host.endsWith('.chorus.vn') || host === 'chorus.vn') ? 'domain=.chorus.vn;' : '';
+  document.cookie = `${name}=; ${domain} path=/; max-age=0; SameSite=Lax`;
+};
+
 const getActiveAdminSession = () => {
-  let activeExt = localStorage.getItem('activeAdminExtension');
-  let activeToken = activeExt ? localStorage.getItem(`adminToken_${activeExt}`) : null;
+  let activeExt = localStorage.getItem('activeAdminExtension') || getGlobalCookie('activeAdminExtension');
+  if (activeExt && !localStorage.getItem('activeAdminExtension')) localStorage.setItem('activeAdminExtension', activeExt);
+  let activeToken = activeExt ? (localStorage.getItem(`adminToken_${activeExt}`) || getGlobalCookie(`adminToken_${activeExt}`)) : null;
+  if (activeExt && activeToken && !localStorage.getItem(`adminToken_${activeExt}`)) localStorage.setItem(`adminToken_${activeExt}`, activeToken);
   
   if (!activeExt || !activeToken) {
     for (let i = 0; i < localStorage.length; i++) {
@@ -3908,18 +3928,19 @@ const getActiveAdminSession = () => {
     }
   }
   
-  if (!activeExt && localStorage.getItem('adminToken')) {
-    activeToken = localStorage.getItem('adminToken');
+  if (!activeExt && (localStorage.getItem('adminToken') || getGlobalCookie('adminToken'))) {
+    activeToken = localStorage.getItem('adminToken') || getGlobalCookie('adminToken');
   }
   
-  let activeName = localStorage.getItem('activeAdminName');
+  let activeName = localStorage.getItem('activeAdminName') || getGlobalCookie('activeAdminName');
   if (!activeName && activeExt) {
     activeName = activeExt;
     localStorage.setItem('activeAdminName', activeExt);
   }
   
-  const activeActivated = localStorage.getItem('activeAdminActivated') !== 'false';
-  const activeAvatar = localStorage.getItem('activeAdminAvatar') || '';
+  const storedActivated = localStorage.getItem('activeAdminActivated') || getGlobalCookie('activeAdminActivated');
+  const activeActivated = storedActivated !== 'false';
+  const activeAvatar = localStorage.getItem('activeAdminAvatar') || getGlobalCookie('activeAdminAvatar') || '';
   
   return {
     activeExt: activeExt || '',
@@ -4101,8 +4122,15 @@ localStorage.removeItem = function(key) {
       key.includes('memberToken')
     ) {
       originalRemoveItem.call(localStorage, key);
+      removeGlobalCookie(key);
     }
   });
+  removeGlobalCookie('adminToken');
+  removeGlobalCookie('activeAdminExtension');
+  removeGlobalCookie('activeAdminName');
+  removeGlobalCookie('activeAdminAvatar');
+  removeGlobalCookie('activeAdminActivated');
+
   window.dispatchEvent(new Event('admin-session-change'));
   window.dispatchEvent(new Event('storage'));
   
@@ -4123,6 +4151,13 @@ localStorage.removeItem = function(key) {
   originalSetItem.call(localStorage, 'activeAdminAvatar', avatar);
   originalSetItem.call(localStorage, 'activeAdminActivated', activated !== false ? 'true' : 'false');
   
+  setGlobalCookie('adminToken', token);
+  setGlobalCookie(`adminToken_${extension}`, token);
+  setGlobalCookie('activeAdminExtension', extension);
+  setGlobalCookie('activeAdminName', artistName);
+  setGlobalCookie('activeAdminAvatar', avatar);
+  setGlobalCookie('activeAdminActivated', activated !== false ? 'true' : 'false');
+
   // Save in prefixed space for that artist extension to bypass separation patch
   originalSetItem.call(localStorage, `${extension}_adminToken`, token);
   originalSetItem.call(localStorage, `${extension}_adminToken_${extension}`, token);
@@ -4670,7 +4705,7 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
 
   useEffect(() => {
     if (activeExt) {
-      fetch('/api/data', { cache: 'no-store',
+      fetch(`/api/data?artist=${activeExt}`, { cache: 'no-store',
         headers: { 'x-artist-extension': activeExt }
       })
       .then(res => res.json())
