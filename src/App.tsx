@@ -193,23 +193,17 @@ function getLuminance(hex: string): number {
 
 function getBrandBadgeStyle(primaryColor: string) {
   const isColorLight = getLuminance(primaryColor) > 0.5;
-  
-  // If the brand color is light, we use a dark contrasting translucent background
-  // If the brand color is dark, we use a light contrasting translucent background
   const backgroundColor = isColorLight ? 'rgba(15, 15, 15, 0.85)' : 'rgba(245, 245, 245, 0.9)';
   const borderColor = isColorLight ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)';
-  
   const labelColor = isColorLight ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)';
-  const valueColor = primaryColor; // brand name takes the brand's primary color
-  const dotColor = primaryColor;
   
   return {
     backgroundColor: backgroundColor,
     borderColor: borderColor,
     labelColor: labelColor,
-    valueColor: valueColor,
-    dotColor: dotColor,
-    boxShadow: isColorLight ? '0 4px 12px rgba(0, 0, 0, 0.25)' : '0 4px 12px rgba(0, 0, 0, 0.05)'
+    valueColor: primaryColor,
+    boxShadow: isColorLight ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 12px rgba(0,0,0,0.1)',
+    dotColor: primaryColor
   };
 }
 
@@ -356,13 +350,13 @@ function renderArtistNameWithLinks(text: string | null | undefined, systemArtist
 const translations: Record<string, Record<string, string>> = {
   vi: {
       "Về Tôi": "Về Tôi",
-      "Tiểu Sử": "Tiểu Sử",
+      "Tiểu Sử": "Tiểu Sử", "Tải Nhạc": "Tải Nhạc", "Đến Từ": "Đến Từ", "Sinh Sống": "Sinh Sống",
       "Quản lý Menu": "Quản lý Menu",
       "Giới thiệu nghệ sĩ": "Giới thiệu nghệ sĩ",
       "Tên Thật": "Tên Thật",
       "Ngày Sinh": "Ngày Sinh",
-      "Địa Chỉ": "Địa Chỉ",
-      "Công Ty": "Công Ty",
+      "Địa Chỉ": "Đến Từ",
+      "Công Ty": "Sinh Sống",
       "Danh Xưng": "Danh Xưng", "Ca nhạc sĩ, producer...": "Ca nhạc sĩ, producer...",
       "Email": "Email",
       "SĐT": "SĐT",
@@ -410,7 +404,7 @@ const translations: Record<string, Record<string, string>> = {
 
     "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "Drag and drop to reorder. The first tab will be the default page. Supports up to 3 custom tabs.", "Lưu Menu": "Save Menu",
 
-    "Về Tôi": "About Me", "Tiểu Sử": "Biography", "Giới thiệu nghệ sĩ": "Artist Introduction", "Tên Thật": "Real Name", "Ngày Sinh": "Date of Birth", "Địa Chỉ": "Address", "Công Ty": "Company", "Danh Xưng": "Title/Role", "Ca nhạc sĩ, producer...": "Singer, producer...", "Email": "Email", "SĐT": "Phone", "Học Vấn": "Education", "Kinh nghiệm": "Experience", "Thời gian": "Time/Period", "Sự Kiện": "Event", "Thêm giai đoạn": "Add Period", "Danh Mục": "Categories", "Thêm Menu Mới": "Add New Menu", "Tiêu Đề Menu": "Menu Title", "Đường Dẫn": "URL",
+    "Về Tôi": "About Me", "Tiểu Sử": "Biography", "Tải Nhạc": "Download MP3", "Đến Từ": "From", "Sinh Sống": "Lives In", "Giới thiệu nghệ sĩ": "Artist Introduction", "Tên Thật": "Real Name", "Ngày Sinh": "Date of Birth", "Địa Chỉ": "Address", "Công Ty": "Company", "Danh Xưng": "Title/Role", "Ca nhạc sĩ, producer...": "Singer, producer...", "Email": "Email", "SĐT": "Phone", "Học Vấn": "Education", "Kinh nghiệm": "Experience", "Thời gian": "Time/Period", "Sự Kiện": "Event", "Thêm giai đoạn": "Add Period", "Danh Mục": "Categories", "Thêm Menu Mới": "Add New Menu", "Tiêu Đề Menu": "Menu Title", "Đường Dẫn": "URL",
  
     "Quay lại": "Back",
     "Danh sách Playlist": "Playlist List",
@@ -443,7 +437,7 @@ const translations: Record<string, Record<string, string>> = {
     "Quản lý Menu": "메뉴 관리",
     "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "드래그 앤 드롭으로 순서를 정렬하세요. 첫 번째 탭이 기본 페이지가 됩니다. 최대 3개의 사용자 지정 탭을 지원합니다.",
     "Lưu Menu": "메뉴 저장",
-    "Về Tôi": "내 소개", "Tiểu Sử": "약력", "Giới thiệu nghệ sĩ": "아티스트 소개", "Tên Thật": "본명", "Ngày Sinh": "생년월일", "Địa Chỉ": "주소", "Công Ty": "회사", "Danh Xưng": "직함/역할", "Ca nhạc sĩ, producer...": "가수, 프로듀서...", "Email": "이메일", "SĐT": "전화번호", "Học Vấn": "학력", "Kinh nghiệm": "경력", "Thời gian": "기간", "Sự Kiện": "이벤트", "Thêm giai đoạn": "기간 추가", "Danh Mục": "카테고리", "Thêm Menu Mới": "새 메뉴 추가", "Tiêu Đề Menu": "메뉴 제목", "Đường Dẫn": "링크/경로",
+    "Về Tôi": "내 소개", "Tiểu Sử": "약력", "Tải Nhạc": "MP3 다운로드", "Đến Từ": "출신", "Sinh Sống": "거주지", "Giới thiệu nghệ sĩ": "아티스트 소개", "Tên Thật": "본명", "Ngày Sinh": "생년월일", "Địa Chỉ": "주소", "Công Ty": "회사", "Danh Xưng": "직함/역할", "Ca nhạc sĩ, producer...": "가수, 프로듀서...", "Email": "이메일", "SĐT": "전화번호", "Học Vấn": "학력", "Kinh nghiệm": "경력", "Thời gian": "기간", "Sự Kiện": "이벤트", "Thêm giai đoạn": "기간 추가", "Danh Mục": "카테고리", "Thêm Menu Mới": "새 메뉴 추가", "Tiêu Đề Menu": "메뉴 제목", "Đường Dẫn": "링크/경로",
     "Quay lại": "뒤로 가기",
     "Danh sách Playlist": "재생 목록 목록",
     "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "재생 목록 생성, 정렬 및 편집",
@@ -520,7 +514,7 @@ const translations: Record<string, Record<string, string>> = {
     "Quản lý Menu": "メニュー管理",
     "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "ドラッグ＆ドロップで優先順位を並べ替えます。最初のタブがデフォルトの表示ページになります。最大3つのカスタムタブ作成をサポートします。",
     "Lưu Menu": "メニュー保存",
-    "Về Tôi": "プロフィール", "Tiểu Sử": "経歴", "Giới thiệu nghệ sĩ": "アーティスト紹介", "Tên Thật": "本名", "Ngày Sinh": "生年月日", "Địa Chỉ": "住所", "Công Ty": "会社", "Danh Xưng": "肩書", "Ca nhạc sĩ, producer...": "シンガーソングライター、プロデューサー...", "Email": "メールアドレス", "SĐT": "電話番号", "Học Vấn": "学歴", "Kinh nghiệm": "経験", "Thời gian": "期間", "Sự Kiện": "出来事", "Thêm giai đoạn": "期間を追加", "Danh Mục": "カテゴリー", "Thêm Menu Mới": "新規メニュー追加", "Tiêu Đề Menu": "メニューのタイトル", "Đường Dẫn": "リンク先",
+    "Về Tôi": "プロフィール", "Tiểu Sử": "経歴", "Tải Nhạc": "MP3 ダウンロード", "Đến Từ": "出身", "Sinh Sống": "居住地", "Giới thiệu nghệ sĩ": "アーティスト紹介", "Tên Thật": "本名", "Ngày Sinh": "生年月日", "Địa Chỉ": "住所", "Công Ty": "会社", "Danh Xưng": "肩書", "Ca nhạc sĩ, producer...": "シンガーソングライター、プロデューサー...", "Email": "メールアドレス", "SĐT": "電話番号", "Học Vấn": "学歴", "Kinh nghiệm": "経験", "Thời gian": "期間", "Sự Kiện": "出来事", "Thêm giai đoạn": "期間を追加", "Danh Mục": "カテゴリー", "Thêm Menu Mới": "新規メニュー追加", "Tiêu Đề Menu": "メニューのタイトル", "Đường Dẫn": "リンク先",
     "Quay lại": "戻る",
     "Danh sách Playlist": "プレイリスト一覧",
     "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "プレイリストの作成、優先順位付け、編集",
@@ -674,7 +668,7 @@ const translations: Record<string, Record<string, string>> = {
     "Quản lý Menu": "菜单管理",
     "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "拖放以重新排序。第一个选项卡将作为默认页面。最多支持3个自定义选项卡。",
     "Lưu Menu": "保存菜单",
-    "Về Tôi": "关于我", "Tiểu Sử": "个人简介", "Giới thiệu nghệ sĩ": "艺术家介绍", "Tên Thật": "真实姓名", "Ngày Sinh": "出生日期", "Địa Chỉ": "地址", "Công Ty": "公司", "Danh Xưng": "职位/角色", "Ca nhạc sĩ, producer...": "歌手、制作人...", "Email": "电子邮件", "SĐT": "电话号码", "Học Vấn": "教育", "Kinh nghiệm": "经验", "Thời gian": "时间/期间", "Sự Kiện": "事件", "Thêm giai đoạn": "添加时期", "Danh Mục": "分类", "Thêm Menu Mới": "添加新菜单", "Tiêu Đề Menu": "菜单标题", "Đường Dẫn": "路径/链接",
+    "Về Tôi": "关于我", "Tiểu Sử": "个人简介", "Tải Nhạc": "下载 MP3", "Đến Từ": "来自", "Sinh Sống": "居住于", "Giới thiệu nghệ sĩ": "艺术家介绍", "Tên Thật": "真实姓名", "Ngày Sinh": "出生日期", "Địa Chỉ": "地址", "Công Ty": "公司", "Danh Xưng": "职位/角色", "Ca nhạc sĩ, producer...": "歌手、制作人...", "Email": "电子邮件", "SĐT": "电话号码", "Học Vấn": "教育", "Kinh nghiệm": "经验", "Thời gian": "时间/期间", "Sự Kiện": "事件", "Thêm giai đoạn": "添加时期", "Danh Mục": "分类", "Thêm Menu Mới": "添加新菜单", "Tiêu Đề Menu": "菜单标题", "Đường Dẫn": "路径/链接",
     "Quay lại": "返回",
     "Danh sách Playlist": "播放列表",
     "Tạo, sắp xếp thứ tự ưu tiên và chỉnh sửa danh sách phát nhạc": "创建、确定优先级和编辑播放列表",
@@ -751,13 +745,13 @@ const translations: Record<string, Record<string, string>> = {
 const adminTranslations: Record<string, Record<string, string>> = {
   vi: {
       "Về Tôi": "Về Tôi",
-      "Tiểu Sử": "Tiểu Sử",
+      "Tiểu Sử": "Tiểu Sử", "Tải Nhạc": "Tải Nhạc", "Đến Từ": "Đến Từ", "Sinh Sống": "Sinh Sống",
       "Quản lý Menu": "Quản lý Menu",
       "Giới thiệu nghệ sĩ": "Giới thiệu nghệ sĩ",
       "Tên Thật": "Tên Thật",
       "Ngày Sinh": "Ngày Sinh",
-      "Địa Chỉ": "Địa Chỉ",
-      "Công Ty": "Công Ty",
+      "Địa Chỉ": "Đến Từ",
+      "Công Ty": "Sinh Sống",
       "Danh Xưng": "Danh Xưng", "Ca nhạc sĩ, producer...": "Ca nhạc sĩ, producer...",
       "Email": "Email",
       "SĐT": "SĐT",
@@ -846,11 +840,11 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Chọn": "Chọn",
     "Chọn Playlist": "Chọn Playlist",
     "Chọn Template": "Chọn Template",
-    "Chọn bìa đĩa": "Chọn bìa đĩa",
-    "Chọn file nhạc": "Chọn file nhạc",
-    "Chọn logo": "Chọn logo",
-    "Chọn ảnh": "Chọn ảnh",
-    "Chọn ảnh nền": "Chọn ảnh nền",
+    "Chọn bìa đĩa": "Chọn File",
+    "Chọn file nhạc": "Chọn File",
+    "Chọn logo": "Chọn File",
+    "Chọn ảnh": "Chọn File",
+    "Chọn ảnh nền": "Chọn File",
     "Cài Đặt": "Cài Đặt",
     "Cài đặt tài khoản": "Cài đặt tài khoản",
     "Có lỗi xảy ra khi dịch thuật!": "Có lỗi xảy ra khi dịch thuật!",
@@ -1278,7 +1272,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
 
     "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "Drag and drop to reorder. The first tab will be the default page. Supports up to 3 custom tabs.", "Lưu Menu": "Save Menu",
 
-    "Về Tôi": "About Me", "Tiểu Sử": "Biography", "Giới thiệu nghệ sĩ": "Artist Introduction", "Tên Thật": "Real Name", "Ngày Sinh": "Date of Birth", "Địa Chỉ": "Address", "Công Ty": "Company", "Danh Xưng": "Title/Role", "Ca nhạc sĩ, producer...": "Singer, producer...", "Email": "Email", "SĐT": "Phone", "Học Vấn": "Education", "Kinh nghiệm": "Experience", "Thời gian": "Time/Period", "Sự Kiện": "Event", "Thêm giai đoạn": "Add Period", "Danh Mục": "Categories", "Thêm Menu Mới": "Add New Menu", "Tiêu Đề Menu": "Menu Title", "Đường Dẫn": "URL",
+    "Về Tôi": "About Me", "Tiểu Sử": "Biography", "Tải Nhạc": "Download MP3", "Đến Từ": "From", "Sinh Sống": "Lives In", "Giới thiệu nghệ sĩ": "Artist Introduction", "Tên Thật": "Real Name", "Ngày Sinh": "Date of Birth", "Địa Chỉ": "Address", "Công Ty": "Company", "Danh Xưng": "Title/Role", "Ca nhạc sĩ, producer...": "Singer, producer...", "Email": "Email", "SĐT": "Phone", "Học Vấn": "Education", "Kinh nghiệm": "Experience", "Thời gian": "Time/Period", "Sự Kiện": "Event", "Thêm giai đoạn": "Add Period", "Danh Mục": "Categories", "Thêm Menu Mới": "Add New Menu", "Tiêu Đề Menu": "Menu Title", "Đường Dẫn": "URL",
  
     "Bài hát Preview": "Preview Song",
     "Tên hiển thị": "Display Name",
@@ -1305,7 +1299,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Admin hệ thống": "System Admin",
     "Avatar Nghệ Sĩ": "Artist Avatar",
     "Brief khách hàng (nếu có)": "Client brief (if any)",
-    "Buồn (Sâu lắng)": "Sad (Deep)",
+    "Buồn (Sâu lắng)": "Buồn (Sâu lắng)",
     "Bài Hát": "Song",
     "Bài hát": "Song",
     "Bài hát ngoài hệ thống": "External song",
@@ -1352,11 +1346,11 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Chọn": "Select",
     "Chọn Playlist": "Select Playlist",
     "Chọn Template": "Select Template",
-    "Chọn bìa đĩa": "Select Artwork",
-    "Chọn file nhạc": "Select Music File",
-    "Chọn logo": "Select Logo",
-    "Chọn ảnh": "Select Image",
-    "Chọn ảnh nền": "Select Background Image",
+    "Chọn bìa đĩa": "Select File",
+    "Chọn file nhạc": "Select File",
+    "Chọn logo": "Select File",
+    "Chọn ảnh": "Select File",
+    "Chọn ảnh nền": "Select File",
     "Cài Đặt": "Settings",
     "Cài đặt tài khoản": "Account Settings",
     "Có lỗi xảy ra khi dịch thuật!": "An error occurred during translation!",
@@ -1367,13 +1361,13 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Căng Cực (Sôi động)": "Intense (Energetic)",
     "Cơ sở dữ liệu": "Database",
     "Cấu hình hiển thị": "Display Config",
-    "Cầu Vồng": "Rainbow",
+    "Cầu Vồng": "Cầu Vồng",
     "Cập nhật bản nháp thành công!": "Draft updated successfully!",
     "Cập nhật mật khẩu thành viên thành công!": "Member password updated successfully!",
     "Cập nhật thành công!": "Update successful!",
     "Cập nhật thông tin": "Update Profile",
     "Cổ vũ (Mây, mặt trời)": "Cheer (Clouds, sun)",
-    "Cổ điển (Nâu, retro)": "Classic (Brown, retro)",
+    "Cổ điển (Nâu, retro)": "Cổ điển (Nâu, retro)",
     "Danh sách bài hát (Kéo thả để sắp xếp)": "Song List (Drag and Drop to Sort)",
     "Danh sách các bài hát của bạn đang được các nghệ sĩ khác đăng tải lên kênh của họ hoặc liên kết từ URL ngoài.": "List of your songs being uploaded by other artists to their channels or linked from external URLs.",
     "Danh sách phát": "Playlists",
@@ -1402,7 +1396,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Gửi phản hồi": "Send Feedback",
     "Gửi tin nhắn": "Send Message",
     "Gửi yêu cầu gỡ hoặc chỉnh sửa cho bài hát này": "Submit a removal or edit request for this song",
-    "Hip Hop (Đường phố)": "Hip Hop (Street)",
+    "Hip Hop (Đường phố)": "Hip Hop (Đường phố)",
     "Hiển thị (Trạng thái phát hành)": "Visibility",
     "Hiển thị công khai": "Public Visibility",
     "Hiện tại không có bài hát nào của bạn do nghệ sĩ khác đăng tải hoặc liên kết ngoài.": "Currently, none of your songs are uploaded by other artists or linked externally.",
@@ -1413,7 +1407,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Hệ thống báo lỗi file quá lớn.": "System error: File too large.",
     "Hệ thống sẽ giữ tạm thời các mục trên tại đây tối đa 30 ngày. Quá thời gian này, các mục sẽ bị dọn dẹp và xóa vĩnh viễn không thể khôi phục.": "The system will temporarily hold these items here for a maximum of 30 days. After this period, the items will be cleaned up and permanently deleted, and cannot be recovered.",
     "Hệ thống sẽ tự động sử dụng AI (Gemini) để dịch tất cả thông tin hồ sơ, tiêu đề, mô tả, các đề mô (tên, lyrics, tác giả, ca sĩ) và danh sách phát sang 5 ngôn ngữ khác (Anh, Hàn, Nhật, Thái, Trung). Quá trình này có thể mất khoảng 5-10 giây. Bạn có muốn tiếp tục?": "The system will automatically use AI (Gemini) to translate all profile info, titles, descriptions, demos (name, lyrics, author, artist), and playlists into 5 other languages (English, Korean, Japanese, Thai, Chinese). This process may take about 5-10 seconds. Do you want to continue?",
-    "Học Đường (Trắng, Lá vàng rơi)": "School (White, falling yellow leaves)",
+    "Học Đường (Trắng, Lá vàng rơi)": "Học Đường (Trắng, Lá vàng rơi)",
     "Hồ sơ": "Profile",
     "Hồ sơ & Mở rộng": "Profile & Extensions",
     "Hỗ trợ các link bài hát chung cấu trúc với chorus.vn (ví dụ: https://tai.com/song/ten-bai-hat)": "Supports song links sharing the same structure as chorus.vn (e.g., https://tai.com/song/song-name)",
@@ -1540,7 +1534,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Nếu nhập link, người dùng sẽ thấy icon tải nhạc (Download) ở trên phần lời bài hát để click tải.": "If a link is provided, users will see a download icon above the lyrics to click and download.",
     "Nội dung": "Content",
     "Nội dung mô tả": "Description Content",
-    "Pháo hoa (Năm mới)": "Fireworks (New Year)",
+    "Pháo hoa (Năm mới)": "Pháo hoa (Năm mới)",
     "Phần mở rộng (Link bài hát)": "Extension (Song Link)",
     "Phần mở rộng (Sub-domain)": "Extension (Sub-domain)",
     "Playlist": "Playlists",
@@ -1626,7 +1620,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Vui lòng đợi trong giây lát. Hệ thống đang tối ưu hóa dữ liệu và lưu trữ an toàn trên cloud.": "Please wait a moment. The system is optimizing data and storing it securely on the cloud.",
     "Vui lòng đợi ảnh bìa tải lên xong!": "Please wait for the cover image to finish uploading!",
     "Vui lòng đợi ảnh nền tải lên xong!": "Please wait for the background image to finish uploading!",
-    "Vui vẻ (Ấm áp)": "Cheerful (Warm)",
+    "Vui vẻ (Ấm áp)": "Vui vẻ (Ấm áp)",
     "Ví dụ: 2026, 2024...": "Example: 2026, 2024...",
     "Xem chủ đề máy tính": "View Desktop Layout",
     "Xem chủ đề điện thoại": "View Mobile Layout",
@@ -1697,7 +1691,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Đăng lại": "Repost",
     "Đăng lại bài hát này lên kênh của bạn": "Repost this song to your channel",
     "Đăng xuất": "Logout",
-    "Đại Dương (Sóng biển)": "Ocean (Sea waves)",
+    "Đại Dương (Sóng biển)": "Đại Dương (Sóng biển)",
     "Tự sinh Ngẫu Nhiên": "Generate Randomly",
     "Để trống nếu không muốn dùng mật khẩu chung": "Leave blank if you do not want to use a shared password",
     "Để trống sẽ dùng mặc định: Thiên Đường Demo của [Tên nghệ sĩ]": "Leave blank to use default: [Artist Name]'s Demo Heaven",
@@ -1783,7 +1777,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
 
     "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "드래그 앤 드롭으로 순서를 변경하세요. 첫 번째 탭이 기본 페이지가 됩니다. 최대 3개의 사용자 지정 탭을 지원합니다.", "Lưu Menu": "메뉴 저장",
 
-    "Về Tôi": "내 소개", "Tiểu Sử": "약력", "Giới thiệu nghệ sĩ": "아티스트 소개", "Tên Thật": "본명", "Ngày Sinh": "생년월일", "Địa Chỉ": "주소", "Công Ty": "회사", "Danh Xưng": "직함/역할", "Ca nhạc sĩ, producer...": "가수, 프로듀서...", "Email": "이메일", "SĐT": "전화번호", "Học Vấn": "학력", "Kinh nghiệm": "경력", "Thời gian": "기간", "Sự Kiện": "이벤트", "Thêm giai đoạn": "기간 추가", "Danh Mục": "카테고리", "Thêm Menu Mới": "새 메뉴 추가", "Tiêu Đề Menu": "메뉴 제목", "Đường Dẫn": "링크/경로",
+    "Về Tôi": "내 소개", "Tiểu Sử": "약력", "Tải Nhạc": "MP3 다운로드", "Đến Từ": "출신", "Sinh Sống": "거주지", "Giới thiệu nghệ sĩ": "아티스트 소개", "Tên Thật": "본명", "Ngày Sinh": "생년월일", "Địa Chỉ": "주소", "Công Ty": "회사", "Danh Xưng": "직함/역할", "Ca nhạc sĩ, producer...": "가수, 프로듀서...", "Email": "이메일", "SĐT": "전화번호", "Học Vấn": "학력", "Kinh nghiệm": "경력", "Thời gian": "기간", "Sự Kiện": "이벤트", "Thêm giai đoạn": "기간 추가", "Danh Mục": "카테고리", "Thêm Menu Mới": "새 메뉴 추가", "Tiêu Đề Menu": "메뉴 제목", "Đường Dẫn": "링크/경로",
  
     "Bài hát Preview": "프리뷰 곡",
     "Tên hiển thị": "표시 이름",
@@ -2288,7 +2282,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
 
     "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "ドラッグ＆ドロップで並べ替えます。最初のタブがデフォルトページになります。最大3つのカスタムタブをサポートします。", "Lưu Menu": "メニューを保存",
 
-    "Về Tôi": "自己紹介", "Tiểu Sử": "経歴", "Giới thiệu nghệ sĩ": "アーティスト紹介", "Tên Thật": "本名", "Ngày Sinh": "生年月日", "Địa Chỉ": "住所", "Công Ty": "会社", "Danh Xưng": "役職", "Ca nhạc sĩ, producer...": "歌手、プロデューサー...", "Email": "Eメール", "SĐT": "電話番号", "Học Vấn": "学歴", "Kinh nghiệm": "経験", "Thời gian": "期間", "Sự Kiện": "イベント", "Thêm giai đoạn": "期間を追加", "Danh Mục": "カテゴリー", "Thêm Menu Mới": "新規メニュー追加", "Tiêu Đề Menu": "メニューのタイトル", "Đường Dẫn": "リンク先",
+    "Về Tôi": "自己紹介", "Tiểu Sử": "経歴", "Tải Nhạc": "MP3 ダウンロード", "Đến Từ": "出身", "Sinh Sống": "居住地", "Giới thiệu nghệ sĩ": "アーティスト紹介", "Tên Thật": "本名", "Ngày Sinh": "生年月日", "Địa Chỉ": "住所", "Công Ty": "会社", "Danh Xưng": "役職", "Ca nhạc sĩ, producer...": "歌手、プロデューサー...", "Email": "Eメール", "SĐT": "電話番号", "Học Vấn": "学歴", "Kinh nghiệm": "経験", "Thời gian": "期間", "Sự Kiện": "イベント", "Thêm giai đoạn": "期間を追加", "Danh Mục": "カテゴリー", "Thêm Menu Mới": "新規メニュー追加", "Tiêu Đề Menu": "メニューのタイトル", "Đường Dẫn": "リンク先",
  
     "Bài hát Preview": "プレビュー曲",
     "Tên hiển thị": "表示名",
@@ -2793,7 +2787,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
 
     "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "ลากและวางเพื่อจัดเรียงลำดับ แท็บแรกจะเป็นหน้าเริ่มต้น รองรับแท็บกำหนดเองสูงสุด 3 แท็บ", "Lưu Menu": "บันทึกเมนู",
 
-    "Về Tôi": "เกี่ยวกับฉัน", "Tiểu Sử": "ประวัติส่วนตัว", "Giới thiệu nghệ sĩ": "แนะนำศิลปิน", "Tên Thật": "ชื่อจริง", "Ngày Sinh": "วันเกิด", "Địa Chỉ": "ที่อยู่", "Công Ty": "บริษัท", "Danh Xưng": "ตำแหน่ง", "Ca nhạc sĩ, producer...": "นักร้อง, โปรดิวเซอร์...", "Email": "อีเมล", "SĐT": "เบอร์โทรศัพท์", "Học Vấn": "การศึกษา", "Kinh nghiệm": "ประสบการณ์", "Thời gian": "เวลา/ช่วงเวลา", "Sự Kiện": "เหตุการณ์", "Thêm giai đoạn": "เพิ่มช่วงเวลา", "Danh Mục": "หมวดหมู่", "Thêm Menu Mới": "เพิ่มเมนูใหม่", "Tiêu Đề Menu": "หัวข้อเมนู", "Đường Dẫn": "ลิงก์ / เส้นทาง",
+    "Về Tôi": "เกี่ยวกับฉัน", "Tiểu Sử": "ประวัติส่วนตัว", "Tải Nhạc": "ดาวน์โหลด MP3", "Đến Từ": "จาก", "Sinh Sống": "อาศัยอยู่ที่", "Giới thiệu nghệ sĩ": "แนะนำศิลปิน", "Tên Thật": "ชื่อจริง", "Ngày Sinh": "วันเกิด", "Địa Chỉ": "ที่อยู่", "Công Ty": "บริษัท", "Danh Xưng": "ตำแหน่ง", "Ca nhạc sĩ, producer...": "นักร้อง, โปรดิวเซอร์...", "Email": "อีเมล", "SĐT": "เบอร์โทรศัพท์", "Học Vấn": "การศึกษา", "Kinh nghiệm": "ประสบการณ์", "Thời gian": "เวลา/ช่วงเวลา", "Sự Kiện": "เหตุการณ์", "Thêm giai đoạn": "เพิ่มช่วงเวลา", "Danh Mục": "หมวดหมู่", "Thêm Menu Mới": "เพิ่มเมนูใหม่", "Tiêu Đề Menu": "หัวข้อเมนู", "Đường Dẫn": "ลิงก์ / เส้นทาง",
  
     "Bài hát Preview": "ตัวอย่างเพลง",
     "Tên hiển thị": "ชื่อที่แสดง",
@@ -3299,7 +3293,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
 
     "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "拖放以重新排序。第一个选项卡将作为默认页面。最多支持3个自定义选项卡。", "Lưu Menu": "保存菜单",
 
-    "Về Tôi": "关于我", "Tiểu Sử": "个人简介", "Giới thiệu nghệ sĩ": "艺术家介绍", "Tên Thật": "真实姓名", "Ngày Sinh": "出生日期", "Địa Chỉ": "地址", "Công Ty": "公司", "Danh Xưng": "职位/角色", "Ca nhạc sĩ, producer...": "歌手、制作人...", "Email": "电子邮件", "SĐT": "电话号码", "Học Vấn": "教育", "Kinh nghiệm": "经验", "Thời gian": "时间/期间", "Sự Kiện": "事件", "Thêm giai đoạn": "添加时期", "Danh Mục": "分类", "Thêm Menu Mới": "添加新菜单", "Tiêu Đề Menu": "菜单标题", "Đường Dẫn": "路径/链接",
+    "Về Tôi": "关于我", "Tiểu Sử": "个人简介", "Tải Nhạc": "下载 MP3", "Đến Từ": "来自", "Sinh Sống": "居住于", "Giới thiệu nghệ sĩ": "艺术家介绍", "Tên Thật": "真实姓名", "Ngày Sinh": "出生日期", "Địa Chỉ": "地址", "Công Ty": "公司", "Danh Xưng": "职位/角色", "Ca nhạc sĩ, producer...": "歌手、制作人...", "Email": "电子邮件", "SĐT": "电话号码", "Học Vấn": "教育", "Kinh nghiệm": "经验", "Thời gian": "时间/期间", "Sự Kiện": "事件", "Thêm giai đoạn": "添加时期", "Danh Mục": "分类", "Thêm Menu Mới": "添加新菜单", "Tiêu Đề Menu": "菜单标题", "Đường Dẫn": "路径/链接",
  
     "Bài hát Preview": "预览歌曲",
     "Tên hiển thị": "显示名称",
@@ -3824,6 +3818,10 @@ const getArtistExtensionFromUrl = (customPath?: string) => {
     if (sub) return sub;
   }
 
+  if ((window as any).__ACTIVE_ARTIST_EXTENSION__ && !isDefaultPlatform && !isLocal) {
+    return (window as any).__ACTIVE_ARTIST_EXTENSION__; // Custom domain always uses injected extension
+  }
+
   if (isDefaultPlatform && !isLocal) {
     if (currentPath === '/') {
       return '';
@@ -3834,7 +3832,7 @@ const getArtistExtensionFromUrl = (customPath?: string) => {
     return (window as any).__ACTIVE_ARTIST_EXTENSION__;
   }
   if (!isLocal && !isDefaultPlatform) {
-    return '';
+    return (window as any).__ACTIVE_ARTIST_EXTENSION__ || '';
   }
   const segments = currentPath.split('/').filter(Boolean);
   if (segments.length > 0) {
@@ -3904,6 +3902,25 @@ const removeGlobalCookie = (name: string) => {
   const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
   const domain = (host.endsWith('.chorus.vn') || host === 'chorus.vn') ? 'domain=.chorus.vn;' : '';
   document.cookie = `${name}=; ${domain} path=/; max-age=0; SameSite=Lax`;
+};
+
+
+const getArtistAdminRedirect = (targetExt: string, toPage = 'admin') => {
+  const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
+  const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
+  const isDefaultPlatform = host === 'chorus.vn' || host.endsWith('.run.app') || host.endsWith('.aistudio.google') || host.endsWith('.gitpod.io');
+
+  const currentExt = (window as any).__ACTIVE_ARTIST_EXTENSION__ || '';
+  if (currentExt === targetExt && !host.endsWith('.chorus.vn')) {
+     return `/${toPage}`; // If already on custom domain or root domain of the artist, use relative paths
+  }
+
+  if (!isLocal && (!isDefaultPlatform || host.endsWith('.chorus.vn'))) {
+     return `https://${targetExt}.chorus.vn/${toPage}`;
+  } else if (isLocal && host.endsWith('.localhost')) {
+     return `${window.location.protocol}//${targetExt}.localhost:${window.location.port}/${toPage}`;
+  }
+  return `/${targetExt}/${toPage}`;
 };
 
 const getActiveAdminSession = () => {
@@ -4647,9 +4664,9 @@ function AnimatedRoutes() {
     if (activeExt && activeToken && activeExt !== currentExt) {
       if (isAdminPage || isHelpPage) {
         if (!activeActivated) {
-          window.location.href = `/${activeExt}/help`;
+          window.location.href = getArtistAdminRedirect(activeExt, 'help');
         } else {
-          window.location.href = `/${activeExt}/admin`;
+          window.location.href = getArtistAdminRedirect(activeExt, 'admin');
         }
         return;
       }
@@ -4714,6 +4731,15 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
   const location = useLocation();
   const [session, setSession] = useState(getActiveAdminSession());
   const [avatar, setAvatar] = useState(session.activeAvatar);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const handleUpdate = () => {
@@ -4753,63 +4779,70 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
   // Do not show on acp control panel or admin pages or help guide
   if (location.pathname === '/acp' || location.pathname.includes('/admin') || location.pathname.includes('/help')) return null;
 
+  const isMusicPlayerPage = location.pathname.includes('/demo/') || location.pathname.includes('/song/') || location.pathname.includes('/playlist/');
+  const shouldHideOnMobilePlayer = isMobile && isMusicPlayerPage;
+
   const getAvatarUrl = (url: string) => {
     if (!url) return '';
     if (url.startsWith('http') || url.startsWith('/') || url.startsWith('data:')) return url;
     return `/uploads/${activeExt}/${url}`;
   };
 
+  const showWidget = !shouldHideOnMobilePlayer;
+
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, y: 50, scale: 0.9 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 50, scale: 0.9 }}
-        transition={{ duration: 0.3 }}
-        className="fixed bottom-6 right-6 z-[99] flex items-center gap-3 bg-stone-950/30 text-white px-4 py-2.5 rounded-2xl border border-white/20 shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-[24px]"
-      >
-        <a href={`/${activeExt}`} className="flex items-center gap-2 group cursor-pointer hover:opacity-80 transition-opacity" title="Đến kho nhạc">
-          {avatar ? (
-            <img 
-              src={getAvatarUrl(avatar)} 
-              className="w-8 h-8 rounded-full object-cover border border-white/20 shadow-sm shrink-0"
-              alt={activeName}
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                if (fallback) fallback.style.display = 'flex';
-              }}
-            />
-          ) : null}
-          <div 
-            className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-500 flex items-center justify-center text-xs font-bold text-white shadow-sm animate-pulse shrink-0"
-            style={{ display: avatar ? 'none' : 'flex' }}
-          >
-            {activeName.charAt(0).toUpperCase()}
-          </div>
-          <div className="text-left flex flex-col justify-center leading-none">
-            <span className="text-[10px] text-yellow-300 font-black uppercase tracking-wider leading-none mb-1 shadow-xs">Nghệ sĩ</span>
-            <span className="text-[11px] font-black text-white uppercase tracking-wider leading-relaxed pt-1 pb-0.5 max-w-[120px] sm:max-w-[200px] whitespace-normal break-words">{activeName}</span>
-          </div>
-        </a>
-        <div className="w-px h-6 bg-white/10 mx-1"></div>
-        <div className="flex items-center gap-1.5">
-          <a 
-              href={`/${activeExt}/admin`} 
-              title="Quản trị"
-              className="p-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center"
+      {showWidget && (
+        <motion.div
+          initial={{ opacity: 0, y: 50, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 50, scale: 0.9 }}
+          transition={{ duration: 0.3 }}
+          className="fixed bottom-6 right-6 z-[99] flex items-center gap-3 bg-black/40 text-white px-4 py-2.5 rounded-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all hover:bg-black/50"
+        >
+          <a href={getArtistAdminRedirect(activeExt, '').replace(/\/$/, '') || '/'} className="flex items-center gap-2 group cursor-pointer hover:opacity-80 transition-opacity" title="Đến kho nhạc">
+            {avatar ? (
+              <img 
+                src={getAvatarUrl(avatar)} 
+                className="w-8 h-8 rounded-full object-cover border border-white/20 shadow-sm shrink-0"
+                alt={activeName}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'flex';
+                }}
+              />
+            ) : null}
+            <div 
+              className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-500 flex items-center justify-center text-xs font-bold text-white shadow-sm animate-pulse shrink-0"
+              style={{ display: avatar ? 'none' : 'flex' }}
             >
-              <Settings className="w-4 h-4" />
-            </a>
-          <button
-            onClick={onLogout}
-            title="Đăng xuất"
-            className="p-2 bg-red-500/10 hover:bg-red-500/25 border border-red-500/30 text-red-400 rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
-      </motion.div>
+              {activeName.charAt(0).toUpperCase()}
+            </div>
+            <div className="text-left flex flex-col justify-center leading-none">
+              <span className="text-[10px] text-yellow-300 font-black uppercase tracking-wider leading-none mb-1 shadow-xs">Nghệ sĩ</span>
+              <span className="text-[11px] font-black text-white uppercase tracking-wider leading-relaxed pt-1 pb-0.5 max-w-[120px] sm:max-w-[200px] whitespace-normal break-words">{activeName}</span>
+            </div>
+          </a>
+          <div className="w-px h-6 bg-white/10 mx-1"></div>
+          <div className="flex items-center gap-1.5">
+            <a 
+                href={getArtistAdminRedirect(activeExt, 'admin')} 
+                title="Quản trị"
+                className="p-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center"
+              >
+                <Settings className="w-4 h-4" />
+              </a>
+            <button
+              onClick={onLogout}
+              title="Đăng xuất"
+              className="p-2 bg-red-500/10 hover:bg-red-500/25 border border-red-500/30 text-red-400 rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        </motion.div>
+      )}
     </AnimatePresence>
   );
 }
@@ -4819,6 +4852,18 @@ const AdminFloatingAddButton = () => {
   const { t } = useAdminTranslation();
   const [showTooltip, setShowTooltip] = useState(false);
   const isLandingPage = location.pathname === '/' && !getArtistExtensionFromUrl();
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMusicPlayerPage = location.pathname.includes('/demo/') || location.pathname.includes('/song/') || location.pathname.includes('/playlist/');
+  const shouldHideOnMobilePlayer = isMobile && isMusicPlayerPage;
 
   // Thỉnh thoảng hiện tooltip
   useEffect(() => {
@@ -4834,7 +4879,7 @@ const AdminFloatingAddButton = () => {
   const isAdminPath = location.pathname.startsWith('/admin') || location.pathname.includes('/admin');
   const isFormPage = location.pathname.includes('/new') || location.pathname.includes('/edit');
 
-  const shouldShow = isAdmin && isAdminPath && !isFormPage && !isLandingPage;
+  const shouldShow = isAdmin && isAdminPath && !isFormPage && !isLandingPage && !shouldHideOnMobilePlayer;
 
   return (
     <AnimatePresence>
@@ -5237,13 +5282,13 @@ function AchievementBadge({ achievement, align = 'right' }: { achievement: Achie
   const dict: Record<string, Record<string, string>> = {
     vi: {
       "Về Tôi": "Về Tôi",
-      "Tiểu Sử": "Tiểu Sử",
+      "Tiểu Sử": "Tiểu Sử", "Tải Nhạc": "Tải Nhạc", "Đến Từ": "Đến Từ", "Sinh Sống": "Sinh Sống",
       "Quản lý Menu": "Quản lý Menu",
       "Giới thiệu nghệ sĩ": "Giới thiệu nghệ sĩ",
       "Tên Thật": "Tên Thật",
       "Ngày Sinh": "Ngày Sinh",
-      "Địa Chỉ": "Địa Chỉ",
-      "Công Ty": "Công Ty",
+      "Địa Chỉ": "Đến Từ",
+      "Công Ty": "Sinh Sống",
       "Danh Xưng": "Danh Xưng", "Ca nhạc sĩ, producer...": "Ca nhạc sĩ, producer...",
       "Email": "Email",
       "SĐT": "SĐT",
@@ -6327,13 +6372,13 @@ function Home() {
                                       <>
                                         <img 
                                           src={demo.brandLogoUrl} 
-                                          className="absolute inset-0 w-full h-full object-cover opacity-[0.15] blur-2xl scale-150 transition-transform duration-1000 ease-out group-hover:scale-[1.75]" 
+                                          className="absolute inset-0 w-full h-full object-cover rounded-full opacity-[0.15] blur-2xl scale-150 transition-transform duration-1000 ease-out group-hover:scale-[1.75]" 
                                           alt="" 
                                           referrerPolicy="no-referrer"
                                         />
                                         <img 
                                           src={demo.brandLogoUrl} 
-                                          className="absolute -right-4 -bottom-4 w-28 h-28 opacity-[0.25] blur-[1px] rotate-12 scale-100 transition-all duration-1000 ease-out group-hover:scale-110 group-hover:opacity-[0.4] group-hover:rotate-6" 
+                                          className="absolute -right-2 -bottom-2 w-32 h-20 object-contain opacity-[0.25] blur-[0.5px] animate-brand-logo-float transition-all duration-1000 ease-out group-hover:opacity-[0.45]"
                                           alt="" 
                                           referrerPolicy="no-referrer"
                                         />
@@ -6368,9 +6413,9 @@ function Home() {
                                           animate={{ opacity: 1, scale: 1, rotate: 0 }}
                                           exit={{ opacity: 0, scale: 0.8, rotate: 5 }}
                                           transition={{ duration: 0.45, ease: "easeOut" }}
-                                          className="absolute inset-0 w-full h-full flex items-center justify-center p-2 bg-neutral-900/40 backdrop-blur-[2px]"
+                                          className="absolute inset-0 w-full h-full flex items-center justify-center p-1 bg-transparent"
                                         >
-                                          <img src={demo.brandLogoUrl} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" alt={demo.brandName} referrerPolicy="no-referrer" />
+                                          <img src={demo.brandLogoUrl} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 shadow-sm" alt={demo.brandName} referrerPolicy="no-referrer" />
                                         </motion.div>
                                       ) : (
                                         <motion.div
@@ -6822,7 +6867,7 @@ const getAudioPlayUrl = (url: string) => {
   return url;
 };
 
-function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnded, playlistContext, isPreview, lyricsColor, waveColor }: { src: string, backupAudioUrl?: string, template: string, onEnded?: () => void, onAlmostEnded?: () => void, playlistContext?: any, isPreview?: boolean, lyricsColor?: string, waveColor?: string }) {
+function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnded, playlistContext, isPreview, lyricsColor, waveColor, showDownload, title, singer, isReleased }: { src: string, backupAudioUrl?: string, template: string, onEnded?: () => void, onAlmostEnded?: () => void, playlistContext?: any, isPreview?: boolean, lyricsColor?: string, waveColor?: string, showDownload?: boolean, title?: string, singer?: string, isReleased?: boolean }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(!isPreview);
   const [currentTime, setCurrentTime] = useState(0);
@@ -6832,6 +6877,12 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
   const [currentSrc, setCurrentSrc] = useState(getAudioPlayUrl(src));
   const [audioError, setAudioError] = useState<string | null>(null);
   const [isRepeat, setIsRepeat] = useState(false);
+
+  useEffect(() => {
+    if (playlistContext && typeof playlistContext.setIsPlaying === 'function') {
+      playlistContext.setIsPlaying(isPlaying);
+    }
+  }, [isPlaying, playlistContext]);
 
   useEffect(() => {
     setCurrentSrc(getAudioPlayUrl(src));
@@ -6922,7 +6973,7 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
 
   const waves = Array.from({ length: 32 });
 
-  const isLight = ['1', '4', '6', '7', '9', '17'].includes(template);
+  const isLight = ['1', '4', '6', '7', '9', '17', '20'].includes(template);
   let waveColorClass = "bg-white";
   if (template === '1') waveColorClass = "bg-orange-500";
   if (template === '2') waveColorClass = "bg-fuchsia-300";
@@ -6942,6 +6993,7 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
   if (template === '16') waveColorClass = "bg-purple-500";
   if (template === '17') waveColorClass = "bg-yellow-400";
   if (template === '18') waveColorClass = "bg-amber-300";
+  if (template === '20') waveColorClass = "bg-[#FF5E7E]";
 
   const shouldAnimateWave = isPlaying || isPreview;
 
@@ -7088,7 +7140,35 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
           </div>
         )}
 
-        <div className="w-20 md:w-24 flex justify-end"></div>
+        <div className="w-20 md:w-24 flex justify-end">
+           {showDownload && (
+              <a 
+                href={src} 
+                className={`opacity-60 hover:opacity-100 transition-all ${isLight ? 'hover:text-stone-900' : 'hover:text-white'}`}
+                title="Tải Nhạc"
+                onClick={(e) => {
+                   e.preventDefault();
+                   fetch(src)
+                     .then(res => res.blob())
+                     .then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        const sStr = singer ? ' - ' + singer : '';
+                        const rStr = isReleased ? '' : ' (Demo)';
+                        a.download = `${(title || 'song').trim()}${sStr}${rStr}.mp3`;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+                     })
+                     .catch(() => window.open(src, '_blank'));
+                }}
+              >
+                <Download className="w-4 h-4 md:w-5 md:h-5" />
+              </a>
+           )}
+        </div>
       </div>
     </div>
   );
@@ -7859,6 +7939,202 @@ function CheeringEffect() {
   );
 }
 
+
+function AutumnLeavesEffect() {
+  const leaves = ['🍂', '🍁', '🍃', '🌾'];
+  
+  // Stains configuration for "loang lổ của cuốn phim cũ"
+  const stains = [
+    { left: '10%', top: '15%', size: '300px', color: 'rgba(88, 48, 20, 0.45)' },
+    { left: '75%', top: '25%', size: '400px', color: 'rgba(67, 35, 17, 0.5)' },
+    { left: '30%', top: '65%', size: '350px', color: 'rgba(92, 53, 23, 0.4)' },
+    { left: '80%', top: '80%', size: '280px', color: 'rgba(58, 28, 10, 0.55)' },
+    { left: '5%', top: '85%', size: '320px', color: 'rgba(75, 38, 15, 0.48)' },
+  ];
+
+  return (
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+      {/* Styles injected directly for robust old film styling */}
+      <style>{`
+        @keyframes old-film-flicker {
+          0%, 100% { opacity: 0.15; transform: scale(1); }
+          15% { opacity: 0.25; }
+          30% { opacity: 0.12; transform: scale(1.002) translate(1px, -1px); }
+          45% { opacity: 0.3; }
+          60% { opacity: 0.18; transform: scale(0.998) translate(-1px, 1px); }
+          75% { opacity: 0.22; }
+          90% { opacity: 0.12; }
+        }
+        @keyframes vertical-film-roll {
+          0% { transform: translateY(0); }
+          100% { transform: translateY(-50%); }
+        }
+        @keyframes old-scratch-x {
+          0%, 100% { transform: translateX(0); opacity: 0; }
+          4% { transform: translateX(10vw); opacity: 0.15; }
+          8% { transform: translateX(45vw); opacity: 0.25; }
+          12% { transform: translateX(85vw); opacity: 0; }
+          50% { transform: translateX(30vw); opacity: 0.3; }
+          55% { transform: translateX(70vw); opacity: 0.1; }
+          60% { transform: translateX(20vw); opacity: 0; }
+        }
+        .animate-old-flicker {
+          animation: old-film-flicker 0.18s infinite;
+        }
+        .animate-film-roll-fast {
+          animation: vertical-film-roll 6s linear infinite;
+        }
+        .animate-scratch-slow {
+          animation: old-scratch-x 4s steps(1) infinite;
+        }
+      `}</style>
+
+      {/* Main retro stained sepia-tint film-base background layer */}
+      <div className="absolute inset-0 bg-[#351C0C]/35 mix-blend-color-burn z-[1]" />
+      
+      {/* Rỉ sét và vết ố thời gian dọc theo viền và góc màn hình bên ngoài (Full viewport borders & corners) */}
+      <div className="absolute inset-0 border-[16px] md:border-[24px] border-[#5c2a07]/30 pointer-events-none z-[2] mix-blend-multiply" />
+      <div className="absolute top-0 left-0 w-[30vw] h-[30vh] bg-[radial-gradient(circle_at_top_left,rgba(92,42,7,0.85),transparent_75%)] pointer-events-none z-[2] mix-blend-multiply" />
+      <div className="absolute top-0 right-0 w-[30vw] h-[30vh] bg-[radial-gradient(circle_at_top_right,rgba(92,42,7,0.85),transparent_75%)] pointer-events-none z-[2] mix-blend-multiply" />
+      <div className="absolute bottom-0 left-0 w-[30vw] h-[30vh] bg-[radial-gradient(circle_at_bottom_left,rgba(92,42,7,0.85),transparent_75%)] pointer-events-none z-[2] mix-blend-multiply" />
+      <div className="absolute bottom-0 right-0 w-[30vw] h-[30vh] bg-[radial-gradient(circle_at_bottom_right,rgba(92,42,7,0.85),transparent_75%)] pointer-events-none z-[2] mix-blend-multiply" />
+      
+      {/* Vết rỉ sét loang lổ ngẫu nhiên ở viền màn hình ngoài */}
+      <div className="absolute top-[20%] left-0 w-[15vw] h-[25vh] bg-[radial-gradient(ellipse_at_left,rgba(115,50,8,0.75),transparent_70%)] pointer-events-none z-[2] mix-blend-color-burn" />
+      <div className="absolute bottom-[25%] right-0 w-[15vw] h-[30vh] bg-[radial-gradient(ellipse_at_right,rgba(115,50,8,0.75),transparent_70%)] pointer-events-none z-[2] mix-blend-color-burn" />
+      <div className="absolute top-0 left-[35%] w-[30vw] h-[15vh] bg-[radial-gradient(ellipse_at_top,rgba(115,50,8,0.7),transparent_70%)] pointer-events-none z-[2] mix-blend-color-burn" />
+      <div className="absolute bottom-0 left-[45%] w-[25vw] h-[12vh] bg-[radial-gradient(ellipse_at_bottom,rgba(115,50,8,0.7),transparent_70%)] pointer-events-none z-[2] mix-blend-color-burn" />
+
+      {/* Hiệu ứng nứt nẻ (Cracks/fractures) của thước phim cổ cực kì chân thực trải khắp background */}
+      <svg className="absolute inset-0 w-full h-full pointer-events-none z-[2] opacity-75 mix-blend-color-burn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+        {/* Crack 1 - Top Left */}
+        <path d="M 0 10 L 15 15 L 22 12 L 32 18 L 38 12 M 15 15 L 18 25 M 22 12 L 20 2" stroke="#2B1505" strokeWidth="0.15" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        {/* Crack 2 - Bottom Right */}
+        <path d="M 100 90 L 85 82 L 80 68 L 68 72 L 62 58 M 85 82 L 78 90 M 80 68 L 88 62" stroke="#2B1505" strokeWidth="0.15" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        {/* Crack 3 - Top Right */}
+        <path d="M 100 15 L 88 20 L 85 30 L 72 25 M 88 20 L 92 8" stroke="#2B1505" strokeWidth="0.15" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        {/* Crack 4 - Bottom Left */}
+        <path d="M 0 85 L 10 80 L 12 68 L 25 72 M 10 80 L 8 92" stroke="#2B1505" strokeWidth="0.15" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      </svg>
+      
+      {/* Uneven vintage stains (loang lổ) */}
+      {stains.map((stain, idx) => (
+        <div
+          key={`stain-${idx}`}
+          className="absolute rounded-full filter blur-[60px] opacity-70 mix-blend-multiply"
+          style={{
+            left: stain.left,
+            top: stain.top,
+            width: stain.size,
+            height: stain.size,
+            backgroundColor: stain.color,
+            transition: 'all 5s ease-in-out',
+          }}
+        />
+      ))}
+
+      {/* Film Projector flickering overlay light */}
+      <div className="absolute inset-0 bg-[#E5B582]/12 mix-blend-color-dodge pointer-events-none z-[1] animate-old-flicker" />
+
+      {/* Vintage vertical scratch lines moving horizontally */}
+      <div className="absolute top-0 bottom-0 w-[1px] bg-white/20 animate-scratch-slow z-[2]" />
+      <div className="absolute top-0 bottom-0 w-[1.5px] bg-amber-950/20 animate-scratch-slow z-[2]" style={{ animationDelay: '1.5s' }} />
+
+      {/* Falling dried leaves */}
+      {Array.from({ length: 15 }).map((_, i) => (
+        <div 
+          key={i} 
+          className="absolute text-xl sm:text-2xl animate-snow will-change-transform drop-shadow-md mix-blend-overlay z-[3]"
+          style={{
+            left: `${10 + Math.random() * 80}%`,
+            top: `${Math.random() * 100 - 20}%`,
+            animationDuration: `${Math.random() * 10 + 15}s`,
+            animationDelay: `${Math.random() * -20}s`,
+            fontSize: `${Math.random() * 1 + 0.8}rem`
+          }}
+        >
+          {leaves[i % leaves.length]}
+        </div>
+      ))}
+      <div className="absolute top-1/4 left-1/4 w-[40vw] h-[40vw] bg-[radial-gradient(circle_at_center,rgba(217,91,22,0.18),transparent_60%)] mix-blend-screen opacity-50 animate-[pulse_6s_ease-in-out_infinite] z-[1]" />
+    </div>
+  );
+}
+
+function PastelShapesEffect() {
+  const shapes = ['⭐', '🌟', '☁️', '🍭', '🎵', '🎶', '✨', '💖'];
+  return (
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 opacity-90 select-none">
+      {/* 1. Slow Rotating Dashed Circle (Photo 3 element) */}
+      <div className="absolute right-[10%] bottom-[15%] w-64 h-64 opacity-25 animate-[spin_100s_linear_infinite]">
+        <svg viewBox="0 0 100 100" className="w-full h-full animate-pulse" style={{ animationDuration: '4s' }}>
+          <circle cx="50" cy="50" r="45" stroke="white" strokeWidth="1" strokeDasharray="3 4" fill="none" />
+        </svg>
+      </div>
+      <div className="absolute left-[5%] top-[25%] w-40 h-40 opacity-15 animate-[spin_80s_linear_infinite_reverse]">
+        <svg viewBox="0 0 100 100" className="w-full h-full">
+          <circle cx="50" cy="50" r="45" stroke="white" strokeWidth="1" strokeDasharray="2 3" fill="none" />
+        </svg>
+      </div>
+
+      {/* 2. Top-Right Thin Elegant Wavy Curve (Photo 3 element) */}
+      <div className="absolute right-[-10%] top-[8%] w-[60%] h-32 opacity-25 animate-float-gentle" style={{ animationDuration: '8s' }}>
+        <svg viewBox="0 0 400 100" preserveAspectRatio="none" className="w-full h-full">
+          <path d="M 0 50 Q 100 20 200 50 T 400 50" stroke="white" strokeWidth="1.5" fill="none" />
+        </svg>
+      </div>
+
+      {/* 3. Bottom-Left Pink Soft Wavy Curve (Photo 3 element) */}
+      <div className="absolute left-[-5%] bottom-[8%] w-[55%] h-32 opacity-35 animate-float-gentle" style={{ animationDuration: '10s' }}>
+        <svg viewBox="0 0 400 100" preserveAspectRatio="none" className="w-full h-full">
+          <path d="M 0 50 Q 100 80 200 50 T 400 50" stroke="#FF809B" strokeWidth="2" fill="none" />
+        </svg>
+      </div>
+
+      {/* 4. Translucent Floating Pastel Triangles */}
+      <div 
+        className="absolute left-[15%] top-[12%] w-16 h-16 bg-white/10 rounded-lg opacity-30 animate-float-gentle"
+        style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)', transform: 'rotate(15deg)', animationDuration: '7s' }}
+      />
+      <div 
+        className="absolute right-[25%] bottom-[12%] w-24 h-24 bg-pink-100/10 rounded-lg opacity-25 animate-float-gentle"
+        style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)', transform: 'rotate(-25deg)', animationDuration: '9s' }}
+      />
+
+      {/* 5. Cute Floating Balloons with Strings (Photo 3 element) */}
+      <div className="absolute left-[8%] bottom-[20%] w-12 h-24 opacity-30 animate-[float-gentle_6s_ease-in-out_infinite]">
+        <svg viewBox="0 0 50 100" className="w-full h-full">
+          <ellipse cx="25" cy="30" rx="15" ry="18" fill="white" />
+          <path d="M 25 48 Q 20 65 25 85" stroke="white" strokeWidth="1" fill="none" />
+        </svg>
+      </div>
+      <div className="absolute right-[12%] top-[18%] w-10 h-20 opacity-25 animate-[float-gentle_8s_ease-in-out_infinite]" style={{ animationDelay: '-2s' }}>
+        <svg viewBox="0 0 50 100" className="w-full h-full">
+          <ellipse cx="25" cy="30" rx="15" ry="18" fill="#FF809B" />
+          <path d="M 25 48 Q 30 65 25 85" stroke="#FF809B" strokeWidth="1" fill="none" />
+        </svg>
+      </div>
+
+      {/* 6. Falling Sparkles, Stars, Sweets, and Hearts */}
+      {Array.from({ length: 28 }).map((_, i) => (
+        <div 
+          key={i} 
+          className="absolute text-xl sm:text-2xl animate-snow will-change-transform drop-shadow-[0_2px_4px_rgba(255,182,193,0.4)]"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100 - 20}%`,
+            animationDuration: `${Math.random() * 8 + 6}s`,
+            animationDelay: `${Math.random() * -12}s`,
+            transform: `rotate(${Math.random() * 360}deg)`,
+          }}
+        >
+          {shapes[i % shapes.length]}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function FireworksEffect() {
   const fireworks = Array.from({ length: 15 });
   const buildings = Array.from({ length: 35 }).map((_, i) => ({
@@ -7955,6 +8231,7 @@ function PlaylistPlayer() {
   const [shuffle, setShuffle] = useState(false);
   const [repeat, setRepeat] = useState<0 | 1 | 2>(0); // 0: off, 1: playlist, 2: one
   const [error, setError] = useState('');
+  const [isPlaying, setIsPlaying] = useState(false);
   
   const [isMinimized, setIsMinimized] = useState(() => id === 'released');
   
@@ -8210,7 +8487,7 @@ function PlaylistPlayer() {
     >
       {currentSong && (
          <div className="absolute inset-0 z-0 overflow-y-auto custom-scrollbar">
-            <DemoPlayer songIdP={currentSong.slug || currentSong.id} playlistId={id} onEnd={handleEnd} onAlmostEnded={handleAlmostEnded} playlistSongs={songs} playlistContext={{ handlePrev, handleNext, shuffle, setShuffle, repeat, setRepeat }} />
+            <DemoPlayer songIdP={currentSong.slug || currentSong.id} playlistId={id} onEnd={handleEnd} onAlmostEnded={handleAlmostEnded} playlistSongs={songs} playlistContext={{ handlePrev, handleNext, shuffle, setShuffle, repeat, setRepeat, isPlaying, setIsPlaying }} />
          </div>
       )}
 
@@ -8298,7 +8575,7 @@ function PlaylistPlayer() {
                animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
                exit={{ opacity: 0, scale: 0.5, y: -20, x: 20 }}
                transition={{ duration: 0.2 }}
-               className="absolute top-6 right-6 z-[100]"
+               className={`absolute top-6 right-6 z-[100] transition-transform duration-500 ease-in-out ${isPlaying ? 'translate-x-[150%] md:translate-x-0' : 'translate-x-0'}`}
             >
                <button 
                   onClick={(e) => {
@@ -8572,7 +8849,8 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
   const getFormattedLyricsText = (rawLyrics: string) => {
     if (!rawLyrics) return '';
     let lyricsToProcess = rawLyrics;
-    if (!/vers/i.test(lyricsToProcess) && !/\bpk\b/i.test(lyricsToProcess)) {
+    const hasAnnotation = /^\[?\s*(pre-?chorus|chorus(?:\s*\d+)?|vers?e?(?:\s*\d+)?|bridge|drop|ending|coda|intro|outro|rap|dk|đk|pk)\s*\]?[:]*$/im.test(lyricsToProcess) || /\[.*?\]/.test(lyricsToProcess);
+    if (!hasAnnotation) {
       lyricsToProcess = `[Verse]\n${lyricsToProcess}`;
     }
     const lines = lyricsToProcess.split(/\r?\n/);
@@ -8638,7 +8916,8 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
   const parseLyricsToElements = (rawLyrics: string) => {
     if (!rawLyrics) return null;
     let lyricsToProcess = rawLyrics;
-    if (!/vers/i.test(lyricsToProcess) && !/\bpk\b/i.test(lyricsToProcess)) {
+    const hasAnnotation = /^\[?\s*(pre-?chorus|chorus(?:\s*\d+)?|vers?e?(?:\s*\d+)?|bridge|drop|ending|coda|intro|outro|rap|dk|đk|pk)\s*\]?[:]*$/im.test(lyricsToProcess) || /\[.*?\]/.test(lyricsToProcess);
+    if (!hasAnnotation) {
       lyricsToProcess = `[Verse]\n${lyricsToProcess}`;
     }
     const lines = lyricsToProcess.split(/\r?\n/);
@@ -8969,7 +9248,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
   const isPreview = !!previewConfig;
   const forceMobile = isPreview && !previewConfig.isPCPreviewMode;
   const forcePC = isPreview && previewConfig.isPCPreviewMode;
-  const isLight = templateType === '1' || templateType === '4' || templateType === '6' || templateType === '7' || templateType === '9' || templateType === '17';
+  const isLight = templateType === '1' || templateType === '4' || templateType === '6' || templateType === '7' || templateType === '9' || templateType === '17' || templateType === '20';
   const pageBgUrl = demo.backgroundUrl ? demo.backgroundUrl : displayCoverUrl;
   let themeClasses = "";
   let accentClass = "";
@@ -9028,6 +9307,12 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
   } else if (templateType === '18') {
     themeClasses = "bg-slate-900 text-amber-50 font-sans";
     accentClass = "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-full font-bold shadow-[0_0_30px_rgba(245,158,11,0.5)]";
+  } else if (templateType === '19') {
+    themeClasses = "bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#7C4827] via-[#432311] to-[#1F0E05] text-[#E5B582] font-sans";
+    accentClass = "bg-[#D95B16] hover:bg-[#C24E11] text-white rounded-full font-bold shadow-[0_4px_10px_rgba(0,0,0,0.5)] uppercase tracking-wider";
+  } else if (templateType === '20') {
+    themeClasses = "bg-gradient-to-br from-[#FAD2A8] via-[#F9A8D4] to-[#C4DAFA] text-[#1A0F1A] font-sans";
+    accentClass = "bg-[#FF9B00] hover:bg-[#E88C00] text-white rounded-full font-bold shadow-[0_4px_10px_rgba(255,155,0,0.4)] uppercase tracking-wider";
   }
 
   if (!unlocked) {
@@ -9061,6 +9346,8 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
         {templateType === '16' && <PuzzleEffect />}
         {templateType === '17' && <CheeringEffect />}
         {templateType === '18' && <FireworksEffect />}
+        {templateType === '19' && <AutumnLeavesEffect />}
+        {templateType === '20' && <PastelShapesEffect />}
         
         {pageBgUrl && templateType !== '9' && (
           <div 
@@ -9107,12 +9394,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                 }}
               >
                 {demo.brandLogoUrl && (
-                  <div 
-                    className="w-5 h-5 rounded-md overflow-hidden flex items-center justify-center p-0.5 bg-white/10"
-                    style={{ border: `1px solid ${badgeStyle.borderColor}` }}
-                  >
-                    <img src={demo.brandLogoUrl} className="w-full h-full object-contain" alt={demo.brandName} referrerPolicy="no-referrer" />
-                  </div>
+                  <img src={demo.brandLogoUrl} className="w-5 h-5 object-contain rounded-md" style={{ filter: 'drop-shadow(0px 1px 2px rgba(0,0,0,0.3))' }} alt={demo.brandName} referrerPolicy="no-referrer" />
                 )}
                 <span className="text-[10px] uppercase tracking-widest font-black flex items-center gap-1">
                   <span style={{ color: badgeStyle.labelColor }}>{t.pPartner || "Đối tác:"}</span>
@@ -9218,6 +9500,8 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
       {templateType === '16' && <PuzzleEffect />}
       {templateType === '17' && <CheeringEffect />}
       {templateType === '18' && <FireworksEffect />}
+      {templateType === '19' && <AutumnLeavesEffect />}
+      {templateType === '20' && <PastelShapesEffect />}
       
       {pageBgUrl && templateType !== '9' && (
         <div 
@@ -9318,7 +9602,15 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
               transition={{ duration: 0.8, delay: 0.2 }}
               className={`w-full flex flex-col items-center`}
             >
-            <div className={`relative ${templateType === '12' ? 'w-full max-w-[280px] md:max-w-[340px]' : 'w-full max-w-[260px] md:max-w-[320px]'} aspect-square mb-4 mt-2 md:mt-0 z-10 mx-auto`}>
+            <div className={`relative ${
+              templateType === '12' ? 'w-full max-w-[280px] md:max-w-[340px]' : 
+              templateType === '19' ? 'w-full max-w-[260px] md:max-w-[320px]' :
+              templateType === '20' ? 'w-full max-w-[280px] md:max-w-[340px]' :
+              'w-full max-w-[260px] md:max-w-[320px]'
+            } ${
+              templateType === '19' ? 'aspect-[4/5]' :
+              templateType === '20' ? 'aspect-[4/3]' : 'aspect-square'
+            } mb-4 mt-2 md:mt-0 z-10 mx-auto overflow-visible`}>
               {demo.achievements && demo.achievements.length > 0 && (
                 <motion.div 
                   animate={{ 
@@ -9412,7 +9704,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
               ) : (
                 /* ALL OTHER TEMPLATES */
                 <div className={`w-full h-full relative transition-all duration-1000 ${
-                  (templateType === '9' || templateType === '16') ? 'overflow-visible' : 'overflow-hidden'
+                  ['9', '16', '19', '20'].includes(templateType) ? 'overflow-visible' : 'overflow-hidden'
                 } ${
                   templateType === '1' ? 'shadow-glow-1 animate-[bounce_6s_infinite] rounded-3xl border-4' :
                   templateType === '2' ? 'shadow-glow-2 scale-105 rounded-3xl border-4' :
@@ -9430,7 +9722,8 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                   templateType === '15' ? 'border-[6px] border-[#ec4899] rounded-none shadow-[6px_6px_0_#10b981] bg-black transition-transform duration-300' : 
                   templateType === '16' ? 'rounded-none overflow-visible transition-transform duration-500 max-w-[280px] md:max-w-[340px]' : 
                   templateType === '17' ? 'shadow-[0_0_50px_rgba(250,204,21,0.5)] border-[8px] border-white rounded-3xl rotate-2 hover:rotate-0 transition-transform duration-500' : 
-                  templateType === '18' ? 'shadow-[0_0_60px_rgba(251,191,36,0.3)] border-2 border-amber-500/50 rounded-full transition-transform duration-500' : 'shadow-2xl rounded-3xl border-4'
+                  templateType === '18' ? 'shadow-[0_0_60px_rgba(251,191,36,0.3)] border-2 border-amber-500/50 rounded-full transition-transform duration-500' :
+                  ['19', '20'].includes(templateType) ? 'shadow-none border-0 bg-transparent rounded-none' : 'shadow-2xl rounded-3xl border-4'
                 }`}>
                   {templateType === '9' && (
                     <>
@@ -9461,6 +9754,156 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                         </div>
                       )}
                     </div>
+                  ) : templateType === '19' ? (
+                    <div className="relative w-full aspect-[4/5] bg-[#E2DCD2] p-4 flex flex-col justify-center items-center shadow-[inset_0_4px_20px_rgba(0,0,0,0.15)] rounded-2xl overflow-hidden border border-[#D1C6B7]">
+                      {/* Left scrolling film roll */}
+                      <div className="absolute top-0 bottom-0 left-0 w-[12%] bg-[#1A1A1A] overflow-hidden border-r border-[#2d2d2d] z-10 shadow-lg">
+                        <div className="flex flex-col gap-5 py-4 animate-film-scroll">
+                           {Array.from({length: 8}).map((_, i) => (
+                              <div key={`left-1-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2] mx-auto rounded-[3px] opacity-90 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]"></div>
+                           ))}
+                           {Array.from({length: 8}).map((_, i) => (
+                              <div key={`left-2-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2] mx-auto rounded-[3px] opacity-90 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]"></div>
+                           ))}
+                        </div>
+                        <div className="absolute top-[20%] -right-5 text-[#E2DCD2]/50 text-[7px] font-mono rotate-90 tracking-widest whitespace-nowrap font-bold select-none pointer-events-none">KODAK 500T</div>
+                        <div className="absolute top-[65%] -right-5 text-[#E2DCD2]/50 text-[7px] font-mono rotate-90 tracking-widest whitespace-nowrap font-bold select-none pointer-events-none">24 • 12A</div>
+                      </div>
+
+                      {/* Right scrolling film roll */}
+                      <div className="absolute top-0 bottom-0 right-0 w-[12%] bg-[#1A1A1A] overflow-hidden border-l border-[#2d2d2d] z-10 shadow-lg">
+                        <div className="flex flex-col gap-5 py-4 animate-film-scroll">
+                           {Array.from({length: 8}).map((_, i) => (
+                              <div key={`right-1-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2] mx-auto rounded-[3px] opacity-90 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]"></div>
+                           ))}
+                           {Array.from({length: 8}).map((_, i) => (
+                              <div key={`right-2-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2] mx-auto rounded-[3px] opacity-90 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]"></div>
+                           ))}
+                        </div>
+                        <div className="absolute top-[40%] -left-5 text-[#E2DCD2]/50 text-[7px] font-mono -rotate-90 tracking-widest whitespace-nowrap font-bold select-none pointer-events-none">SAFETY FILM</div>
+                      </div>
+
+                      {/* Falling Vintage Dust and Dried Leaves Inside Card */}
+                      <div className="absolute inset-0 pointer-events-none z-30">
+                        {Array.from({ length: 8 }).map((_, i) => {
+                          const dustChars = ['🍂', '🍁', '✨', '•', '·', '🍂'];
+                          return (
+                            <div 
+                              key={`dust-${i}`} 
+                              className="absolute text-amber-800/40 animate-dust-fall select-none"
+                              style={{
+                                left: `${15 + Math.random() * 70}%`,
+                                top: `-${10 + Math.random() * 15}%`,
+                                fontSize: `${Math.random() * 0.8 + 0.4}rem`,
+                                animationDuration: `${Math.random() * 4 + 4}s`,
+                                animationDelay: `${Math.random() * -5}s`,
+                              }}
+                            >
+                              {dustChars[i % dustChars.length]}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Film center projection screen */}
+                      <div className="w-[82%] aspect-square flex items-center justify-center bg-black relative z-20 rounded-lg overflow-hidden shadow-2xl border-4 border-stone-800">
+                        <div className="relative w-full h-full bg-[#1F0E05] overflow-hidden group">
+                           {displayCoverUrl ? (
+                              <img src={displayCoverUrl} alt="Cover" className="w-full h-full object-cover sepia-[0.35] brightness-90 contrast-[1.05] animate-film-pan-zoom" />
+                           ) : (
+                              <div className="w-full h-full flex flex-col justify-center items-center">
+                                <Music className="w-12 h-12 text-[#E5B582] opacity-80 animate-pulse" />
+                              </div>
+                           )}
+                           {/* Vintage Lens Flicker Overlay */}
+                           <div className="absolute inset-0 bg-white/5 pointer-events-none mix-blend-color-dodge animate-crt-flicker"></div>
+                           {/* Retro scratch lines */}
+                           <div className="absolute inset-0 opacity-[0.08] pointer-events-none bg-[linear-gradient(90deg,transparent_49%,#fff_50%,transparent_51%)] bg-[length:200px_100%] animate-[marquee_2s_linear_infinite]"></div>
+                           <div className="absolute inset-0 bg-gradient-to-tr from-amber-900/40 via-transparent to-orange-800/20 mix-blend-multiply pointer-events-none"></div>
+                        </div>
+                      </div>
+
+                      {/* Card Caption / Subtle branding */}
+                      <div className="mt-3 text-[10px] font-mono uppercase tracking-[0.3em] text-stone-600/80 font-bold select-none relative z-20 flex items-center gap-1.5">
+                        <span className="w-1 h-1 rounded-full bg-orange-600 animate-ping"></span>
+                        Nostalgia Player
+                      </div>
+                    </div>
+                  ) : templateType === '20' ? (
+                    <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-[#FFA9BD] to-[#FF809B] rounded-[2.5rem] p-5 border-[8px] border-[#FFF0F4] shadow-[0_15px_35px_rgba(216,67,107,0.4),_inset_0_-12px_24px_rgba(180,30,70,0.3),_inset_0_4px_12px_rgba(255,255,255,0.6)] flex items-center justify-between overflow-visible relative animate-tv-sway">
+                      
+                      {/* TV Antenna (3D-like, animated wiggling metal rods with cute glowing balls) */}
+                      <div className="absolute -top-14 left-1/2 -translate-x-1/2 w-32 h-16 pointer-events-none z-0">
+                         {/* Left Rod */}
+                         <div className="absolute bottom-0 left-[45%] w-1.5 h-16 bg-gradient-to-t from-gray-400 to-gray-200 origin-bottom animate-wiggle-antenna-l rounded-full shadow-sm">
+                            <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 w-4 h-4 bg-yellow-400 rounded-full border-2 border-white shadow-[0_0_8px_rgba(250,204,21,0.8)] animate-pulse"></div>
+                         </div>
+                         {/* Right Rod */}
+                         <div className="absolute bottom-0 left-[55%] w-1.5 h-20 bg-gradient-to-t from-gray-400 to-gray-200 origin-bottom animate-wiggle-antenna-r rounded-full shadow-sm">
+                            <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 w-5 h-5 bg-pink-400 rounded-full border-2 border-white shadow-[0_0_8px_rgba(244,143,177,0.8)] animate-pulse"></div>
+                         </div>
+                         {/* Antenna Base */}
+                         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-4 bg-gray-700 rounded-t-full border-t border-white/20"></div>
+                      </div>
+
+                      {/* TV Legs (Adorably supporting the TV) */}
+                      <div className="absolute -bottom-3 left-[15%] w-5 h-4 bg-stone-800 rounded-b-xl border-t-2 border-stone-900 shadow-md"></div>
+                      <div className="absolute -bottom-3 right-[15%] w-5 h-4 bg-stone-800 rounded-b-xl border-t-2 border-stone-900 shadow-md"></div>
+
+                      {/* TV Screen Container (Slightly larger, dark frame) */}
+                      <div className="w-[74%] h-[94%] bg-stone-950 rounded-[2rem] border-[6px] border-stone-900 shadow-[0_4px_15px_rgba(0,0,0,0.6),_inset_0_4px_15px_rgba(0,0,0,0.9)] relative overflow-hidden flex items-center justify-center animate-tv-glow">
+                         
+                         {/* CRT Screen Reflection Glare */}
+                         <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none z-20 skew-y-[-12deg] origin-top-left"></div>
+
+                         {/* Screen Content */}
+                         <div className="relative w-[92%] h-[92%] rounded-2xl overflow-hidden flex items-center justify-center bg-stone-900 shadow-[inset_0_0_15px_rgba(0,0,0,0.8)]">
+                            {displayCoverUrl ? (
+                              <img src={displayCoverUrl} alt="Cover" className="w-full h-full object-cover animate-[fade-in_0.5s_ease-out]" />
+                            ) : (
+                              <Music className="w-16 h-16 text-pink-400 opacity-60 animate-bounce" />
+                            )}
+
+                            {/* CRT TV lines */}
+                            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0)_50%,rgba(0,0,0,0.12)_50%)] bg-[length:100%_4px] pointer-events-none z-10 animate-crt-flicker"></div>
+                         </div>
+                      </div>
+
+                      {/* Control Panel (Adjusted 24% width) - Dials, buttons and speakers */}
+                      <div className="w-[24%] h-full flex flex-col justify-between items-center py-2 pl-2">
+                         
+                         {/* Knobs Area */}
+                         <div className="flex flex-col gap-3.5 items-center w-full">
+                            {/* Knob 1 */}
+                            <div className="group/knob flex flex-col items-center">
+                               <div className="w-10 h-10 bg-gradient-to-br from-[#ECECEC] via-white to-gray-300 rounded-full border-2 border-pink-200 shadow-[0_3px_6px_rgba(0,0,0,0.15),_inset_0_2px_4px_white] flex items-center justify-center cursor-pointer active:scale-95 transition-all duration-300 group-hover/knob:rotate-[65deg]">
+                                  {/* Pointer indicator line */}
+                                  <div className="w-1.5 h-5 bg-[#FF5E7E] rounded-full origin-bottom -translate-y-1"></div>
+                               </div>
+                               <span className="text-[7px] font-mono tracking-widest text-[#FFF0F4]/80 mt-0.5 uppercase font-bold">VOLUME</span>
+                            </div>
+
+                            {/* Knob 2 */}
+                            <div className="group/knob flex flex-col items-center">
+                               <div className="w-10 h-10 bg-gradient-to-br from-[#ECECEC] via-white to-gray-300 rounded-full border-2 border-pink-200 shadow-[0_3px_6px_rgba(0,0,0,0.15),_inset_0_2px_4px_white] flex items-center justify-center cursor-pointer active:scale-95 transition-all duration-300 group-hover/knob:-rotate-[40deg]">
+                                  {/* Pointer indicator line */}
+                                  <div className="w-1.5 h-5 bg-[#FF5E7E] rounded-full origin-bottom -translate-y-1"></div>
+                               </div>
+                               <span className="text-[7px] font-mono tracking-widest text-[#FFF0F4]/80 mt-0.5 uppercase font-bold">TUNING</span>
+                            </div>
+                         </div>
+
+                         {/* Sound Speaker Grille (Physical-looking dots with pulsing notes) */}
+                         <div className="relative flex flex-col gap-1 w-11 py-1.5 px-2 bg-black/10 rounded-lg shadow-[inset_0_1px_3px_rgba(0,0,0,0.2)]">
+                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={n} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
+                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={n} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
+                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={n} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
+                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={n} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
+                         </div>
+
+
+                      </div>
+                    </div>
                   ) : displayCoverUrl ? (
                     <img 
                       src={displayCoverUrl} 
@@ -9474,7 +9917,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                     </div>
                   )}
                   <div className={`absolute inset-0 ${templateType === '6' ? 'bg-gradient-to-r from-black/20 to-transparent w-8' : ''}`}></div>
-                  <div className={`absolute inset-0 bg-gradient-to-t from-black/60 to-transparent ${templateType === '4' || templateType === '9' ? 'rounded-[1.7rem]' : (templateType === '5' || templateType === '8' || templateType === '18' ? 'rounded-full' : '')} ${templateType === '6' ? 'opacity-30' : ''} ${templateType === '16' ? 'hidden' : ''}`}></div>
+                  <div className={`absolute inset-0 bg-gradient-to-t from-black/60 to-transparent ${templateType === '4' || templateType === '9' ? 'rounded-[1.7rem]' : (templateType === '5' || templateType === '8' || templateType === '18' ? 'rounded-full' : '')} ${templateType === '6' ? 'opacity-30' : ''} ${templateType === '16' || templateType === '19' || templateType === '20' ? 'hidden' : ''}`}></div>
                   {demo.releaseYear && (
                     <motion.div 
                       initial={{ opacity: 0, scale: 0.8, y: 10 }}
@@ -9487,6 +9930,8 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                         templateType === '11' ? 'bg-[#d4af37]/90 text-black border border-[#d4af37] tracking-widest' :
                         templateType === '15' ? 'bg-[#ec4899] text-white border-2 border-[#10b981] rounded-none tracking-widest' :
                         templateType === '16' ? 'bg-gradient-to-r from-pink-500 to-indigo-500 text-white rounded-xl' :
+                        templateType === '19' ? 'bg-[#D95B16] text-white border border-[#D95B16] font-sans tracking-widest rounded-full' :
+                        templateType === '20' ? 'bg-[#FF9B00] text-white border-2 border-white rounded-full font-sans -rotate-3' :
                         'bg-rose-600/95 text-white border border-white/25 rounded-md tracking-wider'
                       }`}
                     >
@@ -9500,55 +9945,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
             
               
           <div className="relative w-full py-4 -my-4 flex flex-col items-center">
-            {demo.isBrand && demo.brandLogoUrl && (
-              <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden flex items-center justify-center">
-                <motion.div 
-                  className="absolute inset-0 pointer-events-none z-0 opacity-45 blur-3xl"
-                  style={{
-                    background: `radial-gradient(circle, ${brandColors?.primary || '#6366f1'}40 0%, transparent 70%)`
-                  }}
-                  animate={{
-                    opacity: [0.35, 0.65, 0.35],
-                    scale: [0.95, 1.15, 0.95]
-                  }}
-                  transition={{
-                    duration: 5,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                />
-                <motion.img 
-                  src={demo.brandLogoUrl} 
-                  className="absolute inset-0 w-full h-full object-cover opacity-[0.25] blur-3xl pointer-events-none" 
-                  alt="" 
-                  referrerPolicy="no-referrer"
-                  animate={{
-                    scale: [1.1, 1.25, 1.1],
-                    opacity: [0.15, 0.3, 0.15]
-                  }}
-                  transition={{
-                    duration: 10,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                />
-                <motion.img 
-                  src={demo.brandLogoUrl} 
-                  className="absolute w-28 h-28 opacity-[0.2] blur-[1px] pointer-events-none z-0" 
-                  alt="" 
-                  referrerPolicy="no-referrer"
-                  animate={{
-                    y: [0, -10, 0],
-                    rotate: [0, 3, 0]
-                  }}
-                  transition={{
-                    duration: 8,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                />
-              </div>
-            )}
+            
             
           <h1 
             className="text-xl md:text-2xl font-black text-center mb-1 drop-shadow-sm flex items-center justify-center relative z-30"
@@ -9587,12 +9984,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                 }}
               >
                 {demo.brandLogoUrl && (
-                  <div 
-                    className="w-5 h-5 rounded-md overflow-hidden flex items-center justify-center p-0.5 bg-white/10"
-                    style={{ border: `1px solid ${badgeStyle.borderColor}` }}
-                  >
-                    <img src={demo.brandLogoUrl} className="w-full h-full object-contain" alt={demo.brandName} referrerPolicy="no-referrer" />
-                  </div>
+                  <img src={demo.brandLogoUrl} className="w-5 h-5 object-contain rounded-md" style={{ filter: 'drop-shadow(0px 1px 2px rgba(0,0,0,0.3))' }} alt={demo.brandName} referrerPolicy="no-referrer" />
                 )}
                 <span className="text-[10px] uppercase tracking-widest font-black flex items-center gap-1">
                   <span style={{ color: badgeStyle.labelColor }}>{t.pPartner || "Đối tác:"}</span>
@@ -9612,7 +10004,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
             {renderArtistNameWithLinks(demo.singer || demo.author || (demo as any)?.defaultArtistName || 'Nghệ sĩ', systemArtists)}
           </p>
           <p 
-            className={`text-xs md:text-sm text-center mb-1 md:mb-6 relative z-30 ${templateType === '6' ? 'font-semibold text-pink-700' : 'font-medium opacity-60'}`}
+            className={`text-xs md:text-sm text-center mb-1 md:mb-6 relative z-30 ${templateType === '6' ? 'font-semibold text-pink-700' : templateType === '19' ? 'font-semibold text-[#D95B16]' : templateType === '20' ? 'font-semibold text-[#3B82F6]' : 'font-medium opacity-60'}`}
             style={{ color: customConfig?.authorColor || undefined }}
           >
             {t.sAuth} {renderArtistNameWithLinks(demo.composer || (demo as any)?.defaultArtistName || 'Nghệ sĩ', systemArtists)}
@@ -9621,14 +10013,14 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
           </motion.div>
           
           <div 
-            className={`rounded-[24px] shadow-[0_20px_40px_rgba(0,0,0,0.3)] border ${isLight ? 'border-black/10' : 'border-white/20'} z-[200] overflow-hidden animate-fade-in ${forceMobile ? 'fixed bottom-4 w-[calc(100%-2rem)] inset-x-0 mx-auto' : forcePC ? 'relative bottom-auto w-full inset-x-auto mx-0' : 'fixed md:relative bottom-4 md:bottom-auto w-[calc(100%-2rem)] md:w-full inset-x-0 md:inset-x-auto mx-auto md:mx-0'}`}
+            className={`rounded-[24px] shadow-[0_20px_40px_rgba(0,0,0,0.3)] border ${templateType === '20' ? 'border-pink-200/50 shadow-[0_20px_40px_rgba(216,67,107,0.15)]' : (isLight ? 'border-black/10' : 'border-white/20')} z-[200] overflow-hidden animate-fade-in ${forceMobile ? 'fixed bottom-4 w-[calc(100%-2rem)] inset-x-0 mx-auto' : forcePC ? 'relative bottom-auto w-full inset-x-auto mx-0' : 'fixed md:relative bottom-4 md:bottom-auto w-[calc(100%-2rem)] md:w-full inset-x-0 md:inset-x-auto mx-auto md:mx-0'}`}
           >
             {/* Background with blur and mask */}
             <div 
               className="absolute inset-0 backdrop-blur-xl"
               style={{ maskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 25%, black 100%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 25%, black 100%)' }}
             >
-              <div className={`absolute inset-0 bg-gradient-to-t ${(templateType === '2' || templateType === '5' || templateType === '8') ? 'from-black/70 via-black/30' : (isLight ? 'from-white/90 via-white/50' : 'from-black/90 via-black/50')} to-transparent`}></div>
+              <div className={`absolute inset-0 bg-gradient-to-t ${templateType === '20' ? 'from-[#FFF0F4]/95 via-[#FFF6F8]/85 to-[#FFE6EC]/50' : (templateType === '2' || templateType === '5' || templateType === '8') ? 'from-black/70 via-black/30' : (isLight ? 'from-white/90 via-white/50' : 'from-black/90 via-black/50')} to-transparent`}></div>
               {displayCoverUrl && (
                 <div 
                   className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-overlay saturate-150"
@@ -9637,7 +10029,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
               )}
             </div>
             <div className="relative z-10 px-4 pt-2 pb-3 md:px-5 md:pt-3 md:pb-4">
-               <CustomAudioPlayer src={demo.audioUrl} backupAudioUrl={demo.backupAudioUrl} template={templateType} onEnded={onEnd} onAlmostEnded={onAlmostEnded} playlistContext={playlistContext} isPreview={isPreview} lyricsColor={customConfig?.lyricsColor} waveColor={customConfig?.waveColor} />
+               <CustomAudioPlayer src={demo.audioUrl} backupAudioUrl={demo.backupAudioUrl} template={templateType} onEnded={onEnd} onAlmostEnded={onAlmostEnded} playlistContext={playlistContext} isPreview={isPreview} lyricsColor={customConfig?.lyricsColor} waveColor={customConfig?.waveColor} showDownload={!!getAdminToken() || !!getMemberToken()} title={demo.title} singer={demo.singer || demo.composer} isReleased={demo.isReleased} />
             </div>
           </div>
           </div>
@@ -9752,41 +10144,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                 ease: "easeInOut"
               }}
             />
-            {demo?.brandLogoUrl && (
-              <>
-                <motion.img 
-                  src={demo.brandLogoUrl} 
-                  className="absolute inset-0 w-full h-full object-cover opacity-[0.12] blur-2xl pointer-events-none z-0" 
-                  alt="" 
-                  referrerPolicy="no-referrer"
-                  animate={{
-                    scale: [1.4, 1.55, 1.4],
-                    opacity: [0.10, 0.16, 0.10]
-                  }}
-                  transition={{
-                    duration: 10,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                />
-                <motion.img 
-                  src={demo.brandLogoUrl} 
-                  className="absolute -right-4 -bottom-4 w-28 h-28 opacity-[0.35] blur-[0.5px] pointer-events-none z-0" 
-                  alt="" 
-                  referrerPolicy="no-referrer"
-                  animate={{
-                    y: [0, -4, 2, -3, 0],
-                    x: [0, 2, -2, 1, 0],
-                    rotate: [12, 15, 9, 14, 12]
-                  }}
-                  transition={{
-                    duration: 5,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                />
-              </>
-            )}
+            
             <div className="relative z-10">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-bold text-lg flex items-center gap-2"><FileText className="w-5 h-5 text-indigo-400" /> Brief khách hàng</h3>
@@ -9794,6 +10152,29 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
               </div>
               <div className="text-sm text-stone-200 leading-relaxed max-h-[60vh] overflow-y-auto custom-scrollbar space-y-1">{formatBriefText(demo?.brandBrief)}</div>
             </div>
+            
+            {demo?.brandLogoUrl && (
+              <motion.div 
+                className="absolute bottom-4 right-6 pointer-events-none z-0 opacity-20 select-none hidden sm:block"
+                animate={{
+                  y: [-6, 6, -6],
+                  rotate: [-4, 4, -4],
+                  scale: [0.93, 1.03, 0.93]
+                }}
+                transition={{
+                  duration: 6,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
+                <img 
+                  src={demo.brandLogoUrl} 
+                  className="w-20 h-20 object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)]" 
+                  alt="" 
+                  referrerPolicy="no-referrer" 
+                />
+              </motion.div>
+            )}
           </div>
         </div>
       )}
@@ -9815,41 +10196,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                 ease: "easeInOut"
               }}
             />
-            {demo?.brandLogoUrl && (
-              <>
-                <motion.img 
-                  src={demo.brandLogoUrl} 
-                  className="absolute inset-0 w-full h-full object-cover opacity-[0.12] blur-2xl pointer-events-none z-0" 
-                  alt="" 
-                  referrerPolicy="no-referrer"
-                  animate={{
-                    scale: [1.4, 1.55, 1.4],
-                    opacity: [0.10, 0.16, 0.10]
-                  }}
-                  transition={{
-                    duration: 10,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                />
-                <motion.img 
-                  src={demo.brandLogoUrl} 
-                  className="absolute -right-4 -bottom-4 w-28 h-28 opacity-[0.35] blur-[0.5px] pointer-events-none z-0" 
-                  alt="" 
-                  referrerPolicy="no-referrer"
-                  animate={{
-                    y: [0, -4, 2, -3, 0],
-                    x: [0, 2, -2, 1, 0],
-                    rotate: [12, 15, 9, 14, 12]
-                  }}
-                  transition={{
-                    duration: 5,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                />
-              </>
-            )}
+            
             <div className="relative z-10">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-bold text-lg flex items-center gap-2"><Youtube className="w-5 h-5 text-rose-400" /> {t.vRef || "Video Tham Khảo"}</h3>
@@ -9866,6 +10213,29 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                 })}
               </div>
             </div>
+            
+            {demo?.brandLogoUrl && (
+              <motion.div 
+                className="absolute bottom-4 right-6 pointer-events-none z-0 opacity-20 select-none hidden sm:block"
+                animate={{
+                  y: [-6, 6, -6],
+                  rotate: [-4, 4, -4],
+                  scale: [0.93, 1.03, 0.93]
+                }}
+                transition={{
+                  duration: 6,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
+                <img 
+                  src={demo.brandLogoUrl} 
+                  className="w-20 h-20 object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)]" 
+                  alt="" 
+                  referrerPolicy="no-referrer" 
+                />
+              </motion.div>
+            )}
           </div>
         </div>
       )}
@@ -10112,7 +10482,9 @@ const DEFAULT_VI_NAMES: Record<string, string> = {
   '18': 'Pháo hoa (Năm mới)'
 };
 
-const translateTemplateName = (nameOrId: string) => {
+const translateTemplateName = (nameOrId: string, customNames?: Record<string, string>, id?: string) => {
+  if (id && customNames?.[id]) return customNames[id];
+  if (customNames && customNames[nameOrId]) return customNames[nameOrId];
   const map: Record<string, string> = {
     '1': 'Vui vẻ (Ấm áp)',
     '2': 'Căng Cực (Sôi động)',
@@ -10132,25 +10504,6 @@ const translateTemplateName = (nameOrId: string) => {
     '16': 'Xếp hình Puzzle',
     '17': 'Cổ vũ (Mây, mặt trời)',
     '18': 'Pháo hoa (Năm mới)',
-    'Cheerful (Warm)': 'Vui vẻ (Ấm áp)',
-    'Energetic (Vibrant)': 'Căng Cực (Sôi động)',
-    'Sad (Deep)': 'Buồn (Sâu lắng)',
-    'Relaxed (Gentle)': 'Thư giãn (Nhẹ nhàng)',
-    'Cute (Red, dancing)': 'Đáng yêu (Đỏ, Nhảy múa)',
-    'Happy (Pink, falling petals)': 'Hạnh Phúc (Hồng, Hoa rơi)',
-    'School (White, falling yellow leaves)': 'Học Đường (Trắng, Lá vàng rơi)',
-    'Vietnam ( Red, waving flag )': 'Tổ Quốc (Đỏ, Cờ phấp phới)',
-    'Vietnam (Red, waving flag)': 'Tổ Quốc (Đỏ, Cờ phấp phới)',
-    'Rainbow': 'Cầu Vồng',
-    'Hip Hop (Street)': 'Hip Hop (Đường phố)',
-    'Mysterious (Black-Gold, Moon-Smoke-Rain)': 'Kỳ bí (Đen vàng, Trăng khói mưa)',
-    'Classic (Brown, retro)': 'Cổ điển (Nâu, retro)',
-    'Sunset (Orange-Red sunset)': 'Hoàng hôn (Cam đỏ trời chiều)',
-    'Ocean (Sea waves)': 'Đại Dương (Sóng biển)',
-    'Retro 8-Bit (Game)': 'Retro 8-Bit (Game)',
-    'Puzzle Grid': 'Xếp hình Puzzle',
-    'Cheering (Clouds, sun)': 'Cổ vũ (Mây, mặt trời)',
-    'Fireworks (New Year)': 'Pháo hoa (Năm mới)',
     'Vui vẻ (Ấm áp)': 'Vui vẻ (Ấm áp)',
     'Căng Cực (Sôi động)': 'Căng Cực (Sôi động)',
     'Buồn (Sâu lắng)': 'Buồn (Sâu lắng)',
@@ -10159,16 +10512,18 @@ const translateTemplateName = (nameOrId: string) => {
     'Hạnh Phúc (Hồng, Hoa rơi)': 'Hạnh Phúc (Hồng, Hoa rơi)',
     'Học Đường (Trắng, Lá vàng rơi)': 'Học Đường (Trắng, Lá vàng rơi)',
     'Tổ Quốc (Đỏ, Cờ phấp phới)': 'Tổ Quốc (Đỏ, Cờ phấp phới)',
+    'Vietnam (Red, waving flag)': 'Tổ Quốc (Đỏ, Cờ phấp phới)',
     'Cầu Vồng': 'Cầu Vồng',
     'Hip Hop (Đường phố)': 'Hip Hop (Đường phố)',
     'Kỳ bí (Đen vàng, Trăng khói mưa)': 'Kỳ bí (Đen vàng, Trăng khói mưa)',
     'Cổ điển (Nâu, retro)': 'Cổ điển (Nâu, retro)',
     'Hoàng hôn (Cam đỏ trời chiều)': 'Hoàng hôn (Cam đỏ trời chiều)',
     'Đại Dương (Sóng biển)': 'Đại Dương (Sóng biển)',
+    'Retro 8-Bit (Game)': 'Retro 8-Bit (Game)',
     'Xếp hình Puzzle': 'Xếp hình Puzzle',
     'Cổ vũ (Mây, mặt trời)': 'Cổ vũ (Mây, mặt trời)',
-    'Pháo hoa (Năm mới)': 'Pháo hoa (Năm mới)'
-  };
+    'Pháo hoa (Năm mới)': 'Pháo hoa (Năm mới)',
+    };
   return map[nameOrId] || nameOrId;
 };
 
@@ -10176,24 +10531,24 @@ function AdminTemplatesSettings({ isPCPreviewMode, setIsPCPreviewMode }: { isPCP
   const { t } = useAdminTranslation();
   const { landingConfig } = useContext(LanguageContext);
   const [templateConfigs, setTemplateConfigs] = useState<TemplateConfig[]>([
-    { id: '1', name: 'Cheerful (Warm)', order: 1 },
-    { id: '2', name: 'Energetic (Vibrant)', order: 2 },
-    { id: '3', name: 'Sad (Deep)', order: 3 },
-    { id: '4', name: 'Relaxed (Gentle)', order: 4 },
-    { id: '5', name: 'Cute (Red, dancing)', order: 5 },
-    { id: '6', name: 'Happy (Pink, falling petals)', order: 6 },
-    { id: '7', name: 'School (White, falling yellow leaves)', order: 7 },
-    { id: '8', name: 'Vietnam ( Red, waving flag )', order: 8 },
-    { id: '9', name: 'Rainbow', order: 9 },
-    { id: '10', name: 'Hip Hop (Street)', order: 10 },
-    { id: '11', name: 'Mysterious (Black-Gold, Moon-Smoke-Rain)', order: 11 },
-    { id: '12', name: 'Classic (Brown, retro)', order: 12 },
-    { id: '13', name: 'Sunset (Orange-Red sunset)', order: 13 },
-    { id: '14', name: 'Ocean (Sea waves)', order: 14 },
+    { id: '1', name: 'Vui vẻ (Ấm áp)', order: 1 },
+    { id: '2', name: 'Căng Cực (Sôi động)', order: 2 },
+    { id: '3', name: 'Buồn (Sâu lắng)', order: 3 },
+    { id: '4', name: 'Thư giãn (Nhẹ nhàng)', order: 4 },
+    { id: '5', name: 'Đáng yêu (Đỏ, Nhảy múa)', order: 5 },
+    { id: '6', name: 'Hạnh Phúc (Hồng, Hoa rơi)', order: 6 },
+    { id: '7', name: 'Học Đường (Trắng, Lá vàng rơi)', order: 7 },
+    { id: '8', name: 'Tổ Quốc (Đỏ, Cờ phấp phới)', order: 8 },
+    { id: '9', name: 'Cầu Vồng', order: 9 },
+    { id: '10', name: 'Hip Hop (Đường phố)', order: 10 },
+    { id: '11', name: 'Kỳ bí (Đen vàng, Trăng khói mưa)', order: 11 },
+    { id: '12', name: 'Cổ điển (Nâu, retro)', order: 12 },
+    { id: '13', name: 'Hoàng hôn (Cam đỏ trời chiều)', order: 13 },
+    { id: '14', name: 'Đại Dương (Sóng biển)', order: 14 },
     { id: '15', name: 'Retro 8-Bit (Game)', order: 15 },
-    { id: '16', name: 'Puzzle Grid', order: 16 },
-    { id: '17', name: 'Cheering (Clouds, sun)', order: 17 },
-    { id: '18', name: 'Fireworks (New Year)', order: 18 }
+    { id: '16', name: 'Xếp hình Puzzle', order: 16 },
+    { id: '17', name: 'Cổ vũ (Mây, mặt trời)', order: 17 },
+    { id: '18', name: 'Pháo hoa (Năm mới)', order: 18 }
   ]);
   const [isLoading, setIsLoading] = useState(true);
   const [toast, setToast] = useState('');
@@ -10216,25 +10571,25 @@ function AdminTemplatesSettings({ isPCPreviewMode, setIsPCPreviewMode }: { isPCP
       .then(res => res.json())
       .then(data => {
         const defaultNames = [
-          'Cheerful (Warm)', 'Energetic (Vibrant)', 'Sad (Deep)', 'Relaxed (Gentle)',
-          'Cute (Red, dancing)', 'Happy (Pink, falling petals)', 'School (White, falling yellow leaves)',
-          'Vietnam ( Red, waving flag )', 'Rainbow', 'Hip Hop (Street)',
-          'Mysterious (Black-Gold, Moon-Smoke-Rain)', 'Classic (Brown, retro)', 'Sunset (Orange-Red sunset)',
-          'Ocean (Sea waves)', 'Retro 8-Bit (Game)', 'Puzzle Grid', 'Cheering (Clouds, sun)', 'Fireworks (New Year)'
+          'Vui vẻ (Ấm áp)', 'Căng Cực (Sôi động)', 'Buồn (Sâu lắng)', 'Thư giãn (Nhẹ nhàng)',
+          'Đáng yêu (Đỏ, Nhảy múa)', 'Hạnh Phúc (Hồng, Hoa rơi)', 'Học Đường (Trắng, Lá vàng rơi)',
+          'Tổ Quốc (Đỏ, Cờ phấp phới)', 'Cầu Vồng', 'Hip Hop (Đường phố)',
+          'Kỳ bí (Đen vàng, Trăng khói mưa)', 'Cổ điển (Nâu, retro)', 'Hoàng hôn (Cam đỏ trời chiều)',
+          'Đại Dương (Sóng biển)', 'Retro 8-Bit (Game)', 'Xếp hình Puzzle', 'Cổ vũ (Mây, mặt trời)', 'Pháo hoa (Năm mới)'
         ];
         let merged: any[] = [];
         if (data.templateConfigs && data.templateConfigs.length > 0) {
           merged = data.templateConfigs.map((c: any) => ({
             ...c,
-            name: translateTemplateName(c.name || String(c.id))
+            name: translateTemplateName(c.name || String(c.id), landingConfig?.templateNames, String(c.id))
           }));
         }
         for (let i = 1; i <= 18; i++) {
            const exist = merged.find((c: any) => c.id === String(i));
            if (!exist) {
-             merged.push({ id: String(i), name: translateTemplateName(defaultNames[i - 1]), order: i });
+             merged.push({ id: String(i), name: translateTemplateName(defaultNames[i - 1], landingConfig?.templateNames, String(i)), order: i });
            } else {
-             exist.name = translateTemplateName(exist.name || String(i));
+             exist.name = translateTemplateName(exist.name || String(i), landingConfig?.templateNames, String(i));
            }
         }
         merged.sort((a: any, b: any) => a.order - b.order);
@@ -10336,6 +10691,9 @@ function AdminTemplatesSettings({ isPCPreviewMode, setIsPCPreviewMode }: { isPCP
                </div>
                <span className="text-stone-500 font-mono font-bold text-xs sm:text-sm w-6 sm:w-7 tracking-tight flex items-center justify-center bg-stone-200/80 rounded-md h-6 sm:h-7 shrink-0">#{config.id}</span>
                <span className="text-sm sm:text-base font-bold truncate">{landingConfig?.templateNames?.[config.id] || (DEFAULT_VI_NAMES[config.id] ? t(DEFAULT_VI_NAMES[config.id]) : config.name)}</span>
+               {landingConfig?.templateVip?.[config.id] && (
+                 <span className="bg-yellow-100 text-yellow-700 text-[10px] font-black px-1.5 py-0.5 rounded border border-yellow-200 shrink-0">VIP</span>
+               )}
             </div>
             <div 
               className="p-2 -mr-2 text-stone-400 hover:text-stone-800 transition-colors" 
@@ -10863,7 +11221,7 @@ function AdminDashboard() {
   const [data, setData] = useState<AppData | null>(null);
   const getSongCoverUrl = (songUrl?: string) => songUrl || data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState<'demos'|'playlists'|'profile'|'about'|'bio'|'menus'|'socials'|'security'|'templates'|'database'|'reposts'|'tickets'|'layout'>(
+  const [activeTab, setActiveTab] = useState<'demos'|'playlists'|'profile'|'about'|'bio'|'menus'|'socials'|'security'|'templates'|'database'|'reposts'|'tickets'|'layout'|'vouchers'>(
     (window.location.hash ? window.location.hash.replace('#', '') : 'demos') as any
   );
   const [demosSubTab, setDemosSubTab] = useState<'released' | 'demos' | 'drafts' | 'playlists' | 'trash' | 'landing_pages' | 'brands'>('released');
@@ -11928,7 +12286,8 @@ function AdminDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto pr-1">
                 {((data as any)?.roles && (data as any).roles.length > 0 ? (data as any).roles : [
                   { id: 'free', name: 'Gói Miễn Phí', price: '0', features: ['Quản lý bài hát cơ bản', 'Upload tối đa 5 bản nhạc demo', 'Chủ đề cơ bản'] },
-                  { id: 'pro', name: 'Gói Chuyên Nghiệp', price: '199.000', features: ['Không giới hạn số bài hát', 'Tự tùy biến chủ đề', 'Hỗ trợ nâng cao', 'Sử dụng tên miền riêng'] }
+                  { id: 'pro', name: 'Gói Chuyên Nghiệp', price: '199.000', features: ['Không giới hạn số bài hát', 'Tự tùy biến chủ đề', 'Hỗ trợ nâng cao', 'Sử dụng tên miền riêng'] },
+                  { id: 'vip', name: 'Gói VIP', price: '500.000', features: ['Tất cả quyền lợi Pro', 'Hiệu ứng hiển thị đặc biệt', 'Hỗ trợ 1-1', 'Nhạc thương hiệu (Brand Music)'] }
                 ]).map((role: any) => {
                   const isActive = data?.roleId === role.id || data?.roleId === role.name;
                   return (
@@ -11954,12 +12313,24 @@ function AdminDashboard() {
                           </span>
                           <span className="text-xs text-stone-500">/ tháng</span>
                         </div>
+                        <button 
+                          type="button" 
+                          className={`w-full py-2.5 rounded-xl font-bold text-xs mb-4 transition-all ${isActive ? 'bg-indigo-600 text-white shadow-md cursor-default' : 'bg-stone-100 text-stone-700 hover:bg-stone-200 cursor-pointer'}`}
+                          onClick={() => {
+                             if (!isActive) {
+                                setToast(`Vui lòng nâng cấp gói tại trang chủ landing page!`);
+                                setTimeout(() => setToast(''), 3000);
+                             }
+                          }}
+                        >
+                          {isActive ? t('Đang Sử Dụng') : t('Nâng Cấp Ngay')}
+                        </button>
 
                         {/* Features list */}
-                        <ul className="space-y-2 text-xs text-stone-600">
+                        <ul className={`space-y-2 text-xs ${role.id === 'vip' ? 'text-amber-900/80 font-medium' : 'text-stone-600'}`}>
                           {(Array.isArray(role.features) ? role.features : (role.features || '').split('\n').filter(Boolean)).map((feat: string, idx: number) => (
                             <li key={idx} className="flex items-start gap-1.5">
-                              <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                              <Check className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${role.id === 'vip' ? 'text-amber-500' : 'text-emerald-500'}`} />
                               <span>{feat}</span>
                             </li>
                           ))}
@@ -12046,12 +12417,21 @@ function AdminDashboard() {
                           : t("Chưa nâng cấp")}
                       </strong>
                     </p>
-                    <span className="inline-block text-[10px] font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full mt-2 uppercase tracking-wide">
-                      {(() => {
-                        const matchedRole = (data as any)?.roles?.find((r: any) => r.id === data?.roleId || r.name === data?.roleId);
-                        return matchedRole ? matchedRole.name : (data?.roleId || t("Thành viên"));
-                      })()}
-                    </span>
+                    {(() => {
+                    const roleIdStr = String(data?.roleId || 'free').toLowerCase();
+                    const isVip = roleIdStr === 'vip';
+                    const isPro = roleIdStr === 'pro' || roleIdStr === 'chuyên nghiệp' || roleIdStr === 'gói chuyên nghiệp';
+                    let badgeClasses = "text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider border inline-block mt-2 ";
+                    if (isVip) {
+                      badgeClasses += "bg-gradient-to-r from-yellow-200 to-amber-300 text-amber-900 border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.6)] animate-[pulse_2s_infinite]";
+                    } else if (isPro) {
+                      badgeClasses += "text-emerald-700 bg-emerald-100 border-emerald-300";
+                    } else {
+                      badgeClasses += "text-indigo-600 bg-indigo-50 border-indigo-100";
+                    }
+                    const matchedRole = (data as any)?.roles?.find((r: any) => r.id === data?.roleId || r.name === data?.roleId);
+                    return <span className={badgeClasses}>{matchedRole ? matchedRole.name : (data?.roleId || 'Thành viên')}</span>;
+                  })()}
                   </div>
                 </div>
               </div>
@@ -12069,10 +12449,10 @@ function AdminDashboard() {
         )}
       </AnimatePresence>
       <header className="bg-white border-b border-stone-200 sticky top-0 z-[100] shadow-xs">
-        <div className="max-w-6xl mx-auto px-6 h-16 w-full flex items-center justify-between">
-          <div className="flex items-center gap-2 select-none">
-            <ChorusLogo className="w-9 h-9" />
-            <div className="flex items-baseline mt-0.5">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 w-full flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 select-none shrink-0">
+            <ChorusLogo className="w-9 h-9 shrink-0" />
+            <div className="hidden sm:flex items-baseline mt-0.5">
               <span className="font-sans font-black text-stone-950 tracking-tight text-xl leading-none">Chorus</span>
               <span className="font-serif italic font-light text-stone-400 text-xl leading-none">.vn</span>
               <span className="ml-2 font-mono text-[10px] font-bold uppercase tracking-widest text-stone-500 bg-stone-100 border border-stone-200/60 px-1.5 py-0.5 rounded shadow-xs">Admin</span>
@@ -12142,12 +12522,21 @@ function AdminDashboard() {
                   {data?.artistName || 'Nghệ Sĩ'}
                 </h4>
                 
-                <p className="text-[10px] font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full mt-1.5 uppercase tracking-wider">
-                  {(() => {
+                {(() => {
+                    const roleIdStr = String(data?.roleId || 'free').toLowerCase();
+                    const isVip = roleIdStr === 'vip';
+                    const isPro = roleIdStr === 'pro' || roleIdStr === 'chuyên nghiệp' || roleIdStr === 'gói chuyên nghiệp';
+                    let badgeClasses = "text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider border inline-block mt-1.5 ";
+                    if (isVip) {
+                      badgeClasses += "bg-gradient-to-r from-yellow-200 to-amber-300 text-amber-900 border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.6)] animate-[pulse_2s_infinite]";
+                    } else if (isPro) {
+                      badgeClasses += "text-emerald-700 bg-emerald-100 border-emerald-300";
+                    } else {
+                      badgeClasses += "text-indigo-600 bg-indigo-50 border-indigo-100";
+                    }
                     const matchedRole = (data as any)?.roles?.find((r: any) => r.id === data?.roleId || r.name === data?.roleId);
-                    return matchedRole ? matchedRole.name : (data?.roleId || 'Thành viên');
+                    return <span className={badgeClasses}>{matchedRole ? matchedRole.name : (data?.roleId || 'Thành viên')}</span>;
                   })()}
-                </p>
 
                 {/* Gói Thành Viên & Lịch Sử & Bảo Mật Links */}
                 <div className="w-full border-t border-stone-200/60 mt-4 pt-3 flex flex-col gap-2.5 text-xs text-stone-500 font-bold">
@@ -12682,7 +13071,49 @@ function AdminDashboard() {
                       }`}
                       title={t("Cơ sở dữ liệu")}
                     >
-                      {activeTab === 'database' && (
+                      {activeTab === 'vouchers' && (
+            <motion.div key="vouchers" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }}>
+              <div className="max-w-xl mx-auto bg-stone-50 rounded-3xl p-6 sm:p-8 shadow-sm border border-stone-200 mt-10">
+                <h2 className="text-2xl font-black mb-2 flex items-center gap-3">
+                  <Award className="w-8 h-8 text-yellow-500" /> {t("Sử dụng mã Voucher")}
+                </h2>
+                <p className="text-sm text-stone-500 mb-8 font-medium leading-relaxed">
+                  {t("Nhập mã voucher để nhận thêm đặc quyền (tăng giới hạn đăng bài, giao diện VIP, ...).")}
+                </p>
+                
+                <form onSubmit={async (e: any) => {
+                  e.preventDefault();
+                  const codeVal = e.currentTarget.voucherCode.value;
+                  if (!codeVal) return;
+                  try {
+                    const res = await fetch('/api/admin/vouchers/redeem', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAdminToken() || ''}`, 'x-artist-extension': getArtistExtensionFromUrl() },
+                      body: JSON.stringify({ code: codeVal })
+                    });
+                    const json = await res.json();
+                    if (res.ok) {
+                      setToast(json.message || t("Áp dụng mã thành công!"));
+                      setTimeout(() => window.location.reload(), 2000);
+                    } else {
+                      alert(json.error || 'Lỗi');
+                    }
+                  } catch(err) {
+                    alert('Lỗi mạng');
+                  }
+                }}>
+                  <div className="mb-6">
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Mã Voucher")}</label>
+                    <input name="voucherCode" required placeholder="Nhập mã..." className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
+                  </div>
+                  <button type="submit" className="w-full bg-stone-900 text-white font-bold py-3.5 rounded-xl hover:bg-stone-800 transition-colors shadow-sm text-center">
+                    {t("Áp dụng Voucher")}
+                  </button>
+                </form>
+              </div>
+            </motion.div>
+          )}
+          {activeTab === 'database' && (
                         <motion.span
                           layoutId="adminSidebarActiveBg"
                           className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
@@ -12709,6 +13140,33 @@ function AdminDashboard() {
                       )}
                     </button>
                   )}
+                  <button
+                    onClick={() => setActiveTab('vouchers')}
+                    className={`flex items-center transition-all relative group ${
+                      effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
+                    } ${
+                      activeTab === 'vouchers' ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
+                    }`}
+                    title={t("Mã quà tặng")}
+                  >
+                    {activeTab === 'vouchers' && (
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
+                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.32 }}
+                      />
+                    )}
+                    <motion.div
+                        className="relative z-10 flex items-center justify-center"
+                      >
+                      <Award className={`w-5 h-5 relative z-10 transition-colors ${activeTab === 'vouchers' ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                    </motion.div>
+                    {!effectiveSidebarCollapsed && (
+                      <span className="relative z-10">
+                        {t("Mã quà tặng")}
+                      </span>
+                    )}
+                  </button>
                 </div>
               </>
             );
@@ -14975,6 +15433,8 @@ function AdminDashboard() {
 interface CustomSelectOption {
   value: string;
   label: string;
+  isVip?: boolean;
+  disabled?: boolean;
 }
 
 function CustomSelect({
@@ -15014,8 +15474,11 @@ function CustomSelect({
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between border border-stone-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-stone-950/10 focus:border-stone-900 transition-all cursor-pointer shadow-xs text-left"
       >
-        <span className="truncate text-stone-700 font-semibold text-sm">
+        <span className="truncate text-stone-700 font-semibold text-sm flex items-center gap-2">
           {selectedOption ? selectedOption.label : placeholder}
+          {selectedOption && selectedOption.isVip && (
+            <span className="bg-yellow-100 text-yellow-700 text-[10px] font-black px-1.5 py-0.5 rounded border border-yellow-200 shrink-0">VIP</span>
+          )}
         </span>
         <svg
           className={`w-4 h-4 text-stone-500 transition-transform duration-200 shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`}
@@ -15034,19 +15497,28 @@ function CustomSelect({
             <button
               key={opt.value}
               type="button"
+              disabled={opt.disabled}
               onClick={() => {
+                if (opt.disabled) return;
                 onChange(opt.value);
                 setIsOpen(false);
               }}
               className={`w-full text-left px-4 py-2.5 text-sm transition-all flex items-center justify-between ${
                 opt.value === value
                   ? 'bg-stone-900 text-white font-bold'
+                  : opt.disabled
+                  ? 'text-stone-400 opacity-60 cursor-not-allowed bg-stone-50'
                   : 'text-stone-700 hover:bg-stone-50'
               }`}
             >
-              <span className="truncate">{opt.label}</span>
+              <div className="flex items-center gap-2 truncate">
+                 <span className="truncate">{opt.label}</span>
+                 {opt.isVip && (
+                   <span className="bg-yellow-100 text-yellow-700 text-[10px] font-black px-1.5 py-0.5 rounded border border-yellow-200 shrink-0">VIP</span>
+                 )}
+              </div>
               {opt.value === value && (
-                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                <svg className={`w-4 h-4 ${opt.disabled ? 'text-stone-400' : 'text-white'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               )}
@@ -15186,8 +15658,11 @@ function TemplatePickerModal({
             <h3 className="text-xl font-black mb-4">{t("Chọn Template")}</h3>
             <div className="space-y-2 pb-6">
                {configs.map(c => (
-                  <button type="button" key={c.id} onClick={() => setSelectedId(c.id)} className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-colors ${selectedId === c.id ? 'border-stone-900 bg-stone-50 font-bold' : 'border-transparent bg-white hover:bg-stone-100'}`}>
-                      {t(c.name)}
+                  <button type="button" key={c.id} onClick={() => setSelectedId(c.id)} className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-colors flex justify-between items-center ${selectedId === c.id ? 'border-stone-900 bg-stone-50 font-bold' : 'border-transparent bg-white hover:bg-stone-100'}`}>
+                      <span>{t(c.name)}</span>
+                      {landingConfig?.templateVip?.[c.id] && (
+                        <span className="bg-yellow-100 text-yellow-700 text-[10px] font-black px-1.5 py-0.5 rounded border border-yellow-200 ml-2">VIP</span>
+                      )}
                   </button>
                ))}
             </div>
@@ -15256,7 +15731,7 @@ function AchievementEditor({ achievements, onChange }: { achievements: Achieveme
       {achievements.length > 0 && (
         <div className="space-y-4 mb-4">
           {achievements.map((ach, index) => (
-            <div key={index} className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl border border-stone-200 shadow-sm relative group overflow-hidden items-end">
+            <div key={index} className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl border border-stone-200 shadow-sm relative group items-end">
               <div className="w-full sm:w-[220px] shrink-0">
                 <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-2">{t("Loại thành tích")}</label>
                 <CustomSelect
@@ -15303,6 +15778,7 @@ function AchievementEditor({ achievements, onChange }: { achievements: Achieveme
 // ---- ADMIN CREATE DEMO ----
 function AdminCreateDemo() {
   const { t } = useAdminTranslation();
+  const { landingConfig } = useContext(LanguageContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
@@ -15341,30 +15817,32 @@ function AdminCreateDemo() {
           setRandomSlideUrl(data.slideshowImages[randomIndex]);
         }
         if (data.templateConfigs && data.templateConfigs.length > 0) {
-          const sorted = data.templateConfigs.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id)) })).sort((a: any, b: any) => a.order - b.order);
+          const sorted = data.templateConfigs.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id), landingConfig?.templateNames, String(c.id)) })).sort((a: any, b: any) => a.order - b.order);
           setTemplateConfigs(sorted);
         } else {
           const fallbackList = [
-            { id: '1', name: 'Cheerful (Warm)' },
-            { id: '2', name: 'Energetic (Vibrant)' },
-            { id: '3', name: 'Sad (Deep)' },
-            { id: '4', name: 'Relaxed (Gentle)' },
-            { id: '5', name: 'Cute (Red, dancing)' },
-            { id: '6', name: 'Happy (Pink, falling petals)' },
-            { id: '7', name: 'School (White, falling yellow leaves)' },
-            { id: '8', name: 'Vietnam ( Red, waving flag )' },
-            { id: '9', name: 'Rainbow' },
-            { id: '10', name: 'Hip Hop (Street)' },
-            { id: '11', name: 'Mysterious (Black-Gold, Moon-Smoke-Rain)' },
-            { id: '12', name: 'Classic (Brown, retro)' },
-            { id: '13', name: 'Sunset (Orange-Red sunset)' },
-            { id: '14', name: 'Ocean (Sea waves)' },
+            { id: '1', name: 'Vui vẻ (Ấm áp)' },
+            { id: '2', name: 'Căng Cực (Sôi động)' },
+            { id: '3', name: 'Buồn (Sâu lắng)' },
+            { id: '4', name: 'Thư giãn (Nhẹ nhàng)' },
+            { id: '5', name: 'Đáng yêu (Đỏ, Nhảy múa)' },
+            { id: '6', name: 'Hạnh Phúc (Hồng, Hoa rơi)' },
+            { id: '7', name: 'Học Đường (Trắng, Lá vàng rơi)' },
+            { id: '8', name: 'Tổ Quốc (Đỏ, Cờ phấp phới)' },
+            { id: '9', name: 'Cầu Vồng' },
+            { id: '10', name: 'Hip Hop (Đường phố)' },
+            { id: '11', name: 'Kỳ bí (Đen vàng, Trăng khói mưa)' },
+            { id: '12', name: 'Cổ điển (Nâu, retro)' },
+            { id: '13', name: 'Hoàng hôn (Cam đỏ trời chiều)' },
+            { id: '14', name: 'Đại Dương (Sóng biển)' },
             { id: '15', name: 'Retro 8-Bit (Game)' },
-            { id: '16', name: 'Puzzle Grid' },
-            { id: '17', name: 'Cheering (Clouds, sun)' },
-            { id: '18', name: 'Fireworks (New Year)' }
+            { id: '16', name: 'Xếp hình Puzzle' },
+            { id: '17', name: 'Cổ vũ (Mây, mặt trời)' },
+            { id: '18', name: 'Pháo hoa (Năm mới)' },
+            { id: '19', name: 'Ký Ức' },
+            { id: '20', name: 'Ngọt Ngào' }
           ];
-          setTemplateConfigs(fallbackList.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id)) })));
+          setTemplateConfigs(fallbackList.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id), landingConfig?.templateNames, String(c.id)) })));
         }
       } catch (err) {}
     };
@@ -15538,31 +16016,33 @@ function AdminCreateDemo() {
           }
         }
         if (data.templateConfigs && data.templateConfigs.length > 0) {
-          const sorted = data.templateConfigs.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id)) })).sort((a: any, b: any) => a.order - b.order);
+          const sorted = data.templateConfigs.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id), landingConfig?.templateNames, String(c.id)) })).sort((a: any, b: any) => a.order - b.order);
           setTemplateConfigs(sorted);
         } else {
           // Fallback static
           const fallbackList = [
-            { id: '1', name: 'Cheerful (Warm)' },
-            { id: '2', name: 'Energetic (Vibrant)' },
-            { id: '3', name: 'Sad (Deep)' },
-            { id: '4', name: 'Relaxed (Gentle)' },
-            { id: '5', name: 'Cute (Red, dancing)' },
-            { id: '6', name: 'Happy (Pink, falling petals)' },
-            { id: '7', name: 'School (White, falling yellow leaves)' },
-            { id: '8', name: 'Vietnam ( Red, waving flag )' },
-            { id: '9', name: 'Rainbow' },
-            { id: '10', name: 'Hip Hop (Street)' },
-            { id: '11', name: 'Mysterious (Black-Gold, Moon-Smoke-Rain)' },
-            { id: '12', name: 'Classic (Brown, retro)' },
-            { id: '13', name: 'Sunset (Orange-Red sunset)' },
-            { id: '14', name: 'Ocean (Sea waves)' },
+            { id: '1', name: 'Vui vẻ (Ấm áp)' },
+            { id: '2', name: 'Căng Cực (Sôi động)' },
+            { id: '3', name: 'Buồn (Sâu lắng)' },
+            { id: '4', name: 'Thư giãn (Nhẹ nhàng)' },
+            { id: '5', name: 'Đáng yêu (Đỏ, Nhảy múa)' },
+            { id: '6', name: 'Hạnh Phúc (Hồng, Hoa rơi)' },
+            { id: '7', name: 'Học Đường (Trắng, Lá vàng rơi)' },
+            { id: '8', name: 'Tổ Quốc (Đỏ, Cờ phấp phới)' },
+            { id: '9', name: 'Cầu Vồng' },
+            { id: '10', name: 'Hip Hop (Đường phố)' },
+            { id: '11', name: 'Kỳ bí (Đen vàng, Trăng khói mưa)' },
+            { id: '12', name: 'Cổ điển (Nâu, retro)' },
+            { id: '13', name: 'Hoàng hôn (Cam đỏ trời chiều)' },
+            { id: '14', name: 'Đại Dương (Sóng biển)' },
             { id: '15', name: 'Retro 8-Bit (Game)' },
-            { id: '16', name: 'Puzzle Grid' },
-            { id: '17', name: 'Cheering (Clouds, sun)' },
-            { id: '18', name: 'Fireworks (New Year)' }
+            { id: '16', name: 'Xếp hình Puzzle' },
+            { id: '17', name: 'Cổ vũ (Mây, mặt trời)' },
+            { id: '18', name: 'Pháo hoa (Năm mới)' },
+            { id: '19', name: 'Ký Ức' },
+            { id: '20', name: 'Ngọt Ngào' }
           ];
-          setTemplateConfigs(fallbackList.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id)) })));
+          setTemplateConfigs(fallbackList.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id), landingConfig?.templateNames, String(c.id)) })));
         }
       })
       .catch(console.error);
@@ -16229,7 +16709,7 @@ function AdminCreateDemo() {
                       <CustomSelect
                         value={template}
                         onChange={val => setTemplate(val)}
-                        options={templateConfigs.map((tc: any) => ({ value: tc.id, label: t(tc.name) }))}
+                        options={templateConfigs.map((tc: any) => ({ value: tc.id, label: t(tc.name), isVip: tc.isVip || tc.id === '2', disabled: (tc.isVip || tc.id === '2') && !(appData?.roleId === 'vip' || appData?.roleId === 'pro' || appData?.isSpecial || (appData?.maxTemplates && appData.maxTemplates > 0)) }))}
                         className="w-full"
                       />
                       <input type="hidden" name="templateCreate" value={template} />
@@ -16548,6 +17028,7 @@ function AdminCreateDemo() {
 // ---- ADMIN EDIT DEMO ----
 function AdminEditDemo() {
   const { t } = useAdminTranslation();
+  const { landingConfig } = useContext(LanguageContext);
   const navigate = useNavigate();
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
@@ -16683,30 +17164,32 @@ function AdminEditDemo() {
           setRandomSlideUrl(data.slideshowImages[randomIndex]);
         }
         if (data.templateConfigs && data.templateConfigs.length > 0) {
-          const sorted = data.templateConfigs.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id)) })).sort((a: any, b: any) => a.order - b.order);
+          const sorted = data.templateConfigs.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id), landingConfig?.templateNames, String(c.id)) })).sort((a: any, b: any) => a.order - b.order);
           setTemplateConfigs(sorted);
         } else {
           const fallbackList = [
-            { id: '1', name: 'Cheerful (Warm)' },
-            { id: '2', name: 'Energetic (Vibrant)' },
-            { id: '3', name: 'Sad (Deep)' },
-            { id: '4', name: 'Relaxed (Gentle)' },
-            { id: '5', name: 'Cute (Red, dancing)' },
-            { id: '6', name: 'Happy (Pink, falling petals)' },
-            { id: '7', name: 'School (White, falling yellow leaves)' },
-            { id: '8', name: 'Vietnam ( Red, waving flag )' },
-            { id: '9', name: 'Rainbow' },
-            { id: '10', name: 'Hip Hop (Street)' },
-            { id: '11', name: 'Mysterious (Black-Gold, Moon-Smoke-Rain)' },
-            { id: '12', name: 'Classic (Brown, retro)' },
-            { id: '13', name: 'Sunset (Orange-Red sunset)' },
-            { id: '14', name: 'Ocean (Sea waves)' },
+            { id: '1', name: 'Vui vẻ (Ấm áp)' },
+            { id: '2', name: 'Căng Cực (Sôi động)' },
+            { id: '3', name: 'Buồn (Sâu lắng)' },
+            { id: '4', name: 'Thư giãn (Nhẹ nhàng)' },
+            { id: '5', name: 'Đáng yêu (Đỏ, Nhảy múa)' },
+            { id: '6', name: 'Hạnh Phúc (Hồng, Hoa rơi)' },
+            { id: '7', name: 'Học Đường (Trắng, Lá vàng rơi)' },
+            { id: '8', name: 'Tổ Quốc (Đỏ, Cờ phấp phới)' },
+            { id: '9', name: 'Cầu Vồng' },
+            { id: '10', name: 'Hip Hop (Đường phố)' },
+            { id: '11', name: 'Kỳ bí (Đen vàng, Trăng khói mưa)' },
+            { id: '12', name: 'Cổ điển (Nâu, retro)' },
+            { id: '13', name: 'Hoàng hôn (Cam đỏ trời chiều)' },
+            { id: '14', name: 'Đại Dương (Sóng biển)' },
             { id: '15', name: 'Retro 8-Bit (Game)' },
-            { id: '16', name: 'Puzzle Grid' },
-            { id: '17', name: 'Cheering (Clouds, sun)' },
-            { id: '18', name: 'Fireworks (New Year)' }
+            { id: '16', name: 'Xếp hình Puzzle' },
+            { id: '17', name: 'Cổ vũ (Mây, mặt trời)' },
+            { id: '18', name: 'Pháo hoa (Năm mới)' },
+            { id: '19', name: 'Ký Ức' },
+            { id: '20', name: 'Ngọt Ngào' }
           ];
-          setTemplateConfigs(fallbackList.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id)) })));
+          setTemplateConfigs(fallbackList.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id), landingConfig?.templateNames, String(c.id)) })));
         }
         const found = data.demos.find((d: any) => d.id === id);
         if (found) {
@@ -17090,6 +17573,33 @@ function AdminEditDemo() {
           <Link to={getAdminLink() + (linkType === 'indirect' ? '?subtab=landing_pages' : (demo?.isDraft ? '?subtab=drafts' : (demo?.isReleased ? '?subtab=released' : '?subtab=demos')))} className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-900 font-medium transition-colors">
             <ArrowLeft className="w-5 h-5" /> {t("Trở về Dashboard")}
           </Link>
+          <div className="flex gap-2 items-center">
+            {demo?.audioUrl && (
+              <a 
+                href={demo.audioUrl} 
+                className="bg-indigo-100 text-indigo-700 px-3 py-2 rounded-xl flex items-center gap-2 hover:bg-indigo-200 transition-colors shadow-sm font-bold text-sm"
+                onClick={(e) => {
+                   e.preventDefault();
+                   fetch(demo.audioUrl)
+                     .then(res => res.blob())
+                     .then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        const sStr = demo.singer || demo.composer ? ' - ' + (demo.singer || demo.composer) : '';
+                        const rStr = demo.isReleased ? '' : ' (Demo)';
+                        a.download = `${(demo.title || 'song').trim()}${sStr}${rStr}.mp3`;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+                     })
+                     .catch(() => window.open(demo.audioUrl, '_blank'));
+                }}
+              >
+                <Download className="w-4 h-4" /> {t("Tải Nhạc")}
+              </a>
+            )}
           <button 
             type="button" 
             onClick={async () => {
@@ -17118,8 +17628,9 @@ function AdminEditDemo() {
             }}
             className="bg-stone-200 text-stone-700 px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-stone-300 transition-colors shadow-sm font-bold text-sm"
           >
-            <Copy className="w-4 h-4" /> Nhân bản
+            <Copy className="w-4 h-4" /> {t("Nhân bản")}
           </button>
+          </div>
         </div>
         
         <div className="bg-white p-5 md:p-6 rounded-2xl border border-stone-200 shadow-xl shadow-stone-200/50">
@@ -17541,7 +18052,7 @@ function AdminEditDemo() {
                       <CustomSelect
                         value={template}
                         onChange={val => setTemplate(val)}
-                        options={templateConfigs.map((tc: any) => ({ value: tc.id, label: t(tc.name) }))}
+                        options={templateConfigs.map((tc: any) => ({ value: tc.id, label: t(tc.name), isVip: tc.isVip || tc.id === '2', disabled: (tc.isVip || tc.id === '2') && !(appData?.roleId === 'vip' || appData?.roleId === 'pro' || appData?.isSpecial || (appData?.maxTemplates && appData.maxTemplates > 0)) }))}
                         className="w-full"
                       />
                       <input type="hidden" name="template" value={template} />
@@ -17944,6 +18455,8 @@ function AdminPlaylistEdit() {
   const [playlist, setPlaylist] = useState<any>(null);
   const [songs, setSongs] = useState<any[]>([]);
   const [toast, setToast] = useState('');
+  
+  const getSongCoverUrl = (songUrl?: string) => songUrl || appData?.aboutMe?.avatarUrl || appData?.homeCoverUrl || '';
   const [isLoading, setIsLoading] = useState(true);
   const [title, setTitle] = useState('');
   const [coverUrlPreview, setCoverUrlPreview] = useState('');
@@ -18424,11 +18937,11 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl, on
               <input value={aboutData.dob || ''} onChange={handleChange('dob')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Địa Chỉ")}</label>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Đến Từ")}</label>
               <input value={aboutData.address || ''} onChange={handleChange('address')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Công Ty")}</label>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Sinh Sống")}</label>
               <input value={aboutData.company || ''} onChange={handleChange('company')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
             </div>
             <div>
@@ -19183,8 +19696,8 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
           <div className="space-y-3 mb-6 text-lg">
             {aboutMe.realName && <InfoField label={t("Tên Thật") || "Tên Thật"} value={aboutMe.realName} />}
             {aboutMe.dob && <InfoField label={t("Ngày Sinh") || "Ngày Sinh"} value={aboutMe.dob} />}
-            {aboutMe.address && <InfoField label={t("Địa Chỉ") || "Địa Chỉ"} value={aboutMe.address} />}
-            {aboutMe.company && <InfoField label={t("Công Ty") || "Công Ty"} value={aboutMe.company} />}
+            {aboutMe.address && <InfoField label={t("Đến Từ") || "Đến Từ"} value={aboutMe.address} />}
+            {aboutMe.company && <InfoField label={t("Sinh Sống") || "Sinh Sống"} value={aboutMe.company} />}
             {aboutMe.email && <InfoField label={t("Email") || "Email"} value={aboutMe.email} />}
             {aboutMe.phone && <InfoField label={t("SĐT") || "SĐT"} value={aboutMe.phone} />}
           </div>

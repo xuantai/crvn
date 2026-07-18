@@ -24,24 +24,24 @@ interface Artist {
 }
 
 const DEFAULT_TEMPLATE_NAMES: Record<string, string> = {
-  "1": "Cheerful (Warm)",
-  "2": "Energetic (Vibrant)",
-  "3": "Sad (Deep)",
-  "4": "Relaxed (Gentle)",
-  "5": "Cute (Red, dancing)",
-  "6": "Happy (Pink, falling petals)",
-  "7": "School (White, falling yellow leaves)",
-  "8": "Vietnam ( Red, waving flag )",
-  "9": "Rainbow",
-  "10": "Hip Hop (Street)",
-  "11": "Mysterious (Black-Gold, Moon-Smoke-Rain)",
-  "12": "Classic (Brown, retro)",
-  "13": "Indie (Warm, vintage)",
-  "14": "Party (Neon, disco)",
-  "15": "Acoustic (Wood, natural)",
-  "16": "Lo-Fi (Purple, chill)",
-  "17": "Pop (Bright, modern)",
-  "18": "Rock (Dark, intense)"
+  '1': 'Vui vẻ (Ấm áp)',
+  '2': 'Căng Cực (Sôi động)',
+  '3': 'Buồn (Sâu lắng)',
+  '4': 'Thư giãn (Nhẹ nhàng)',
+  '5': 'Đáng yêu (Đỏ, Nhảy múa)',
+  '6': 'Hạnh Phúc (Hồng, Hoa rơi)',
+  '7': 'Học Đường (Trắng, Lá vàng rơi)',
+  '8': 'Tổ Quốc (Đỏ, Cờ phấp phới)',
+  '9': 'Cầu Vồng',
+  '10': 'Hip Hop (Đường phố)',
+  '11': 'Kỳ bí (Đen vàng, Trăng khói mưa)',
+  '12': 'Cổ điển (Nâu, retro)',
+  '13': 'Hoàng hôn (Cam đỏ trời chiều)',
+  '14': 'Đại Dương (Sóng biển)',
+  '15': 'Retro 8-Bit (Game)',
+  '16': 'Xếp hình Puzzle',
+  '17': 'Cổ vũ (Mây, mặt trời)',
+  '18': 'Pháo hoa (Năm mới)'
 };
 
 export default function ACPControlPanel() {
@@ -148,6 +148,7 @@ export default function ACPControlPanel() {
   const [adminPassword, setAdminPassword] = useState('MatKhauDay123');
   const [cloudSyncEnabled, setCloudSyncEnabled] = useState(true);
   const [templateNames, setTemplateNames] = useState<Record<string, string>>({});
+  const [templateVip, setTemplateVip] = useState<Record<string, boolean>>({});
   const [demoSongTitle, setDemoSongTitle] = useState("");
   const [demoSongArtist, setDemoSongArtist] = useState("");
   const [demoSongLyrics, setDemoSongLyrics] = useState("");
@@ -204,6 +205,7 @@ export default function ACPControlPanel() {
 
   // Roles & Permissions States
   const [roles, setRoles] = useState<any[]>([]);
+  const [vouchers, setVouchers] = useState<any[]>([]);
   const [editingRoleIdx, setEditingRoleIdx] = useState<number | null>(null);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [roleName, setRoleName] = useState('');
@@ -222,6 +224,7 @@ export default function ACPControlPanel() {
 
   // Artist Role ID
   const [artistRoleId, setArtistRoleId] = useState('');
+  const [artistMaxSongs, setArtistMaxSongs] = useState<number | ''>('');
 
   const uploadWithProgress = (file: File, setProgress: (p: number) => void): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -362,6 +365,7 @@ export default function ACPControlPanel() {
         setAdminPassword(data.adminPassword || 'MatKhauDay123');
         setCloudSyncEnabled(data.cloudSyncEnabled !== false);
         setTemplateNames(data.templateNames || {});
+        setTemplateVip(data.templateVip || {});
         setDemoSongTitle(data.demoSongInfo?.title || "");
         setDemoSongArtist(data.demoSongInfo?.artist || "");
         setDemoSongLyrics(data.demoSongInfo?.lyrics || "");
@@ -645,7 +649,8 @@ export default function ACPControlPanel() {
           defaultLanguage: artistDefaultLanguage,
           artistBio,
           isSpecial: artistIsSpecial,
-          roleId: artistRoleId
+          roleId: artistRoleId,
+          maxSongs: artistMaxSongs === '' ? null : artistMaxSongs
         })
       });
 
@@ -990,7 +995,8 @@ export default function ACPControlPanel() {
           globalLayoutSections,
           cloudSyncEnabled,
           demoSongInfo: { title: demoSongTitle, artist: demoSongArtist, lyrics: demoSongLyrics },
-          templateNames
+          templateNames,
+          templateVip
         })
       });
       if (res.ok) {
@@ -1320,6 +1326,7 @@ export default function ACPControlPanel() {
     setArtistBio(artist.artistBio || '');
     setArtistIsSpecial(!!artist.isSpecial);
     setArtistRoleId((artist as any).roleId || '');
+    setArtistMaxSongs((artist as any).maxSongs || '');
     setShowEditModal(true);
   };
 
@@ -1337,6 +1344,7 @@ export default function ACPControlPanel() {
     setArtistBio('');
     setArtistIsSpecial(false);
     setArtistRoleId('');
+    setArtistMaxSongs('');
     setFormErr('');
   };
 
@@ -1391,12 +1399,11 @@ export default function ACPControlPanel() {
               </p>
             )}
 
-            <button 
-              type="submit" 
-              disabled={isLoading}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3.5 rounded-xl hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-purple-900/20 flex items-center justify-center gap-2 cursor-pointer"
+            <button
+              type="submit"
+              className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-4 rounded-xl transition-all"
             >
-              {isLoading ? 'Đang xác minh...' : 'Đăng nhập'}
+              Login to System
             </button>
           </form>
         </div>
@@ -1405,135 +1412,103 @@ export default function ACPControlPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white">
-      {/* Top navbar */}
-      <header className="border-b border-white/5 bg-neutral-900/50 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20">
-              <Shield className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-base font-black tracking-tight">Chorus.vn ACP</h1>
-              <p className="text-[10px] text-purple-400 font-mono">Master Administrator Mode</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <a 
-              href="/"
-              className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white py-2 px-4 rounded-xl text-xs transition-all font-bold cursor-pointer"
-            >
-              <Home className="w-4 h-4 text-purple-400" /> Trang chủ
-            </a>
-            <button 
-              onClick={handleLogout}
-              className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white py-2 px-4 rounded-xl text-xs transition-all font-bold cursor-pointer"
-            >
-              <LogOut className="w-4 h-4 text-rose-400" /> Đăng xuất
-            </button>
-          </div>
+    <div className="flex h-screen bg-black text-white font-sans overflow-hidden">
+      {/* Sidebar */}
+      <aside className="w-64 bg-neutral-900/50 border-r border-white/5 flex flex-col z-20 shrink-0">
+        <div className="p-6 border-b border-white/5">
+          <h1 className="text-xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent flex items-center gap-2">
+            <Lock className="w-5 h-5 text-purple-400" />
+            ADMIN PANEL
+          </h1>
         </div>
-      </header>
+        
+        <div className="flex-1 overflow-y-auto p-4 space-y-1">
+          <button
+            onClick={() => setActiveTab('artists')}
+            className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+              activeTab === 'artists'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Users className="w-4.5 h-4.5" />
+            <span>Nghệ Sĩ & Thành Viên</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('landing')}
+            className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+              activeTab === 'landing'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Layout className="w-4.5 h-4.5" />
+            <span>Trang Chủ & SEO</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('tickets')}
+            className={`flex items-center justify-between px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+              activeTab === 'tickets'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <div className="flex items-center gap-3.5">
+              <MessageSquare className="w-4.5 h-4.5" />
+              <span>Hỗ trợ (Tickets)</span>
+            </div>
+            {tickets.filter(t => t.status !== 'resolved').length > 0 && (
+              <span className="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full">
+                {tickets.filter(t => t.status !== 'resolved').length}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('templates')}
+            className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+              activeTab === 'templates'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Palette className="w-4.5 h-4.5" />
+            <span>Tên Giao Diện</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('faq')}
+            className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+              activeTab === 'faq'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <HelpCircle className="w-4.5 h-4.5" />
+            <span>FAQ (Hỏi Đáp)</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('keywords')}
+            className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+              activeTab === 'keywords'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Lock className="w-4.5 h-4.5" />
+            <span>Từ Khoá Cấm</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('content')}
+            className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+              activeTab === 'content'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Edit2 className="w-4.5 h-4.5" />
+            <span>Quản Lý Duyệt Bài</span>
+          </button>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Vertical Sidebar */}
-          <aside className="w-full lg:w-64 shrink-0 bg-neutral-900/30 border border-white/5 p-4 rounded-[2rem] flex flex-col gap-2.5 h-fit backdrop-blur-md">
-            <h3 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-1.5 px-4 select-none opacity-80">
-              Quản trị hệ thống
-            </h3>
-            
-            <button
-              onClick={() => setActiveTab('artists')}
-              className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
-                activeTab === 'artists'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
-                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Users className="w-4.5 h-4.5" />
-              <span>Quản lý nghệ sĩ</span>
-            </button>
-            
-            <button
-              onClick={() => setActiveTab('landing')}
-              className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
-                activeTab === 'landing'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
-                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Layout className="w-4.5 h-4.5" />
-              <span>Cấu hình trang chủ</span>
-            </button>
-            
-            <button
-              onClick={() => setActiveTab('tickets')}
-              className={`flex items-center justify-between px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
-                activeTab === 'tickets'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
-                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <div className="flex items-center gap-3.5">
-                <MessageSquare className="w-4.5 h-4.5" />
-                <span>Hộp thư trợ giúp</span>
-              </div>
-              {tickets.filter(t => t.type === 'remove' && t.status === 'open').length > 0 && (
-                <span className="flex h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-              )}
-            </button>
-            
-            <button
-              onClick={() => setActiveTab('templates')}
-              className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
-                activeTab === 'templates'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
-                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Palette className="w-4.5 h-4.5" />
-              <span>Giao Diện</span>
-            </button>
-            
-            <button
-              onClick={() => setActiveTab('faq')}
-              className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
-                activeTab === 'faq'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
-                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <HelpCircle className="w-4.5 h-4.5" />
-              <span>FAQ & Điều khoản</span>
-            </button>
-            
-            <button
-              onClick={() => setActiveTab('keywords')}
-              className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
-                activeTab === 'keywords'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
-                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Lock className="w-4.5 h-4.5" />
-              <span>Từ khóa bị cấm</span>
-            </button>
-            
-            <button
-              onClick={() => setActiveTab('content')}
-              className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
-                activeTab === 'content'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
-                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Edit2 className="w-4.5 h-4.5" />
-              <span>Quản lý nội dung</span>
-            </button>
-            
-            <button
+          <button
               onClick={() => setActiveTab('roles')}
               className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
                 activeTab === 'roles'
@@ -1542,12 +1517,24 @@ export default function ACPControlPanel() {
               }`}
             >
               <Shield className="w-4.5 h-4.5" />
-              <span>Phân quyền</span>
+              <span>Phân Quyền (Roles)</span>
             </button>
-          </aside>
+            <button
+              onClick={() => setActiveTab('vouchers')}
+              className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+                activeTab === 'vouchers'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <Lock className="w-4.5 h-4.5" />
+              <span>Voucher</span>
+            </button>
+        </div>
+      </aside>
 
           {/* Main Content Area */}
-          <div className="flex-1 min-w-0 space-y-8">
+          <main className="flex-1 overflow-y-auto p-6 sm:p-10 min-w-0">
             {activeTab === 'artists' ? (
           <>
             {/* Banner stat cards */}
@@ -1612,12 +1599,11 @@ export default function ACPControlPanel() {
                     <thead>
                       <tr className="border-b border-white/5 bg-neutral-900/50">
                         <th className="p-4 pl-6 text-xs text-neutral-400 uppercase font-bold tracking-wider">Nghệ Sĩ</th>
-                        <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider">Username</th>
+                        <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider">Role</th>
                         <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider">Đường dẫn</th>
-                        <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider">Hiển thị</th>
                         <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider">Trạng Thái Duyệt</th>
+                        <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider">Bài/Demo</th>
                         <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider">Email</th>
-                        <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider">Database</th>
                         <th className="p-4 text-xs text-neutral-400 uppercase font-bold tracking-wider text-right pr-6">Hành động</th>
                       </tr>
                     </thead>
@@ -1702,50 +1688,78 @@ export default function ACPControlPanel() {
                               </div>
                             </div>
                           </td>
-                          <td className="p-4 text-sm font-mono text-neutral-400">{artist.username}</td>
-                          <td className="p-4 text-sm">
-                            <div className="flex flex-col gap-1">
-                              <a 
-                                href={`/${artist.extension}`} 
-                                target="_blank" 
-                                rel="noreferrer"
-                                className="text-purple-400 hover:underline flex items-center gap-1 font-medium group text-xs"
+                          
+                          <td className="p-4">
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={async () => {
+                                  if (!artist.roleId || artist.roleId === 'free') return;
+                                  try {
+                                    const res = await fetch('/api/acp/artists/update', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                      body: JSON.stringify({ originalUsername: artist.username, roleId: 'free' })
+                                    });
+                                    if (res.ok) fetchArtists();
+                                  } catch (e) {}
+                                }}
+                                className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border uppercase tracking-wide transition-all cursor-pointer ${(!artist.roleId || artist.roleId === 'free') ? 'bg-green-500/15 text-green-400 border-green-500/20' : 'bg-neutral-800 text-neutral-500 border-white/5 hover:bg-neutral-700'}`}
                               >
-                                chorus.vn/{artist.extension}
-                                <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </a>
-                              <a 
-                                href={`https://${artist.extension}.chorus.vn`} 
-                                target="_blank" 
-                                rel="noreferrer"
-                                className="text-teal-400 hover:underline flex items-center gap-1 font-medium group text-xs"
+                                FREE
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (artist.roleId === 'pro') return;
+                                  try {
+                                    const res = await fetch('/api/acp/artists/update', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                      body: JSON.stringify({ originalUsername: artist.username, roleId: 'pro' })
+                                    });
+                                    if (res.ok) fetchArtists();
+                                  } catch (e) {}
+                                }}
+                                className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border uppercase tracking-wide transition-all cursor-pointer ${artist.roleId === 'pro' ? 'bg-blue-500/15 text-blue-400 border-blue-500/20' : 'bg-neutral-800 text-neutral-500 border-white/5 hover:bg-neutral-700'}`}
                               >
-                                {artist.extension}.chorus.vn
-                                <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </a>
+                                PRO
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (artist.roleId === 'vip') return;
+                                  try {
+                                    const res = await fetch('/api/acp/artists/update', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                      body: JSON.stringify({ originalUsername: artist.username, roleId: 'vip' })
+                                    });
+                                    if (res.ok) fetchArtists();
+                                  } catch (e) {}
+                                }}
+                                className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border uppercase tracking-wide transition-all cursor-pointer flex items-center gap-1 ${artist.roleId === 'vip' ? 'bg-yellow-500/15 text-yellow-400 border-yellow-500/20' : 'bg-neutral-800 text-neutral-500 border-white/5 hover:bg-neutral-700'}`}
+                              >
+                                {artist.roleId === 'vip' && <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span>}
+                                VIP
+                              </button>
                             </div>
                           </td>
-                          <td className="p-4">
-                            {artist.isPublic !== false ? (
-                              <span className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-lg text-[10px] font-bold">
-                                Công khai
-                              </span>
-                            ) : (
-                              <span className="bg-neutral-800 border border-white/5 text-neutral-500 px-2 py-0.5 rounded-lg text-[10px] font-bold">
-                                Ẩn
-                              </span>
-                            )}
+                          <td className="p-4 text-sm">
+                            <a 
+                              href={`/${artist.extension}`} 
+                              target="_blank" 
+                              rel="noreferrer"
+                              className="text-purple-400 hover:underline flex items-center gap-1 font-medium group text-xs"
+                            >
+                              /{artist.extension}
+                              <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </a>
                           </td>
+                          
                           <td className="p-4">
                             <div className="flex items-center gap-2">
                               {artist.activated !== false ? (
-                                <span className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-lg text-[10px] font-bold">
-                                  Hoạt Động
-                                </span>
+                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)] ml-2" title="Hoạt Động"></div>
                               ) : (
-                                <span className="bg-red-500/10 border border-red-500/20 text-red-400 px-2 py-0.5 rounded-lg text-[10px] font-bold animate-pulse">
-                                  Chờ Duyệt
-                                </span>
+                                <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse ml-2" title="Chờ Duyệt"></div>
                               )}
                               <button
                                 onClick={async () => {
@@ -1781,6 +1795,11 @@ export default function ACPControlPanel() {
                               </button>
                             </div>
                           </td>
+                          <td className="p-4">
+                            <span className="bg-purple-500/10 border border-purple-500/20 text-purple-400 px-2 py-0.5 rounded-lg text-xs font-bold font-mono">
+                              {(artist as any).releasedCount || 0} / {(artist as any).demoCount || 0}
+                            </span>
+                          </td>
                           <td className="p-4 text-sm text-neutral-400">
                             {artist.email ? (
                               <a href={`mailto:${artist.email}`} className="hover:text-white transition-colors">{artist.email}</a>
@@ -1788,15 +1807,7 @@ export default function ACPControlPanel() {
                               <span className="text-neutral-600 italic">Trống</span>
                             )}
                           </td>
-                          <td className="p-4">
-                            {artist.dbConfig ? (
-                              <div className="flex items-center gap-1 bg-purple-500/10 border border-purple-500/15 text-purple-400 px-2 py-0.5 rounded-lg text-[10px] w-fit font-mono font-bold">
-                                <Database className="w-3 h-3" /> Custom DB
-                              </div>
-                            ) : (
-                              <span className="text-xs text-neutral-600">Mặc định (Local)</span>
-                            )}
-                          </td>
+                          
                           <td className="p-4 text-right pr-6">
                             <div className="flex items-center justify-end gap-2">
                               <button 
@@ -2829,7 +2840,20 @@ export default function ACPControlPanel() {
                   const id = String(i + 1);
                   return (
                     <div key={id} className="bg-neutral-800/50 p-4 rounded-xl border border-white/5">
-                      <label className="block text-xs font-bold text-neutral-400 mb-2">Giao diện #{id} - {templateNames[id] || DEFAULT_TEMPLATE_NAMES[id]}</label>
+                      
+                      <label className="block text-xs font-bold text-neutral-400 mb-2 flex items-center justify-between">
+                        <span>Giao diện #{id} - {templateNames[id] || DEFAULT_TEMPLATE_NAMES[id]}</span>
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            checked={!!templateVip[id]}
+                            onChange={(e) => setTemplateVip({...templateVip, [id]: e.target.checked})}
+                            className="w-3 h-3 text-yellow-500 rounded focus:ring-yellow-500 bg-neutral-900 border-white/10"
+                          />
+                          <span className="text-[10px] text-yellow-500 font-bold">VIP</span>
+                        </label>
+                      </label>
+
                       <input 
                         value={templateNames[id] || ''} 
                         onChange={(e) => setTemplateNames({...templateNames, [id]: e.target.value})} 
@@ -3185,7 +3209,114 @@ export default function ACPControlPanel() {
               </div>
             )}
           </div>
+        
+        ) : activeTab === 'vouchers' ? (
+          <div className="bg-neutral-900/30 border border-white/5 rounded-3xl p-6 sm:p-8 backdrop-blur-md space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-5">
+              <div>
+                <h2 className="text-xl font-black flex items-center gap-2">
+                  <Lock className="w-5 h-5 text-purple-400" /> Quản lý Voucher
+                </h2>
+                <p className="text-sm text-neutral-400 mt-1">Tạo và quản lý các mã quà tặng</p>
+              </div>
+            </div>
+
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              try {
+                const res = await fetch('/api/acp/vouchers/create', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                  body: JSON.stringify({ 
+                    code: (document.getElementById('new-voucher-code') as HTMLInputElement).value,
+                    increaseSongs: (document.getElementById('new-voucher-songs') as HTMLInputElement).value,
+                    increaseTemplates: (document.getElementById('new-voucher-templates') as HTMLInputElement).value,
+                    vipMonths: (document.getElementById('new-voucher-vip') as HTMLInputElement).value
+                  })
+                });
+                if (res.ok) {
+                  const newVoucher = await res.json();
+                  setVouchers(prev => [...prev, newVoucher]);
+                  (document.getElementById('new-voucher-code') as HTMLInputElement).value = '';
+                  (document.getElementById('new-voucher-songs') as HTMLInputElement).value = '0';
+                  (document.getElementById('new-voucher-templates') as HTMLInputElement).value = '0';
+                  (document.getElementById('new-voucher-vip') as HTMLInputElement).value = '0';
+                } else {
+                  const data = await res.json();
+                  alert(data.error || 'Lỗi');
+                }
+              } catch(err) {
+                alert('Lỗi');
+              }
+            }} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Mã Voucher *</label>
+                  <input type="text" id="new-voucher-code" required placeholder="Nhập mã..." className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Tăng số bài</label>
+                  <input type="number" id="new-voucher-songs" defaultValue="0" className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Tăng Giao diện</label>
+                  <input type="number" id="new-voucher-templates" defaultValue="0" className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Tháng VIP</label>
+                  <input type="number" id="new-voucher-vip" defaultValue="0" className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none" />
+                </div>
+              </div>
+              <button type="submit" className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-6 rounded-xl">Thêm Voucher</button>
+            </form>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-white/5 bg-neutral-900/50">
+                    <th className="p-4 text-xs text-neutral-400 uppercase font-bold">Mã Voucher</th>
+                    <th className="p-4 text-xs text-neutral-400 uppercase font-bold">Quyền lợi</th>
+                    <th className="p-4 text-xs text-neutral-400 uppercase font-bold">Số lần SD</th>
+                    <th className="p-4 text-xs text-neutral-400 uppercase font-bold">Ngày tạo</th>
+                    <th className="p-4 text-xs text-neutral-400 uppercase font-bold text-right pr-6">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {vouchers?.map(v => (
+                    <tr key={v.id} className="border-b border-white/5">
+                      <td className="p-4 text-sm font-mono text-purple-400">{v.code}</td>
+                      <td className="p-4 text-sm text-neutral-300">
+                        {v.increaseSongs > 0 && <span className="block">+ {v.increaseSongs} bài</span>}
+                        {v.increaseTemplates > 0 && <span className="block">+ {v.increaseTemplates} giao diện</span>}
+                        {v.vipMonths > 0 && <span className="block">+ {v.vipMonths} tháng VIP</span>}
+                      </td>
+                      <td className="p-4 text-sm text-neutral-300">{v.usedBy?.length || 0} lần</td>
+                      <td className="p-4 text-sm text-neutral-400">{new Date(v.createdAt).toLocaleDateString('vi-VN')}</td>
+                      <td className="p-4 text-right pr-6">
+                        <button onClick={async () => {
+                          if (confirm('Xóa mã này?')) {
+                            const res = await fetch('/api/acp/vouchers/delete', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                              body: JSON.stringify({ id: v.id })
+                            });
+                            if (res.ok) setVouchers(prev => prev.filter(x => x.id !== v.id));
+                          }
+                        }} className="text-red-400 hover:text-red-300 p-2"><Trash2 className="w-4 h-4" /></button>
+                      </td>
+                    </tr>
+                  ))}
+                  {(!vouchers || vouchers.length === 0) && (
+                    <tr>
+                      <td colSpan={5} className="p-8 text-center text-neutral-500">Chưa có voucher nào</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         ) : activeTab === 'roles' ? (
+
           <div className="bg-neutral-900/30 border border-white/5 rounded-3xl p-6 sm:p-8 backdrop-blur-md space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-5">
               <div>
@@ -3423,8 +3554,6 @@ export default function ACPControlPanel() {
             )}
           </div>
         ) : null}
-          </div>
-        </div>
       </main>
 
       {/* New Artist Info Modal */}
@@ -3517,20 +3646,28 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                 />
               </div>
 
+              
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Phân quyền tài khoản (Role)</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Hạng Thành Viên (Role)</label>
                 <select
                   value={artistRoleId}
                   onChange={(e) => setArtistRoleId(e.target.value)}
                   className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-sm"
                 >
-                  <option value="" className="bg-neutral-900 text-white">Mặc định (Toàn quyền hệ thống)</option>
-                  {roles.map((r: any, idx: number) => (
-                    <option key={idx} value={r.name} className="bg-neutral-900 text-white">
-                      {r.name} (Giới hạn: {r.maxPosts === -1 || r.maxPosts === 'unlimited' ? 'Không giới hạn' : `${r.maxPosts} bài`})
-                    </option>
-                  ))}
+                  <option value="" className="bg-neutral-900 text-white">FREE (Mặc định)</option>
+                  <option value="vip" className="bg-neutral-900 text-white">VIP</option>
+                  <option value="pro" className="bg-neutral-900 text-white">PRO</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Số bài tối đa (Để trống: theo hạng)</label>
+                <input 
+                  type="number"
+                  value={artistMaxSongs}
+                  onChange={(e) => setArtistMaxSongs(e.target.value === '' ? '' : Number(e.target.value))}
+                  placeholder="Để trống sẽ áp dụng giới hạn theo Hạng thành viên"
+                  className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-sm"
+                />
               </div>
 
               <div>
@@ -3740,20 +3877,28 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                 />
               </div>
 
+              
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Phân quyền tài khoản (Role)</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Hạng Thành Viên (Role)</label>
                 <select
                   value={artistRoleId}
                   onChange={(e) => setArtistRoleId(e.target.value)}
                   className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-sm"
                 >
-                  <option value="" className="bg-neutral-900 text-white">Mặc định (Toàn quyền hệ thống)</option>
-                  {roles.map((r: any, idx: number) => (
-                    <option key={idx} value={r.name} className="bg-neutral-900 text-white">
-                      {r.name} (Giới hạn: {r.maxPosts === -1 || r.maxPosts === 'unlimited' ? 'Không giới hạn' : `${r.maxPosts} bài`})
-                    </option>
-                  ))}
+                  <option value="" className="bg-neutral-900 text-white">FREE (Mặc định)</option>
+                  <option value="vip" className="bg-neutral-900 text-white">VIP</option>
+                  <option value="pro" className="bg-neutral-900 text-white">PRO</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Số bài tối đa (Để trống: theo hạng)</label>
+                <input 
+                  type="number"
+                  value={artistMaxSongs}
+                  onChange={(e) => setArtistMaxSongs(e.target.value === '' ? '' : Number(e.target.value))}
+                  placeholder="Để trống sẽ áp dụng giới hạn theo Hạng thành viên"
+                  className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-sm"
+                />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

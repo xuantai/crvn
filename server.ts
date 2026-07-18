@@ -184,6 +184,15 @@ async function syncArtistsCustomDomains() {
       console.log(`[Sync] Saved updated artists.json successfully.`);
       if (!isFirestoreDisabled && landingConfig.cloudSyncEnabled !== false) {
         const masterDoc = doc(db, 'app_data', 'master');
+
+    try {
+      const vDoc = await getDoc(doc(db, 'app_data', 'vouchers'));
+      if (vDoc.exists() && vDoc.data().vouchers) {
+        vouchers = vDoc.data().vouchers;
+        await fs.writeFile(VOUCHERS_FILE, JSON.stringify(vouchers, null, 2), 'utf-8');
+      }
+    } catch (e) {}
+
         await setDoc(masterDoc, { artists: cleanedArtists });
         console.log(`[Sync] Saved updated master artists array to Firestore app_data/master.`);
       }
@@ -373,6 +382,25 @@ let landingConfig = {
 };
 
 const SUBSCRIBERS_FILE = path.join(process.cwd(), 'subscribers.json');
+
+const VOUCHERS_FILE = path.join(process.cwd(), 'vouchers.json');
+let vouchers: any[] = [];
+try {
+  if (fsSync.existsSync(VOUCHERS_FILE)) {
+    vouchers = JSON.parse(fsSync.readFileSync(VOUCHERS_FILE, 'utf-8'));
+  }
+} catch (e) { console.error('Error loading vouchers', e); }
+
+async function saveVouchers() {
+  await fs.writeFile(VOUCHERS_FILE, JSON.stringify(vouchers, null, 2), 'utf-8');
+  if (!isFirestoreDisabled && (landingConfig as any).cloudSyncEnabled !== false) {
+    try {
+      const docRef = doc(db, 'app_data', 'vouchers');
+      await setDoc(docRef, { vouchers });
+    } catch (e) {}
+  }
+}
+
 
 async function addSubscriber(email: string) {
   let list: string[] = [];
@@ -582,19 +610,24 @@ async function uploadLocalToCloud(localPath: string, filename: string, mimetype:
     return `/uploads/${artistId}/${filename}`;
   }
 
-  // If it's an image file, compress to JPG and upload to Firebase Storage
+  // If it's an image file, compress and upload to Firebase Storage
   if (mimetype.startsWith('image/')) {
     try {
+      const isPng = mimetype === 'image/png' || filename.toLowerCase().endsWith('.png');
+      const ext = isPng ? 'png' : 'jpg';
       const baseName = filename.includes('.') ? filename.substring(0, filename.lastIndexOf('.')) : filename;
-      const optimizedFilename = `${baseName}-${Date.now()}.jpg`;
+      const optimizedFilename = `${baseName}-${Date.now()}.${ext}`;
       const optimizedDir = path.join(UPLOADS_DIR, artistId);
       await fs.mkdir(optimizedDir, { recursive: true }).catch(() => {});
       const optimizedPath = path.join(optimizedDir, optimizedFilename);
 
-      await sharp(localPath)
-        .jpeg({ quality: 80, progressive: true })
-        .resize({ width: 1600, withoutEnlargement: true })
-        .toFile(optimizedPath);
+      let sharpInstance = sharp(localPath).resize({ width: 1600, withoutEnlargement: true });
+      if (isPng) {
+        sharpInstance = sharpInstance.png({ palette: true, quality: 85 });
+      } else {
+        sharpInstance = sharpInstance.jpeg({ quality: 80, progressive: true });
+      }
+      await sharpInstance.toFile(optimizedPath);
 
       // Now we have the optimized image locally. Try to upload it to Firebase.
       if (isFirestoreDisabled) {
@@ -604,7 +637,7 @@ async function uploadLocalToCloud(localPath: string, filename: string, mimetype:
       try {
         const fileBuffer = await fs.readFile(optimizedPath);
         const storageRef = ref(firebaseStorage, `uploads/${artistId}/${optimizedFilename}`);
-        await uploadBytes(storageRef, fileBuffer, { contentType: 'image/jpeg' });
+        await uploadBytes(storageRef, fileBuffer, { contentType: isPng ? 'image/png' : 'image/jpeg' });
         const cloudUrl = await getDownloadURL(storageRef);
 
         // Success! Clean up both local files.
@@ -809,14 +842,19 @@ async function uploadUrlOrFileToCloud(urlOrPath: string, globalBaseUrl?: string)
 
     if (isImage) {
       try {
+        const isPng = mimetype === 'image/png' || filename.toLowerCase().endsWith('.png');
+        const finalExt = isPng ? 'png' : 'jpg';
         const baseFilename = filename.includes('.') ? filename.substring(0, filename.lastIndexOf('.')) : filename;
-        const optimizedFilename = `${baseFilename}-${Date.now()}.jpg`;
+        const optimizedFilename = `${baseFilename}-${Date.now()}.${finalExt}`;
         const optimizedPath = path.join(UPLOADS_DIR, optimizedFilename);
 
-        const optimizedBuffer = await sharp(fileBuffer)
-          .jpeg({ quality: 80, progressive: true })
-          .resize({ width: 1600, withoutEnlargement: true })
-          .toBuffer();
+        let sharpInstance = sharp(fileBuffer).resize({ width: 1600, withoutEnlargement: true });
+        if (isPng) {
+          sharpInstance = sharpInstance.png({ palette: true, quality: 85 });
+        } else {
+          sharpInstance = sharpInstance.jpeg({ quality: 80, progressive: true });
+        }
+        const optimizedBuffer = await sharpInstance.toBuffer();
 
         if (isFirestoreDisabled) {
           await fs.writeFile(optimizedPath, optimizedBuffer);
@@ -827,7 +865,7 @@ async function uploadUrlOrFileToCloud(urlOrPath: string, globalBaseUrl?: string)
         }
         try {
           const storageRef = ref(firebaseStorage, `uploads/${optimizedFilename}`);
-          await uploadBytes(storageRef, optimizedBuffer, { contentType: 'image/jpeg' });
+          await uploadBytes(storageRef, optimizedBuffer, { contentType: isPng ? 'image/png' : 'image/jpeg' });
           const cloudUrl = await getDownloadURL(storageRef);
 
           if (localSourceFullPath) {
@@ -2024,7 +2062,7 @@ function generateCaptchaSvg(text: string) {
       pageTitle, ogImageUrl, faviconUrl, statusBadge,
       adminUsername, adminPassword,
       menuVaultVi, menuAboutVi, menuBioVi,
-      templateNames, demoSongInfo,
+      templateNames, templateVip, demoSongInfo,
       globalLayoutSections,
       faq, forbiddenKeywords, roles
     } = req.body;
@@ -2046,7 +2084,7 @@ function generateCaptchaSvg(text: string) {
       menuVaultVi: menuVaultVi || 'Kho Nhạc',
       menuAboutVi: menuAboutVi || 'Về Tôi',
       menuBioVi: menuBioVi || 'Tiểu Sử',
-      templateNames: templateNames || {}, demoSongInfo,
+      templateNames: templateNames || {}, templateVip: templateVip || {}, demoSongInfo,
       faq: faq !== undefined ? faq : (landingConfig as any).faq,
       forbiddenKeywords: forbiddenKeywords !== undefined ? forbiddenKeywords : (landingConfig as any).forbiddenKeywords,
       roles: roles !== undefined ? roles : (landingConfig as any).roles
@@ -2371,6 +2409,82 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     res.json({ isMaster: isRequestMasterAdmin(req) });
   });
 
+  
+  app.get('/api/acp/vouchers', async (req, res) => {
+    if (!isRequestMasterAdmin(req)) return res.status(401).json({ error: 'Unauthorized' });
+    res.json(vouchers);
+  });
+
+  app.post('/api/acp/vouchers/create', express.json(), async (req, res) => {
+    if (!isRequestMasterAdmin(req)) return res.status(401).json({ error: 'Unauthorized' });
+    const { code, increaseSongs, increaseTemplates, vipMonths } = req.body;
+    if (!code) return res.status(400).json({ error: 'Code is required' });
+    if (vouchers.some(v => v.code === code)) return res.status(400).json({ error: 'Code already exists' });
+    const v = {
+      id: crypto.randomBytes(8).toString('hex'),
+      code,
+      increaseSongs: Number(increaseSongs) || 0,
+      increaseTemplates: Number(increaseTemplates) || 0,
+      vipMonths: Number(vipMonths) || 0,
+      usedBy: [],
+      createdAt: new Date().toISOString()
+    };
+    vouchers.push(v);
+    await saveVouchers();
+    res.json(v);
+  });
+
+  app.post('/api/acp/vouchers/delete', express.json(), async (req, res) => {
+    if (!isRequestMasterAdmin(req)) return res.status(401).json({ error: 'Unauthorized' });
+    const { id } = req.body;
+    vouchers = vouchers.filter(v => v.id !== id);
+    await saveVouchers();
+    res.json({ success: true });
+  });
+
+  app.post('/api/admin/vouchers/redeem', express.json(), async (req: any, res) => {
+    if (!isRequestAdmin(req)) return res.status(401).json({ error: 'Unauthorized' });
+    const { code } = req.body;
+    const v = vouchers.find(v => v.code === code);
+    if (!v) return res.status(404).json({ error: 'Mã không tồn tại' });
+    if (v.usedBy.includes(req.artist.username)) return res.status(400).json({ error: 'Bạn đã sử dụng mã này rồi' });
+    
+    // Apply voucher
+    v.usedBy.push(req.artist.username);
+    await saveVouchers();
+
+    const artist = artists.find(a => a.username === req.artist.username);
+    if (artist) {
+      if (v.increaseSongs > 0) {
+        let currentLimit = 10;
+        const roleId = artist.roleId || 'free';
+        if (roleId === 'vip' || roleId === 'pro') currentLimit = -1;
+        const landingConf = await loadLandingConfig();
+        const roleDef = ((landingConf as any).roles || []).find((r: any) => r.name.toLowerCase() === roleId.toLowerCase());
+        if (roleDef && roleDef.maxPosts) {
+          if (roleDef.maxPosts === -1 || roleDef.maxPosts === 'unlimited') currentLimit = -1;
+          else currentLimit = Number(roleDef.maxPosts);
+        }
+        let actualCurrent = artist.maxSongs !== undefined && artist.maxSongs !== null ? artist.maxSongs : currentLimit;
+        if (actualCurrent !== -1) {
+          artist.maxSongs = actualCurrent + v.increaseSongs;
+        }
+      }
+      if (v.increaseTemplates > 0) {
+        artist.maxTemplates = (artist.maxTemplates || 0) + v.increaseTemplates;
+      }
+      if (v.vipMonths > 0) {
+        artist.roleId = 'vip';
+        const currentExp = artist.vipExpiry ? new Date(artist.vipExpiry).getTime() : Date.now();
+        const newExp = new Date(Math.max(currentExp, Date.now()));
+        newExp.setMonth(newExp.getMonth() + v.vipMonths);
+        artist.vipExpiry = newExp.toISOString();
+      }
+      await saveArtists(artists);
+    }
+    res.json({ success: true, message: 'Áp dụng mã thành công!' });
+  });
+
   app.get('/api/acp/artists', async (req, res) => {
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -2380,9 +2494,17 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       const { password, ...aWithoutPassword } = a;
       try {
         const d = await loadData(a.username);
+        
+        const demosArray = d?.demos || [];
+        const nonDeletedDemos = demosArray.filter(demo => !demo.deleted);
+        const releasedCount = nonDeletedDemos.filter(demo => demo.isReleased === true || demo.isReleased === 'true').length;
+        const demoCount = nonDeletedDemos.filter(demo => demo.isReleased !== true && demo.isReleased !== 'true').length;
+        
         enrichedArtists.push({
           ...aWithoutPassword,
-          homeCoverUrl: d?.config?.homeCoverUrl || d?.homeCoverUrl || ''
+          homeCoverUrl: d?.config?.homeCoverUrl || d?.homeCoverUrl || '',
+          releasedCount,
+          demoCount
         });
       } catch (err) {
         enrichedArtists.push(aWithoutPassword);
@@ -2395,7 +2517,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const { artistName, username, extension, password, email, verified, dbConfig, isPublic, hasExternalWebsite, externalWebsiteUrl, artistBio, isSpecial, roleId } = req.body;
+    const { artistName, username, extension, password, email, verified, dbConfig, isPublic, hasExternalWebsite, externalWebsiteUrl, artistBio, isSpecial, roleId, maxSongs } = req.body;
     if (!artistName || !username || !extension || !password || !email) {
       return res.status(400).json({ error: 'Vui lòng điền đầy đủ các thông tin bắt buộc (Bao gồm Email)!' });
     }
@@ -2423,7 +2545,8 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       hasExternalWebsite: !!hasExternalWebsite,
       externalWebsiteUrl: externalWebsiteUrl || "",
       isSpecial: !!isSpecial,
-      roleId: roleId || ""
+      roleId: roleId || "",
+      maxSongs: maxSongs !== undefined ? maxSongs : null
     };
     
     artists.push(newArtist);
@@ -2446,7 +2569,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const { originalUsername, artistName, extension, password, verified, dbConfig, isPublic, approveNameChange, rejectNameChange, approveUsernameChange, rejectUsernameChange, approveExtensionChange, rejectExtensionChange, hasExternalWebsite, externalWebsiteUrl, email, activated, emailVerified, defaultLanguage, artistBio, isSpecial, roleId } = req.body;
+    const { originalUsername, artistName, extension, password, verified, dbConfig, isPublic, approveNameChange, rejectNameChange, approveUsernameChange, rejectUsernameChange, approveExtensionChange, rejectExtensionChange, hasExternalWebsite, externalWebsiteUrl, email, activated, emailVerified, defaultLanguage, artistBio, isSpecial, roleId, maxSongs } = req.body;
     const artistIdx = artists.findIndex(a => a.username === originalUsername);
     if (artistIdx === -1) {
       return res.status(404).json({ error: 'Không tìm thấy nghệ sĩ!' });
@@ -2533,6 +2656,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       } else {
         artist.roleId = artist.roleId || "";
       }
+      if (maxSongs !== undefined) artist.maxSongs = maxSongs;
       
       const data = await loadData(artist.username);
       data.artistName = artist.artistName;
@@ -3002,20 +3126,14 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     }
 
     const data = await loadData((req as any).artist?.username);
-    
-    const hashedNewPassword = bcrypt.hashSync(newPassword, 10);
+    const hashedNewPassword = require("bcrypt").hashSync(newPassword, 10);
     data.adminPassword = hashedNewPassword;
     await saveData(data);
-    
     artist.password = hashedNewPassword;
     await saveArtists(artists);
-    
-    res.setHeader('Set-Cookie', [
-      `adminToken_${artist.username}=${newPassword}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`,
-      `adminToken=${newPassword}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`
-    ]);
-    res.json({ success: true, token: newPassword });
+    res.json({ success: true });
   });
+
 
   app.post('/api/admin/change-email', async (req: any, res) => {
     if (!isRequestAdmin(req)) {
@@ -3038,7 +3156,10 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     }
 
     const data = await loadData((req as any).artist?.username);
-    
+    if(data) {
+      data.adminEmail = email.toLowerCase().trim();
+      await saveData(data);
+    }
     artist.email = email.toLowerCase().trim();
     await saveArtists(artists);
     
@@ -3057,6 +3178,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     const { memberPassword } = req.body;
     
     const data = await loadData((req as any).artist?.username);
+
     data.memberPassword = memberPassword || "";
     await saveData(data);
     
@@ -3104,6 +3226,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       return res.status(401).json({ error: 'Unauthorized' });
     }
     const data = await loadData((req as any).artist?.username);
+
     res.json({ 
       ...data, 
       memberPassword: req.artist?.memberPassword || '', 
@@ -3116,7 +3239,11 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       pendingUsernameChange: req.artist?.pendingUsernameChange,
       pendingExtensionChange: req.artist?.pendingExtensionChange,
       systemIp: landingConfig.systemIp || '',
+      landingConfig: landingConfig,
       roleId: req.artist?.roleId || '',
+      maxSongs: req.artist?.maxSongs,
+      maxTemplates: req.artist?.maxTemplates,
+      vipExpiry: req.artist?.vipExpiry,
       activatedAt: req.artist?.activatedAt || '',
       roleUpgradedAt: req.artist?.roleUpgradedAt || '',
       createdAt: req.artist?.createdAt || '',
@@ -3513,6 +3640,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       return res.status(401).json({ error: 'Unauthorized' });
     }
     const data = await loadData((req as any).artist?.username);
+
     const artist = req.artist;
     if (artist) {
       if (req.body.type === 'name') {
@@ -3548,6 +3676,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       return res.status(401).json({ error: 'Unauthorized' });
     }
     const data = await loadData((req as any).artist?.username);
+
     data.pageTitle = req.body.pageTitle ?? data.pageTitle;
     
     let nameChangeNotice = false;
@@ -3676,6 +3805,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
 
     try {
       const data = await loadData((req as any).artist?.username);
+
       const logs: string[] = [];
       let updatedCount = 0;
 
@@ -3884,6 +4014,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       return res.status(401).json({ error: 'Unauthorized' });
     }
     const data = await loadData((req as any).artist?.username);
+
     data.releasedSongs = req.body.releasedSongs || [];
     await saveData(data);
     res.json(data);
@@ -4378,6 +4509,39 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
       return res.status(401).json({ error: 'Unauthorized' });
     }
     const data = await loadData((req as any).artist?.username);
+
+    // Determine max songs
+    const artist = req.artist;
+    let maxLimit = 10; // Default for free
+    if (artist) {
+      const roleId = artist.roleId || 'free';
+      if (roleId === 'vip' || roleId === 'pro') {
+        maxLimit = -1; // unlimited by default for pro/vip unless overridden
+      }
+      
+      // Check role specific config
+      const landingConf = await loadLandingConfig();
+      const roleDef = ((landingConf as any).roles || []).find((r: any) => r.name.toLowerCase() === roleId.toLowerCase());
+      if (roleDef && roleDef.maxPosts) {
+        if (roleDef.maxPosts === -1 || roleDef.maxPosts === 'unlimited') maxLimit = -1;
+        else maxLimit = Number(roleDef.maxPosts);
+      }
+      if (artist.maxSongs !== undefined && artist.maxSongs !== null) {
+        maxLimit = artist.maxSongs;
+      }
+    }
+    
+    if (maxLimit !== -1) {
+      // NOTE: check if this is a draft update or new post?
+      // Wait, /api/demos POST creates a NEW post. 
+      // Update is handled by /api/demos/:id.
+      // So this is for NEW posts only.
+      const activeCount = data.demos.filter((d: any) => !d.deleted).length;
+      if (activeCount >= maxLimit) {
+        return res.status(403).json({ error: `Bạn đã đạt giới hạn đăng bài (${maxLimit} bài). Vui lòng nâng cấp hạng thành viên hoặc nhập mã voucher.` });
+      }
+    }
+
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     const audioFile = files['audio']?.[0];
     const coverFile = files['cover']?.[0];
@@ -4463,6 +4627,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         return res.status(401).json({ error: 'Unauthorized' });
      }
      const data = await loadData((req as any).artist?.username);
+
      const idx = data.demos.findIndex((d: any) => d.id === req.params.id || d.slug === req.params.id);
      if (idx >= 0) {
         const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
@@ -4566,6 +4731,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         return res.status(401).json({ error: 'Unauthorized' });
      }
      const data = await loadData((req as any).artist?.username);
+
      const idx = data.demos.findIndex((d: any) => d.id === req.params.id || d.slug === req.params.id);
      if (idx >= 0) {
         const demo = data.demos[idx];
@@ -4592,6 +4758,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         return res.status(401).json({ error: 'Unauthorized' });
      }
      const data = await loadData((req as any).artist?.username);
+
      data.demos = data.demos.map((d: any) => ({
         ...d,
         secretKey: crypto.randomBytes(8).toString('hex')
@@ -4605,6 +4772,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         return res.status(401).json({ error: 'Unauthorized' });
      }
      const data = await loadData((req as any).artist?.username);
+
      let found = false;
      data.demos = data.demos.map((d: any) => {
         if (d.id === req.params.id || d.slug === req.params.id) {
@@ -4626,6 +4794,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         return res.status(401).json({ error: 'Unauthorized' });
      }
      const data = await loadData((req as any).artist?.username);
+
      const idx = data.demos.findIndex((d: any) => d.id === req.params.id || d.slug === req.params.id);
      if (idx >= 0) {
         data.demos[idx].deleted = true;
@@ -4642,6 +4811,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         return res.status(401).json({ error: 'Unauthorized' });
      }
      const data = await loadData((req as any).artist?.username);
+
      const idx = data.demos.findIndex((d: any) => d.id === req.params.id || d.slug === req.params.id);
      if (idx >= 0) {
         data.demos[idx].deleted = false;
@@ -4658,6 +4828,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         return res.status(401).json({ error: 'Unauthorized' });
      }
      const data = await loadData((req as any).artist?.username);
+
      const originalDemo = data.demos.find((d: any) => d.id === req.params.id || d.slug === req.params.id);
      if (originalDemo) {
         const newId = Math.random().toString(36).substring(2, 9);
@@ -4692,6 +4863,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         return res.status(400).json({ error: 'Invalid payload' });
      }
      const data = await loadData((req as any).artist?.username);
+
      const demosMap = new Map(data.demos.map((d: any) => [d.id, d]));
      const orderedDemos: any[] = [];
      
@@ -4717,6 +4889,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
        return res.status(401).json({ error: 'Unauthorized' });
     }
     const data = await loadData((req as any).artist?.username);
+
     const newPlaylist = {
        id: Date.now().toString(),
        title: req.body.title || 'Untitled Playlist',
@@ -4735,6 +4908,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
        return res.status(401).json({ error: 'Unauthorized' });
     }
     const data = await loadData((req as any).artist?.username);
+
     if (!data.playlists) data.playlists = [];
     const idx = data.playlists.findIndex((p: any) => p.id === req.params.id);
     if (idx >= 0) {
@@ -4760,6 +4934,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
        return res.status(401).json({ error: 'Unauthorized' });
     }
     const data = await loadData((req as any).artist?.username);
+
     if (!data.playlists) data.playlists = [];
     const idx = data.playlists.findIndex((p: any) => p.id === req.params.id);
     if (idx >= 0) {
@@ -4777,6 +4952,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
        return res.status(401).json({ error: 'Unauthorized' });
     }
     const data = await loadData((req as any).artist?.username);
+
     if (!data.playlists) data.playlists = [];
     const idx = data.playlists.findIndex((p: any) => p.id === req.params.id);
     if (idx >= 0) {
@@ -4798,6 +4974,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
        return res.status(400).json({ error: 'Invalid payload' });
     }
     const data = await loadData((req as any).artist?.username);
+
     const playlistsMap = new Map((data.playlists || []).map((p: any) => [p.id, p]));
     const orderedPlaylists: any[] = [];
     
@@ -4828,6 +5005,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     }
     
     const data = await loadData((req as any).artist?.username);
+
     data.templateConfigs = configs;
     await saveData(data);
     res.json({ success: true });
@@ -4835,6 +5013,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
 
   app.post('/api/demos/:id/verify', async (req, res) => {
     const data = await loadData((req as any).artist?.username);
+
     let demo = data.demos.find((d: any) => d.id === req.params.id || d.slug === req.params.id);
     if (!demo) return res.status(404).json({ error: 'Not found' });
 
@@ -4882,6 +5061,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
 
   app.post('/api/playlists/:id/verify', async (req, res) => {
     const data = await loadData((req as any).artist?.username);
+
     let playlist = data.playlists?.find((p: any) => p.id === req.params.id);
     if (!playlist) return res.status(404).json({ error: 'Not found' });
     
@@ -4896,6 +5076,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
 
   app.get('/api/playlists/:id', async (req, res) => {
       const data = await loadData((req as any).artist?.username);
+
       const playlist = data.playlists?.find((p: any) => p.id === req.params.id && !p.deleted);
       if (!playlist) return res.status(404).json({ error: 'Playlist not found' });
       
@@ -4977,6 +5158,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
 
   app.get('/api/demos/:id', async (req, res) => {
       const data = await loadData((req as any).artist?.username);
+
       let demo = data.demos.find((d: any) => (d.id === req.params.id || d.slug === req.params.id) && !d.deleted);
       if (!demo) return res.status(404).json({ error: 'Not found' });
       
@@ -5064,13 +5246,18 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     if (req.file) {
       if (req.file.mimetype.startsWith('image/')) {
         try {
-           const optimizedFilename = `${req.file.filename.split('.')[0]}-${Date.now()}.jpg`;
+           const isPng = req.file.mimetype === 'image/png' || req.file.originalname.toLowerCase().endsWith('.png');
+           const ext = isPng ? 'png' : 'jpg';
+           const optimizedFilename = `${req.file.filename.split('.')[0]}-${Date.now()}.${ext}`;
            const optimizedPath = path.join(process.cwd(), 'public', 'uploads', artistId, optimizedFilename);
            
-           await sharp(req.file.path)
-            .jpeg({ quality: 80, progressive: true })
-            .resize({ width: 1600, withoutEnlargement: true })
-            .toFile(optimizedPath);
+           let sharpInstance = sharp(req.file.path).resize({ width: 1600, withoutEnlargement: true });
+           if (isPng) {
+             sharpInstance = sharpInstance.png({ palette: true, quality: 85 });
+           } else {
+             sharpInstance = sharpInstance.jpeg({ quality: 80, progressive: true });
+           }
+           await sharpInstance.toFile(optimizedPath);
            
            // Xóa file raw gốc chưa qua tối ưu hóa
            await fs.unlink(req.file.path).catch(() => {});
@@ -5082,7 +5269,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
               try {
                  const fileBuffer = await fs.readFile(optimizedPath);
                  const storageRef = ref(firebaseStorage, `uploads/${artistId}/${optimizedFilename}`);
-                 await uploadBytes(storageRef, fileBuffer, { contentType: 'image/jpeg' });
+                 await uploadBytes(storageRef, fileBuffer, { contentType: isPng ? 'image/png' : 'image/jpeg' });
                  const cloudUrl = await getDownloadURL(storageRef);
                  
                  // Xóa file optimized cục bộ để gọn dung lượng server, chỉ lưu trên Firebase
@@ -5226,6 +5413,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
       return res.status(401).json({ error: 'Unauthorized' });
     }
     const data = await loadData((req as any).artist?.username);
+
     const idx = data.demos.findIndex((d: any) => d.id === req.params.id || d.slug === req.params.id);
     if (idx >= 0) {
        data.demos[idx].ogImageUrl = req.body.ogImageUrl;
@@ -5575,6 +5763,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
   app.use('/uploads', async (req, res, next) => {
      try {
         const data = await loadData((req as any).artist?.username);
+
         if (data.globalBaseUrl) {
            const base = data.globalBaseUrl.startsWith('http') ? data.globalBaseUrl : `https://${data.globalBaseUrl}`;
            const cleanBase = base.replace(/\/$/, "");
@@ -5610,6 +5799,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     try {
       const url = req.originalUrl;
       const data = await loadData((req as any).artist?.username);
+
       
       let html = '';
       if (process.env.NODE_ENV !== 'production') {

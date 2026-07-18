@@ -1,0 +1,20 @@
+const fs = require('fs');
+let code = fs.readFileSync('server.ts', 'utf8');
+
+const toInsert = `    const hashedNewPassword = require('bcrypt').hashSync(newPassword, 10);
+    data.adminPassword = hashedNewPassword;
+    await saveData(data);
+    
+    artist.password = hashedNewPassword;
+    await saveArtists(artists);
+    
+    res.json({ success: true });
+  });
+`;
+
+code = code.replace(
+  "    const data = await loadData((req as any).artist?.username);\n  app.post('/api/admin/change-email'",
+  "    const data = await loadData((req as any).artist?.username);\n" + toInsert + "\n  app.post('/api/admin/change-email'"
+);
+
+fs.writeFileSync('server.ts', code);
