@@ -788,6 +788,10 @@ export default function ChorusVNLanding() {
           localStorage.setItem('activeAdminAvatar', avatar);
           localStorage.setItem('activeAdminExtension', data.artist.extension);
           localStorage.setItem('activeAdminName', data.artist.artistName || data.artist.username);
+          if (typeof (window as any).syncLoginSession === 'function') {
+            const token = localStorage.getItem('adminToken') || localStorage.getItem(`adminToken_${data.artist.extension}`);
+            if (token) (window as any).syncLoginSession(token, data.artist.extension, data.artist.artistName || data.artist.username, avatar, true);
+          }
         } else {
           setLoggedInArtist(null);
         }

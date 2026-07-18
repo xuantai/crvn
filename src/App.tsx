@@ -3819,6 +3819,11 @@ const getArtistExtensionFromUrl = (customPath?: string) => {
   const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
   const isDefaultPlatform = host === 'chorus.vn' || host.endsWith('.chorus.vn') || host.endsWith('.run.app') || host.endsWith('.aistudio.google') || host.endsWith('.gitpod.io');
 
+  if (host.endsWith('.chorus.vn') && host !== 'chorus.vn') {
+    const sub = host.replace('.chorus.vn', '');
+    if (sub) return sub;
+  }
+
   if (isDefaultPlatform && !isLocal) {
     if (currentPath === '/') {
       return '';
@@ -3831,11 +3836,6 @@ const getArtistExtensionFromUrl = (customPath?: string) => {
   if (!isLocal && !isDefaultPlatform) {
     return '';
   }
-  if (host.endsWith('.chorus.vn') && host !== 'chorus.vn') {
-    const sub = host.replace('.chorus.vn', '');
-    if (sub) return sub;
-  }
-
   const segments = currentPath.split('/').filter(Boolean);
   if (segments.length > 0) {
     const firstSegment = segments[0].toLowerCase();
@@ -3908,9 +3908,10 @@ const removeGlobalCookie = (name: string) => {
 
 const getActiveAdminSession = () => {
   let activeExt = localStorage.getItem('activeAdminExtension') || getGlobalCookie('activeAdminExtension');
-  if (activeExt && !localStorage.getItem('activeAdminExtension')) localStorage.setItem('activeAdminExtension', activeExt);
+  if (activeExt && (!localStorage.getItem('activeAdminExtension') || !getGlobalCookie('activeAdminExtension'))) localStorage.setItem('activeAdminExtension', activeExt);
+  
   let activeToken = activeExt ? (localStorage.getItem(`adminToken_${activeExt}`) || getGlobalCookie(`adminToken_${activeExt}`)) : null;
-  if (activeExt && activeToken && !localStorage.getItem(`adminToken_${activeExt}`)) localStorage.setItem(`adminToken_${activeExt}`, activeToken);
+  if (activeExt && activeToken && (!localStorage.getItem(`adminToken_${activeExt}`) || !getGlobalCookie(`adminToken_${activeExt}`))) localStorage.setItem(`adminToken_${activeExt}`, activeToken);
   
   if (!activeExt || !activeToken) {
     for (let i = 0; i < localStorage.length; i++) {
@@ -3951,7 +3952,15 @@ const getActiveAdminSession = () => {
   };
 };
 
-const getAdminToken = (customPath?: string) => localStorage.getItem(getAdminTokenKey(customPath));
+const getAdminToken = (customPath?: string) => {
+  const key = getAdminTokenKey(customPath);
+  let val = localStorage.getItem(key);
+  if (!val && typeof getGlobalCookie === 'function') {
+    val = getGlobalCookie(key);
+    if (val) localStorage.setItem(key, val);
+  }
+  return val;
+};
 const setAdminToken = (token: string, customPath?: string) => localStorage.setItem(getAdminTokenKey(customPath), token);
 const removeAdminToken = (customPath?: string) => {
   const origRemove = (window as any).__originalRemoveItem__ || localStorage.removeItem;
@@ -4087,7 +4096,15 @@ localStorage.setItem = function(key, value) {
                       key.includes('memberToken') ||
                       key === 'preferredLang' ||
                       key === 'manualLangSelected';
+                      
+  if (key.includes('adminToken') || key.includes('activeAdmin')) {
+    setGlobalCookie(key, value);
+  }
+
   if (ext && !isGlobalKey) {
+    if (key.includes('adminToken') || key.includes('activeAdmin')) {
+      setGlobalCookie(`${ext}_${key}`, value);
+    }
     return originalSetItem.call(this, `${ext}_${key}`, value);
   }
   return originalSetItem.call(this, key, value);
@@ -4102,7 +4119,15 @@ localStorage.removeItem = function(key) {
                       key.includes('memberToken') ||
                       key === 'preferredLang' ||
                       key === 'manualLangSelected';
+                      
+  if (key.includes('adminToken') || key.includes('activeAdmin')) {
+    removeGlobalCookie(key);
+  }
+
   if (ext && !isGlobalKey) {
+    if (key.includes('adminToken') || key.includes('activeAdmin')) {
+      removeGlobalCookie(`${ext}_${key}`);
+    }
     return originalRemoveItem.call(this, `${ext}_${key}`);
   }
   return originalRemoveItem.call(this, key);
@@ -4579,6 +4604,9 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
           localStorage.setItem('activeAdminName', data.artist.artistName || data.artist.username || data.artist.extension);
           const avatar = data.avatarUrl || '';
           localStorage.setItem('activeAdminAvatar', avatar);
+          if (typeof (window as any).syncLoginSession === 'function') {
+             (window as any).syncLoginSession(token, data.artist.extension, data.artist.artistName || data.artist.username || data.artist.extension, avatar, data.artist.activated !== false);
+          }
         }
         if (data.artist && data.artist.activated === false) {
           // If unactivated, redirect to help page immediately
@@ -4738,9 +4766,9 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 50, scale: 0.9 }}
         transition={{ duration: 0.3 }}
-        className="fixed bottom-6 right-6 z-[99] flex items-center gap-3 bg-stone-950/60 text-white px-4 py-2.5 rounded-2xl border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.2)] backdrop-blur-xl"
+        className="fixed bottom-6 right-6 z-[99] flex items-center gap-3 bg-stone-950/85 text-white px-4 py-2.5 rounded-2xl border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.4)] backdrop-blur-xl"
       >
-        <div className="flex items-center gap-2">
+        <a href={`/${activeExt}`} className="flex items-center gap-2 group cursor-pointer hover:opacity-80 transition-opacity" title="Đến kho nhạc">
           {avatar ? (
             <img 
               src={getAvatarUrl(avatar)} 
@@ -4761,20 +4789,18 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
           </div>
           <div className="text-left flex flex-col justify-center leading-none">
             <span className="text-[10px] text-yellow-300 font-black uppercase tracking-wider leading-none mb-1 shadow-xs">Nghệ sĩ</span>
-            <span className="text-xs font-black text-white uppercase tracking-wider leading-none max-w-[130px] sm:max-w-[200px] whitespace-normal break-words line-clamp-2">{activeName}</span>
+            <span className="text-[11px] font-black text-white uppercase tracking-wider leading-relaxed pt-1 pb-0.5 max-w-[120px] sm:max-w-[200px] whitespace-normal break-words">{activeName}</span>
           </div>
-        </div>
+        </a>
         <div className="w-px h-6 bg-white/10 mx-1"></div>
         <div className="flex items-center gap-1.5">
-          {session.activeActivated && (
-            <a 
+          <a 
               href={`/${activeExt}/admin`} 
               title="Quản trị"
               className="p-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center"
             >
               <Settings className="w-4 h-4" />
             </a>
-          )}
           <button
             onClick={onLogout}
             title="Đăng xuất"
@@ -5437,6 +5463,7 @@ function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [toast, setToast] = useState('');
   const [activeBioSong, setActiveBioSong] = useState<any | null>(null);
+  const getSongCoverUrl = (songUrl?: string) => songUrl || data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -6354,8 +6381,8 @@ function Home() {
                                           transition={{ duration: 0.45, ease: "easeOut" }}
                                           className="absolute inset-0 w-full h-full"
                                         >
-                                          {demo.coverUrl ? (
-                                             <img src={demo.coverUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={demo.title} />
+                                          {getSongCoverUrl(demo.coverUrl) ? (
+                                             <img src={getSongCoverUrl(demo.coverUrl)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={demo.title} />
                                           ) : (
                                              <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-neutral-600 group-hover:text-rose-500 transition-colors">
                                                 <Disc3 className="w-6 h-6 sm:w-8 sm:h-8" />
@@ -6726,7 +6753,7 @@ function Home() {
       <AnimatePresence>
         {activeBioSong && (
           <IndirectBioCard 
-            demo={{...activeBioSong, coverUrl: getPreviewUrl(activeBioSong.coverUrl)}} 
+            demo={{...activeBioSong, coverUrl: getPreviewUrl(getSongCoverUrl(activeBioSong.coverUrl))}} 
             onClose={() => setActiveBioSong(null)} 
             isStandalone={false}
             lang={lang}
@@ -7976,6 +8003,8 @@ function PlaylistPlayer() {
   const [password, setPassword] = useState('');
   const [verifying, setVerifying] = useState(false);
   const [protectedInfo, setProtectedInfo] = useState<{ title?: string; coverUrl?: string; artistExtension?: string }>({});
+  const getSongCoverUrl = (songUrl?: string) => songUrl || artistData?.aboutMe?.avatarUrl || artistData?.homeCoverUrl || '';
+
 
   useEffect(() => {
     fetch('/api/data').then(res => res.json()).then(data => {
@@ -8237,7 +8266,7 @@ function PlaylistPlayer() {
                             </>
                          )}
                          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-neutral-800 flex-shrink-0 overflow-hidden border border-white/5 relative z-10 transition-transform">
-                            {song.coverUrl ? <img src={song.coverUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform" /> : <Music className="w-4 h-4 m-3 sm:m-3.5 text-neutral-500" />}
+                            {getSongCoverUrl(song.coverUrl) ? <img src={getSongCoverUrl(song.coverUrl)} className="w-full h-full object-cover group-hover:scale-110 transition-transform" /> : <Music className="w-4 h-4 m-3 sm:m-3.5 text-neutral-500" />}
                          </div>
                          <div className={`flex-1 min-w-0 flex flex-col justify-center relative z-10 ${song.achievements?.length ? 'pr-2' : 'pr-4'}`}>
                             <p className={`font-bold transition-colors ${i === currentIndex ? 'text-purple-400' : (song.achievements?.length ? 'text-amber-100 hover:text-amber-300' : 'text-white')} ${song.achievements?.length ? 'text-[10px] sm:text-[11px] leading-[1.15] whitespace-normal break-words' : `${(song.title?.length || 0) > 35 ? 'text-xs sm:text-[13px]' : 'text-sm'} whitespace-normal break-words leading-tight`}`}>
@@ -8476,7 +8505,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
 
   // Initialize displayCoverUrl whenever song or previewConfig updates
   useEffect(() => {
-    const primaryUrl = demo?.coverUrl || demo?.globalCoverUrl || (previewConfig && previewConfig.coverUrl) || '';
+    const primaryUrl = demo?.coverUrl || demo?.globalCoverUrl || (previewConfig && previewConfig.coverUrl) || artistData?.aboutMe?.avatarUrl || artistData?.homeCoverUrl || '';
     setDisplayCoverUrl(primaryUrl);
     setTriedRelative(false);
     setTriedAbsolute(false);
@@ -10832,6 +10861,7 @@ function AdminDashboard() {
   const { t } = useAdminTranslation();
   const location = useLocation();
   const [data, setData] = useState<AppData | null>(null);
+  const getSongCoverUrl = (songUrl?: string) => songUrl || data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState<'demos'|'playlists'|'profile'|'about'|'bio'|'menus'|'socials'|'security'|'templates'|'database'|'reposts'|'tickets'|'layout'>(
     (window.location.hash ? window.location.hash.replace('#', '') : 'demos') as any
@@ -13208,8 +13238,8 @@ function AdminDashboard() {
                             <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-stone-100 shrink-0 overflow-hidden relative shadow-sm border border-stone-200 group-hover:shadow-md transition-shadow">
                               {demo.brandLogoUrl ? (
                                 <img src={demo.brandLogoUrl} alt="" className="w-full h-full object-cover" />
-                              ) : demo.coverUrl ? (
-                                <img src={demo.coverUrl} alt="" className="w-full h-full object-cover" />
+                              ) : getSongCoverUrl(demo.coverUrl) ? (
+                                <img src={getSongCoverUrl(demo.coverUrl)} alt="" className="w-full h-full object-cover" />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-stone-300">
                                   <Music className="w-6 h-6" />
@@ -14246,8 +14276,8 @@ function AdminDashboard() {
                               <td className="px-6 py-4">
                                 <div className="flex items-center gap-3">
                                   <div className="w-10 h-10 rounded-lg overflow-hidden border border-stone-200 shrink-0 bg-stone-100 flex items-center justify-center">
-                                    {song.coverUrl ? (
-                                      <img src={song.coverUrl} className="w-full h-full object-cover" alt={song.title} />
+                                    {getSongCoverUrl(song.coverUrl) ? (
+                                      <img src={getSongCoverUrl(song.coverUrl)} className="w-full h-full object-cover" alt={song.title} />
                                     ) : (
                                       <Disc3 className="w-5 h-5 text-stone-400" />
                                     )}
@@ -16455,7 +16485,7 @@ function AdminCreateDemo() {
               composer: composer || appData?.artistName || t("Nghệ sĩ"),
               musicProducer: musicProducer || undefined,
               audioUrl: uploadedAudioUrl || 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-              coverUrl: uploadedCoverUrl || randomSlideUrl || (slideshowImages && slideshowImages.length > 0 ? slideshowImages[0] : '') || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80",
+              coverUrl: uploadedCoverUrl || appData?.aboutMe?.avatarUrl || appData?.homeCoverUrl || randomSlideUrl || (slideshowImages && slideshowImages.length > 0 ? slideshowImages[0] : '') || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80",
               backgroundUrl: uploadedBgUrl,
               lyrics: lyrics,
               template: template,
@@ -17847,7 +17877,7 @@ function AdminEditDemo() {
               composer: composer || appData?.artistName || t("Nghệ sĩ"),
               musicProducer: musicProducer || undefined,
               audioUrl: uploadedAudioUrl || demo?.audioUrl,
-              coverUrl: uploadedCoverUrl || demo?.coverUrl || randomSlideUrl || (appData?.slideshowImages && appData.slideshowImages.length > 0 ? appData.slideshowImages[0] : '') || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80",
+              coverUrl: uploadedCoverUrl || demo?.coverUrl || appData?.aboutMe?.avatarUrl || appData?.homeCoverUrl || randomSlideUrl || (appData?.slideshowImages && appData.slideshowImages.length > 0 ? appData.slideshowImages[0] : '') || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80",
               backgroundUrl: uploadedBgUrl || demo?.backgroundUrl,
               lyrics: lyrics,
               template: template,
@@ -18159,8 +18189,8 @@ function AdminPlaylistEdit() {
                        className={`flex items-center gap-4 p-3 rounded-xl border transition-all ${draggingIdx === i ? 'bg-stone-100 border-stone-400 opacity-50 relative z-10' : 'bg-white border-stone-200 hover:bg-stone-50'} cursor-grab active:cursor-grabbing`}
                     >
                        <GripVertical className="w-5 h-5 text-stone-400 shrink-0" />
-                       {song.coverUrl ? (
-                         <img src={getPreviewUrl(song.coverUrl)} className="w-12 h-12 rounded object-cover border border-stone-200 shrink-0" alt="" />
+                       {getSongCoverUrl(song.coverUrl) ? (
+                         <img src={getPreviewUrl(getSongCoverUrl(song.coverUrl))} className="w-12 h-12 rounded object-cover border border-stone-200 shrink-0" alt="" />
                        ) : (
                          <div className="w-12 h-12 bg-stone-100 rounded flex items-center justify-center shrink-0 border border-stone-200">
                            <Disc3 className="w-6 h-6 text-stone-400" />
@@ -18230,8 +18260,8 @@ function AdminPlaylistEdit() {
                         }}
                         className="w-5 h-5 rounded text-stone-900 border-stone-300 focus:ring-stone-900" 
                       />
-                      {song.coverUrl ? (
-                        <img src={getPreviewUrl(song.coverUrl)} className="w-10 h-10 rounded object-cover border shrink-0" alt="" />
+                      {getSongCoverUrl(song.coverUrl) ? (
+                         <img src={getPreviewUrl(getSongCoverUrl(song.coverUrl))} className="w-10 h-10 rounded object-cover border shrink-0" alt="" />
                       ) : (
                         <div className="w-10 h-10 bg-stone-100 rounded flex items-center justify-center shrink-0 border">
                           <Disc3 className="w-5 h-5 text-stone-400" />

@@ -1,0 +1,86 @@
+{
+  "pageTitle": "Kho nhạc của lowg",
+  "artistName": "lowg",
+  "artistBio": "Thiên đường nhạc của lowg",
+  "homeCoverUrl": "",
+  "faviconUrl": "",
+  "ogImageUrl": "",
+  "youtubePlaylistUrl": "",
+  "spotifyUrl": "",
+  "releasedSongs": [],
+  "demos": [
+    {
+      "id": "1784371819662",
+      "slug": "cccccccccccc",
+      "title": "cccccccccccc",
+      "author": "",
+      "audioUrl": "/uploads/dgusq1qxe76mrq8vhjq/1784371814700-907371925.mp3",
+      "backupAudioUrl": "/uploads/dgusq1qxe76mrq8vhjq/1784371814700-907371925.mp3",
+      "coverUrl": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80",
+      "secretKey": "450dcc2cee1b936c",
+      "backgroundUrl": "",
+      "lyrics": "cccccc",
+      "template": "3",
+      "status": "public",
+      "password": "",
+      "createdAt": 1784371819662,
+      "composer": "lowg",
+      "singer": "lowg",
+      "isReleased": false,
+      "isDraft": false,
+      "releaseYear": "",
+      "playlistIds": [],
+      "achievements": [],
+      "linkType": "direct",
+      "linkZing": "",
+      "linkSpotify": "",
+      "linkApple": "",
+      "linkYoutubeMusic": "",
+      "linkYoutube": "",
+      "linkDrive": "",
+      "musicProducer": "",
+      "isBrand": false,
+      "brandName": "",
+      "brandBrief": "",
+      "brandLogoUrl": "",
+      "brandColor": "",
+      "brandReferenceVideos": []
+    }
+  ],
+  "playlists": [],
+  "menus": [
+    {
+      "id": "m1",
+      "type": "vault",
+      "title": "Kho Nhạc",
+      "isVisible": true
+    },
+    {
+      "id": "m2",
+      "type": "about",
+      "title": "Về Tôi",
+      "isVisible": true
+    },
+    {
+      "id": "m3",
+      "type": "bio",
+      "title": "Tiểu Sử",
+      "isVisible": true
+    }
+  ],
+  "aboutMe": {
+    "avatarUrl": "/uploads/dgusq1qxe76mrq8vhjq/1784371799860-829136917-1784371799864.jpg"
+  },
+  "biography": {
+    "education": [],
+    "experience": []
+  },
+  "adminPassword": "$2b$10$3vVyhAwDZjHPVJjAn3IsyejKGvn0ck4rXuS09WmqvUZdMl.ILJBDi",
+  "memberPassword": "",
+  "username": "lowg",
+  "defaultLanguage": "vi",
+  "socialFacebook": "",
+  "socialInstagram": "",
+  "socialYoutube": "",
+  "socialTiktok": ""
+}

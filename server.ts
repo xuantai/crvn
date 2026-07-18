@@ -1432,12 +1432,19 @@ async function startServer() {
   app.use(express.json());
 
   // API Routes
-  const injectCoverUrl = (demos: any[], slideshowImages?: string[]) => {
+  const injectCoverUrl = (demos: any[], data: any) => {
+      const slideshowImages = data?.slideshowImages;
       const imagesToUse = (slideshowImages && slideshowImages.length > 0) 
           ? slideshowImages 
           : ["https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80"];
       return demos.map(d => {
          if (!d.coverUrl) {
+            if (data?.aboutMe?.avatarUrl) {
+                return { ...d, coverUrl: data.aboutMe.avatarUrl };
+            }
+            if (data?.homeCoverUrl) {
+                return { ...d, coverUrl: data.homeCoverUrl };
+            }
             const idStr = String(d.id || '');
             const hash = Array.from(idStr).reduce((sum: number, char: string) => sum + char.charCodeAt(0), 0);
             return { ...d, coverUrl: imagesToUse[hash % imagesToUse.length] };
@@ -1531,6 +1538,7 @@ async function startServer() {
   };
 
   app.get('/api/data', async (req, res) => {
+    console.log('API DATA REQUEST URL:', req.originalUrl, 'RESOLVED ARTIST:', (req as any).artist?.username);
     try {
       const currentArtist = (req as any).artist;
       if (currentArtist && currentArtist.activated === false) {
@@ -1555,7 +1563,7 @@ async function startServer() {
       let publicPlaylists = data.playlists
           ?.filter((p: any) => !p.isDraft)
           .map((p: any) => ({ ...p, password: !!p.password, hasSecretLink: !!p.secretLink, secretLink: undefined })) || [];
-      publicDemos = injectCoverUrl(publicDemos, data.slideshowImages);
+      publicDemos = injectCoverUrl(publicDemos, data);
       // We send back both for simplicity, but let's just make it simple
       res.json({ ...data, demos: publicDemos, playlists: publicPlaylists });
     } catch (err: any) {
@@ -4387,15 +4395,8 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
       const inputCover = req.body.coverUrl ? processDriveLink(req.body.coverUrl) : '';
       if (inputCover) {
         coverUrl = inputCover;
-      } else if (data.slideshowImages && data.slideshowImages.length > 0) {
-        const hashSource = req.body.title || Date.now().toString();
-        let hash = 0;
-        for (let i = 0; i < hashSource.length; i++) {
-          hash += hashSource.charCodeAt(i);
-        }
-        coverUrl = data.slideshowImages[hash % data.slideshowImages.length];
       } else {
-        coverUrl = "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80";
+        coverUrl = '';
       }
     }
 
@@ -4514,22 +4515,10 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         } else if (req.body.coverUrl !== undefined) {
             const inputCover = processDriveLink(req.body.coverUrl);
             if (!inputCover) {
-                if (data.slideshowImages && data.slideshowImages.length > 0) {
-                     const hashSource = (req.body.title || data.demos[idx].title || Date.now().toString());
-                     let hash = 0;
-                     for (let i = 0; i < hashSource.length; i++) {
-                       hash += hashSource.charCodeAt(i);
-                     }
-                     if (data.demos[idx].coverUrl && data.demos[idx].coverUrl !== data.slideshowImages[hash % data.slideshowImages.length]) {
-                        await deleteFileByUrl(data.demos[idx].coverUrl);
-                     }
-                     updatedData.coverUrl = data.slideshowImages[hash % data.slideshowImages.length];
-                } else {
-                     if (data.demos[idx].coverUrl && data.demos[idx].coverUrl !== "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80") {
-                        await deleteFileByUrl(data.demos[idx].coverUrl);
-                     }
-                     updatedData.coverUrl = "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80";
+                if (data.demos[idx].coverUrl) {
+                    await deleteFileByUrl(data.demos[idx].coverUrl);
                 }
+                updatedData.coverUrl = '';
             } else {
                 if (data.demos[idx].coverUrl && data.demos[idx].coverUrl !== inputCover) {
                      await deleteFileByUrl(data.demos[idx].coverUrl);
@@ -4947,6 +4936,10 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
 
       songs = songs.map((d: any) => {
          let coverToUse = d.coverUrl || '';
+         if (!coverToUse) {
+             if (data.aboutMe?.avatarUrl) coverToUse = data.aboutMe.avatarUrl;
+             else if (data.homeCoverUrl) coverToUse = data.homeCoverUrl;
+         }
          if (!coverToUse && data.slideshowImages && data.slideshowImages.length > 0) {
             const idStr = String(d.id || '');
             let hash = 0;
@@ -4989,15 +4982,21 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
       
       // Inject random cover if missing
       if (!demo.coverUrl) {
-          const imagesToUse = (data.slideshowImages && data.slideshowImages.length > 0)
-              ? data.slideshowImages
-              : ["https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80"];
-          const idStr = String(demo.id || '');
-          let hash = 0;
-          for (let i = 0; i < idStr.length; i++) {
-             hash += idStr.charCodeAt(i);
+          if (data.aboutMe?.avatarUrl) {
+              demo = { ...demo, coverUrl: data.aboutMe.avatarUrl };
+          } else if (data.homeCoverUrl) {
+              demo = { ...demo, coverUrl: data.homeCoverUrl };
+          } else {
+              const imagesToUse = (data.slideshowImages && data.slideshowImages.length > 0)
+                  ? data.slideshowImages
+                  : ["https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80"];
+              const idStr = String(demo.id || '');
+              let hash = 0;
+              for (let i = 0; i < idStr.length; i++) {
+                 hash += idStr.charCodeAt(i);
+              }
+              demo = { ...demo, coverUrl: imagesToUse[hash % imagesToUse.length] };
           }
-          demo = { ...demo, coverUrl: imagesToUse[hash % imagesToUse.length] };
       }
       
       demo = {
@@ -5694,6 +5693,10 @@ ${JSON.stringify(geminiInput, null, 2)}`;
             : `${activeSong.title} - ${titleSuffix} ( demo )`;
           
           let coverToUse = activeSong.coverUrl || activeSong.ogImageUrl;
+          if (!coverToUse) {
+              if (data.aboutMe?.avatarUrl) coverToUse = data.aboutMe.avatarUrl;
+              else if (data.homeCoverUrl) coverToUse = data.homeCoverUrl;
+          }
           if (!coverToUse && data.slideshowImages && data.slideshowImages.length > 0) {
               const idStr = String(activeSong.id || '');
               let hash = 0;
