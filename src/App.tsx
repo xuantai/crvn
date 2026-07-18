@@ -4766,7 +4766,7 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 50, scale: 0.9 }}
         transition={{ duration: 0.3 }}
-        className="fixed bottom-6 right-6 z-[99] flex items-center gap-3 bg-stone-950/85 text-white px-4 py-2.5 rounded-2xl border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.4)] backdrop-blur-xl"
+        className="fixed bottom-6 right-6 z-[99] flex items-center gap-3 bg-stone-950/30 text-white px-4 py-2.5 rounded-2xl border border-white/20 shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-[24px]"
       >
         <a href={`/${activeExt}`} className="flex items-center gap-2 group cursor-pointer hover:opacity-80 transition-opacity" title="Đến kho nhạc">
           {avatar ? (
