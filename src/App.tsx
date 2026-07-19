@@ -4731,11 +4731,11 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
   const location = useLocation();
   const [session, setSession] = useState(getActiveAdminSession());
   const [avatar, setAvatar] = useState(session.activeAvatar);
-  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
+      setIsMobile(window.innerWidth < 1024);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -4852,17 +4852,17 @@ const AdminFloatingAddButton = () => {
   const { t } = useAdminTranslation();
   const [showTooltip, setShowTooltip] = useState(false);
   const isLandingPage = location.pathname === '/' && !getArtistExtensionFromUrl();
-  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
+      setIsMobile(window.innerWidth < 1024);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const isMusicPlayerPage = location.pathname.includes('/demo/') || location.pathname.includes('/song/') || location.pathname.includes('/playlist/');
+  const isMusicPlayerPage = location.pathname.includes('/demo/') || location.pathname.includes('/song/') || location.pathname.includes('/playlist/') || location.pathname.includes('/landing/');
   const shouldHideOnMobilePlayer = isMobile && isMusicPlayerPage;
 
   // Thỉnh thoảng hiện tooltip
@@ -8006,15 +8006,18 @@ function AutumnLeavesEffect() {
       <div className="absolute bottom-0 left-[45%] w-[25vw] h-[12vh] bg-[radial-gradient(ellipse_at_bottom,rgba(115,50,8,0.7),transparent_70%)] pointer-events-none z-[2] mix-blend-color-burn" />
 
       {/* Hiệu ứng nứt nẻ (Cracks/fractures) của thước phim cổ cực kì chân thực trải khắp background */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none z-[2] opacity-75 mix-blend-color-burn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <svg className="absolute inset-0 w-full h-full pointer-events-none z-[2] opacity-85 mix-blend-color-burn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
         {/* Crack 1 - Top Left */}
-        <path d="M 0 10 L 15 15 L 22 12 L 32 18 L 38 12 M 15 15 L 18 25 M 22 12 L 20 2" stroke="#2B1505" strokeWidth="0.15" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        <path d="M 0 10 L 15 15 L 22 12 L 32 18 L 38 12 M 15 15 L 18 25 M 22 12 L 20 2" stroke="#1A0D03" strokeWidth="0.25" strokeLinecap="round" strokeLinejoin="round" fill="none" />
         {/* Crack 2 - Bottom Right */}
-        <path d="M 100 90 L 85 82 L 80 68 L 68 72 L 62 58 M 85 82 L 78 90 M 80 68 L 88 62" stroke="#2B1505" strokeWidth="0.15" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        <path d="M 100 90 L 85 82 L 80 68 L 68 72 L 62 58 M 85 82 L 78 90 M 80 68 L 88 62" stroke="#1A0D03" strokeWidth="0.25" strokeLinecap="round" strokeLinejoin="round" fill="none" />
         {/* Crack 3 - Top Right */}
-        <path d="M 100 15 L 88 20 L 85 30 L 72 25 M 88 20 L 92 8" stroke="#2B1505" strokeWidth="0.15" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        <path d="M 100 15 L 88 20 L 85 30 L 72 25 M 88 20 L 92 8" stroke="#1A0D03" strokeWidth="0.25" strokeLinecap="round" strokeLinejoin="round" fill="none" />
         {/* Crack 4 - Bottom Left */}
-        <path d="M 0 85 L 10 80 L 12 68 L 25 72 M 10 80 L 8 92" stroke="#2B1505" strokeWidth="0.15" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        <path d="M 0 85 L 10 80 L 12 68 L 25 72 M 10 80 L 8 92" stroke="#1A0D03" strokeWidth="0.25" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        {/* Large Central/Side Fracture Lines for extra drama */}
+        <path d="M 5 45 L 18 48 L 24 42 L 35 52 L 40 48 M 18 48 L 16 60 M 24 42 L 28 32" stroke="#1A0D03" strokeWidth="0.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        <path d="M 95 45 L 82 48 L 76 42 L 65 52 L 60 48 M 82 48 L 84 60 M 76 42 L 72 32" stroke="#1A0D03" strokeWidth="0.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
       </svg>
       
       {/* Uneven vintage stains (loang lổ) */}
@@ -9393,9 +9396,6 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                   boxShadow: badgeStyle.boxShadow
                 }}
               >
-                {demo.brandLogoUrl && (
-                  <img src={demo.brandLogoUrl} className="w-5 h-5 object-contain rounded-md" style={{ filter: 'drop-shadow(0px 1px 2px rgba(0,0,0,0.3))' }} alt={demo.brandName} referrerPolicy="no-referrer" />
-                )}
                 <span className="text-[10px] uppercase tracking-widest font-black flex items-center gap-1">
                   <span style={{ color: badgeStyle.labelColor }}>{t.pPartner || "Đối tác:"}</span>
                   <span style={{ color: badgeStyle.valueColor }}>{demo.brandName}</span>
@@ -9520,7 +9520,25 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
             className={`fixed top-0 inset-x-0 h-16 bg-gradient-to-b ${isLight ? 'from-[#faf9f6]/50' : 'from-black/40'} to-transparent pointer-events-none z-40`}
           />
 
-          <div className={`fixed top-6 left-6 flex items-center gap-3 z-[300] ${isLight ? 'text-stone-900' : 'text-white'}`}>
+          {demo?.isBrand && demo?.brandLogoUrl && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: -20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 100, delay: 0.5 }}
+              className="fixed top-6 right-6 z-[300]"
+            >
+              <img 
+                src={demo.brandLogoUrl} 
+                className="w-12 h-12 md:w-14 md:h-14 object-contain bg-white rounded-2xl p-2 shadow-lg border border-white/40 animate-brand-logo-bounce hover:scale-115 transition-all duration-300 cursor-pointer" 
+                alt={demo.brandName || ''} 
+                referrerPolicy="no-referrer"
+                onClick={() => setShowBrandBrief(true)}
+                title="Xem Brief Khách hàng"
+              />
+            </motion.div>
+          )}
+
+          <div className={`fixed top-6 left-6 flex items-center gap-3 z-[300] ${isLight ? 'text-stone-900' : 'text-white'} ${templateType === '20' ? 'hidden' : ''}`}>
             <button onClick={handleBack} className="opacity-60 hover:opacity-100 p-2 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center transition-all drop-shadow-md cursor-pointer text-current" title={t.back}>
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -9756,33 +9774,6 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                     </div>
                   ) : templateType === '19' ? (
                     <div className="relative w-full aspect-[4/5] bg-[#E2DCD2] p-4 flex flex-col justify-center items-center shadow-[inset_0_4px_20px_rgba(0,0,0,0.15)] rounded-2xl overflow-hidden border border-[#D1C6B7]">
-                      {/* Left scrolling film roll */}
-                      <div className="absolute top-0 bottom-0 left-0 w-[12%] bg-[#1A1A1A] overflow-hidden border-r border-[#2d2d2d] z-10 shadow-lg">
-                        <div className="flex flex-col gap-5 py-4 animate-film-scroll">
-                           {Array.from({length: 8}).map((_, i) => (
-                              <div key={`left-1-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2] mx-auto rounded-[3px] opacity-90 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]"></div>
-                           ))}
-                           {Array.from({length: 8}).map((_, i) => (
-                              <div key={`left-2-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2] mx-auto rounded-[3px] opacity-90 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]"></div>
-                           ))}
-                        </div>
-                        <div className="absolute top-[20%] -right-5 text-[#E2DCD2]/50 text-[7px] font-mono rotate-90 tracking-widest whitespace-nowrap font-bold select-none pointer-events-none">KODAK 500T</div>
-                        <div className="absolute top-[65%] -right-5 text-[#E2DCD2]/50 text-[7px] font-mono rotate-90 tracking-widest whitespace-nowrap font-bold select-none pointer-events-none">24 • 12A</div>
-                      </div>
-
-                      {/* Right scrolling film roll */}
-                      <div className="absolute top-0 bottom-0 right-0 w-[12%] bg-[#1A1A1A] overflow-hidden border-l border-[#2d2d2d] z-10 shadow-lg">
-                        <div className="flex flex-col gap-5 py-4 animate-film-scroll">
-                           {Array.from({length: 8}).map((_, i) => (
-                              <div key={`right-1-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2] mx-auto rounded-[3px] opacity-90 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]"></div>
-                           ))}
-                           {Array.from({length: 8}).map((_, i) => (
-                              <div key={`right-2-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2] mx-auto rounded-[3px] opacity-90 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]"></div>
-                           ))}
-                        </div>
-                        <div className="absolute top-[40%] -left-5 text-[#E2DCD2]/50 text-[7px] font-mono -rotate-90 tracking-widest whitespace-nowrap font-bold select-none pointer-events-none">SAFETY FILM</div>
-                      </div>
-
                       {/* Falling Vintage Dust and Dried Leaves Inside Card */}
                       <div className="absolute inset-0 pointer-events-none z-30">
                         {Array.from({ length: 8 }).map((_, i) => {
@@ -9805,21 +9796,41 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                         })}
                       </div>
 
-                      {/* Film center projection screen */}
-                      <div className="w-[82%] aspect-square flex items-center justify-center bg-black relative z-20 rounded-lg overflow-hidden shadow-2xl border-4 border-stone-800">
-                        <div className="relative w-full h-full bg-[#1F0E05] overflow-hidden group">
-                           {displayCoverUrl ? (
-                              <img src={displayCoverUrl} alt="Cover" className="w-full h-full object-cover sepia-[0.35] brightness-90 contrast-[1.05] animate-film-pan-zoom" />
-                           ) : (
-                              <div className="w-full h-full flex flex-col justify-center items-center">
-                                <Music className="w-12 h-12 text-[#E5B582] opacity-80 animate-pulse" />
-                              </div>
-                           )}
+                      {/* Film center projection screen with film-strip borders */}
+                      <div className="w-[85%] aspect-square flex items-center justify-center bg-black relative z-20 rounded-lg overflow-hidden shadow-2xl border-4 border-stone-800">
+                        <div className="relative w-full h-full bg-[#1F0E05] overflow-hidden group px-[12%] flex items-center justify-center">
+                           {/* Left Film Sprocket Strip inside the photo frame */}
+                           <div className="absolute top-0 bottom-0 left-0 w-[12%] bg-[#151515] border-r border-[#2c2c2c] z-20 flex flex-col justify-around py-1.5 shadow-lg select-none">
+                             {Array.from({length: 6}).map((_, i) => (
+                               <div key={`sprocket-l-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2]/20 mx-auto rounded-[1.5px] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.9)]"></div>
+                             ))}
+                             <div className="absolute top-[25%] left-1/2 -translate-x-1/2 text-white/10 text-[6px] font-mono tracking-widest font-black select-none pointer-events-none rotate-90 scale-90">KODAK</div>
+                           </div>
+
+                           {/* Right Film Sprocket Strip inside the photo frame */}
+                           <div className="absolute top-0 bottom-0 right-0 w-[12%] bg-[#151515] border-l border-[#2c2c2c] z-20 flex flex-col justify-around py-1.5 shadow-lg select-none">
+                             {Array.from({length: 6}).map((_, i) => (
+                               <div key={`sprocket-r-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2]/20 mx-auto rounded-[1.5px] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.9)]"></div>
+                             ))}
+                             <div className="absolute top-[65%] left-1/2 -translate-x-1/2 text-white/10 text-[6px] font-mono tracking-widest font-black select-none pointer-events-none rotate-90 scale-90">500T</div>
+                           </div>
+
+                           {/* Main centered Cover Image */}
+                           <div className="w-full h-full relative z-10 overflow-hidden">
+                             {displayCoverUrl ? (
+                                <img src={displayCoverUrl} alt="Cover" className="w-full h-full object-cover sepia-[0.35] brightness-90 contrast-[1.05] animate-film-pan-zoom" />
+                             ) : (
+                                <div className="w-full h-full flex flex-col justify-center items-center">
+                                  <Music className="w-12 h-12 text-[#E5B582] opacity-80 animate-pulse" />
+                                </div>
+                             )}
+                           </div>
+                           
                            {/* Vintage Lens Flicker Overlay */}
-                           <div className="absolute inset-0 bg-white/5 pointer-events-none mix-blend-color-dodge animate-crt-flicker"></div>
+                           <div className="absolute inset-0 bg-white/5 pointer-events-none mix-blend-color-dodge animate-crt-flicker z-15"></div>
                            {/* Retro scratch lines */}
-                           <div className="absolute inset-0 opacity-[0.08] pointer-events-none bg-[linear-gradient(90deg,transparent_49%,#fff_50%,transparent_51%)] bg-[length:200px_100%] animate-[marquee_2s_linear_infinite]"></div>
-                           <div className="absolute inset-0 bg-gradient-to-tr from-amber-900/40 via-transparent to-orange-800/20 mix-blend-multiply pointer-events-none"></div>
+                           <div className="absolute inset-0 opacity-[0.08] pointer-events-none bg-[linear-gradient(90deg,transparent_49%,#fff_50%,transparent_51%)] bg-[length:200px_100%] animate-[marquee_2s_linear_infinite] z-15"></div>
+                           <div className="absolute inset-0 bg-gradient-to-tr from-amber-900/40 via-transparent to-orange-800/20 mix-blend-multiply pointer-events-none z-15"></div>
                         </div>
                       </div>
 
@@ -9983,9 +9994,6 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                   boxShadow: badgeStyle.boxShadow
                 }}
               >
-                {demo.brandLogoUrl && (
-                  <img src={demo.brandLogoUrl} className="w-5 h-5 object-contain rounded-md" style={{ filter: 'drop-shadow(0px 1px 2px rgba(0,0,0,0.3))' }} alt={demo.brandName} referrerPolicy="no-referrer" />
-                )}
                 <span className="text-[10px] uppercase tracking-widest font-black flex items-center gap-1">
                   <span style={{ color: badgeStyle.labelColor }}>{t.pPartner || "Đối tác:"}</span>
                   <span style={{ color: badgeStyle.valueColor }}>{demo.brandName}</span>
@@ -10042,7 +10050,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
           transition={{ duration: 0.8, delay: 0.2 }}
           className={`flex-1 w-full relative z-[150] ${forceMobile ? 'pb-32 mt-8' : forcePC ? 'pb-0 mt-0' : 'pb-32 md:pb-0 mt-8 md:mt-0'}`}
         >
-          {demo?.isBrand && (demo?.brandBrief || (demo?.brandReferenceVideos && demo.brandReferenceVideos.length > 0)) && (
+          {demo?.isBrand && templateType !== '20' && (demo?.brandBrief || (demo?.brandReferenceVideos && demo.brandReferenceVideos.length > 0)) && (
             <div className="flex flex-wrap items-center gap-2 mb-4 ml-4 pr-4">
               {demo?.brandBrief && (
                 <button 
@@ -10145,36 +10153,40 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
               }}
             />
             
-            <div className="relative z-10">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-lg flex items-center gap-2"><FileText className="w-5 h-5 text-indigo-400" /> Brief khách hàng</h3>
-                <button onClick={() => setShowBrandBrief(false)} className="p-1 hover:bg-white/10 rounded-lg"><X className="w-5 h-5" /></button>
-              </div>
-              <div className="text-sm text-stone-200 leading-relaxed max-h-[60vh] overflow-y-auto custom-scrollbar space-y-1">{formatBriefText(demo?.brandBrief)}</div>
-            </div>
-            
             {demo?.brandLogoUrl && (
               <motion.div 
-                className="absolute bottom-4 right-6 pointer-events-none z-0 opacity-20 select-none hidden sm:block"
+                className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-10 select-none"
                 animate={{
-                  y: [-6, 6, -6],
-                  rotate: [-4, 4, -4],
-                  scale: [0.93, 1.03, 0.93]
+                  scale: [1, 1.05, 1],
+                  rotate: [0, 1.5, 0]
                 }}
                 transition={{
-                  duration: 6,
+                  duration: 8,
                   repeat: Infinity,
                   ease: "easeInOut"
                 }}
               >
                 <img 
                   src={demo.brandLogoUrl} 
-                  className="w-20 h-20 object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)]" 
+                  className="w-56 h-56 object-contain filter grayscale" 
                   alt="" 
                   referrerPolicy="no-referrer" 
                 />
               </motion.div>
             )}
+            
+            <div className="relative z-10">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-lg flex items-center gap-2">
+                  {demo?.brandLogoUrl && (
+                    <img src={demo.brandLogoUrl} className="w-6 h-6 object-contain rounded-md" alt="" referrerPolicy="no-referrer" />
+                  )}
+                  <FileText className="w-5 h-5 text-indigo-400" /> Brief khách hàng
+                </h3>
+                <button onClick={() => setShowBrandBrief(false)} className="p-1 hover:bg-white/10 rounded-lg"><X className="w-5 h-5" /></button>
+              </div>
+              <div className="text-sm text-stone-200 leading-relaxed max-h-[60vh] overflow-y-auto custom-scrollbar space-y-1">{formatBriefText(demo?.brandBrief)}</div>
+            </div>
           </div>
         </div>
       )}
@@ -10197,45 +10209,49 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
               }}
             />
             
-            <div className="relative z-10">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-lg flex items-center gap-2"><Youtube className="w-5 h-5 text-rose-400" /> {t.vRef || "Video Tham Khảo"}</h3>
-                <button onClick={() => setShowBrandVideos(false)} className="p-1 hover:bg-white/10 rounded-lg"><X className="w-5 h-5" /></button>
-              </div>
-              <div className="grid grid-cols-1 gap-4 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">
-                {demo?.brandReferenceVideos?.map((vid, idx) => {
-                  const embedUrl = vid.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/");
-                  return (
-                    <div key={idx} className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 border border-white/10">
-                      <iframe src={embedUrl} className="w-full h-full" allowFullScreen></iframe>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            
             {demo?.brandLogoUrl && (
               <motion.div 
-                className="absolute bottom-4 right-6 pointer-events-none z-0 opacity-20 select-none hidden sm:block"
+                className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-10 select-none"
                 animate={{
-                  y: [-6, 6, -6],
-                  rotate: [-4, 4, -4],
-                  scale: [0.93, 1.03, 0.93]
+                  scale: [1, 1.05, 1],
+                  rotate: [0, 1.5, 0]
                 }}
                 transition={{
-                  duration: 6,
+                  duration: 8,
                   repeat: Infinity,
                   ease: "easeInOut"
                 }}
               >
                 <img 
                   src={demo.brandLogoUrl} 
-                  className="w-20 h-20 object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)]" 
+                  className="w-72 h-72 object-contain filter grayscale" 
                   alt="" 
                   referrerPolicy="no-referrer" 
                 />
               </motion.div>
             )}
+            
+            <div className="relative z-10">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-lg flex items-center gap-2">
+                  {demo?.brandLogoUrl && (
+                    <img src={demo.brandLogoUrl} className="w-6 h-6 object-contain rounded-md" alt="" referrerPolicy="no-referrer" />
+                  )}
+                  <Youtube className="w-5 h-5 text-rose-400" /> {t.vRef || "Video Tham Khảo"}
+                </h3>
+                <button onClick={() => setShowBrandVideos(false)} className="p-1 hover:bg-white/10 rounded-lg"><X className="w-5 h-5" /></button>
+              </div>
+              <div className="grid grid-cols-1 gap-4 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">
+                {demo?.brandReferenceVideos?.map((vid, idx) => {
+                  const embedUrl = vid.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/");
+                  return (
+                    <div key={idx} className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 border border-white/10 relative z-10">
+                      <iframe src={embedUrl} className="w-full h-full" allowFullScreen></iframe>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -12449,16 +12465,16 @@ function AdminDashboard() {
         )}
       </AnimatePresence>
       <header className="bg-white border-b border-stone-200 sticky top-0 z-[100] shadow-xs">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 w-full flex items-center justify-between gap-2">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 w-full flex items-center justify-between gap-1.5 sm:gap-2">
           <div className="flex items-center gap-2 select-none shrink-0">
             <ChorusLogo className="w-9 h-9 shrink-0" />
-            <div className="hidden sm:flex items-baseline mt-0.5">
+            <div className="hidden md:flex items-baseline mt-0.5">
               <span className="font-sans font-black text-stone-950 tracking-tight text-xl leading-none">Chorus</span>
               <span className="font-serif italic font-light text-stone-400 text-xl leading-none">.vn</span>
               <span className="ml-2 font-mono text-[10px] font-bold uppercase tracking-widest text-stone-500 bg-stone-100 border border-stone-200/60 px-1.5 py-0.5 rounded shadow-xs">Admin</span>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <LanguageSwitcher isRelative={true} />
             {data?.activated !== false && (
               <Link 
@@ -13071,49 +13087,7 @@ function AdminDashboard() {
                       }`}
                       title={t("Cơ sở dữ liệu")}
                     >
-                      {activeTab === 'vouchers' && (
-            <motion.div key="vouchers" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }}>
-              <div className="max-w-xl mx-auto bg-stone-50 rounded-3xl p-6 sm:p-8 shadow-sm border border-stone-200 mt-10">
-                <h2 className="text-2xl font-black mb-2 flex items-center gap-3">
-                  <Award className="w-8 h-8 text-yellow-500" /> {t("Sử dụng mã Voucher")}
-                </h2>
-                <p className="text-sm text-stone-500 mb-8 font-medium leading-relaxed">
-                  {t("Nhập mã voucher để nhận thêm đặc quyền (tăng giới hạn đăng bài, giao diện VIP, ...).")}
-                </p>
-                
-                <form onSubmit={async (e: any) => {
-                  e.preventDefault();
-                  const codeVal = e.currentTarget.voucherCode.value;
-                  if (!codeVal) return;
-                  try {
-                    const res = await fetch('/api/admin/vouchers/redeem', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAdminToken() || ''}`, 'x-artist-extension': getArtistExtensionFromUrl() },
-                      body: JSON.stringify({ code: codeVal })
-                    });
-                    const json = await res.json();
-                    if (res.ok) {
-                      setToast(json.message || t("Áp dụng mã thành công!"));
-                      setTimeout(() => window.location.reload(), 2000);
-                    } else {
-                      alert(json.error || 'Lỗi');
-                    }
-                  } catch(err) {
-                    alert('Lỗi mạng');
-                  }
-                }}>
-                  <div className="mb-6">
-                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Mã Voucher")}</label>
-                    <input name="voucherCode" required placeholder="Nhập mã..." className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
-                  </div>
-                  <button type="submit" className="w-full bg-stone-900 text-white font-bold py-3.5 rounded-xl hover:bg-stone-800 transition-colors shadow-sm text-center">
-                    {t("Áp dụng Voucher")}
-                  </button>
-                </form>
-              </div>
-            </motion.div>
-          )}
-          {activeTab === 'database' && (
+                      {activeTab === 'database' && (
                         <motion.span
                           layoutId="adminSidebarActiveBg"
                           className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
@@ -14006,6 +13980,49 @@ function AdminDashboard() {
             <motion.div key="layout" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
               <div className="max-w-2xl py-1">
                 <AdminLayoutEdit data={data} t={t} onSave={handleCustomSave} />
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'vouchers' && (
+            <motion.div key="vouchers" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+              <div className="max-w-xl bg-stone-50 rounded-3xl p-6 sm:p-8 shadow-sm border border-stone-200 mt-2">
+                <h2 className="text-2xl font-black mb-2 flex items-center gap-3 text-stone-900">
+                  <Award className="w-8 h-8 text-yellow-500 animate-pulse" /> {t("Sử dụng mã Voucher")}
+                </h2>
+                <p className="text-sm text-stone-500 mb-8 font-medium leading-relaxed">
+                  {t("Nhập mã voucher để nhận thêm đặc quyền (tăng giới hạn đăng bài, giao diện VIP, ...).")}
+                </p>
+                
+                <form onSubmit={async (e: any) => {
+                  e.preventDefault();
+                  const codeVal = e.currentTarget.voucherCode.value;
+                  if (!codeVal) return;
+                  try {
+                    const res = await fetch('/api/admin/vouchers/redeem', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAdminToken() || ''}`, 'x-artist-extension': getArtistExtensionFromUrl() },
+                      body: JSON.stringify({ code: codeVal })
+                    });
+                    const json = await res.json();
+                    if (res.ok) {
+                      setToast(json.message || t("Áp dụng mã thành công!"));
+                      setTimeout(() => window.location.reload(), 2000);
+                    } else {
+                      alert(json.error || 'Lỗi');
+                    }
+                  } catch(err) {
+                    alert('Lỗi mạng');
+                  }
+                }}>
+                  <div className="mb-6">
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Mã Voucher")}</label>
+                    <input name="voucherCode" required placeholder="Nhập mã..." className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
+                  </div>
+                  <button type="submit" className="w-full bg-stone-900 text-white font-bold py-3.5 rounded-xl hover:bg-stone-800 transition-colors shadow-sm text-center cursor-pointer">
+                    {t("Áp dụng Voucher")}
+                  </button>
+                </form>
               </div>
             </motion.div>
           )}

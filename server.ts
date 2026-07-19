@@ -1193,7 +1193,14 @@ async function startServer() {
         const possibleExt = segments[0];
         const reserved = ['admin', 'acp', 'mem', 'demo', 'song', 'playlist', 'api', 'uploads'];
         if (!reserved.includes(possibleExt)) {
-          const matchedArtist = artists.find(a => a.extension === possibleExt || a.username === possibleExt);
+          const matchedArtist = artists.find(a => {
+            if (a.extension === possibleExt || a.username === possibleExt) return true;
+            if (a.extraUsernames) {
+              const extras = a.extraUsernames.split(',').map((u: string) => u.trim().toLowerCase()).filter(Boolean);
+              if (extras.includes(possibleExt.toLowerCase().trim())) return true;
+            }
+            return false;
+          });
           if (matchedArtist) {
             ext = matchedArtist.extension;
           }
@@ -1254,7 +1261,14 @@ async function startServer() {
     }
 
             if (ext) {
-      const artist = artists.find(a => a.extension === ext || a.username === ext);
+      const artist = artists.find(a => {
+        if (a.extension === ext || a.username === ext) return true;
+        if (a.extraUsernames) {
+          const extras = a.extraUsernames.split(',').map((u: string) => u.trim().toLowerCase()).filter(Boolean);
+          if (extras.includes(ext.toLowerCase().trim())) return true;
+        }
+        return false;
+      });
       if (artist) return artist;
     }
     return artists.find(a => a.username === 'acxuantai') || artists[0] || { username: 'acxuantai', artistName: 'A.C Xuân Tài', password: 'XuanTaiDepTrai' };
@@ -1372,7 +1386,14 @@ async function startServer() {
       if (host.endsWith('.chorus.vn') && host !== 'chorus.vn') {
         const sub = host.replace('.chorus.vn', '');
         if (sub) {
-          const matchedArtist = artists.find(a => a.extension === sub || a.username === sub);
+          const matchedArtist = artists.find(a => {
+            if (a.extension === sub || a.username === sub) return true;
+            if (a.extraUsernames) {
+              const extras = a.extraUsernames.split(',').map((u: string) => u.trim().toLowerCase()).filter(Boolean);
+              if (extras.includes(sub.toLowerCase().trim())) return true;
+            }
+            return false;
+          });
           if (!matchedArtist) {
             return res.redirect(302, `https://chorus.vn${req.originalUrl}`);
           }
@@ -2517,7 +2538,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const { artistName, username, extension, password, email, verified, dbConfig, isPublic, hasExternalWebsite, externalWebsiteUrl, artistBio, isSpecial, roleId, maxSongs } = req.body;
+    const { artistName, username, extension, password, email, verified, dbConfig, isPublic, hasExternalWebsite, externalWebsiteUrl, artistBio, isSpecial, roleId, maxSongs, extraUsernames } = req.body;
     if (!artistName || !username || !extension || !password || !email) {
       return res.status(400).json({ error: 'Vui lòng điền đầy đủ các thông tin bắt buộc (Bao gồm Email)!' });
     }
@@ -2528,6 +2549,28 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     
     if (artists.some(a => a.email && a.email.toLowerCase().trim() === email.toLowerCase().trim())) {
       return res.status(400).json({ error: 'Email này đã được sử dụng!' });
+    }
+
+    // Validate extraUsernames
+    let parsedExtra = "";
+    if (extraUsernames) {
+      const extraList = extraUsernames.split(',')
+        .map((u: string) => u.trim().toLowerCase().replace(/[^a-zA-Z0-9_]/g, ''))
+        .filter(Boolean);
+      
+      for (const item of extraList) {
+        if (artists.some(a => a.username.toLowerCase() === item || a.extension.toLowerCase() === item)) {
+          return res.status(400).json({ error: `Username bổ sung "${item}" đã trùng với Username hoặc Phân mở rộng của một nghệ sĩ khác!` });
+        }
+        if (artists.some(a => {
+          if (!a.extraUsernames) return false;
+          const otherExtras = a.extraUsernames.split(',').map((u: string) => u.trim().toLowerCase()).filter(Boolean);
+          return otherExtras.includes(item);
+        })) {
+          return res.status(400).json({ error: `Username bổ sung "${item}" đã trùng với Username bổ sung của một nghệ sĩ khác!` });
+        }
+      }
+      parsedExtra = extraList.join(', ');
     }
     
     const hashedPassword = bcrypt.hashSync(password, 10);
@@ -2546,7 +2589,8 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       externalWebsiteUrl: externalWebsiteUrl || "",
       isSpecial: !!isSpecial,
       roleId: roleId || "",
-      maxSongs: maxSongs !== undefined ? maxSongs : null
+      maxSongs: maxSongs !== undefined ? maxSongs : null,
+      extraUsernames: parsedExtra
     };
     
     artists.push(newArtist);
@@ -2569,7 +2613,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const { originalUsername, artistName, extension, password, verified, dbConfig, isPublic, approveNameChange, rejectNameChange, approveUsernameChange, rejectUsernameChange, approveExtensionChange, rejectExtensionChange, hasExternalWebsite, externalWebsiteUrl, email, activated, emailVerified, defaultLanguage, artistBio, isSpecial, roleId, maxSongs } = req.body;
+    const { originalUsername, artistName, extension, password, verified, dbConfig, isPublic, approveNameChange, rejectNameChange, approveUsernameChange, rejectUsernameChange, approveExtensionChange, rejectExtensionChange, hasExternalWebsite, externalWebsiteUrl, email, activated, emailVerified, defaultLanguage, artistBio, isSpecial, roleId, maxSongs, extraUsernames } = req.body;
     const artistIdx = artists.findIndex(a => a.username === originalUsername);
     if (artistIdx === -1) {
       return res.status(404).json({ error: 'Không tìm thấy nghệ sĩ!' });
@@ -2657,6 +2701,30 @@ ${JSON.stringify(geminiInput, null, 2)}`;
         artist.roleId = artist.roleId || "";
       }
       if (maxSongs !== undefined) artist.maxSongs = maxSongs;
+
+      if (extraUsernames !== undefined) {
+        let parsedExtra = "";
+        if (extraUsernames) {
+          const extraList = extraUsernames.split(',')
+            .map((u: string) => u.trim().toLowerCase().replace(/[^a-zA-Z0-9_]/g, ''))
+            .filter(Boolean);
+          
+          for (const item of extraList) {
+            if (artists.some(a => a.username !== artist.username && (a.username.toLowerCase() === item || a.extension.toLowerCase() === item))) {
+              return res.status(400).json({ error: `Username bổ sung "${item}" đã trùng với Username hoặc Phân mở rộng của một nghệ sĩ khác!` });
+            }
+            if (artists.some(a => {
+              if (a.username === artist.username || !a.extraUsernames) return false;
+              const otherExtras = a.extraUsernames.split(',').map((u: string) => u.trim().toLowerCase()).filter(Boolean);
+              return otherExtras.includes(item);
+            })) {
+              return res.status(400).json({ error: `Username bổ sung "${item}" đã trùng với Username bổ sung của một nghệ sĩ khác!` });
+            }
+          }
+          parsedExtra = extraList.join(', ');
+        }
+        artist.extraUsernames = parsedExtra;
+      }
       
       const data = await loadData(artist.username);
       data.artistName = artist.artistName;

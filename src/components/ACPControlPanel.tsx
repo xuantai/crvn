@@ -21,6 +21,7 @@ interface Artist {
   defaultLanguage?: string;
   artistBio?: string;
   isSpecial?: boolean;
+  extraUsernames?: string;
 }
 
 const DEFAULT_TEMPLATE_NAMES: Record<string, string> = {
@@ -225,6 +226,7 @@ export default function ACPControlPanel() {
   // Artist Role ID
   const [artistRoleId, setArtistRoleId] = useState('');
   const [artistMaxSongs, setArtistMaxSongs] = useState<number | ''>('');
+  const [artistExtraUsernames, setArtistExtraUsernames] = useState('');
 
   const uploadWithProgress = (file: File, setProgress: (p: number) => void): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -650,7 +652,8 @@ export default function ACPControlPanel() {
           artistBio,
           isSpecial: artistIsSpecial,
           roleId: artistRoleId,
-          maxSongs: artistMaxSongs === '' ? null : artistMaxSongs
+          maxSongs: artistMaxSongs === '' ? null : artistMaxSongs,
+          extraUsernames: artistExtraUsernames
         })
       });
 
@@ -732,7 +735,8 @@ export default function ACPControlPanel() {
           defaultLanguage: artistDefaultLanguage,
           artistBio,
           isSpecial: artistIsSpecial,
-          roleId: artistRoleId
+          roleId: artistRoleId,
+          extraUsernames: artistExtraUsernames
         })
       });
 
@@ -1327,6 +1331,7 @@ export default function ACPControlPanel() {
     setArtistIsSpecial(!!artist.isSpecial);
     setArtistRoleId((artist as any).roleId || '');
     setArtistMaxSongs((artist as any).maxSongs || '');
+    setArtistExtraUsernames(artist.extraUsernames || '');
     setShowEditModal(true);
   };
 
@@ -1345,6 +1350,7 @@ export default function ACPControlPanel() {
     setArtistIsSpecial(false);
     setArtistRoleId('');
     setArtistMaxSongs('');
+    setArtistExtraUsernames('');
     setFormErr('');
   };
 
@@ -1743,15 +1749,22 @@ export default function ACPControlPanel() {
                             </div>
                           </td>
                           <td className="p-4 text-sm">
-                            <a 
-                              href={`/${artist.extension}`} 
-                              target="_blank" 
-                              rel="noreferrer"
-                              className="text-purple-400 hover:underline flex items-center gap-1 font-medium group text-xs"
-                            >
-                              /{artist.extension}
-                              <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </a>
+                            <div className="flex flex-col gap-0.5">
+                              <a 
+                                href={`/${artist.extension}`} 
+                                target="_blank" 
+                                rel="noreferrer"
+                                className="text-purple-400 hover:underline flex items-center gap-1 font-medium group text-xs"
+                              >
+                                /{artist.extension}
+                                <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </a>
+                              {artist.extraUsernames && (
+                                <span className="text-[10px] text-neutral-500 font-mono" title="Username bổ sung">
+                                  Alias: {artist.extraUsernames}
+                                </span>
+                              )}
+                            </div>
                           </td>
                           
                           <td className="p-4">
@@ -3711,6 +3724,20 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                 </div>
               </div>
 
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Username phụ / bổ sung (Phân tách bằng dấu phẩy)</label>
+                <input 
+                  type="text" 
+                  value={artistExtraUsernames}
+                  onChange={(e) => setArtistExtraUsernames(e.target.value)}
+                  className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none font-mono"
+                  placeholder="vd: tai, taicute"
+                />
+                <p className="text-[10px] text-neutral-500 mt-1">
+                  Cho phép thành viên sử dụng thêm nhiều username khác nhau (ví dụ: truy cập qua <strong>tai.chorus.vn</strong> cũng như <strong>acxuantai.chorus.vn</strong>). Phân tách các username bằng dấu phẩy.
+                </p>
+              </div>
+
                             <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400">Mật khẩu *</label>
@@ -3928,6 +3955,20 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                     Truy cập qua: <strong>chorus.vn/{"{phần_mở_rộng}"}</strong> HOẶC cấu hình DNS trỏ subdomain <strong>{"{phần_mở_rộng}"}.chorus.vn</strong> về IP máy chủ để dùng như trang độc lập.
                   </p>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Username phụ / bổ sung (Phân tách bằng dấu phẩy)</label>
+                <input 
+                  type="text" 
+                  value={artistExtraUsernames}
+                  onChange={(e) => setArtistExtraUsernames(e.target.value)}
+                  className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none font-mono"
+                  placeholder="vd: tai, taicute"
+                />
+                <p className="text-[10px] text-neutral-500 mt-1">
+                  Cho phép thành viên sử dụng thêm nhiều username khác nhau (ví dụ: truy cập qua <strong>tai.chorus.vn</strong> cũng như <strong>acxuantai.chorus.vn</strong>). Phân tách các username bằng dấu phẩy.
+                </p>
               </div>
               
               <div>
