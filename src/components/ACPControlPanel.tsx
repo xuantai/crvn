@@ -84,7 +84,7 @@ export default function ACPControlPanel() {
       });
     });
   };
-  const [activeTab, setActiveTab] = useState<'artists' | 'landing' | 'tickets' | 'templates' | 'faq' | 'keywords' | 'content' | 'roles'>('artists');
+  const [activeTab, setActiveTab] = useState<'artists' | 'landing' | 'tickets' | 'templates' | 'faq' | 'keywords' | 'content' | 'roles' | 'vouchers' | 'admin_theme'>('artists');
   const [showComposeModal, setShowComposeModal] = useState(false);
   const [artistCurrentPage, setArtistCurrentPage] = useState(0);
   const [artistPageSize, setArtistPageSize] = useState<number>(20); // 20, 50, 100
@@ -148,8 +148,10 @@ export default function ACPControlPanel() {
   const [adminUsername, setAdminUsername] = useState('acxuantai');
   const [adminPassword, setAdminPassword] = useState('MatKhauDay123');
   const [cloudSyncEnabled, setCloudSyncEnabled] = useState(true);
+  const [defaultAdminTheme, setDefaultAdminTheme] = useState<'liquid-glass' | 'gold'>('liquid-glass');
   const [templateNames, setTemplateNames] = useState<Record<string, string>>({});
   const [templateVip, setTemplateVip] = useState<Record<string, boolean>>({});
+  const [adminThemesVip, setAdminThemesVip] = useState<Record<string, boolean>>({ 'liquid-glass': false, 'gold': true });
   const [demoSongTitle, setDemoSongTitle] = useState("");
   const [demoSongArtist, setDemoSongArtist] = useState("");
   const [demoSongLyrics, setDemoSongLyrics] = useState("");
@@ -222,6 +224,7 @@ export default function ACPControlPanel() {
   const [roleDatabase, setRoleDatabase] = useState(false);
   const [roleSubscriptionPricing, setRoleSubscriptionPricing] = useState(false);
   const [rolePrice, setRolePrice] = useState('');
+  const [roleDefaultTheme, setRoleDefaultTheme] = useState<'liquid-glass' | 'gold'>('liquid-glass');
 
   // Artist Role ID
   const [artistRoleId, setArtistRoleId] = useState('');
@@ -366,8 +369,10 @@ export default function ACPControlPanel() {
         setAdminUsername(data.adminUsername || 'acxuantai');
         setAdminPassword(data.adminPassword || 'MatKhauDay123');
         setCloudSyncEnabled(data.cloudSyncEnabled !== false);
+        setDefaultAdminTheme(data.defaultAdminTheme || 'liquid-glass');
         setTemplateNames(data.templateNames || {});
         setTemplateVip(data.templateVip || {});
+        setAdminThemesVip(data.adminThemesVip || { 'liquid-glass': false, 'gold': true });
         setDemoSongTitle(data.demoSongInfo?.title || "");
         setDemoSongArtist(data.demoSongInfo?.artist || "");
         setDemoSongLyrics(data.demoSongInfo?.lyrics || "");
@@ -959,8 +964,8 @@ export default function ACPControlPanel() {
     }
   };
 
-  const handleSaveLandingConfig = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveLandingConfig = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setIsSavingLanding(true);
     setLandingSuccessMsg('');
     try {
@@ -998,9 +1003,11 @@ export default function ACPControlPanel() {
           menuBioVi,
           globalLayoutSections,
           cloudSyncEnabled,
+          defaultAdminTheme,
           demoSongInfo: { title: demoSongTitle, artist: demoSongArtist, lyrics: demoSongLyrics },
           templateNames,
-          templateVip
+          templateVip,
+          adminThemesVip
         })
       });
       if (res.ok) {
@@ -1295,7 +1302,8 @@ export default function ACPControlPanel() {
       exclusiveUi: roleExclusiveUi,
       database: roleDatabase,
       subscriptionPricing: roleSubscriptionPricing,
-      price: rolePrice.trim()
+      price: rolePrice.trim(),
+      defaultTheme: roleDefaultTheme
     };
 
     let updatedRoles = [...roles];
@@ -1470,6 +1478,17 @@ export default function ACPControlPanel() {
             )}
           </button>
           <button
+            onClick={() => setActiveTab('admin_theme')}
+            className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+              activeTab === 'admin_theme'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <LayoutTemplate className="w-4.5 h-4.5" />
+            <span>Giao Diện</span>
+          </button>
+          <button
             onClick={() => setActiveTab('templates')}
             className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
               activeTab === 'templates'
@@ -1478,7 +1497,7 @@ export default function ACPControlPanel() {
             }`}
           >
             <Palette className="w-4.5 h-4.5" />
-            <span>Tên Giao Diện</span>
+            <span>Chủ Đề</span>
           </button>
           <button
             onClick={() => setActiveTab('faq')}
@@ -2239,6 +2258,47 @@ export default function ACPControlPanel() {
                   </div>
                 </div>
 
+                <div className="border-t border-white/10 pt-6 mt-6">
+                  <h3 className="text-sm font-extrabold text-purple-400 uppercase tracking-widest mb-4">
+                    Giao diện Bảng điều khiển Hệ thống
+                  </h3>
+                  <div className="bg-white/5 border border-white/5 rounded-2xl p-5">
+                    <label className="block text-sm font-bold text-white mb-2">
+                      Giao diện Bảng điều khiển Mặc định cho Nghệ sĩ mới
+                    </label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div 
+                        onClick={() => setDefaultAdminTheme('liquid-glass')}
+                        className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                          defaultAdminTheme === 'liquid-glass' 
+                            ? 'bg-purple-600/10 border-purple-500 text-white' 
+                            : 'bg-black/20 border-white/5 text-neutral-400 hover:border-white/15'
+                        }`}
+                      >
+                        <div className="font-extrabold text-xs">Liquid Glass</div>
+                        <div className="text-[10px] mt-1 opacity-80">Giao diện kính mờ mặc định ban đầu</div>
+                      </div>
+
+                      <div 
+                        onClick={() => setDefaultAdminTheme('gold')}
+                        className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                          defaultAdminTheme === 'gold' 
+                            ? 'bg-yellow-500/10 border-yellow-500 text-white' 
+                            : 'bg-black/20 border-white/5 text-neutral-400 hover:border-white/15'
+                        }`}
+                      >
+                        <div className="font-extrabold text-xs flex items-center gap-1">
+                          Gold <Sparkles className="w-3.5 h-3.5 text-yellow-500" />
+                        </div>
+                        <div className="text-[10px] mt-1 opacity-80">Giao diện hoàng gia luxury mới</div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-neutral-400 mt-3 leading-relaxed">
+                      Lựa chọn giao diện mặc định sẽ được áp dụng cho bảng điều khiển của tất cả nghệ sĩ khi mới khởi tạo tài khoản hoặc chưa chủ động chọn giao diện riêng biệt.
+                    </p>
+                  </div>
+                </div>
+
                 {/* Edit fields for the 4 features */}
                 <div className="border-t border-white/10 pt-6 mt-6 space-y-6">
                   <div className="flex flex-col gap-1">
@@ -2813,27 +2873,19 @@ export default function ACPControlPanel() {
               </div>
             </div>
           </div>
-        ) : activeTab === 'templates' ? (
+        ) : activeTab === 'admin_theme' ? (
           <div className="bg-neutral-900/30 border border-white/5 rounded-3xl p-6 sm:p-8 backdrop-blur-md">
               <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h2 className="text-xl font-black flex items-center gap-2">
-                    <Palette className="w-5 h-5 text-purple-400" />
-                    Quản lý tên Giao Diện
+                    <LayoutTemplate className="w-5 h-5 text-yellow-500" />
+                    Quản lý Giao Diện
                   </h2>
-                  <p className="text-sm text-neutral-400 mt-1">Đổi tên hiển thị cho các giao diện và dịch tự động.</p>
+                  <p className="text-sm text-neutral-400 mt-1">Cấu hình các giao diện hiển thị cho bảng điều khiển của nghệ sĩ.</p>
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={handleTranslateTemplates}
-                    disabled={isTranslatingTemplates || isSavingLanding}
-                    className="bg-neutral-800 hover:bg-neutral-700 disabled:opacity-50 text-purple-300 border border-purple-500/20 font-bold px-4 py-2 rounded-xl text-sm transition-colors flex items-center gap-2 cursor-pointer"
-                  >
-                    <Globe className="w-4 h-4 text-purple-400" />
-                    {isTranslatingTemplates ? 'Đang dịch...' : 'Dịch tên giao diện (AI)'}
-                  </button>
-                  <button
-                    onClick={handleSaveLandingConfig}
+                    onClick={() => handleSaveLandingConfig()}
                     disabled={isSavingLanding || isTranslatingTemplates}
                     className="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors flex items-center gap-2 cursor-pointer"
                   >
@@ -2848,6 +2900,98 @@ export default function ACPControlPanel() {
                   <p className="text-sm font-medium">{landingSuccessMsg}</p>
                 </div>
               )}
+
+              {/* Cài đặt Giao diện Admin */}
+              <div className="p-6 bg-neutral-900/40 rounded-2xl border border-white/5 space-y-4">
+                <div>
+                  <h3 className="text-base font-black flex items-center gap-2 text-yellow-500">
+                    <Sparkles className="w-5 h-5 animate-pulse" />
+                    Quản lý Giao diện Bảng Điều Khiển (Admin Panel Themes)
+                  </h3>
+                  <p className="text-xs text-neutral-400 mt-1">
+                    Cấu hình quyền truy cập VIP cho các giao diện của trang quản trị nghệ sĩ. Giao diện mặc định là <strong>Liquid Glass</strong> và giao diện mới là <strong>Gold</strong>.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Liquid Glass */}
+                  <div className="bg-neutral-800/40 p-4 rounded-xl border border-white/5 flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-bold text-neutral-200">Giao diện: Liquid Glass</div>
+                      <div className="text-[10px] text-neutral-400">Giao diện kính mờ mặc định</div>
+                    </div>
+                    <label className="flex items-center gap-2 cursor-pointer bg-black/30 px-3 py-1.5 rounded-lg border border-white/5 hover:border-white/10 select-none">
+                      <input 
+                        type="checkbox" 
+                        checked={!!adminThemesVip['liquid-glass']}
+                        onChange={(e) => setAdminThemesVip({...adminThemesVip, 'liquid-glass': e.target.checked})}
+                        className="w-4 h-4 text-yellow-500 rounded focus:ring-yellow-500 bg-neutral-950 border-white/10 cursor-pointer"
+                      />
+                      <span className="text-xs text-yellow-500 font-extrabold tracking-wider">VIP</span>
+                    </label>
+                  </div>
+
+                  {/* Gold Theme */}
+                  <div className="bg-neutral-800/40 p-4 rounded-xl border border-white/5 flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-bold text-neutral-200">Giao diện: Gold</div>
+                      <div className="text-[10px] text-neutral-400">Giao diện hoàng gia luxury</div>
+                    </div>
+                    <label className="flex items-center gap-2 cursor-pointer bg-black/30 px-3 py-1.5 rounded-lg border border-white/5 hover:border-white/10 select-none">
+                      <input 
+                        type="checkbox" 
+                        checked={adminThemesVip['gold'] !== false}
+                        onChange={(e) => setAdminThemesVip({...adminThemesVip, 'gold': e.target.checked})}
+                        className="w-4 h-4 text-yellow-500 rounded focus:ring-yellow-500 bg-neutral-950 border-white/10 cursor-pointer"
+                      />
+                      <span className="text-xs text-yellow-500 font-extrabold tracking-wider">VIP</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+          </div>
+        ) : activeTab === 'templates' ? (
+          <div className="bg-neutral-900/30 border border-white/5 rounded-3xl p-6 sm:p-8 backdrop-blur-md">
+              <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-black flex items-center gap-2">
+                    <Palette className="w-5 h-5 text-purple-400" />
+                    Quản lý Chủ Đề Bài Hát
+                  </h2>
+                  <p className="text-sm text-neutral-400 mt-1">Đổi tên hiển thị cho các chủ đề bài hát (Templates) và dịch tự động.</p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleTranslateTemplates}
+                    disabled={isTranslatingTemplates || isSavingLanding}
+                    className="bg-neutral-800 hover:bg-neutral-700 disabled:opacity-50 text-purple-300 border border-purple-500/20 font-bold px-4 py-2 rounded-xl text-sm transition-colors flex items-center gap-2 cursor-pointer"
+                  >
+                    <Globe className="w-4 h-4 text-purple-400" />
+                    {isTranslatingTemplates ? 'Đang dịch...' : 'Dịch tên chủ đề (AI)'}
+                  </button>
+                  <button
+                    onClick={() => handleSaveLandingConfig()}
+                    disabled={isSavingLanding || isTranslatingTemplates}
+                    className="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors flex items-center gap-2 cursor-pointer"
+                  >
+                    <Save className="w-4 h-4" />
+                    {isSavingLanding ? 'Đang lưu...' : 'Lưu cài đặt'}
+                  </button>
+                </div>
+              </div>
+              {landingSuccessMsg && (
+                <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-2 text-emerald-400">
+                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                  <p className="text-sm font-medium">{landingSuccessMsg}</p>
+                </div>
+              )}
+
+              <div>
+                <h3 className="text-xs font-extrabold text-neutral-400 uppercase tracking-widest mb-4">
+                  Danh sách Chủ đề Bài hát (Templates 1 - 18)
+                </h3>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {Array.from({length: 18}).map((_, i) => {
                   const id = String(i + 1);
@@ -2855,7 +2999,7 @@ export default function ACPControlPanel() {
                     <div key={id} className="bg-neutral-800/50 p-4 rounded-xl border border-white/5">
                       
                       <label className="block text-xs font-bold text-neutral-400 mb-2 flex items-center justify-between">
-                        <span>Giao diện #{id} - {templateNames[id] || DEFAULT_TEMPLATE_NAMES[id]}</span>
+                        <span>Chủ đề #{id} - {templateNames[id] || DEFAULT_TEMPLATE_NAMES[id]}</span>
                         <label className="flex items-center gap-1.5 cursor-pointer">
                           <input 
                             type="checkbox" 
@@ -2871,7 +3015,7 @@ export default function ACPControlPanel() {
                         value={templateNames[id] || ''} 
                         onChange={(e) => setTemplateNames({...templateNames, [id]: e.target.value})} 
                         className="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500" 
-                        placeholder={DEFAULT_TEMPLATE_NAMES[id] || `Tên giao diện ${id}`} 
+                        placeholder={DEFAULT_TEMPLATE_NAMES[id] || `Tên chủ đề ${id}`} 
                       />
                     </div>
                   );
@@ -3355,6 +3499,7 @@ export default function ACPControlPanel() {
                   setRoleExclusiveUi(false);
                   setRoleDatabase(false);
                   setRoleSubscriptionPricing(false);
+                  setRoleDefaultTheme('liquid-glass');
                   setShowRoleModal(true);
                 }}
                 className="bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
@@ -3386,6 +3531,9 @@ export default function ACPControlPanel() {
                         <p className="text-xs text-neutral-400 mt-0.5">
                           Giá gói: <strong className="text-amber-400">{r.price || 'Miễn phí'}</strong>
                         </p>
+                        <p className="text-xs text-neutral-400 mt-0.5">
+                          Giao diện mặc định: <strong className="text-teal-400 font-bold">{r.defaultTheme === 'gold' ? 'Gold' : 'Liquid Glass'}</strong>
+                        </p>
                       </div>
 
                       <div className="flex items-center gap-1.5 shrink-0">
@@ -3405,6 +3553,7 @@ export default function ACPControlPanel() {
                             setRoleExclusiveUi(!!r.exclusiveUi);
                             setRoleDatabase(!!r.database);
                             setRoleSubscriptionPricing(!!r.subscriptionPricing);
+                            setRoleDefaultTheme(r.defaultTheme || 'liquid-glass');
                             setShowRoleModal(true);
                           }}
                           className="p-1.5 bg-neutral-800/60 hover:bg-neutral-700/60 text-purple-400 hover:text-white rounded-lg transition-colors cursor-pointer"
@@ -3497,6 +3646,18 @@ export default function ACPControlPanel() {
                         <option value={50}>Tối đa 50 bài hát</option>
                         <option value={100}>Tối đa 100 bài hát</option>
                         <option value={-1}>Không giới hạn bài hát (-1)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Giao diện Bảng điều khiển Mặc định</label>
+                      <select
+                        value={roleDefaultTheme}
+                        onChange={(e) => setRoleDefaultTheme(e.target.value as 'liquid-glass' | 'gold')}
+                        className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-sm cursor-pointer"
+                      >
+                        <option value="liquid-glass">Liquid Glass (Mặc định)</option>
+                        <option value="gold">Gold (Hoàng gia / VIP)</option>
                       </select>
                     </div>
 

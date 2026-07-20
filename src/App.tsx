@@ -2,7 +2,7 @@ import { createPortal } from "react-dom";
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
 import { ChorusLogo } from './components/ChorusLogo';
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { UserCircle, BookOpen, User, Settings, Play, Music, Lock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, List, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, RefreshCw, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, Palette, LayoutTemplate, Award, History, HelpCircle } from 'lucide-react';
+import { UserCircle, BookOpen, User, Settings, Play, Music, Lock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, List, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, RefreshCw, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, Palette, LayoutTemplate, Award, History, HelpCircle, Paintbrush } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { AppData, DemoSong, TemplateConfig, Achievement } from './types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -219,36 +219,137 @@ function BrandLogoColorExtractor({ logoUrl, defaultColor, children }: BrandLogoC
   return <>{children(brandColors)}</>;
 }
 
-function formatText(text: string | null | undefined, disableLinks = false) {
+
+function MarqueeText({ children, className }: { children: React.ReactNode, className?: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const [scrollAmount, setScrollAmount] = useState(0);
+
+  useEffect(() => {
+    let animationFrameId: number;
+    
+    const checkOverflow = () => {
+      // Use requestAnimationFrame to ensure layout is calculated
+      animationFrameId = requestAnimationFrame(() => {
+        if (containerRef.current && textRef.current) {
+          const cWidth = containerRef.current.clientWidth;
+          const tWidth = textRef.current.scrollWidth;
+          
+          if (tWidth > cWidth + 2) {
+            setIsOverflowing(true);
+            setScrollAmount(tWidth - cWidth);
+          } else {
+            setIsOverflowing(false);
+            setScrollAmount(0);
+          }
+        }
+      });
+    };
+
+    checkOverflow();
+    const timeoutId = setTimeout(checkOverflow, 300);
+    const timeoutId2 = setTimeout(checkOverflow, 1000);
+    
+    let textObserver: ResizeObserver | null = null;
+    let containerObserver: ResizeObserver | null = null;
+
+    if (textRef.current) {
+      textObserver = new ResizeObserver(checkOverflow);
+      textObserver.observe(textRef.current);
+    }
+    
+    if (containerRef.current) {
+       containerObserver = new ResizeObserver(checkOverflow);
+       containerObserver.observe(containerRef.current);
+    }
+
+    return () => {
+      clearTimeout(timeoutId);
+      clearTimeout(timeoutId2);
+      cancelAnimationFrame(animationFrameId);
+      if (textObserver) textObserver.disconnect();
+      if (containerObserver) containerObserver.disconnect();
+    };
+  }, [children]);
+
+  return (
+    <div ref={containerRef} className={`w-full overflow-hidden flex ${className || ''}`}>
+      {isOverflowing ? (
+        <motion.div
+          className="whitespace-nowrap inline-flex items-center shrink-0 w-max pr-8"
+          animate={{ x: [0, -scrollAmount - 32, 0] }}
+          transition={{ duration: Math.max(scrollAmount * 0.03, 3), ease: "linear", repeat: Infinity, repeatDelay: 1.5 }}
+        >
+          {children}
+        </motion.div>
+      ) : (
+        <div ref={textRef} className="whitespace-nowrap inline-flex items-center shrink-0 w-max max-w-full text-ellipsis overflow-hidden block">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function formatText(text: string | null | undefined, disableLinks = false, isGold = true) {
   if (!text) return null;
-  const lines = text.replace(/\s+\(/g, '\n(').split('\n');
+  
+  // Split by parenthesis segments e.g. "Song Name ( OST Movie )" -> ["Song Name", "( OST Movie )"]
+  const parts = text.split(/(\([^)]+\))/g);
   return (
     <>
-      {lines.map((line, lineIdx) => {
-        const segments = line.split(/(\s*,\s*|\s*&\s*)/g);
+      {parts.map((part, idx) => {
+        const trimmedPart = part.trim();
+        if (!trimmedPart) return null;
+
+        if (trimmedPart.startsWith('(') && trimmedPart.endsWith(')')) {
+          // Parenthesized block: smaller font, elegant styling to prevent awkward wrapping
+          return (
+            <span 
+              key={idx} 
+              className={`inline-block text-[10.5px] sm:text-[11.5px] mt-1 mb-0.5 leading-normal tracking-wide whitespace-normal break-words px-2 py-0.5 rounded-full ${
+                isGold ? 'font-black text-[#9A6B00] bg-[#D4AF37]/15 border border-[#D4AF37]/30 drop-shadow-sm' : 'font-bold text-rose-300 bg-rose-500/15 border border-rose-400/30 drop-shadow-md'
+              }`}
+            >
+              {trimmedPart}
+            </span>
+          );
+        }
+        
+        // Normal text segment
+        const cleanedPart = idx > 0 && !parts[idx-1].startsWith('(') ? part.trimStart() : part.trim();
+        const lines = cleanedPart.split('\n');
         return (
-          <React.Fragment key={lineIdx}>
-            {lineIdx > 0 && <br />}
-            {segments.map((segment, segIdx) => {
-              const isSeparator = /^(\s*,\s*|\s*&\s*)$/.test(segment);
-              if (isSeparator) {
-                return <span key={`${lineIdx}-${segIdx}`}>{segment}</span>;
-              }
-              
-              const isSecret = segment.toLowerCase().includes("secret");
-              if (isSecret) {
-                return (
-                  <span 
-                    key={`${lineIdx}-${segIdx}`}
-                    className="select-none filter blur-[4.5px] cursor-help inline-block bg-white/5 px-1.5 py-0.5 rounded border border-white/5 mx-0.5" 
-                    title="Nghệ sĩ bí mật"
-                  >
-                    {segment}
-                  </span>
-                );
-              }
-              
-              return <span key={`${lineIdx}-${segIdx}`}>{segment}</span>;
+          <React.Fragment key={idx}>
+            {lines.map((line, lineIdx) => {
+              const segments = line.split(/(\s*,\s*|\s*&\s*)/g);
+              return (
+                <React.Fragment key={lineIdx}>
+                  {lineIdx > 0 && <br />}
+                  {segments.map((segment, segIdx) => {
+                    const isSeparator = /^(\s*,\s*|\s*&\s*)$/.test(segment);
+                    if (isSeparator) {
+                      return <span key={`${lineIdx}-${segIdx}`}>{segment}</span>;
+                    }
+                    
+                    const isSecret = segment.toLowerCase().includes("secret");
+                    if (isSecret) {
+                      return (
+                        <span 
+                          key={`${lineIdx}-${segIdx}`}
+                          className="select-none filter blur-[4.5px] cursor-help inline-block bg-white/5 px-1.5 py-0.5 rounded border border-white/5 mx-0.5" 
+                          title="Nghệ sĩ bí mật"
+                        >
+                          {segment}
+                        </span>
+                      );
+                    }
+                    
+                    return <span key={`${lineIdx}-${segIdx}`}>{segment}</span>;
+                  })}
+                </React.Fragment>
+              );
             })}
           </React.Fragment>
         );
@@ -4963,6 +5064,985 @@ const AdminFloatingAddButton = () => {
   );
 };
 
+function getRandomSongCardStyles(song: any) {
+  const tType = song?.template || '1';
+  let bgClasses = "bg-gradient-to-br from-[#D4AF37] via-[#B8860B] to-[#996515] text-white";
+  let titleColor = "text-white group-hover:text-amber-50 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]";
+  let singerColor = "text-amber-100 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]";
+  let borderClass = "border-2 border-[#D4AF37]/50 hover:border-[#D4AF37]";
+  let shadowClass = "shadow-[0_12px_45px_rgba(212,175,55,0.2)] hover:shadow-[0_16px_45px_rgba(212,175,55,0.3)] hover:scale-[1.015]";
+  
+  if (tType === '1') {
+    bgClasses = "bg-gradient-to-br from-amber-100 via-orange-50 to-yellow-100 text-orange-950";
+    titleColor = "text-[#1A1303] group-hover:text-orange-700";
+    singerColor = "text-stone-500 font-bold";
+    borderClass = "border-2 border-orange-200 hover:border-orange-400";
+    shadowClass = "shadow-lg shadow-orange-100 hover:scale-[1.015]";
+  } else if (tType === '2') {
+    bgClasses = "bg-gradient-to-br from-[#1E052D] via-[#0D0114] to-[#1E052D] text-white animate-club-bg";
+    titleColor = "text-white group-hover:text-fuchsia-300";
+    singerColor = "text-fuchsia-200/80 font-semibold";
+    borderClass = "border-2 border-fuchsia-500/40 hover:border-fuchsia-400";
+    shadowClass = "shadow-[0_12px_32px_rgba(192,38,211,0.2)] hover:shadow-[0_16px_40px_rgba(192,38,211,0.35)] hover:scale-[1.015]";
+  } else if (tType === '3') {
+    bgClasses = "bg-slate-900 bg-gradient-to-b from-slate-900 to-slate-950 text-slate-300";
+    titleColor = "text-white group-hover:text-slate-300";
+    singerColor = "text-slate-400 font-semibold";
+    borderClass = "border-2 border-slate-700 hover:border-slate-500";
+    shadowClass = "shadow-[0_12px_32px_rgba(30,41,59,0.25)] hover:shadow-[0_16px_40px_rgba(30,41,59,0.35)] hover:scale-[1.015]";
+  } else if (tType === '4') {
+    bgClasses = "bg-emerald-50 text-emerald-900 bg-[linear-gradient(to_right,#8080800d_1px,transparent_1px),linear-gradient(to_bottom,#8080800d_1px,transparent_1px)] bg-[size:16px_16px]";
+    titleColor = "text-emerald-900 group-hover:text-emerald-700";
+    singerColor = "text-emerald-700/80 font-semibold";
+    borderClass = "border-2 border-emerald-300/40 hover:border-emerald-400";
+    shadowClass = "shadow-md shadow-emerald-100 hover:scale-[1.015]";
+  } else if (tType === '5') {
+    bgClasses = "bg-gradient-to-tr from-rose-500 via-red-500 to-rose-600 text-white";
+    titleColor = "text-white group-hover:text-rose-200";
+    singerColor = "text-rose-100/80 font-semibold";
+    borderClass = "border-2 border-rose-400/40 hover:border-white/50";
+    shadowClass = "shadow-[0_12px_32px_rgba(244,63,94,0.25)] hover:shadow-[0_16px_40px_rgba(244,63,94,0.35)] hover:scale-[1.015]";
+  } else if (tType === '6') {
+    bgClasses = "bg-gradient-to-br from-fuchsia-100 via-pink-50 to-pink-100 text-pink-950";
+    titleColor = "text-pink-950 group-hover:text-pink-700";
+    singerColor = "text-pink-700/80 font-semibold";
+    borderClass = "border-2 border-pink-300/40 hover:border-pink-400";
+  } else if (tType === '7') {
+    bgClasses = "bg-[#faf9f6] text-stone-800 bg-notebook-light";
+    titleColor = "text-stone-900 group-hover:text-stone-600";
+    singerColor = "text-stone-500 font-semibold";
+    borderClass = "border-2 border-stone-300 hover:border-stone-500";
+  } else if (tType === '8') {
+    bgClasses = "bg-gradient-to-br from-red-600 via-red-500 to-red-700 text-yellow-100";
+    titleColor = "text-yellow-100 group-hover:text-yellow-300";
+    singerColor = "text-red-100/70 font-semibold";
+    borderClass = "border-2 border-yellow-500/40 hover:border-yellow-400";
+    shadowClass = "shadow-lg shadow-red-900/30 hover:scale-[1.015]";
+  } else if (tType === '9') {
+    bgClasses = "bg-gradient-to-br from-sky-200 via-white via-50% to-pink-100 text-sky-950";
+    titleColor = "text-sky-950 group-hover:text-sky-700";
+    singerColor = "text-sky-800/80 font-semibold";
+    borderClass = "border-2 border-sky-300 hover:border-pink-300";
+  } else if (tType === '10') {
+    bgClasses = "bg-neutral-950 text-white bg-blend-multiply";
+    titleColor = "text-white group-hover:text-neutral-300";
+    singerColor = "text-neutral-400 font-semibold";
+    borderClass = "border-2 border-neutral-800 hover:border-neutral-700";
+  } else if (tType === '11') {
+    bgClasses = "bg-[#090909] text-amber-100 font-serif";
+    titleColor = "text-amber-100 group-hover:text-amber-400";
+    singerColor = "text-amber-200/60 font-semibold";
+    borderClass = "border-2 border-amber-500/30 hover:border-amber-400";
+    shadowClass = "shadow-[0_12px_32px_rgba(212,175,55,0.1)] hover:shadow-[0_16px_40px_rgba(212,175,55,0.25)] hover:scale-[1.015]";
+  } else if (tType === '12') {
+    bgClasses = "bg-gradient-to-br from-[#2D1B18] via-[#1A0C06] to-[#0A0402] text-[#EFEBE9] font-serif";
+    titleColor = "text-white group-hover:text-[#A1887F]";
+    singerColor = "text-[#D7CCC8]/80 font-semibold";
+    borderClass = "border-2 border-[#8D6E63]/30 hover:border-[#8D6E63]";
+  } else if (tType === '13') {
+    bgClasses = "bg-gradient-to-b from-[#12102F] via-[#3B1275] to-[#B61242] text-white";
+    titleColor = "text-white group-hover:text-rose-300";
+    singerColor = "text-rose-200/80 font-semibold";
+    borderClass = "border-2 border-purple-500/30 hover:border-rose-400";
+    shadowClass = "shadow-[0_12px_32px_rgba(182,18,66,0.2)] hover:shadow-[0_16px_40px_rgba(182,18,66,0.35)] hover:scale-[1.015]";
+  } else if (tType === '14') {
+    bgClasses = "bg-gradient-to-b from-[#061A33] via-[#0E2E54] to-[#001D3D] text-white";
+    titleColor = "text-white group-hover:text-sky-300";
+    singerColor = "text-sky-200/80 font-semibold";
+    borderClass = "border-2 border-sky-500/30 hover:border-sky-400";
+  } else if (tType === '15') {
+    bgClasses = "bg-[#05040B] text-emerald-400 font-mono tracking-tight";
+    titleColor = "text-emerald-400 group-hover:text-emerald-200";
+    singerColor = "text-emerald-500/80 font-semibold";
+    borderClass = "border-2 border-[#10b981]/40 hover:border-[#10b981]";
+  } else if (tType === '16') {
+    bgClasses = "bg-gradient-to-tr from-[#12102F] via-[#2A053A] to-[#0A0A0E] text-white";
+    titleColor = "text-white group-hover:text-pink-300";
+    singerColor = "text-pink-200/80 font-semibold";
+    borderClass = "border-2 border-purple-500/30 hover:border-pink-500";
+    shadowClass = "shadow-[0_12px_32px_rgba(236,72,153,0.15)] hover:shadow-[0_16px_40px_rgba(236,72,153,0.3)] hover:scale-[1.015]";
+  } else if (tType === '17') {
+    bgClasses = "bg-sky-200 text-stone-900";
+    titleColor = "text-stone-900 group-hover:text-sky-950";
+    singerColor = "text-stone-600 font-semibold";
+    borderClass = "border-2 border-white hover:border-sky-300";
+  } else if (tType === '18') {
+    bgClasses = "bg-[#0F172A] text-amber-50";
+    titleColor = "text-amber-50 group-hover:text-amber-300";
+    singerColor = "text-slate-400 font-semibold";
+    borderClass = "border-2 border-amber-500/30 hover:border-amber-400";
+  } else if (tType === '19') {
+    bgClasses = "bg-gradient-to-br from-[#4D2D18] via-[#2D170B] to-[#120803] text-[#E5B582]";
+    titleColor = "text-[#E5B582] group-hover:text-[#D95B16]";
+    singerColor = "text-[#C29D75] font-semibold";
+    borderClass = "border-2 border-[#D95B16]/30 hover:border-[#D95B16]";
+  } else if (tType === '20') {
+    bgClasses = "bg-gradient-to-br from-[#FAD2A8] via-[#F9A8D4] to-[#C4DAFA] text-[#1A0F1A]";
+    titleColor = "text-[#1A0F1A] group-hover:text-pink-700";
+    singerColor = "text-pink-900/70 font-semibold";
+    borderClass = "border-2 border-pink-300/35 hover:border-pink-400";
+  }
+
+  if (song?.achievements && song.achievements.length > 0) {
+    borderClass = "border-[3px] border-[#D4AF37]";
+    shadowClass = "shadow-[0_12px_32px_rgba(170,124,17,0.25)] hover:shadow-[0_16px_40px_rgba(170,124,17,0.4)] hover:scale-[1.02]";
+    if (tType === '1') {
+      bgClasses = "bg-gradient-to-tr from-[#BF953F] via-[#FCF6BA] via-45% to-[#B38728] via-70% to-[#FBF5B7]";
+    }
+  }
+
+  const customConfig = song?.templateConfigs?.find((c: any) => c.id === tType);
+  const customStyle: React.CSSProperties = {};
+  if (customConfig?.bgColor) {
+    customStyle.backgroundColor = customConfig.bgColor;
+  }
+
+  return { bgClasses, titleColor, singerColor, borderClass, shadowClass, customStyle };
+}
+
+function renderContainedEffect(templateType: string) {
+  switch(templateType) {
+    case '1': // Vui vẻ (Ấm áp) - Happy / Warm
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Subtle Sunray Pattern */}
+          <svg className="absolute inset-0 w-full h-full opacity-15 text-amber-500" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="sunrays" x="0" y="0" width="48" height="48" patternUnits="userSpaceOnUse">
+                <circle cx="24" cy="24" r="1.5" fill="currentColor" />
+                <path d="M 24 0 L 24 48 M 0 24 L 48 24 M 7 7 L 41 41 M 7 41 L 41 7" stroke="currentColor" strokeWidth="0.5" strokeDasharray="3 4" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#sunrays)" />
+          </svg>
+          {/* Sun outline and glowing organic blobs */}
+          <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-40 h-40 bg-amber-400/10 rounded-full blur-2xl animate-pulse" />
+          <div className="absolute top-2 right-8 w-12 h-12 rounded-full border border-amber-300/20 bg-gradient-to-tr from-amber-400/5 to-amber-200/20" />
+          {/* Butterflies & Spars */}
+          <div className="absolute inset-0 opacity-50">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div 
+                key={i} 
+                className="absolute text-lg animate-float-shape"
+                style={{
+                  left: `${(i * 22) % 75 + 10}%`,
+                  top: `${(i * 17) % 65 + 15}%`,
+                  animationDuration: `${i * 2 + 5}s`,
+                  animationDelay: `-${i * 1.5}s`
+                }}
+              >
+                {['🦋', '🌻', '✨', '🎈'][i % 4]}
+              </div>
+            ))}
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div 
+                key={i} 
+                className="absolute bg-amber-400/35 rounded-full animate-pulse"
+                style={{
+                  left: `${(i * 15) % 85 + 5}%`,
+                  top: `${(i * 21) % 70 + 15}%`,
+                  width: `${(i % 3) * 2 + 3}px`,
+                  height: `${(i % 3) * 2 + 3}px`,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      );
+
+    case '2': // Căng Cực (Sôi động) - Electric / Club (Matches Image 5!)
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Memphis High-Energy Geometric SVGs */}
+          <svg className="absolute inset-0 w-full h-full opacity-20" xmlns="http://www.w3.org/2000/svg">
+            {/* Top-Right and Bottom-Left Half-tone/Concentric Arcs */}
+            <circle cx="95%" cy="5%" r="40" fill="none" stroke="#f43f5e" strokeWidth="1.5" strokeDasharray="3 3" />
+            <circle cx="95%" cy="5%" r="60" fill="none" stroke="#f43f5e" strokeWidth="2" />
+            <circle cx="95%" cy="5%" r="80" fill="none" stroke="#f59e0b" strokeWidth="1" strokeDasharray="6 4" />
+            
+            <circle cx="5%" cy="95%" r="30" fill="none" stroke="#ec4899" strokeWidth="1.5" />
+            <circle cx="5%" cy="95%" r="50" fill="none" stroke="#ec4899" strokeWidth="2" strokeDasharray="4 4" />
+            <circle cx="5%" cy="95%" r="70" fill="none" stroke="#38bdf8" strokeWidth="1.5" />
+
+            {/* Memphis lines with node endpoints */}
+            <line x1="35%" y1="75%" x2="65%" y2="95%" stroke="#facc15" strokeWidth="1.5" strokeLinecap="round" />
+            <circle cx="35%" cy="75%" r="3" fill="#facc15" />
+            <circle cx="65%" cy="95%" r="3" fill="#facc15" />
+
+            <line x1="40%" y1="80%" x2="70%" y2="100%" stroke="#facc15" strokeWidth="1.5" strokeLinecap="round" />
+            <circle cx="40%" cy="80%" r="3" fill="#facc15" />
+            <circle cx="70%" cy="100%" r="3" fill="#facc15" />
+
+            {/* Neon Memphis Triangle */}
+            <polygon points="85,30 115,80 55,70" fill="none" stroke="#f43f5e" strokeWidth="1.5" transform="scale(0.8) translate(50, 20)" />
+            <polygon points="20,10 50,60 -10,50" fill="none" stroke="#38bdf8" strokeWidth="1.2" transform="scale(0.6) translate(400, 30)" />
+          </svg>
+
+          {/* Dotted Halftone Pattern overlay */}
+          <div className="absolute inset-0 bg-[radial-gradient(rgba(244,63,94,0.12)_1px,transparent_1px)] bg-[size:16px_16px]" />
+
+          {/* Floating Neon geometric elements */}
+          <div className="absolute inset-0 opacity-40">
+            {/* Yellow crosses and plus marks */}
+            <div className="absolute top-4 left-1/3 text-yellow-400 font-bold text-xs rotate-45 animate-pulse">+</div>
+            <div className="absolute bottom-6 left-1/4 text-pink-400 font-bold text-xs animate-bounce">×</div>
+            <div className="absolute top-1/2 right-1/4 text-cyan-400 font-bold text-xs rotate-12 animate-pulse">+</div>
+            <div className="absolute top-6 right-12 text-yellow-300 font-bold text-xs animate-bounce">×</div>
+          </div>
+
+          {/* Pulse lasers & Equalizers */}
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-900/10 via-fuchsia-950/15 to-pink-900/10 opacity-40 animate-pulse" />
+          <div className="absolute bottom-0 right-4 flex items-end gap-1 opacity-30 h-10">
+            {[14, 28, 20, 36, 16, 24, 8, 30, 18, 22].map((h, i) => (
+              <div 
+                key={i} 
+                className="w-0.5 bg-fuchsia-400 rounded-t"
+                style={{
+                  height: `${h}%`,
+                  animation: `pulse-wave ${1 + (i % 3) * 0.3}s ease-in-out infinite alternate`,
+                  animationDelay: `-${i * 0.2}s`
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      );
+
+    case '3': // Buồn (Sâu lắng) - Sad / Deep
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Rain Grid Pattern */}
+          <svg className="absolute inset-0 w-full h-full opacity-15 text-slate-500" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="sadlines" x="0" y="0" width="20" height="40" patternUnits="userSpaceOnUse">
+                <line x1="0" y1="0" x2="6" y2="40" stroke="currentColor" strokeWidth="0.5" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#sadlines)" />
+          </svg>
+          {/* Dark blue clouds silhouettes */}
+          <svg className="absolute bottom-0 right-0 left-0 h-16 w-full text-slate-950/40 opacity-50" viewBox="0 0 400 100" preserveAspectRatio="none">
+            <path d="M 0,100 C 50,80 80,70 120,85 C 160,100 200,60 250,75 C 300,90 350,70 400,100 Z" fill="currentColor" />
+            <path d="M 0,100 C 30,90 70,80 100,90 C 140,100 180,75 220,85 C 270,95 330,80 400,100 Z" fill="currentColor" className="opacity-60" />
+          </svg>
+          {/* Crescent Moon & Clouds */}
+          <div className="absolute top-2 right-6 text-2xl opacity-20 animate-pulse">🌙</div>
+          <div className="absolute top-1 left-4 text-lg opacity-[0.10] animate-[float-gentle_12s_ease-in-out_infinite]">☁️</div>
+          <div className="absolute bottom-4 right-12 text-xl opacity-[0.06] animate-[float-gentle_16s_ease-in-out_infinite_reverse]">☁️</div>
+          {/* Rain / Snow particles */}
+          <div className="absolute inset-0 opacity-40">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div 
+                key={i} 
+                className="absolute text-[8px] sm:text-[10px] text-sky-100/60 animate-snow-contained"
+                style={{
+                  left: `${(i * 14) % 80 + 10}%`,
+                  top: `-${(i * 8) % 30}%`,
+                  animationDuration: `${3.2 + (i % 2) * 1.2}s`,
+                  animationDelay: `-${i * 0.8}s`
+                }}
+              >
+                {i % 2 === 0 ? '❄️' : '•'}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case '4': // Thư giãn (Nhẹ nhàng) - Relaxing / Gentle (Matches Image 4!)
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Music Staff Grid Pattern & Fluid Wavy Curves */}
+          <svg className="absolute inset-0 w-full h-full opacity-15" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="relaxgrid" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="0.75" fill="#0d9488" opacity="0.4" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#relaxgrid)" />
+            {/* Elegant fluid curved waves */}
+            <path d="M 0,20 C 120,60 220,-20 320,30 C 420,80 520,30 620,60" fill="none" stroke="rgba(13,148,136,0.18)" strokeWidth="2.5" />
+            <path d="M 0,40 C 100,80 250,10 350,50 C 450,90 550,20 650,40" fill="none" stroke="rgba(13,148,136,0.12)" strokeWidth="1.5" />
+          </svg>
+
+          {/* Treble clef outline in bottom left */}
+          <div className="absolute left-4 bottom-2 text-3xl text-teal-600/10 select-none">🎼</div>
+          
+          {/* Geometric Memphis Details (From Image 4) */}
+          <div className="absolute inset-0 opacity-30">
+            {/* White floating crosses & squares */}
+            <div className="absolute top-4 left-1/4 text-teal-600/20 text-xs font-bold rotate-12 animate-pulse">×</div>
+            <div className="absolute bottom-3 right-1/4 text-teal-600/15 text-sm font-bold rotate-45">×</div>
+            <div className="absolute top-1/2 left-8 w-3 h-3 border border-teal-600/15 rounded-xs animate-spin" style={{ animationDuration: '8s' }} />
+            <div className="absolute top-3 right-1/3 w-2 h-2 border border-teal-600/20 rotate-12" />
+          </div>
+
+          {/* Floating Notes */}
+          <div className="absolute inset-0 opacity-35">
+            {['♩', '♪', '♫', '♬', '♩', '♪'].map((note, i) => (
+              <div 
+                key={i} 
+                className="absolute text-teal-600/35 font-bold text-sm animate-bounce"
+                style={{
+                  left: `${(i * 18) % 75 + 15}%`,
+                  top: `${(i * 14) % 60 + 20}%`,
+                  animationDuration: `${2.5 + (i % 3) * 0.8}s`,
+                  animationDelay: `-${i * 1.2}s`
+                }}
+              >
+                {note}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case '5': // Đáng yêu (Đỏ, Nhảy múa) - Cute / Red (Matches Image 2!)
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Hearts Grid Pattern SVG */}
+          <svg className="absolute inset-0 w-full h-full opacity-10 text-rose-200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="heartgrid" x="0" y="0" width="36" height="36" patternUnits="userSpaceOnUse">
+                <path d="M 18 8 C 18 8 15 2 9 2 C 3 2 3 8 3 11 C 3 16 11 22 18 28 C 25 22 33 16 33 11 C 33 8 33 2 27 2 C 21 2 18 8 18 8 Z" fill="none" stroke="currentColor" strokeWidth="0.5" transform="scale(0.4)" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#heartgrid)" />
+          </svg>
+
+          {/* Soft Organic Background Blobs (Exactly from Image 2!) */}
+          <div className="absolute -left-6 top-1/4 w-20 h-16 bg-rose-400/20 rounded-[40%_60%_50%_50%] blur-sm animate-pulse" />
+          <div className="absolute right-8 top-1/3 w-16 h-12 bg-orange-400/15 rounded-[60%_40%_70%_30%] blur-xs animate-bounce" style={{ animationDuration: '6s' }} />
+          <div className="absolute left-1/3 bottom-4 w-24 h-12 bg-pink-400/15 rounded-full blur-md" />
+          <div className="absolute right-4 bottom-2 w-14 h-14 bg-rose-400/20 rounded-full blur-sm" />
+
+          {/* Sweets & Treats Icons with micro-shadows (From Image 2!) */}
+          <div className="absolute inset-0 opacity-45">
+            {[
+              { icon: '🍬', left: '10%', top: '45%', rotate: '-12deg', anim: 'animate-bounce' },
+              { icon: '🍭', left: '24%', top: '20%', rotate: '25deg', anim: 'animate-float-shape' },
+              { icon: '🍫', left: '75%', top: '65%', rotate: '-45deg', anim: 'animate-pulse' },
+              { icon: '🍡', left: '55%', top: '75%', rotate: '15deg', anim: 'animate-bounce' },
+              { icon: '💖', left: '80%', top: '15%', rotate: '5deg', anim: 'animate-float-shape' },
+              { icon: '🍬', left: '90%', top: '50%', rotate: '35deg', anim: 'animate-pulse' },
+            ].map((item, i) => (
+              <div 
+                key={i} 
+                className={`absolute text-sm drop-shadow-[0_2px_4px_rgba(225,29,72,0.4)] ${item.anim}`}
+                style={{
+                  left: item.left,
+                  top: item.top,
+                  transform: `rotate(${item.rotate})`,
+                  animationDuration: `${2.5 + (i % 2) * 1.5}s`,
+                  animationDelay: `-${i * 0.4}s`
+                }}
+              >
+                {item.icon}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case '6': // Hạnh Phúc (Hồng, Hoa rơi) - Happy / Blossom
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Cherry blossoms pattern background */}
+          <svg className="absolute inset-0 w-full h-full opacity-10 text-pink-400" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="cherrypattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                <circle cx="20" cy="20" r="3" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                <path d="M 20 16 C 17 12 14 12 14 16 C 14 20 20 20 20 20" stroke="currentColor" strokeWidth="0.5" fill="none" />
+                <path d="M 20 16 C 23 12 26 12 26 16 C 26 20 20 20 20 20" stroke="currentColor" strokeWidth="0.5" fill="none" />
+                <path d="M 20 24 C 17 28 14 28 14 24 C 14 20 20 20 20 20" stroke="currentColor" strokeWidth="0.5" fill="none" />
+                <path d="M 20 24 C 23 28 26 28 26 24 C 26 20 20 20 20 20" stroke="currentColor" strokeWidth="0.5" fill="none" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#cherrypattern)" />
+          </svg>
+          {/* Silhouette Cherry Blossom Branches in top-right corners */}
+          <svg className="absolute -top-4 -right-4 w-32 h-32 opacity-15 text-pink-500" viewBox="0 0 100 100">
+            <path d="M100,0 Q80,20 60,30 Q40,40 20,42 M75,12 Q60,25 50,38 M88,6 Q75,14 65,10" fill="none" stroke="currentColor" strokeWidth="2.5" />
+            <circle cx="60" cy="30" r="3" fill="currentColor" />
+            <circle cx="50" cy="38" r="4" fill="currentColor" />
+            <circle cx="65" cy="10" r="2" fill="currentColor" />
+          </svg>
+          {/* Drifting petals */}
+          <div className="absolute inset-0 opacity-35">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div 
+                key={i} 
+                className="absolute text-sm animate-snow-contained"
+                style={{
+                  left: `${(i * 20) % 85 + 5}%`,
+                  top: `-${(i * 8) % 30}%`,
+                  animationDuration: `${3.5 + (i % 2) * 1.5}s`,
+                  animationDelay: `-${i * 1.1}s`,
+                  transform: `rotate(${i * 45}deg)`
+                }}
+              >
+                🌸
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case '7': // Học Đường (Trắng, Lá vàng rơi) - Schoolyard / Autumn
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Blue lined notebook pattern with margin */}
+          <div className="absolute inset-y-0 left-6 w-[1px] bg-red-400/40 z-10" />
+          <div className="absolute inset-0 bg-notebook-light opacity-40" />
+          
+          {/* Paper airplane sketch and falling leaves */}
+          <div className="absolute top-3 left-10 text-sm opacity-20 select-none animate-[float-gentle_7s_infinite_alternate]">✈️</div>
+          <div className="absolute bottom-2 right-8 text-xs opacity-15 select-none font-serif rotate-12">Music & Life 📖</div>
+          
+          <div className="absolute inset-0 opacity-40">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div 
+                key={i} 
+                className="absolute text-sm animate-snow-contained"
+                style={{
+                  left: `${(i * 22) % 80 + 10}%`,
+                  top: `-${(i * 10) % 25}%`,
+                  animationDuration: `${4.0 + (i % 2) * 2.0}s`,
+                  animationDelay: `-${i * 1.5}s`,
+                  transform: `rotate(${i * 30}deg)`
+                }}
+              >
+                {['🍁', '🍂', '🍃', '🎓'][i % 4]}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case '8': // Tổ Quốc (Đỏ, Cờ phấp phới) - Patriotism
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Radial Golden Sunbeams pattern */}
+          <svg className="absolute inset-0 w-full h-full opacity-10 text-yellow-300" xmlns="http://www.w3.org/2000/svg">
+            <g transform="translate(100, 50)">
+              {Array.from({ length: 16 }).map((_, i) => (
+                <line 
+                  key={i} 
+                  x1="0" 
+                  y1="0" 
+                  x2="500" 
+                  y2="0" 
+                  stroke="currentColor" 
+                  strokeWidth="1.5" 
+                  transform={`rotate(${(360 / 16) * i})`} 
+                />
+              ))}
+            </g>
+          </svg>
+          {/* Large, beautiful glowing 5-point yellow star in center background */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[100px] text-yellow-400/10 select-none font-sans leading-none animate-pulse">⭐</div>
+          
+          {/* Glowing yellow stars */}
+          <div className="absolute inset-0 opacity-45">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div 
+                key={i} 
+                className="absolute text-yellow-300 animate-pulse drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]"
+                style={{
+                  left: `${(i * 22) % 75 + 15}%`,
+                  top: `${(i * 19) % 65 + 15}%`,
+                  fontSize: `${(i % 3) * 3 + 12}px`,
+                  animationDuration: `${1.5 + (i % 2) * 1}s`,
+                  animationDelay: `-${i * 0.4}s`
+                }}
+              >
+                ⭐
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case '9': // Cầu Vồng - Rainbow
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Concentric rainbow arches */}
+          <svg className="absolute inset-x-0 bottom-0 w-full h-[64px] opacity-15" viewBox="0 0 100 50" preserveAspectRatio="none">
+            <path d="M 0 50 A 50 50 0 0 1 100 50" fill="none" stroke="#f43f5e" strokeWidth="4" />
+            <path d="M 8 50 A 42 42 0 0 1 92 50" fill="none" stroke="#fb923c" strokeWidth="4" />
+            <path d="M 16 50 A 34 34 0 0 1 84 50" fill="none" stroke="#facc15" strokeWidth="4" />
+            <path d="M 24 50 A 26 26 0 0 1 76 50" fill="none" stroke="#4ade80" strokeWidth="4" />
+            <path d="M 32 50 A 18 18 0 0 1 68 50" fill="none" stroke="#60a5fa" strokeWidth="4" />
+            <path d="M 40 50 A 10 10 0 0 1 60 50" fill="none" stroke="#a78bfa" strokeWidth="4" />
+          </svg>
+          {/* Colorful glossy bubbles and sparkles */}
+          <div className="absolute inset-0 opacity-35">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div 
+                key={i} 
+                className="absolute rounded-full border border-pink-400/30 bg-gradient-to-tr from-sky-300/10 to-pink-300/15 animate-bounce"
+                style={{
+                  left: `${(i * 18) % 80 + 10}%`,
+                  top: `${(i * 15) % 60 + 15}%`,
+                  width: `${(i % 3) * 4 + 8}px`,
+                  height: `${(i % 3) * 4 + 8}px`,
+                  animationDuration: `${3.0 + (i % 2) * 1.5}s`,
+                  animationDelay: `-${i * 0.6}s`
+                }}
+              />
+            ))}
+            <div className="absolute top-3 left-10 text-xs text-yellow-300 animate-pulse">✨</div>
+            <div className="absolute top-8 right-16 text-sm text-pink-300 animate-pulse" style={{ animationDelay: '0.8s' }}>✨</div>
+          </div>
+        </div>
+      );
+
+    case '10': // Hip Hop (Đường phố) - Hip Hop
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Brick wall pattern layout */}
+          <svg className="absolute inset-0 w-full h-full opacity-12 text-white" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="brickpattern" x="0" y="0" width="48" height="24" patternUnits="userSpaceOnUse">
+                <rect width="48" height="24" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                <line x1="24" y1="0" x2="24" y2="12" stroke="currentColor" strokeWidth="0.5" />
+                <line x1="0" y1="12" x2="48" y2="12" stroke="currentColor" strokeWidth="0.5" />
+                <line x1="12" y1="12" x2="12" y2="24" stroke="currentColor" strokeWidth="0.5" />
+                <line x1="36" y1="12" x2="36" y2="24" stroke="currentColor" strokeWidth="0.5" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#brickpattern)" />
+          </svg>
+          {/* Neon Graffiti Spray Splatters & Crowns */}
+          <div className="absolute top-2 right-6 text-sm opacity-20 select-none rotate-12">👑</div>
+          <div className="absolute bottom-2 left-6 text-xl opacity-10 select-none -rotate-12">🔥</div>
+          <div className="absolute inset-0 opacity-25">
+            {['⛓️', '🎵', '⛓️', '🔥'].map((item, i) => (
+              <div 
+                key={i} 
+                className="absolute text-sm animate-pulse"
+                style={{
+                  left: `${(i * 26) % 70 + 15}%`,
+                  top: `${(i * 21) % 55 + 20}%`,
+                  transform: `rotate(${i * 20}deg)`,
+                  animationDuration: `${2.5 + (i % 2) * 1.2}s`,
+                  animationDelay: `-${i * 0.4}s`
+                }}
+              >
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case '11': // Kỳ bí (Đen vàng, Trăng khói mưa) - Mystic / Mysterious
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Constellations Map Pattern */}
+          <svg className="absolute inset-0 w-full h-full opacity-15 text-amber-500" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="30" cy="30" r="1.5" fill="currentColor" />
+            <circle cx="130" cy="45" r="1" fill="currentColor" />
+            <circle cx="220" cy="20" r="2" fill="currentColor" />
+            <circle cx="80" cy="75" r="1.5" fill="currentColor" />
+            <circle cx="190" cy="85" r="1.5" fill="currentColor" />
+            <path d="M 30 30 L 80 75 M 130 45 L 190 85 L 220 20" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 4" fill="none" />
+          </svg>
+          {/* Full Moon Outline & Golden dust */}
+          <div className="absolute top-2 right-6 w-10 h-10 rounded-full bg-amber-400/5 border border-amber-300/20 blur-xs animate-pulse" />
+          <div className="absolute top-3 right-7 text-sm opacity-35">🌕</div>
+          <div className="absolute inset-0 opacity-40">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div 
+                key={i} 
+                className="absolute bg-amber-300/50 rounded-full animate-pulse"
+                style={{
+                  left: `${(i * 18) % 85 + 5}%`,
+                  top: `${(i * 19) % 70 + 15}%`,
+                  width: '2px',
+                  height: '2px',
+                  animationDelay: `-${i * 0.6}s`
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      );
+
+    case '12': // Cổ điển (Nâu, retro) - Classic / Retro Record
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Vinyl Record Grooves concentric circles */}
+          <svg className="absolute -right-6 -top-6 w-36 h-36 opacity-[0.14] text-[#8D6E63] animate-[rotate-slow_12s_linear_infinite]" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="72" cy="72" r="68" fill="none" stroke="currentColor" strokeWidth="0.5" />
+            <circle cx="72" cy="72" r="54" fill="none" stroke="currentColor" strokeWidth="0.5" />
+            <circle cx="72" cy="72" r="40" fill="none" stroke="currentColor" strokeWidth="0.75" />
+            <circle cx="72" cy="72" r="26" fill="none" stroke="currentColor" strokeWidth="1" />
+            <circle cx="72" cy="72" r="14" fill="currentColor" />
+          </svg>
+          {/* Retro Warm halftone dotted pattern */}
+          <div className="absolute inset-0 bg-[radial-gradient(rgba(141,110,99,0.12)_1px,transparent_1px)] bg-[size:12px_12px]" />
+          
+          {/* Classic gold notes and Gramophone symbol */}
+          <div className="absolute bottom-3 left-6 text-xl text-[#8D6E63]/25 rotate-12">🎼</div>
+          <div className="absolute inset-0 opacity-25">
+            {['♪', '♩', '♫', '♬'].map((note, i) => (
+              <div 
+                key={i} 
+                className="absolute text-amber-700/40 font-serif text-sm animate-bounce"
+                style={{
+                  left: `${(i * 22) % 65 + 15}%`,
+                  top: `${(i * 18) % 55 + 25}%`,
+                  animationDuration: `${3.0 + i}s`,
+                  animationDelay: `-${i * 0.8}s`
+                }}
+              >
+                {note}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case '13': // Hoàng hôn (Cam đỏ trời chiều) - Sunset
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Silhouetted mountain range at the bottom of sunset */}
+          <svg className="absolute bottom-0 left-0 right-0 h-10 text-orange-950/40 opacity-40" viewBox="0 0 300 50" preserveAspectRatio="none">
+            <path d="M0,50 L40,30 L90,45 L150,20 L210,40 L260,25 L300,50 Z" fill="currentColor" />
+          </svg>
+          {/* Sunset Horizon Sun outline */}
+          <div className="absolute bottom-0 left-16 w-32 h-16 rounded-t-full bg-gradient-to-t from-orange-500/10 via-orange-400/5 to-transparent border-t border-orange-400/20" />
+          <div className="absolute bottom-1 left-24 w-14 h-14 rounded-full bg-amber-400/25 blur-xs" />
+          
+          {/* Drifting warm clouds and birds */}
+          <div className="absolute top-4 left-1/4 text-xs text-orange-400/15 select-none animate-[drift_24s_linear_infinite]">🕊️ 🕊️</div>
+          <div className="absolute inset-0 opacity-25 bg-gradient-to-tr from-rose-500/5 via-orange-500/5 to-yellow-500/15" />
+          <div className="absolute inset-0 opacity-25">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div 
+                key={i} 
+                className="absolute bg-orange-300/35 rounded-full animate-pulse"
+                style={{
+                  left: `${(i * 21) % 80 + 10}%`,
+                  top: `${(i * 15) % 60 + 15}%`,
+                  width: `${(i % 2) * 4 + 4}px`,
+                  height: `${(i % 2) * 1 + 2}px`,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      );
+
+    case '14': // Đại Dương (Sóng biển) - Ocean
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Sun shining down on water */}
+          <div className="absolute top-2 right-12 w-10 h-10 rounded-full bg-amber-200/10 border border-amber-200/25 shadow-inner flex items-center justify-center animate-pulse">
+            <div className="w-5 h-5 rounded-full bg-amber-300/30 blur-xs" />
+          </div>
+          {/* Light sunbeam vectors stretching down */}
+          <svg className="absolute inset-0 w-full h-full opacity-10 text-amber-100" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="120,0 90,120 130,120" fill="currentColor" />
+            <polygon points="140,0 120,120 180,120" fill="currentColor" />
+            <polygon points="100,0 60,120 80,120" fill="currentColor" />
+          </svg>
+
+          {/* Sea bubbles rising & ocean background radial glow */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,#0ea5e912,transparent_50%)]" />
+          <div className="absolute inset-0 opacity-35">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div 
+                key={i} 
+                className="absolute rounded-full border border-sky-400/40 bg-sky-200/10 animate-bounce"
+                style={{
+                  left: `${(i * 22) % 75 + 10}%`,
+                  top: `${(i * 19) % 65 + 15}%`,
+                  width: `${(i % 2) * 2 + 5}px`,
+                  height: `${(i % 2) * 2 + 5}px`,
+                  animationDuration: `${2.5 + i}s`,
+                  animationDelay: `-${i * 0.7}s`
+                }}
+              />
+            ))}
+            {/* Tiny Fish symbol swimming */}
+            <div className="absolute bottom-4 left-6 text-xs text-sky-400/25 select-none animate-[drift_15s_linear_infinite]">🐟</div>
+          </div>
+          {/* Waves at the bottom of the card */}
+          <div className="absolute bottom-0 left-0 right-0 h-4 overflow-hidden opacity-25">
+            <svg className="absolute bottom-0 w-[200%] h-full translate-x-0 animate-[wave_6s_linear_infinite]" viewBox="0 0 1200 120" preserveAspectRatio="none">
+              <path d="M0,60 C150,100 350,20 500,60 C650,100 850,20 1000,60 C1150,100 1350,20 1500,60 L1500,120 L0,120 Z" fill="#0ea5e9" />
+            </svg>
+          </div>
+        </div>
+      );
+
+    case '15': // Retro 8-Bit (Game) - 8-Bit
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Pixel grid blocks */}
+          <svg className="absolute inset-0 w-full h-full opacity-12 text-emerald-400" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="pixelgrid" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse">
+                <rect width="8" height="8" fill="currentColor" stroke="none" opacity="0.3" />
+                <rect x="8" y="8" width="8" height="8" fill="currentColor" stroke="none" opacity="0.3" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#pixelgrid)" />
+          </svg>
+          {/* Scanline CRT overlay */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0)_50%,_rgba(0,0,0,0.12)_50%)] bg-[size:100%_4px]" />
+          {/* Jumping 8-bit game items */}
+          <div className="absolute inset-0 opacity-40 font-mono text-xs">
+            {['👾', '🍒', '⭐', '🪙', '❤️'].map((item, i) => (
+              <div 
+                key={i} 
+                className="absolute animate-bounce"
+                style={{
+                  left: `${(i * 20) % 80 + 10}%`,
+                  top: `${(i * 17) % 55 + 25}%`,
+                  animationDuration: `${1.5 + (i % 2) * 0.8}s`,
+                  animationDelay: `-${i * 0.4}s`
+                }}
+              >
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case '16': // Xếp hình Puzzle - Jigsaw
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Puzzle outline pattern */}
+          <svg className="absolute inset-0 w-full h-full opacity-12 text-purple-400" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="puzzlepattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 0 20 C 5 20, 5 15, 10 15 C 15 15, 15 20, 20 20 L 20 40 L 0 40 Z" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                <path d="M 20 0 C 20 5, 25 5, 25 10 C 25 15, 20 15, 20 20 L 40 20 L 40 0 Z" fill="none" stroke="currentColor" strokeWidth="0.5" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#puzzlepattern)" />
+          </svg>
+          {/* Floating jigsaw pieces */}
+          <div className="absolute inset-0 opacity-30">
+            {['🧩', '🧩', '🧩'].map((puzzle, i) => (
+              <div 
+                key={i} 
+                className="absolute text-sm animate-bounce"
+                style={{
+                  left: `${(i * 30) % 65 + 15}%`,
+                  top: `${(i * 22) % 55 + 20}%`,
+                  transform: `rotate(${i * 45}deg)`,
+                  animationDuration: `${3.5 + i}s`,
+                  animationDelay: `-${i * 1.2}s`
+                }}
+              >
+                {puzzle}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case '17': // Cổ vũ (Mây, mặt trời) - Cheer / Sky (Matches Image 3 perfectly!)
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Subtle Sun rays spinning background */}
+          <div className="absolute top-2 left-6 w-16 h-16 rounded-full bg-amber-300/10 blur-md animate-pulse" />
+          
+          {/* Fluffy Overlapping Cloud Layers (Perfectly matching Image 3 layout!) */}
+          <svg className="absolute bottom-0 left-0 right-0 w-full h-[80%] text-sky-400/15" viewBox="0 0 400 200" preserveAspectRatio="none">
+            {/* Cloud Layer 1 - Deep/Bottom */}
+            <path d="M 0,200 L 0,160 Q 40,140 80,160 Q 120,130 160,160 Q 200,120 240,160 Q 280,140 320,170 Q 360,150 400,160 L 400,200 Z" fill="rgba(255,255,255,0.08)" />
+            {/* Cloud Layer 2 - Middle */}
+            <path d="M 0,200 L 0,175 Q 30,160 60,175 Q 100,145 140,175 Q 180,155 220,175 Q 260,160 300,180 Q 350,165 400,175 L 400,200 Z" fill="rgba(255,255,255,0.12)" />
+            {/* Cloud Layer 3 - Topmost */}
+            <path d="M 0,200 L 0,185 Q 50,175 100,185 Q 150,170 200,185 Q 250,175 300,188 Q 350,180 400,185 L 400,200 Z" fill="rgba(255,255,255,0.22)" />
+          </svg>
+
+          {/* Floating Party Elements (Confetti/Balloons) */}
+          <div className="absolute top-1 right-8 text-sm opacity-20 select-none animate-[float-gentle_10s_infinite_alternate]">☁️</div>
+          <div className="absolute bottom-10 left-16 text-lg opacity-10 select-none animate-[float-gentle_14s_infinite_alternate_reverse]">☁️</div>
+          
+          <div className="absolute inset-0 opacity-40">
+            {['🎉', '✨', '🎈', '✨', '🎈'].map((item, i) => (
+              <div 
+                key={i} 
+                className="absolute text-xs animate-bounce"
+                style={{
+                  left: `${(i * 21) % 80 + 10}%`,
+                  top: `${(i * 18) % 50 + 15}%`,
+                  animationDuration: `${2.0 + (i % 2) * 1.2}s`,
+                  animationDelay: `-${i * 0.3}s`
+                }}
+              >
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case '18': // Pháo hoa (Năm mới) - Fireworks
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Starburst concentric patterns */}
+          <svg className="absolute inset-0 w-full h-full opacity-12 text-amber-300" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="60" cy="40" r="18" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="3 3" />
+            <circle cx="200" cy="70" r="28" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 4" />
+          </svg>
+          {/* Multiple bursting firework stars */}
+          <div className="absolute inset-0 opacity-50">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div 
+                key={i} 
+                className="absolute bg-cyan-400/40 rounded-full animate-ping"
+                style={{
+                  left: `${(i * 22) % 75 + 10}%`,
+                  top: `${(i * 18) % 65 + 15}%`,
+                  width: `${(i % 2) * 4 + 4}px`,
+                  height: `${(i % 2) * 4 + 4}px`,
+                  animationDuration: `${1.8 + (i % 3) * 0.6}s`,
+                  animationDelay: `-${i * 0.4}s`
+                }}
+              />
+            ))}
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div 
+                key={i} 
+                className="absolute bg-fuchsia-400/45 rounded-full animate-ping"
+                style={{
+                  left: `${(i * 27) % 70 + 15}%`,
+                  top: `${(i * 15) % 60 + 20}%`,
+                  width: `${(i % 2) * 3 + 3}px`,
+                  height: `${(i % 2) * 3 + 3}px`,
+                  animationDuration: `${2.2 + (i % 2) * 0.5}s`,
+                  animationDelay: `-${i * 0.9}s`
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      );
+
+    case '19': // Mùa thu (Lá rơi) - Autumn / Fall
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Birch branch silhouette */}
+          <svg className="absolute inset-0 w-full h-full opacity-10 text-amber-700" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 0 0 C 40 18, 80 12, 120 30 M 120 30 C 160 35, 200 18, 260 40" fill="none" stroke="currentColor" strokeWidth="1.2" />
+            <path d="M 70 14 C 80 28, 100 38, 120 32" fill="none" stroke="currentColor" strokeWidth="0.5" />
+          </svg>
+          {/* Drifting maple leaves and acorns */}
+          <div className="absolute inset-0 opacity-40">
+            {['🍁', '🌰', '🍁', '🍂', '🍂'].map((item, i) => (
+              <div 
+                key={i} 
+                className="absolute text-sm animate-snow-contained"
+                style={{
+                  left: `${(i * 20) % 80 + 10}%`,
+                  top: `-${(i * 9) % 30}%`,
+                  animationDuration: `${3.8 + (i % 2) * 1.5}s`,
+                  animationDelay: `-${i * 1.2}s`,
+                  transform: `rotate(${i * 45}deg)`
+                }}
+              >
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case '20': // Ngọt ngào (Pastel) - Pastel Sweet (Matches Image 6!)
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Memphis Sweet Pastel Geometry SVGs (From Image 6!) */}
+          <svg className="absolute inset-0 w-full h-full opacity-20" xmlns="http://www.w3.org/2000/svg">
+            {/* Halftone dotted circle grid / matrix (From Image 6!) */}
+            <defs>
+              <pattern id="dotmatrix" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="1.2" fill="#2563eb" opacity="0.4" />
+              </pattern>
+            </defs>
+            <rect x="15" y="15" width="80" height="80" fill="url(#dotmatrix)" transform="scale(0.8) translate(30, 10)" />
+
+            {/* Zig-zag line (From Image 6!) */}
+            <polyline points="200,15 220,30 240,15 260,30 280,15 300,30" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
+            
+            {/* Blue Hexagon (From Image 6!) */}
+            <polygon points="120,70 140,60 140,80 120,90 100,80 100,60" fill="#1d4ed8" opacity="0.35" transform="scale(0.7) translate(80, 20)" />
+
+            {/* Light blue outlines of circles/squares */}
+            <circle cx="45" cy="25" r="8" fill="none" stroke="#2563eb" strokeWidth="1.5" opacity="0.4" />
+            <rect x="20" y="80" width="10" height="10" fill="none" stroke="#ffffff" strokeWidth="1.5" opacity="0.3" />
+          </svg>
+
+          {/* Diagonal pastel stripe pattern overlay */}
+          <svg className="absolute inset-0 w-full h-full opacity-10 text-pink-300" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="pastelstripes" x="0" y="0" width="24" height="24" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+                <line x1="0" y1="0" x2="0" y2="24" stroke="currentColor" strokeWidth="2.5" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#pastelstripes)" />
+          </svg>
+
+          {/* Sweet bubbles, clouds & pastel stars */}
+          <div className="absolute top-2 left-8 text-sm opacity-20 select-none animate-[float-gentle_8s_infinite_alternate]">☁️</div>
+          <div className="absolute inset-0 opacity-35">
+            {['🫧', '⭐', '🫧', '✨', '💖'].map((item, i) => (
+              <div 
+                key={i} 
+                className="absolute text-xs animate-bounce"
+                style={{
+                  left: `${(i * 22) % 80 + 10}%`,
+                  top: `${(i * 18) % 60 + 20}%`,
+                  animationDuration: `${2.2 + (i % 2) * 1}s`,
+                  animationDelay: `-${i * 0.5}s`
+                }}
+              >
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    default:
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+          {/* Subtle elegant dotted grid background so no theme has flat solid colors */}
+          <svg className="absolute inset-0 w-full h-full opacity-[0.06] text-amber-500" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="defaultgrid" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="0.75" fill="currentColor" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#defaultgrid)" />
+          </svg>
+          <div className="absolute inset-0 opacity-20">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div 
+                key={i} 
+                className="absolute bg-amber-400/20 rounded-full animate-pulse"
+                style={{
+                  left: `${(i * 23) % 80 + 10}%`,
+                  top: `${(i * 19) % 80 + 10}%`,
+                  width: '4px',
+                  height: '4px',
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      );
+  }
+}
+
 export default function App() {
   const [lang, setLang] = useState(() => {
     const isManual = localStorage.getItem('manualLangSelected') === 'true';
@@ -5166,7 +6246,7 @@ const renderTextWithBannedKeywords = (textVal: string, keywords: string[], forma
   }
 };
 
-const HoverTranslate = ({ text, className = "", format = false, style }: { text: string; className?: string, format?: boolean, style?: React.CSSProperties }) => {
+const HoverTranslate = ({ text, className = "", format = false, style, forceDark = false }: { text: string; className?: string, format?: boolean, style?: React.CSSProperties, forceDark?: boolean }) => {
   const { lang, artistData, landingConfig } = useContext(LanguageContext);
   const [translated, setTranslated] = useState(text);
   const [isHovered, setIsHovered] = useState(false);
@@ -5193,6 +6273,7 @@ const HoverTranslate = ({ text, className = "", format = false, style }: { text:
 
   const output = (isHovered && lang !== 'vi') ? translated : text;
   const keywords = landingConfig?.forbiddenKeywords || [];
+  const isGold = forceDark ? false : artistData?.adminTheme === 'gold';
 
   return (
     <span 
@@ -5201,7 +6282,7 @@ const HoverTranslate = ({ text, className = "", format = false, style }: { text:
       onMouseEnter={() => setIsHovered(true)} 
       onMouseLeave={() => setIsHovered(false)}
     >
-      {renderTextWithBannedKeywords(output, keywords, format ? formatText : undefined)}
+      {renderTextWithBannedKeywords(output, keywords, format ? (t) => formatText(t, false, isGold) : undefined)}
     </span>
   );
 };
@@ -5343,27 +6424,28 @@ function AchievementBadge({ achievement, align = 'right' }: { achievement: Achie
   };
 
   const isLeft = align === 'left';
-  if (achievement.type === 'youtube_trending' || achievement.type === 'youtube_views') {
-    const isTrending = achievement.type === 'youtube_trending';
+  const type = achievement.type;
+
+  if (type === 'youtube_trending' || type === 'youtube_views') {
+    const isTrending = type === 'youtube_trending';
     const isTop1Trending = isTrending && (achievement.value?.toString().trim() === '1' || achievement.value?.toString().toLowerCase().trim() === 'top 1' || achievement.value?.toString().trim() === '#1');
     return (
-      <div className={`flex flex-row items-center gap-2 sm:gap-2.5 w-full ${isLeft ? 'justify-start' : 'justify-end'} group/badge`}>
-        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#ff0f7b] to-[#f89b29] p-[1px] rounded-lg sm:rounded-xl shrink-0 shadow-[0_0_10px_rgba(239,68,68,0.3)] animate-flicker-yt">
-          <div className="w-full h-full bg-gradient-to-br from-red-600 to-red-800 rounded-[7px] sm:rounded-[11px] flex items-center justify-center border border-red-400/20">
-            <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white ml-0.5 shadow-sm drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]" fill="currentColor" />
+      <div className={`flex flex-row items-center gap-1.5 sm:gap-2.5 w-full ${isLeft ? 'justify-start' : 'justify-end'} group/badge`}>
+        <div className="w-5 h-5 min-[360px]:w-6 min-[360px]:h-6 sm:w-10 sm:h-10 bg-gradient-to-br from-[#ff0f7b] to-[#f89b29] p-[1px] rounded-[4px] sm:rounded-xl shrink-0 shadow-[0_0_10px_rgba(239,68,68,0.3)] animate-flicker-yt">
+          <div className="w-full h-full bg-gradient-to-br from-red-600 to-red-800 rounded-[3px] sm:rounded-[11px] flex items-center justify-center border border-red-400/20">
+            <Play className="w-2 h-2 min-[360px]:w-2.5 min-[360px]:h-2.5 sm:w-4 sm:h-4 text-white ml-0.5 shadow-sm drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]" fill="currentColor" />
           </div>
         </div>
-        <div className={`flex flex-col gap-0.5 ${isLeft ? 'items-start' : 'items-end'} justify-center`}>
-           <div className="border border-red-500 bg-red-500/10 px-1.5 py-0.5 rounded-md flex items-center justify-center shadow-[0_0_4px_rgba(239,68,68,0.15)] animate-flicker-yt">
+        <div className={`flex flex-col gap-0 sm:gap-0.5 ${isLeft ? 'items-start' : 'items-end'} justify-center`}>
+           <div className="hidden sm:flex border border-red-500 bg-red-500/10 px-1.5 py-0.5 rounded-md items-center justify-center shadow-[0_0_4px_rgba(239,68,68,0.15)] animate-flicker-yt">
              <span className="text-[7.5px] sm:text-[8px] font-black text-red-500 tracking-widest uppercase text-center block" style={{ marginRight: '-0.1em' }}>
                YOUTUBE</span>
-             
            </div>
-           <h4 className={`text-[9.5px] sm:text-[10px] font-black text-white whitespace-nowrap mt-0.5 ${isTop1Trending ? 'animate-yt-top1' : 'animate-slow-glow-yt'}`}>
+           <h4 className={`text-[6.5px] min-[360px]:text-[7.5px] sm:text-[10px] font-black text-white mt-0.5 flex flex-row items-center gap-0.5 ${isTop1Trending ? 'animate-yt-top1' : 'animate-slow-glow-yt'}`}>
              {isTrending ? (
-                 <><span className="text-amber-400 drop-shadow-[0_0_4px_rgba(251,191,36,0.5)]">TOP {achievement.value} <span className="text-stone-200">{t('trending')}</span></span></>
+                 <><span className="text-amber-400 drop-shadow-[0_0_4px_rgba(251,191,36,0.5)] whitespace-nowrap">TOP {achievement.value}</span><span className="text-stone-200 drop-shadow-[0_0_2px_rgba(255,255,255,0.3)] whitespace-nowrap">{t('trending')}</span></>
              ) : (
-                 <><span className="text-red-400 drop-shadow-[0_0_4px_rgba(248,113,113,0.3)]">&gt; {achievement.value} <span className="text-stone-200">{t('views')}</span></span></>
+                 <><span className="text-red-400 drop-shadow-[0_0_4px_rgba(248,113,113,0.3)] whitespace-nowrap">&gt; {achievement.value} <span className="text-stone-200 whitespace-nowrap">{t('views')}</span></span></>
              )}
            </h4>
         </div>
@@ -5371,66 +6453,63 @@ function AchievementBadge({ achievement, align = 'right' }: { achievement: Achie
     );
   }
 
-  if (achievement.type === 'tiktok_viral') {
+  if (type === 'tiktok_viral') {
     return (
-      <div className={`flex flex-row items-center gap-2 sm:gap-2.5 w-full ${isLeft ? 'justify-start' : 'justify-end'} group/badge`}>
-        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-bl from-[#00f2fe] via-black to-[#fe0979] p-[1px] rounded-lg sm:rounded-xl shrink-0 shadow-[0_0_10px_rgba(34,211,238,0.3)] animate-flicker-tt">
-          <div className="w-full h-full bg-black rounded-[7px] sm:rounded-[11px] flex items-center justify-center border border-white/5">
-            <TiktokIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]" />
+      <div className={`flex flex-row items-center gap-1.5 sm:gap-2.5 w-full ${isLeft ? 'justify-start' : 'justify-end'} group/badge`}>
+        <div className="w-5 h-5 min-[360px]:w-6 min-[360px]:h-6 sm:w-10 sm:h-10 bg-gradient-to-bl from-[#00f2fe] via-black to-[#fe0979] p-[1px] rounded-[4px] sm:rounded-xl shrink-0 shadow-[0_0_10px_rgba(34,211,238,0.3)] animate-flicker-tt">
+          <div className="w-full h-full bg-black rounded-[3px] sm:rounded-[11px] flex items-center justify-center border border-white/5">
+            <TiktokIcon className="w-2.5 h-2.5 min-[360px]:w-3 min-[360px]:h-3 sm:w-5 sm:h-5 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]" />
           </div>
         </div>
-        <div className={`flex flex-col gap-0.5 ${isLeft ? 'items-start' : 'items-end'} justify-center`}>
-           <div className="border border-teal-400 bg-teal-400/10 px-1.5 py-0.5 rounded-md flex items-center justify-center shadow-[0_0_4px_rgba(20,184,166,0.15)] animate-flicker-tt">
+        <div className={`flex flex-col gap-0 sm:gap-0.5 ${isLeft ? 'items-start' : 'items-end'} justify-center`}>
+           <div className="hidden sm:flex border border-teal-400 bg-teal-400/10 px-1.5 py-0.5 rounded-md items-center justify-center shadow-[0_0_4px_rgba(20,184,166,0.15)] animate-flicker-tt">
              <span className="text-[7.5px] sm:text-[8px] font-black text-teal-400 tracking-widest uppercase text-center block" style={{ marginRight: '-0.1em' }}>
                TIKTOK</span>
-             
            </div>
-           <h4 className="text-[9.5px] sm:text-[10px] font-black text-white whitespace-nowrap mt-0.5 animate-slow-glow-tt">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00f2fe] via-white to-[#fe0979] drop-shadow-[0_0_4px_rgba(255,255,255,0.3)]">✨ {t('viral').toUpperCase()} ✨</span>
+           <h4 className="text-[6.5px] min-[360px]:text-[7.5px] sm:text-[10px] font-black text-white mt-0.5 animate-slow-glow-tt flex flex-row items-center">
+             <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00f2fe] via-white to-[#fe0979] drop-shadow-[0_0_4px_rgba(255,255,255,0.3)] whitespace-nowrap">✨ {t('viral').toUpperCase()} ✨</span>
            </h4>
         </div>
       </div>
     );
   }
 
-  if (achievement.type === 'spotify_streams') {
+  if (type === 'spotify_streams') {
     return (
-      <div className={`flex flex-row items-center gap-2 sm:gap-2.5 w-full ${isLeft ? 'justify-start' : 'justify-end'} group/badge`}>
-        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#1ED760] to-[#128a3c] p-[1px] rounded-full shrink-0 shadow-[0_0_10px_rgba(29,185,84,0.3)] animate-flicker-sp">
+      <div className={`flex flex-row items-center gap-1.5 sm:gap-2.5 w-full ${isLeft ? 'justify-start' : 'justify-end'} group/badge`}>
+        <div className="w-5 h-5 min-[360px]:w-6 min-[360px]:h-6 sm:w-10 sm:h-10 bg-gradient-to-br from-[#1ED760] to-[#128a3c] p-[1px] rounded-full shrink-0 shadow-[0_0_10px_rgba(29,185,84,0.3)] animate-flicker-sp">
           <div className="w-full h-full bg-gradient-to-br from-[#1DB954] to-[#169c46] rounded-full flex items-center justify-center border border-white/20">
-            <SpotifyIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]" />
+            <SpotifyIcon className="w-2.5 h-2.5 min-[360px]:w-3 min-[360px]:h-3 sm:w-5 sm:h-5 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]" />
           </div>
         </div>
-        <div className={`flex flex-col gap-0.5 ${isLeft ? 'items-start' : 'items-end'} justify-center`}>
-           <div className="border border-[#1DB954] bg-[#1DB954]/10 px-1.5 py-0.5 rounded-md flex items-center justify-center shadow-[0_0_4px_rgba(29,185,84,0.15)] animate-flicker-sp">
+        <div className={`flex flex-col gap-0 sm:gap-0.5 ${isLeft ? 'items-start' : 'items-end'} justify-center`}>
+           <div className="hidden sm:flex border border-[#1DB954] bg-[#1DB954]/10 px-1.5 py-0.5 rounded-md items-center justify-center shadow-[0_0_4px_rgba(29,185,84,0.15)] animate-flicker-sp">
              <span className="text-[7.5px] sm:text-[8px] font-black text-[#1DB954] tracking-widest uppercase text-center block" style={{ marginRight: '-0.1em' }}>
                SPOTIFY</span>
-             
            </div>
-           <h4 className="text-[9.5px] sm:text-[10px] font-black text-white whitespace-nowrap mt-0.5 animate-slow-glow-sp">
-             <span className="text-[#1DB954] drop-shadow-[0_0_4px_rgba(29,185,84,0.5)]">&gt; {achievement.value} <span className="text-stone-200">{t('streams')}</span></span>
+           <h4 className="text-[6.5px] min-[360px]:text-[7.5px] sm:text-[10px] font-black text-white mt-0.5 animate-slow-glow-sp flex flex-row items-center">
+             <span className="text-[#1DB954] drop-shadow-[0_0_4px_rgba(29,185,84,0.5)] whitespace-nowrap">&gt; {achievement.value} <span className="text-stone-200 whitespace-nowrap">{t('streams')}</span></span>
            </h4>
         </div>
       </div>
     );
   }
 
-  if (achievement.type === 'zing_streams') {
+  if (type === 'zing_streams') {
     return (
-      <div className={`flex flex-row items-center gap-2 sm:gap-2.5 w-full ${isLeft ? 'justify-start' : 'justify-end'} group/badge`}>
-        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#a855f7] to-[#6b21a8] p-[1px] rounded-full shrink-0 shadow-[0_0_10px_rgba(168,85,247,0.3)] animate-flicker-zg">
+      <div className={`flex flex-row items-center gap-1.5 sm:gap-2.5 w-full ${isLeft ? 'justify-start' : 'justify-end'} group/badge`}>
+        <div className="w-6 h-6 min-[360px]:w-7 min-[360px]:h-7 sm:w-10 sm:h-10 bg-gradient-to-br from-[#a855f7] to-[#6b21a8] p-[1px] rounded-full shrink-0 shadow-[0_0_10px_rgba(168,85,247,0.3)] animate-flicker-zg">
           <div className="w-full h-full bg-gradient-to-br from-[#bc56fd] to-[#801bb6] rounded-full flex items-center justify-center border border-white/20 overflow-hidden">
-            <ZingIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)] scale-[1.8]" />
+            <ZingIcon className="w-3 h-3 min-[360px]:w-3.5 min-[360px]:h-3.5 sm:w-5 sm:h-5 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)] scale-[1.8]" />
           </div>
         </div>
-        <div className={`flex flex-col gap-0.5 ${isLeft ? 'items-start' : 'items-end'} justify-center`}>
-           <div className="border border-[#a855f7] bg-[#a855f7]/10 px-1.5 py-0.5 rounded-md flex items-center justify-center shadow-[0_0_4px_rgba(168,85,247,0.15)] animate-flicker-zg">
+        <div className={`flex flex-col gap-0 sm:gap-0.5 ${isLeft ? 'items-start' : 'items-end'} justify-center`}>
+           <div className="hidden sm:flex border border-[#a855f7] bg-[#a855f7]/10 px-1.5 py-0.5 rounded-md items-center justify-center shadow-[0_0_4px_rgba(168,85,247,0.15)] animate-flicker-zg">
              <span className="text-[7.5px] sm:text-[8px] font-black text-[#bc56fd] tracking-widest uppercase text-center block" style={{ marginRight: '-0.1em' }}>
                ZING MP3</span>
-             
            </div>
-           <h4 className="text-[9.5px] sm:text-[10px] font-black text-white whitespace-nowrap mt-0.5 animate-slow-glow-zg">
-             <span className="text-[#c084fc] drop-shadow-[0_0_4px_rgba(168,85,247,0.5)]">&gt; {achievement.value} <span className="text-stone-200">{t('streams')}</span></span>
+           <h4 className="text-[7.5px] min-[360px]:text-[8.5px] sm:text-[10px] font-black text-white mt-0.5 animate-slow-glow-zg flex flex-row items-center">
+             <span className="text-[#c084fc] drop-shadow-[0_0_4px_rgba(168,85,247,0.5)] whitespace-nowrap">&gt; {achievement.value} <span className="text-stone-200 whitespace-nowrap">{t('streams')}</span></span>
            </h4>
         </div>
       </div>
@@ -5456,7 +6535,7 @@ function AchievementCycle({ achievements, align = 'right' }: { achievements: Ach
   const isLeft = align === 'left';
 
   return (
-    <div className={`relative w-full h-[40px] sm:h-[48px] flex items-center ${isLeft ? 'justify-start' : 'justify-end'} overflow-visible`}>
+    <div className={`relative w-full h-[30px] sm:h-[48px] flex items-center ${isLeft ? 'justify-start' : 'justify-end'} overflow-visible`}>
       <AnimatePresence mode="wait">
         <motion.div
            key={currentIndex}
@@ -5508,8 +6587,55 @@ function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [toast, setToast] = useState('');
   const [activeBioSong, setActiveBioSong] = useState<any | null>(null);
+  const [randomSong, setRandomSong] = useState<any>(null);
   const getSongCoverUrl = (songUrl?: string) => songUrl || data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  const getDeterministicCount = (title: string, platform: 'spotify' | 'youtube') => {
+    const hash = Array.from(title || '').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    if (platform === 'spotify') {
+      const list = ['> 10M Lượt nghe', '> 18M Lượt nghe', '> 5.6M Lượt nghe', '> 22M Lượt nghe', '> 8.3M Lượt nghe'];
+      return list[hash % list.length];
+    } else {
+      const list = ['> 410K Lượt xem', '> 413K Lượt xem', '> 2.1M Lượt xem', '> 950K Lượt xem', '> 1.2M Lượt xem'];
+      return list[hash % list.length];
+    }
+  };
   const [isScrolled, setIsScrolled] = useState(false);
+  const isGoldTheme = data?.adminTheme === 'gold';
+  const [currentAvatarSlideIndex, setCurrentAvatarSlideIndex] = useState(0);
+
+  const avatarSlideshowImages = useMemo(() => {
+    if (!data) return [];
+    const urls: string[] = [];
+    if (data.aboutMe?.avatarUrl) urls.push(data.aboutMe.avatarUrl);
+    if (data.homeCoverUrl && !urls.includes(data.homeCoverUrl)) urls.push(data.homeCoverUrl);
+    
+    if (data.slideshowImages && Array.isArray(data.slideshowImages)) {
+      data.slideshowImages.forEach((img: string) => {
+        if (img && !urls.includes(img)) {
+          urls.push(img);
+        }
+      });
+    }
+    
+    return urls.filter(Boolean);
+  }, [data]);
+
+  useEffect(() => {
+    if (avatarSlideshowImages.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentAvatarSlideIndex(prev => (prev + 1) % avatarSlideshowImages.length);
+    }, 4500);
+    return () => clearInterval(interval);
+  }, [avatarSlideshowImages]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -5537,6 +6663,33 @@ function Home() {
     cycle();
     return () => clearTimeout(timeoutId);
   }, []);
+
+  useEffect(() => {
+    if (!isGoldTheme || !data?.demos) return;
+    const publicSongs = data.demos.filter((d: any) => d.status === 'public' && !d.isDraft && !d.deleted);
+    if (publicSongs.length === 0) return;
+    
+    // Choose initial random song
+    const initialIndex = Math.floor(Math.random() * publicSongs.length);
+    setRandomSong(publicSongs[initialIndex]);
+
+    const interval = setInterval(() => {
+      setRandomSong((prevSong: any) => {
+        // Find a different random song if there are multiple songs
+        if (publicSongs.length <= 1) return publicSongs[0];
+        let nextSong = prevSong;
+        let attempts = 0;
+        while ((!nextSong || nextSong.id === prevSong?.id) && attempts < 10) {
+          const randIndex = Math.floor(Math.random() * publicSongs.length);
+          nextSong = publicSongs[randIndex];
+          attempts++;
+        }
+        return nextSong || publicSongs[0];
+      });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [isGoldTheme, data?.demos]);
 
   useEffect(() => {
     if (data && data.demos && !hasInitializedTab) {
@@ -5756,6 +6909,281 @@ function Home() {
   const effectiveCoverUrl = data.homeCoverUrl || data.aboutMe?.avatarUrl;
 
   const renderTitleSection = (isFirst: boolean) => {
+    if (isGoldTheme) {
+      return (
+        <section key="title" className={`relative ${isFirst ? 'pt-28 sm:pt-36' : 'pt-16 sm:pt-20'} pb-12 px-6 sm:px-12 max-w-6xl mx-auto w-full flex flex-col md:flex-row items-center justify-between gap-10 md:gap-16`}>
+          {/* Left Column: Spectacular Luxury Frame Profile Image */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="relative w-56 sm:w-64 md:w-72 aspect-square shrink-0"
+          >
+            {/* Spinning decorative golden compass/halo */}
+            <motion.div 
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 40, ease: "linear" }}
+              className="absolute inset-[-15px] border border-dashed border-[#D4AF37]/30 rounded-full"
+            />
+            <motion.div 
+              animate={{ rotate: -360 }}
+              transition={{ repeat: Infinity, duration: 60, ease: "linear" }}
+              className="absolute inset-[-8px] border border-double border-[#AA7C11]/25 rounded-full"
+            />
+            
+            {/* Soft gold backdrop blur glow */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#AA7C11] to-[#F3E5AB] rounded-full blur-2xl opacity-35 -z-10" />
+            
+            {/* Overlapping golden ring borders */}
+            <div className="absolute inset-[-4px] rounded-full p-[3px] bg-gradient-to-tr from-[#AA7C11] via-[#F3E5AB] to-[#D4AF37] shadow-[0_8px_30px_rgba(170,124,17,0.15)]">
+              <div className="w-full h-full rounded-full bg-[#FAF5E6] p-[2px]">
+                <div className="w-full h-full rounded-full overflow-hidden relative border border-[#D4AF37]/30 bg-[#FAF5E6]">
+                  {avatarSlideshowImages && avatarSlideshowImages.length > 0 ? (
+                    <AnimatePresence mode="popLayout">
+                      <motion.img 
+                        key={currentAvatarSlideIndex}
+                        src={avatarSlideshowImages[currentAvatarSlideIndex]} 
+                        alt={data.artistName} 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1.2, ease: "easeInOut" }}
+                        className="absolute inset-0 w-full h-full object-cover scale-105 hover:scale-115 transition-all duration-1000"
+                        referrerPolicy="no-referrer"
+                      />
+                    </AnimatePresence>
+                  ) : (
+                    <img 
+                      src={effectiveCoverUrl || data.aboutMe?.avatarUrl} 
+                      alt={data.artistName} 
+                      className="absolute inset-0 w-full h-full object-cover scale-105 hover:scale-115 transition-all duration-1000"
+                      referrerPolicy="no-referrer"
+                    />
+                  )}
+                  {/* Glass shimmer sweep effect */}
+                  <motion.div 
+                    animate={{ x: ['-100%', '200%'] }}
+                    transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut", repeatDelay: 1.5 }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12 z-10 pointer-events-none"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Floating badge for certified artist */}
+            <motion.div 
+              animate={{ rotate: [0, 360] }}
+              transition={{ 
+                duration: 1.5, 
+                repeat: Infinity, 
+                repeatDelay: 3.5,
+                ease: "easeInOut"
+              }}
+              className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 z-20 bg-[#FAF5E6] border-2 border-[#D4AF37] p-1.5 sm:p-2 rounded-full shadow-lg"
+            >
+              <BadgeCheck className="w-6 h-6 sm:w-7 sm:h-7 text-[#AA7C11] fill-amber-500/20" />
+            </motion.div>
+          </motion.div>
+
+          {/* Right Column: Title details and premium stats */}
+          <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left">
+            <motion.span 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              onAnimationComplete={() => setShowArtist(true)}
+              className="text-xs sm:text-sm font-black tracking-[0.2em] uppercase text-[#AA7C11] mb-3 inline-flex items-center gap-2"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D4AF37] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#D4AF37]"></span>
+              </span>
+              <AutoTranslate text={(!data.artistBio || ["Thiên đường demo của", "Thiên đường âm nhạc của"].includes(data.artistBio?.trim() || '')) ? `${t.dDesc || 'Thiên đường âm nhạc của'} ${data.artistName || ''}` : data.artistBio} />
+            </motion.span>
+            
+            <motion.h1 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 tracking-tight text-[#1A1303] leading-none drop-shadow-xs"
+            >
+              {data.artistName}
+            </motion.h1>
+
+            {/* Random song card rotation for gold theme as requested */}
+            {randomSong && (() => {
+              const randStyles = getRandomSongCardStyles(randomSong);
+              const hasRandomSongAchievements = randomSong.achievements && randomSong.achievements.length > 0;
+              const titleLength = randomSong.title?.length || 0;
+              const artistLength = randomSong.singer?.length || randomSong.author?.length || 0;
+              const showRandomSongAchievementsOnMobile = hasRandomSongAchievements && (titleLength + artistLength) <= 25;
+              const activeRandomSongAchievements = hasRandomSongAchievements && (!isMobile || showRandomSongAchievementsOnMobile);
+
+              return (
+                <motion.div 
+                   initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.4 }}
+                  className="w-full max-w-lg sm:max-w-xl md:max-w-2xl pt-2 flex flex-col items-stretch"
+                >
+                  <div className="text-stone-500 font-bold text-xs uppercase tracking-widest mb-2.5 flex items-center gap-1.5 justify-center md:justify-start select-none">
+                    <Sparkles className="w-4 h-4 text-[#AA7C11] animate-pulse" />
+                    <span>Bài Hát Ngẫu Nhiên</span>
+                  </div>
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={randomSong.id}
+                      initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                      transition={{ duration: 0.5 }}
+                      className="w-full relative overflow-visible"
+                    >
+                      <Link
+                        to={activeListTab === 'released' ? getArtistLink(`/playlist/released?song=${randomSong.slug || randomSong.id}`) : getArtistLink(`/song/${randomSong.slug || randomSong.id}`)}
+                        onClick={(e) => {
+                          if (randomSong.linkType === 'indirect') {
+                            e.preventDefault();
+                            const indirectLinks = [
+                              randomSong.linkSpotify,
+                              randomSong.linkApple,
+                              randomSong.linkZing,
+                              randomSong.linkYoutubeMusic,
+                              randomSong.linkYoutube
+                            ].filter(l => !!l);
+                            
+                            if (indirectLinks.length === 1 && indirectLinks[0]) {
+                              window.open(indirectLinks[0], '_blank');
+                            } else {
+                              setActiveBioSong(randomSong);
+                            }
+                          }
+                        }}
+                        style={randStyles.customStyle}
+                        className={`group relative overflow-hidden rounded-[20px] p-2.5 sm:p-3 transition-all duration-300 flex flex-row items-center justify-between gap-2.5 sm:gap-4 w-full border-2 ${randStyles.bgClasses} ${randStyles.borderClass} ${randStyles.shadowClass}`}
+                      >
+                        {/* Dynamic theme-specific background and effects */}
+                        {renderContainedEffect(randomSong.template || '1')}
+
+                        {/* Glossy overlay effect for cards with achievements */}
+                        {activeRandomSongAchievements && (
+                          <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-white/20 to-transparent pointer-events-none mix-blend-overlay z-0" />
+                        )}
+                        
+                        {/* Left-middle area: Cover Image and Text info */}
+                        <div className="flex flex-row items-center gap-4 flex-1 min-w-0 relative z-10">
+                          {/* Song Cover Image Container (Left side) */}
+                          <div className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-xl overflow-hidden relative border border-[#D4AF37]/25 group-hover:border-[#D4AF37] transition-colors select-none shadow-md">
+                            {getSongCoverUrl(randomSong.coverUrl) ? (
+                               <img 
+                                 src={getSongCoverUrl(randomSong.coverUrl)} 
+                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                                 alt={randomSong.title} 
+                                 referrerPolicy="no-referrer"
+                               />
+                            ) : (
+                               <div className="w-full h-full bg-[#FAF5E6] text-stone-400 group-hover:text-[#AA7C11] flex items-center justify-center transition-colors">
+                                 <Disc3 className="w-8 h-8 animate-spin-slow" />
+                                </div>
+                            )}
+                            
+                            {/* Play hover effect */}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
+                              <div className="w-8 h-8 rounded-full bg-[#AA7C11] flex items-center justify-center scale-75 group-hover:scale-100 transition-transform shadow-lg">
+                                <Play className="w-3 h-3 text-white ml-0.5" fill="currentColor" />
+                              </div>
+                            </div>
+
+                            {/* Year Badge inside the Image */}
+                            {randomSong.releaseYear && (
+                              <div className="absolute bottom-1 left-1 bg-black/55 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full flex items-center gap-1 z-20">
+                                {randomSong.releaseYear}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Song Content Details (Middle area) */}
+                          <div className="flex-1 min-w-0 flex flex-col justify-center items-start text-left">
+                            {/* Song Title */}
+                            <h3 className={`font-black text-sm sm:text-base tracking-tight line-clamp-2 leading-tight transition-colors ${randStyles.titleColor}`} title={randomSong.title}>
+                              <HoverTranslate text={randomSong.title} format={true} forceDark={randomSong.isBrand} />
+                            </h3>
+
+                            {/* Artist/Singer */}
+                            <MarqueeText className={`text-[11px] sm:text-xs mt-0.5 w-full ${randStyles.singerColor}`}>
+                              {formatText(randomSong.singer || randomSong.author || data?.artistName || 'Nghệ sĩ', true, randomSong.isBrand ? false : isGoldTheme)}
+                            </MarqueeText>
+                          </div>
+                        </div>
+
+                        {/* Right area: Achievements inside the framed dark-gold container with wobble loop */}
+                        {activeRandomSongAchievements && (
+                          <motion.div 
+                            animate={{ 
+                              y: [0, -2, 0, 2, 0],
+                              rotate: [0, -0.4, 0, 0.4, 0]
+                            }}
+                            transition={{
+                              duration: 5,
+                              repeat: Infinity,
+                              ease: "easeInOut"
+                            }}
+                            className="shrink-0 flex items-center justify-end pl-1.5 sm:pl-4 max-w-[170px] sm:max-w-[245px] relative z-20"
+                          >
+                            {/* Desktop version: Heavy gold framed box */}
+                            <div className="hidden sm:flex w-full h-14 relative overflow-hidden rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/45 items-center justify-between px-3.5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_4px_12px_rgba(0,0,0,0.35)]">
+                              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.22),transparent_70%)] animate-pulse" />
+                              <motion.div 
+                                animate={{ x: ['-100%', '200%'] }}
+                                transition={{ repeat: Infinity, duration: 4.5, ease: "linear" }}
+                                className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent skew-x-12 pointer-events-none"
+                              />
+                              <div className="relative z-10 w-full h-full flex items-center justify-between">
+                                <AchievementCycle achievements={randomSong.achievements} align="right" />
+                              </div>
+                            </div>
+
+                            {/* Mobile version: raw transparent AchievementCycle */}
+                            <div className="flex sm:hidden items-center justify-end w-[85px] shrink-0 overflow-visible">
+                              <AchievementCycle achievements={randomSong.achievements} align="right" />
+                            </div>
+                          </motion.div>
+                        )}
+                      </Link>
+
+                      {/* Released / Demo Badge (Outer layer top right, with wobble animation) */}
+                      <motion.div
+                        animate={{ 
+                          rotate: [15, 11, 19, 11, 15],
+                          scale: [1, 1.05, 0.95, 1.05, 1]
+                        }}
+                        transition={{ 
+                          duration: 4.5, 
+                          repeat: Infinity, 
+                          ease: "easeInOut" 
+                        }}
+                        className="absolute -top-2 -right-2 z-40 select-none pointer-events-none"
+                      >
+                        {randomSong.isReleased ? (
+                          <span className="bg-emerald-600 shadow-[0_0_12px_rgba(16,185,129,0.8)] text-[8px] font-black text-white px-2.5 py-0.5 rounded border border-emerald-400/50 block">
+                            {t.lReleasedMark || 'RELEASED'}
+                          </span>
+                        ) : (
+                          <span className="bg-[#1A1303] text-[#FAF5E6] border border-[#D4AF37] shadow-md text-[8px] font-black px-2.5 py-0.5 rounded block">
+                            {randomSong.linkType === 'indirect' ? 'Landing Page' : (t.lDemoMark || 'DEMO')}
+                          </span>
+                        )}
+                      </motion.div>
+                    </motion.div>
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })()}
+          </div>
+        </section>
+      );
+    }
+
     return (
       <section key="title" className={`relative ${isFirst ? 'pt-24 sm:pt-28' : 'pt-12 sm:pt-16'} pb-10 px-6 sm:px-12 flex flex-col items-center justify-center text-center min-h-[300px]`}>
         <div className="relative z-10 w-full max-w-5xl flex flex-col items-center mt-4 sm:mt-6">
@@ -5780,9 +7208,9 @@ function Home() {
                   {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
                     if (index === array.length - 1) {
                       return (
-                        <span key={index} className="whitespace-nowrap"><span className="animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
+                        <span key={index} className="whitespace-nowrap"><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
                             <motion.div animate={{ rotateY: [0, 360], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", repeatDelay: 3 }} className="flex items-center justify-center">
-                              <BadgeCheck className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 text-blue-500 fill-blue-500/20 shrink-0 cursor-pointer" />
+                              <BadgeCheck className={`w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 ${isGoldTheme ? 'text-amber-400 fill-amber-400/20' : 'text-blue-500 fill-blue-500/20'} shrink-0 cursor-pointer`} />
                             </motion.div>
                             <div className="absolute bottom-full mb-2 hidden group-hover:block bg-neutral-900 border border-white/10 text-white text-[11px] sm:text-xs font-bold py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none z-50 tracking-normal normal-case leading-none">
                               Nghệ sĩ đã xác thực
@@ -5792,7 +7220,7 @@ function Home() {
                         </span>
                       );
                     }
-                    return <React.Fragment key={index}><span className="animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{word}</span>{' '}</React.Fragment>;
+                    return <React.Fragment key={index}><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span>{' '}</React.Fragment>;
                   })}
                 </motion.h1>
               </div>
@@ -5816,9 +7244,9 @@ function Home() {
                   {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
                     if (index === array.length - 1) {
                       return (
-                        <span key={index} className="whitespace-nowrap"><span className="animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
+                        <span key={index} className="whitespace-nowrap"><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
                             <motion.div animate={{ rotateY: [0, 360], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", repeatDelay: 3 }} className="flex items-center justify-center">
-                              <BadgeCheck className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 text-blue-500 fill-blue-500/20 shrink-0 cursor-pointer" />
+                              <BadgeCheck className={`w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 ${isGoldTheme ? 'text-amber-400 fill-amber-400/20' : 'text-blue-500 fill-blue-500/20'} shrink-0 cursor-pointer`} />
                             </motion.div>
                             <div className="absolute bottom-full mb-2 hidden group-hover:block bg-neutral-900 border border-white/10 text-white text-[11px] sm:text-xs font-bold py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none z-50 tracking-normal normal-case leading-none">
                               Nghệ sĩ đã xác thực
@@ -5828,7 +7256,7 @@ function Home() {
                         </span>
                       );
                     }
-                    return <React.Fragment key={index}><span className="animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{word}</span>{' '}</React.Fragment>;
+                    return <React.Fragment key={index}><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span>{' '}</React.Fragment>;
                   })}
                 </motion.h1>
               </div>
@@ -5845,13 +7273,13 @@ function Home() {
       <section key="spotify" className={`w-full max-w-5xl mx-auto px-6 sm:px-12 ${isFirst ? 'pt-24 sm:pt-28 pb-10' : 'pb-6'}`}>
         <div className="w-full relative z-10 max-w-4xl mx-auto">
           {(() => {
-            const spMatch = data.spotifyUrl.match(/spotify\.com\/(artist|playlist|album|track)\/([a-zA-Z0-9]+)/);
+            const spMatch = data.spotifyUrl.match(/(artist|playlist|album|track)[\/:]+([a-zA-Z0-9]+)/);
             if (spMatch) {
               return (
                 <motion.div 
                   key="spotify-embed"
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: spotifyLoaded ? 1 : 0, y: spotifyLoaded ? 0 : 20 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
                   className="w-full bg-white/5 p-2 sm:p-4 md:p-6 rounded-3xl border border-white/10 backdrop-blur-md shadow-2xl flex flex-col gap-4 text-left"
                 >
@@ -5916,10 +7344,53 @@ function Home() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="min-h-screen flex flex-col bg-neutral-950 text-white font-sans selection:bg-rose-500 selection:text-white relative z-0 bg-notebook-dark"
+      className={`min-h-screen flex flex-col ${isGoldTheme ? 'bg-gradient-to-b from-[#F9F5EA] via-[#FCF9F2] to-[#FAF5E6] text-[#2C1E03] selection:bg-amber-500 selection:text-stone-950' : 'bg-neutral-950 text-white selection:bg-rose-500 selection:text-white'} font-sans relative z-0 bg-notebook-dark`}
     >
-      <SocialCarousel data={data} pushDown={pushDown} />
-      {data.slideshowImages && data.slideshowImages.length > 0 ? (
+      <SocialCarousel data={data} pushDown={pushDown} isGoldTheme={isGoldTheme} />
+      {isGoldTheme ? (
+        <div className="absolute inset-0 z-[-2] overflow-hidden pointer-events-none select-none">
+          <div className="absolute inset-0 bg-gradient-to-b from-[#F9F5EA] via-[#FCF9F2] to-[#FAF5E6]"></div>
+          <div className="absolute top-[-10%] left-[-10%] w-[50%] aspect-square bg-[#E8DCC4] opacity-30 rounded-full blur-[120px]" />
+          <div className="absolute top-[30%] right-[-10%] w-[40%] aspect-square bg-[#E0D1B4] opacity-25 rounded-full blur-[100px]" />
+          <svg className="absolute top-0 left-0 w-full h-[600px] opacity-40" viewBox="0 0 1440 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M-100 80 C 200 40, 400 120, 600 50 C 800 -20, 1100 10, 1500 20" stroke="url(#gold-grad-1)" strokeWidth="1.5" strokeDasharray="3,3" />
+            <path d="M-100 95 C 200 55, 400 135, 600 65 C 800 -5, 1100 25, 1500 35" stroke="url(#gold-grad-1)" strokeWidth="1.5" />
+            <path d="M-100 110 C 200 70, 400 150, 600 80 C 800 10, 1100 40, 1500 50" stroke="url(#gold-grad-2)" strokeWidth="1.5" />
+            <path d="M-100 125 C 200 85, 400 165, 600 95 C 800 25, 1100 55, 1500 65" stroke="url(#gold-grad-1)" strokeWidth="1.5" />
+            <path d="M-100 140 C 200 100, 400 180, 600 110 C 800 40, 1100 70, 1500 80" stroke="url(#gold-grad-2)" strokeWidth="1" strokeDasharray="5,5" />
+            <path d="M-50 0 C 100 150, 50 350, -50 500" stroke="url(#gold-grad-3)" strokeWidth="4" opacity="0.3" />
+            <path d="M-20 0 C 150 130, 80 320, -20 500" stroke="url(#gold-grad-3)" strokeWidth="1.5" opacity="0.5" />
+            <path d="M10 0 C 200 100, 120 300, 10 500" stroke="url(#gold-grad-4)" strokeWidth="0.75" opacity="0.7" />
+            <defs>
+              <linearGradient id="gold-grad-1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#D4AF37" stopOpacity="0.1" />
+                <stop offset="50%" stopColor="#AA7C11" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#F3E5AB" stopOpacity="0.1" />
+              </linearGradient>
+              <linearGradient id="gold-grad-2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#AA7C11" stopOpacity="0.1" />
+                <stop offset="50%" stopColor="#D4AF37" stopOpacity="0.5" />
+                <stop offset="100%" stopColor="#AA7C11" stopOpacity="0.1" />
+              </linearGradient>
+              <linearGradient id="gold-grad-3" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#AA7C11" />
+                <stop offset="70%" stopColor="#D4AF37" />
+                <stop offset="100%" stopColor="#F3E5AB" />
+              </linearGradient>
+              <linearGradient id="gold-grad-4" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#F3E5AB" />
+                <stop offset="50%" stopColor="#D4AF37" />
+                <stop offset="100%" stopColor="#AA7C11" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <svg className="absolute bottom-0 right-0 w-full h-[400px] opacity-35" viewBox="0 0 1440 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M-100 350 C 300 320, 600 380, 900 300 C 1100 240, 1300 280, 1540 260" stroke="url(#gold-grad-2)" strokeWidth="1" strokeDasharray="3,3" />
+            <path d="M-100 365 C 300 335, 600 395, 900 315 C 1100 255, 1300 295, 1540 275" stroke="url(#gold-grad-1)" strokeWidth="1" />
+            <path d="M-100 380 C 300 350, 600 410, 900 330 C 1100 270, 1300 310, 1540 290" stroke="url(#gold-grad-2)" strokeWidth="1.5" />
+          </svg>
+        </div>
+      ) : data.slideshowImages && data.slideshowImages.length > 0 ? (
         <div className="fixed inset-0 z-[-1] pointer-events-none bg-neutral-950">
           <AnimatePresence mode="popLayout">
             <motion.div
@@ -5943,7 +7414,7 @@ function Home() {
           <div className="absolute inset-0 bg-cover bg-center opacity-80" style={{ backgroundImage: `url(${effectiveCoverUrl})`, backgroundPosition: 'center 20%', maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)', WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)' }}></div>
         </div>
       ) : (
-        <div className="fixed inset-0 z-[-1] pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-900 via-neutral-950 to-neutral-950"></div>
+        <div className={`fixed inset-0 z-[-1] pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] ${isGoldTheme ? 'from-amber-900/40 via-stone-950 to-stone-950' : 'from-rose-900 via-neutral-950 to-neutral-950'}`}></div>
       )}
       <LanguageSwitcher pushDown={pushDown} />
       {playingVideo && (() => {
@@ -5996,42 +7467,59 @@ function Home() {
                 </div>
               </div>
 
-              {/* Clicking this thumbnail direct into the Youtube link in a new tab */}
-              <a 
-                href={ytLink} 
-                target="_blank" 
-                rel="noreferrer" 
-                className="flex-1 w-full h-full relative bg-neutral-950 group overflow-hidden block"
-                title={t("Bấm để phát trên YouTube ở tab mới")}
-              >
-                {/* Image with fallback urls in standard CSS support structure */}
-                <img 
-                  src={`https://img.youtube.com/vi/${playingVideo}/maxresdefault.jpg`} 
-                  onError={(e) => {
-                    // Fallback to hqdefault in case maxresdefault doesn't exist (can happen for older uploads)
-                    e.currentTarget.src = `https://img.youtube.com/vi/${playingVideo}/hqdefault.jpg`;
-                  }}
-                  alt={activeTitle} 
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                
-                {/* Vignette Overlay shadow */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/30 group-hover:via-black/20 transition-all duration-300" />
-                
-                {/* Glow ring Play button in middle */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center select-none z-10 gap-3 sm:gap-4">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-red-600/75 backdrop-blur-lg border border-red-500/30 rounded-full flex items-center justify-center text-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.35),0_12px_24px_-4px_rgba(0,0,0,0.5),0_0_25px_rgba(239,68,68,0.4)] transition-all duration-350 sm:group-hover:scale-110 sm:group-active:scale-95 sm:group-hover:bg-red-600/90 sm:group-hover:border-red-500/50 relative">
-                    <span className="absolute inset-0 rounded-full border border-red-500/50 animate-ping opacity-50"></span>
-                    <Play className="w-8 h-8 sm:w-9 sm:h-9 text-white fill-white translate-x-0.5" />
-                  </div>
-                  
-                  <div className="flex flex-col gap-1 sm:gap-2">
-                    <h4 className="text-sm sm:text-lg font-black text-white tracking-widest uppercase drop-shadow-md sm:group-hover:text-red-400 transition-colors">
-                      {t("Bấm để phát trên YouTube")}
-                    </h4>
-                  </div>
-                </div>
-              </a>
+              {(() => {
+                const isVietnameseDomain = window.location.hostname.endsWith('.vn') || window.location.hostname.includes('.vn.') || window.location.hostname.includes('chorus.vn');
+                if (isVietnameseDomain) {
+                  return (
+                    <a 
+                      href={ytLink} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="flex-1 w-full h-full relative bg-neutral-950 group overflow-hidden block"
+                      title={t("Bấm để phát trên YouTube ở tab mới")}
+                    >
+                      {/* Image with fallback urls in standard CSS support structure */}
+                      <img 
+                        src={`https://img.youtube.com/vi/${playingVideo}/maxresdefault.jpg`} 
+                        onError={(e) => {
+                          // Fallback to hqdefault in case maxresdefault doesn't exist (can happen for older uploads)
+                          e.currentTarget.src = `https://img.youtube.com/vi/${playingVideo}/hqdefault.jpg`;
+                        }}
+                        alt={activeTitle} 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                      
+                      {/* Vignette Overlay shadow */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/30 group-hover:via-black/20 transition-all duration-300" />
+                      
+                      {/* Glow ring Play button in middle */}
+                      <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center select-none z-10 gap-3 sm:gap-4">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-red-600/75 backdrop-blur-lg border border-red-500/30 rounded-full flex items-center justify-center text-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.35),0_12px_24px_-4px_rgba(0,0,0,0.5),0_0_25px_rgba(239,68,68,0.4)] transition-all duration-350 sm:group-hover:scale-110 sm:group-active:scale-95 sm:group-hover:bg-red-600/90 sm:group-hover:border-red-500/50 relative">
+                          <span className="absolute inset-0 rounded-full border border-red-500/50 animate-ping opacity-50"></span>
+                          <Play className="w-8 h-8 sm:w-9 sm:h-9 text-white fill-white translate-x-0.5" />
+                        </div>
+                        
+                        <div className="flex flex-col gap-1 sm:gap-2">
+                          <h4 className="text-sm sm:text-lg font-black text-white tracking-widest uppercase drop-shadow-md sm:group-hover:text-red-400 transition-colors">
+                            {t("Bấm để phát trên YouTube")}
+                          </h4>
+                        </div>
+                      </div>
+                    </a>
+                  );
+                } else {
+                  return (
+                    <div className="flex-1 w-full h-full relative bg-neutral-950">
+                      <iframe 
+                        src={`https://www.youtube.com/embed/${playingVideo}?autoplay=1`} 
+                        className="w-full h-full border-0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowFullScreen
+                      ></iframe>
+                    </div>
+                  );
+                }
+              })()}
             </div>
           </div>
         );
@@ -6039,11 +7527,11 @@ function Home() {
 
       {/* Top Navbar */}
       <div className="absolute top-0 left-0 right-0 z-50 pt-6 sm:pt-8">
-        {hasNavbar && <PublicNavbar menus={finalMenus} activeTab={activeMenuTab} setActiveTab={setActiveMenuTab} t={t} />}
+        {hasNavbar && <PublicNavbar menus={finalMenus} activeTab={activeMenuTab} setActiveTab={setActiveMenuTab} t={t} isGoldTheme={isGoldTheme} />}
       </div>
 
       {isVault && (() => {
-        const layoutOrder = data?.layoutSections || landingConfig?.globalLayoutSections || ['title', 'spotify', 'vault', 'mv'];
+        const layoutOrder = data?.layoutSections || landingConfig?.globalLayoutSections || ['title', 'vault', 'mv', 'spotify'];
         const titleOrder = layoutOrder.indexOf('title') !== -1 ? layoutOrder.indexOf('title') : 0;
         const spotifyOrder = layoutOrder.indexOf('spotify') !== -1 ? layoutOrder.indexOf('spotify') : 1;
         const vaultOrder = layoutOrder.indexOf('vault') !== -1 ? layoutOrder.indexOf('vault') : 2;
@@ -6065,8 +7553,8 @@ function Home() {
               <section id="music-tabs-section" className={`scroll-mt-24 w-full max-w-5xl mx-auto px-6 sm:px-12 pb-10 ${firstSection === 'vault' ? 'pt-24 sm:pt-28' : ''}`}>
           {/* Header Row with compact Search Box */}
           <div className="flex items-center justify-between mb-4">
-            <div className={`${isHomeSearchExpanded ? 'hidden sm:flex' : 'flex'} text-base sm:text-lg font-bold tracking-tight text-white/95 items-center gap-2 shrink-0`}>
-              <span className="w-1.5 h-4 bg-emerald-500 rounded-full" />
+            <div className={`${isHomeSearchExpanded ? 'hidden sm:flex' : 'flex'} text-base sm:text-lg font-bold tracking-tight ${isGoldTheme ? 'text-amber-950 font-black' : 'text-white/95'} items-center gap-2 shrink-0`}>
+              <span className={`w-1.5 h-4 ${isGoldTheme ? 'bg-amber-600 shadow-[0_0_10px_rgba(212,175,55,0.6)]' : 'bg-emerald-500'} rounded-full`} />
               <span>{t.mVault || "Kho Nhạc"}</span>
             </div>
 
@@ -6086,7 +7574,7 @@ function Home() {
                       value={searchQuery}
                       onChange={handleSearchChange}
                       placeholder={t.searchSong || "Tìm kiếm bài hát..."}
-                      className={`w-full bg-neutral-900/60 border border-white/10 rounded-xl py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 placeholder:text-stone-500 font-medium ${searchQuery ? 'pl-3' : 'pl-9'} ${searchQuery ? 'pr-3 sm:pr-8' : 'pr-3'}`}
+                      className={`w-full ${isGoldTheme ? 'bg-[#FAF5E6] border-[#D4AF37]/45 text-[#1A1303] focus:ring-amber-500 placeholder:text-stone-400' : 'bg-neutral-900/60 border border-white/10 text-white focus:ring-emerald-500 placeholder:text-stone-500'} border rounded-xl py-2 text-xs focus:outline-none focus:ring-1 font-medium ${searchQuery ? 'pl-3' : 'pl-9'} ${searchQuery ? 'pr-3 sm:pr-8' : 'pr-3'}`}
                       autoFocus
                     />
                     {!searchQuery && (
@@ -6100,7 +7588,7 @@ function Home() {
                         onClick={() => {
                           setSearchQuery('');
                         }}
-                        className="absolute right-3 text-stone-400 hover:text-white sm:block hidden"
+                        className={`absolute right-3 ${isGoldTheme ? 'text-stone-500 hover:text-stone-900' : 'text-stone-400 hover:text-white'} sm:block hidden`}
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -6120,8 +7608,8 @@ function Home() {
                 }}
                 className={`p-2 rounded-xl transition-all ${
                   isHomeSearchExpanded 
-                    ? 'text-stone-400 hover:text-white ml-2 sm:block hidden' 
-                    : 'bg-neutral-900/50 border border-white/5 hover:bg-neutral-800/80 text-stone-400 hover:text-white'
+                    ? (isGoldTheme ? 'text-stone-500 hover:text-stone-900 ml-2 sm:block hidden' : 'text-stone-400 hover:text-white ml-2 sm:block hidden')
+                    : (isGoldTheme ? 'bg-[#FAF5E6] border border-[#D4AF37]/35 text-stone-600 hover:text-stone-900' : 'bg-neutral-900/50 border border-white/5 hover:bg-neutral-800/80 text-stone-400 hover:text-white')
                 }`}
                 title={isHomeSearchExpanded ? (t.closeSearch || "Đóng tìm kiếm") : (t.searchTitle || "Tìm kiếm bài hát")}
               >
@@ -6130,50 +7618,62 @@ function Home() {
             </div>
           </div>
 
-          <div className="relative flex items-center gap-1 sm:gap-2 mb-6 bg-neutral-900/50 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-white/5 w-full flex-nowrap overflow-x-auto custom-scrollbar">
+          <div className={`relative flex items-center gap-1 sm:gap-2 mb-6 ${isGoldTheme ? 'bg-[#FAF5E6] border-[#D4AF37]/30 shadow-xs' : 'bg-neutral-900/50 border border-white/5'} p-1 sm:p-1.5 rounded-xl sm:rounded-2xl w-full flex-nowrap overflow-x-auto custom-scrollbar`}>
              <button 
                onClick={() => setActiveListTab('released')} 
-               className={`relative flex items-center justify-center flex-1 sm:flex-none gap-1 sm:gap-2 px-2 sm:px-4 md:px-6 py-2 md:py-3 rounded-lg sm:rounded-xl text-[11px] sm:text-base md:text-xl font-bold tracking-tight transition-all duration-300 ${activeListTab === 'released' ? 'text-white' : 'text-white/60 hover:text-white'}`}
+               className={`relative flex items-center justify-center flex-1 sm:flex-none gap-1 sm:gap-2 px-2 sm:px-4 md:px-6 py-2 md:py-3 rounded-lg sm:rounded-xl text-[11px] sm:text-base md:text-xl font-bold tracking-tight transition-all duration-300 ${
+                 activeListTab === 'released' 
+                   ? (isGoldTheme ? 'text-[#1A1303] font-black' : 'text-white') 
+                   : (isGoldTheme ? 'text-[#8C6B1B] hover:text-[#4A380D]' : 'text-white/60 hover:text-white')
+               }`}
              >
                 {activeListTab === 'released' && (
                   <motion.div
                     layoutId="activeTabBg"
-                    className="absolute inset-0 bg-emerald-500/20 border border-emerald-500/20 rounded-lg sm:rounded-xl shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)]"
+                    className={`absolute inset-0 ${isGoldTheme ? 'bg-gradient-to-r from-yellow-200 via-amber-300 to-yellow-200 border border-[#D4AF37]/45 shadow-[0_4px_12px_rgba(212,175,55,0.25)]' : 'bg-emerald-500/20 border border-emerald-500/20 shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)]'} rounded-lg sm:rounded-xl`}
                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
                   />
                 )}
-                <Music className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 relative z-10 ${activeListTab === 'released' ? 'text-emerald-400' : 'text-neutral-400'}`} />
+                <Music className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 relative z-10 ${activeListTab === 'released' ? (isGoldTheme ? 'text-[#AA7C11]' : 'text-emerald-400') : 'text-neutral-400'}`} />
                 <span className="whitespace-nowrap relative z-10">{data?.tab1Name?.trim() || t('lReleased') || "Ra Rồi"}</span>
              </button>
              
              <button 
                onClick={() => setActiveListTab('demos')} 
-               className={`relative flex items-center justify-center flex-1 sm:flex-none gap-1 sm:gap-2 px-2 sm:px-4 md:px-6 py-2 md:py-3 rounded-lg sm:rounded-xl text-[11px] sm:text-base md:text-xl font-bold tracking-tight transition-all duration-300 ${activeListTab === 'demos' ? 'text-white' : 'text-white/60 hover:text-white'}`}
+               className={`relative flex items-center justify-center flex-1 sm:flex-none gap-1 sm:gap-2 px-2 sm:px-4 md:px-6 py-2 md:py-3 rounded-lg sm:rounded-xl text-[11px] sm:text-base md:text-xl font-bold tracking-tight transition-all duration-300 ${
+                 activeListTab === 'demos' 
+                   ? (isGoldTheme ? 'text-[#1A1303] font-black' : 'text-white') 
+                   : (isGoldTheme ? 'text-[#8C6B1B] hover:text-[#4A380D]' : 'text-white/60 hover:text-white')
+               }`}
              >
                 {activeListTab === 'demos' && (
                   <motion.div
                     layoutId="activeTabBg"
-                    className="absolute inset-0 bg-rose-500/20 border border-rose-500/20 rounded-lg sm:rounded-xl shadow-[0_0_20px_-5px_rgba(244,63,94,0.3)]"
+                    className={`absolute inset-0 ${isGoldTheme ? 'bg-gradient-to-r from-yellow-200 via-amber-300 to-yellow-200 border border-[#D4AF37]/45 shadow-[0_4px_12px_rgba(212,175,55,0.25)]' : 'bg-rose-500/20 border border-rose-500/20 shadow-[0_0_20px_-5px_rgba(244,63,94,0.3)]'} rounded-lg sm:rounded-xl`}
                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
                   />
                 )}
-                <Disc3 className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 relative z-10 ${activeListTab === 'demos' ? 'text-rose-400' : 'text-neutral-400'}`} />
+                <Disc3 className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 relative z-10 ${activeListTab === 'demos' ? (isGoldTheme ? 'text-[#AA7C11]' : 'text-rose-400') : 'text-neutral-400'}`} />
                 <span className="whitespace-nowrap relative z-10">{data?.tab2Name?.trim() || t('lDemos') || "Đề Mô"}</span>
              </button>
              
              {data?.playlists && data.playlists.length > 0 && (
                <button 
                  onClick={() => setActiveListTab('albums')} 
-                 className={`relative flex items-center justify-center flex-1 sm:flex-none gap-1 sm:gap-2 px-2 sm:px-4 md:px-6 py-2 md:py-3 rounded-lg sm:rounded-xl text-[11px] sm:text-base md:text-xl font-bold tracking-tight transition-all duration-300 ${activeListTab === 'albums' ? 'text-white' : 'text-white/60 hover:text-white'}`}
+                 className={`relative flex items-center justify-center flex-1 sm:flex-none gap-1 sm:gap-2 px-2 sm:px-4 md:px-6 py-2 md:py-3 rounded-lg sm:rounded-xl text-[11px] sm:text-base md:text-xl font-bold tracking-tight transition-all duration-300 ${
+                   activeListTab === 'albums' 
+                     ? (isGoldTheme ? 'text-[#1A1303] font-black' : 'text-white') 
+                     : (isGoldTheme ? 'text-[#8C6B1B] hover:text-[#4A380D]' : 'text-white/60 hover:text-white')
+                 }`}
                >
                   {activeListTab === 'albums' && (
                     <motion.div
                       layoutId="activeTabBg"
-                      className="absolute inset-0 bg-purple-500/20 border border-purple-500/20 rounded-lg sm:rounded-xl shadow-[0_0_20px_-5px_rgba(168,85,247,0.3)]"
+                      className={`absolute inset-0 ${isGoldTheme ? 'bg-gradient-to-r from-yellow-200 via-amber-300 to-yellow-200 border border-[#D4AF37]/45 shadow-[0_4px_12px_rgba(212,175,55,0.25)]' : 'bg-purple-500/20 border border-purple-500/20 rounded-lg sm:rounded-xl shadow-[0_0_20px_-5px_rgba(168,85,247,0.3)]'} rounded-lg sm:rounded-xl`}
                       transition={{ type: "spring", stiffness: 380, damping: 30 }}
                     />
                   )}
-                  <ListMusic className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 relative z-10 ${activeListTab === 'albums' ? 'text-purple-400' : 'text-neutral-400'}`} />
+                  <ListMusic className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 relative z-10 ${activeListTab === 'albums' ? (isGoldTheme ? 'text-[#AA7C11]' : 'text-purple-400') : 'text-neutral-400'}`} />
                   <span className="whitespace-nowrap relative z-10">{data?.tab3Name || t('Tab 3 (Album/EP)') || "Album/EP"}</span>
                </button>
              )}
@@ -6205,7 +7705,9 @@ function Home() {
             const startIndex = (currentPage - 1) * pageSize;
             const paginatedItems = currentListItems.slice(startIndex, startIndex + pageSize);
 
-            const activeColorClass = activeListTab === 'released' 
+            const activeColorClass = isGoldTheme
+              ? 'bg-[#1A1303] text-[#FAF5E6] hover:bg-[#AA7C11] border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.3)]'
+              : activeListTab === 'released' 
               ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.45)] border-emerald-500'
               : activeListTab === 'demos'
               ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-[0_0_15px_rgba(244,63,94,0.45)] border-rose-500'
@@ -6232,11 +7734,15 @@ function Home() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -15 }}
                     transition={{ type: "spring", stiffness: 100, damping: 15 }}
-                    className="col-span-full py-16 px-4 text-center rounded-2xl bg-neutral-900/40 border border-white/5 backdrop-blur-md flex flex-col items-center justify-center shadow-lg"
+                    className={`col-span-full py-16 px-4 text-center rounded-2xl border flex flex-col items-center justify-center transition-all duration-300 ${
+                      isGoldTheme 
+                        ? 'bg-[#FAF5E6] border-[#D4AF37]/30 shadow-md shadow-[#D4AF37]/5' 
+                        : 'bg-neutral-900/40 border-white/5 backdrop-blur-md shadow-lg'
+                    }`}
                   >
-                    <Disc3 className="w-12 h-12 text-neutral-600 animate-spin-slow mb-4" />
-                    <p className="text-neutral-300 font-bold text-lg">{t.noSongs || "Chưa có bài hát nào"}</p>
-                    <p className="text-neutral-500 text-sm mt-1">{t.noSongsDesc || "Danh sách đang được cập nhật, bạn vui lòng quay lại sau nhé!"}</p>
+                    <Disc3 className={`w-12 h-12 animate-spin-slow mb-4 ${isGoldTheme ? 'text-[#AA7C11]' : 'text-neutral-600'}`} />
+                    <p className={`text-lg font-black ${isGoldTheme ? 'text-[#1A1303]' : 'text-neutral-300'}`}>{t.noSongs || "Chưa có bài hát nào"}</p>
+                    <p className={`text-sm mt-1 ${isGoldTheme ? 'text-stone-500 font-medium' : 'text-neutral-500'}`}>{t.noSongsDesc || "Danh sách đang được cập nhật, bạn vui lòng quay lại sau nhé!"}</p>
                   </motion.div>
                 ) : (
                   <motion.div 
@@ -6254,7 +7760,7 @@ function Home() {
                     initial="hidden"
                     animate="show"
                     exit="exit"
-                    className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                    className={isGoldTheme && !isMobile && activeListTab !== 'albums' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" : "grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[1400px] mx-auto"}
                   >
                     {activeListTab === 'albums' ? (
                       paginatedItems.map((playlist: any) => {
@@ -6275,27 +7781,41 @@ function Home() {
                               show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
                             }}
                           >
-                            <Link to={getArtistLink(`/playlist/${playlist.id}`)} className="group relative bg-neutral-900/50 border border-white/5 hover:border-purple-500/50 rounded-2xl p-3 sm:p-4 transition-all duration-300 hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.3)] overflow-hidden flex items-center gap-3 sm:gap-4 w-full">
-                              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/0 group-hover:from-purple-500/10 transition-all duration-500"></div>
-                              <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl overflow-hidden relative z-10 border border-white/10 group-hover:border-purple-500/30 transition-colors">
+                            <Link to={getArtistLink(`/playlist/${playlist.id}`)} className={`group relative border rounded-2xl p-3 sm:p-4 transition-all duration-300 overflow-hidden flex items-center gap-3 sm:gap-4 w-full ${
+                              isGoldTheme 
+                                ? 'bg-white/95 border-[#D4AF37]/35 hover:border-[#D4AF37] hover:shadow-[0_12px_45px_rgba(212,175,55,0.18)]' 
+                                : 'bg-neutral-900/50 border-white/5 hover:border-purple-500/50 hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.3)]'
+                            }`}>
+                              <div className={`absolute inset-0 bg-gradient-to-br transition-all duration-500 ${
+                                isGoldTheme 
+                                  ? 'from-amber-400/0 to-amber-400/0 group-hover:from-amber-400/5' 
+                                  : 'from-purple-500/0 to-purple-500/0 group-hover:from-purple-500/10'
+                              }`}></div>
+                              <div className={`w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl overflow-hidden relative z-10 border transition-colors ${
+                                isGoldTheme 
+                                  ? 'border-[#D4AF37]/25 group-hover:border-[#D4AF37]/50' 
+                                  : 'border-white/10 group-hover:border-purple-500/30'
+                              }`}>
                                 {coverUrl ? (
                                    <img src={coverUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={playlist.title} />
                                 ) : (
-                                   <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-neutral-600 group-hover:text-purple-500 transition-colors">
+                                   <div className={`w-full h-full ${isGoldTheme ? 'bg-[#FAF5E6] text-stone-400 group-hover:text-[#AA7C11]' : 'bg-neutral-800 text-neutral-600 group-hover:text-purple-500'} flex items-center justify-center transition-colors`}>
                                      <ListMusic className="w-6 h-6 sm:w-8 sm:h-8" />
                                    </div>
                                 )}
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                  <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center scale-75 group-hover:scale-100 transition-transform shadow-lg">
+                                  <div className={`w-8 h-8 rounded-full ${isGoldTheme ? 'bg-[#AA7C11]' : 'bg-purple-500'} flex items-center justify-center scale-75 group-hover:scale-100 transition-transform shadow-lg`}>
                                     <Play className="w-3 h-3 text-white ml-0.5" fill="currentColor" />
                                   </div>
                                 </div>
                               </div>
                               <div className="flex-1 min-w-0 relative z-10 pr-22">
-                                <h3 className="text-base sm:text-lg font-bold group-hover:text-purple-400 transition-colors truncate">
+                                <h3 className={`text-base sm:text-lg font-bold transition-colors truncate ${
+                                  isGoldTheme ? 'text-[#1A1303] group-hover:text-[#AA7C11]' : 'group-hover:text-purple-400 text-white'
+                                }`}>
                                   {playlist.title}
                                 </h3>
-                                <p className="text-xs sm:text-sm text-neutral-400 mt-1">{songsInPlaylist.length} bài hát</p>
+                                <p className={`text-xs sm:text-sm mt-1 ${isGoldTheme ? 'text-stone-500 font-semibold' : 'text-neutral-400'}`}>{songsInPlaylist.length} bài hát</p>
                               </div>
                               <button
                                 onClick={async (e) => {
@@ -6307,7 +7827,11 @@ function Home() {
                                   setToast('Đã copy link playlist!');
                                   setTimeout(() => setToast(''), 3000);
                                 }}
-                                className="absolute bottom-3 right-3 z-20 bg-black/40 hover:bg-black/70 text-white/80 hover:text-white p-2 rounded-full border border-white/10 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-95 group-hover:scale-100 active:scale-90"
+                                className={`absolute bottom-3 right-3 z-20 ${
+                                  isGoldTheme 
+                                    ? 'bg-[#FAF5E6] border border-[#D4AF37]/35 text-[#AA7C11] hover:text-[#1A1303]' 
+                                    : 'bg-black/40 border border-white/10 text-white/80 hover:text-white'
+                                } p-2 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-95 group-hover:scale-100 active:scale-90`}
                                 title="Chia sẻ playlist"
                               >
                                 <Share2 className="w-3.5 h-3.5 stroke-[1.5]" />
@@ -6325,174 +7849,340 @@ function Home() {
                         >
                           {(activeBrandColors) => (
                             <motion.div
+                              className="relative overflow-visible w-full h-full"
                               variants={{
                                 hidden: {  opacity: 0, y: 15 },
                                 show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
                               }}
                             >
-                              <Link 
-                                to={activeListTab === 'released' ? getArtistLink(`/playlist/released?song=${demo.slug || demo.id}`) : getArtistLink(`/song/${demo.slug || demo.id}`)} 
-                                onClick={(e) => {
-                                  if (demo.linkType === 'indirect') {
-                                    e.preventDefault();
-                                    const indirectLinks = [
-                                      demo.linkSpotify, 
-                                      demo.linkApple, 
-                                      demo.linkZing, 
-                                      demo.linkYoutubeMusic, 
-                                      demo.linkYoutube
-                                    ].filter(l => !!l);
-                                    
-                                    if (indirectLinks.length === 1 && indirectLinks[0]) {
-                                       window.open(indirectLinks[0], '_blank');
-                                    } else {
-                                       setActiveBioSong(demo);
+                              {isGoldTheme && !isMobile ? (
+                                <Link 
+                                  to={activeListTab === 'released' ? getArtistLink(`/playlist/released?song=${demo.slug || demo.id}`) : getArtistLink(`/song/${demo.slug || demo.id}`)} 
+                                  onClick={(e) => {
+                                    if (demo.linkType === 'indirect') {
+                                      e.preventDefault();
+                                      const indirectLinks = [
+                                        demo.linkSpotify, 
+                                        demo.linkApple, 
+                                        demo.linkZing, 
+                                        demo.linkYoutubeMusic, 
+                                        demo.linkYoutube
+                                      ].filter(l => !!l);
+                                      
+                                      if (indirectLinks.length === 1 && indirectLinks[0]) {
+                                         window.open(indirectLinks[0], '_blank');
+                                      } else {
+                                         setActiveBioSong(demo);
+                                      }
                                     }
-                                  }
-                                }}
-                                className={`group relative rounded-2xl p-3 sm:p-4 transition-all duration-500 flex items-center gap-3 w-full ${
-                                  demo.isBrand 
-                                    ? 'hover:border-white/10' 
-                                    : demo.achievements?.length 
-                                      ? 'hover:shadow-[0_0_20px_rgba(251,191,36,0.25)]' 
-                                      : 'hover:shadow-[0_0_30px_-5px_rgba(244,63,94,0.3)]'
-                                }`}
-                                style={demo.isBrand ? {
-                                  boxShadow: `0 10px 30px -10px ${activeBrandColors.primary}30`
-                                } as React.CSSProperties : undefined}
-                              >
-                                {demo.isBrand ? (
-                                  <div 
-                                    className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0 bg-neutral-950/65 border transition-all duration-500"
-                                    style={{
-                                      borderColor: `${activeBrandColors.primary}20`,
-                                    }}
-                                  >
-                                    {demo.brandLogoUrl && (
-                                      <>
-                                        <img 
-                                          src={demo.brandLogoUrl} 
-                                          className="absolute inset-0 w-full h-full object-cover rounded-full opacity-[0.15] blur-2xl scale-150 transition-transform duration-1000 ease-out group-hover:scale-[1.75]" 
-                                          alt="" 
-                                          referrerPolicy="no-referrer"
-                                        />
-                                        <img 
-                                          src={demo.brandLogoUrl} 
-                                          className="absolute -right-2 -bottom-2 w-32 h-20 object-contain opacity-[0.25] blur-[0.5px] animate-brand-logo-float transition-all duration-1000 ease-out group-hover:opacity-[0.45]"
-                                          alt="" 
-                                          referrerPolicy="no-referrer"
-                                        />
-                                      </>
+                                  }}
+                                  className={`group relative overflow-hidden rounded-[24px] p-4 transition-all duration-300 flex flex-col items-stretch text-center h-full w-full ${
+                                    demo.achievements && demo.achievements.length > 0
+                                      ? 'border-[3px] border-[#D4AF37] shadow-[0_12px_32px_rgba(170,124,17,0.25)] hover:shadow-[0_16px_40px_rgba(170,124,17,0.4)] hover:scale-[1.02] bg-gradient-to-tr from-[#BF953F] via-[#FCF6BA] via-45% to-[#B38728] via-70% to-[#FBF5B7]'
+                                      : 'border-2 border-[#D4AF37]/35 hover:border-[#D4AF37] shadow-[0_12px_45px_rgba(212,175,55,0.06)] hover:shadow-[0_16px_45px_rgba(212,175,55,0.16)] hover:scale-[1.015] bg-[#FAF5E6]'
+                                  }`}
+                                >
+                                  {/* Glossy overlay effect for cards with achievements */}
+                                  {demo.achievements && demo.achievements.length > 0 && (
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-white/20 to-transparent pointer-events-none mix-blend-overlay z-0" />
+                                  )}
+
+                                  {/* 1. Song Cover Image Container */}
+                                  <div className="w-full aspect-square rounded-2xl overflow-hidden relative border border-[#D4AF37]/25 group-hover:border-[#D4AF37] transition-colors select-none shadow-md z-10">
+                                    {getSongCoverUrl(demo.coverUrl) ? (
+                                      <img 
+                                        src={getSongCoverUrl(demo.coverUrl)} 
+                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                                        alt={demo.title} 
+                                        referrerPolicy="no-referrer"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full bg-[#FAF5E6] text-stone-400 group-hover:text-[#AA7C11] flex items-center justify-center transition-colors">
+                                        <Disc3 className="w-10 h-10 animate-spin-slow" />
+                                      </div>
                                     )}
-                                    <div 
-                                      className="absolute inset-0 transition-opacity duration-700 opacity-40 group-hover:opacity-80"
-                                      style={{
-                                        background: `radial-gradient(circle at bottom right, ${activeBrandColors.primary}20, transparent 65%)`
-                                      }}
-                                    />
-                                  </div>
-                                ) : demo.achievements && demo.achievements.length > 0 ? (
-                                  <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0">
-                                    <div className="absolute inset-[-50%] bg-[conic-gradient(from_0deg,transparent_0_280deg,theme(colors.amber.500)_360deg)] animate-rotate-border z-0 opacity-80" />
-                                    <div className="absolute inset-[1px] rounded-[15px] bg-neutral-900/80 backdrop-blur-md z-0" />
-                                    <div className="absolute inset-[1px] rounded-[15px] bg-gradient-to-br from-amber-950/30 to-transparent z-0" />
-                                    <div className="absolute inset-[1px] rounded-[15px] bg-gradient-to-r from-transparent via-amber-500/10 to-transparent -translate-x-full animate-shimmer-sweep z-0 pointer-events-none skew-x-[-20deg]" />
-                                  </div>
-                                ) : (
-                                  <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0 bg-neutral-900/50 border border-white/5 group-hover:border-rose-500/50 transition-all duration-300">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-rose-500/0 to-rose-500/0 group-hover:from-rose-500/10 transition-all duration-500 z-0"></div>
-                                  </div>
-                                )}
-                                <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 relative z-10 select-none">
-                                  <div className="w-full h-full rounded-xl overflow-hidden relative border border-white/10 group-hover:border-rose-500/30 transition-colors">
-                                    <AnimatePresence mode="wait">
-                                      {demo.isBrand && showBrandState && demo.brandLogoUrl ? (
-                                        <motion.div
-                                          key="brand-logo"
-                                          initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
-                                          animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                                          exit={{ opacity: 0, scale: 0.8, rotate: 5 }}
-                                          transition={{ duration: 0.45, ease: "easeOut" }}
-                                          className="absolute inset-0 w-full h-full flex items-center justify-center p-1 bg-transparent"
-                                        >
-                                          <img src={demo.brandLogoUrl} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 shadow-sm" alt={demo.brandName} referrerPolicy="no-referrer" />
-                                        </motion.div>
-                                      ) : (
-                                        <motion.div
-                                          key="normal-cover"
-                                          initial={{ opacity: 0, scale: 0.95 }}
-                                          animate={{ opacity: 1, scale: 1 }}
-                                          exit={{ opacity: 0, scale: 0.95 }}
-                                          transition={{ duration: 0.45, ease: "easeOut" }}
-                                          className="absolute inset-0 w-full h-full"
-                                        >
-                                          {getSongCoverUrl(demo.coverUrl) ? (
-                                             <img src={getSongCoverUrl(demo.coverUrl)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={demo.title} />
-                                          ) : (
-                                             <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-neutral-600 group-hover:text-rose-500 transition-colors">
-                                                <Disc3 className="w-6 h-6 sm:w-8 sm:h-8" />
-                                             </div>
-                                          )}
-                                        </motion.div>
-                                      )}
-                                    </AnimatePresence>
+                                    
+                                    {/* Play hover effect */}
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
-                                      <div className="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center scale-75 group-hover:scale-100 transition-transform shadow-lg">
-                                        <Play className="w-3 h-3 text-white ml-0.5" fill="currentColor" />
+                                      <div className="w-11 h-11 rounded-full bg-[#AA7C11] flex items-center justify-center scale-75 group-hover:scale-100 transition-transform shadow-lg">
+                                        <Play className="w-4 h-4 text-white ml-0.5" fill="currentColor" />
+                                      </div>
+                                    </div>
+
+                                    {/* Year Badge inside the Image (bottom left) as seen in Image 1 */}
+                                    {demo.releaseYear && (
+                                      <div className="absolute bottom-2.5 left-2.5 bg-black/50 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-1.5 z-20">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+                                        {demo.releaseYear}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* 2. Song Title */}
+                                  <h3 className="font-black text-[#1A1303] group-hover:text-[#AA7C11] text-sm sm:text-base tracking-tight mt-4 line-clamp-2 leading-tight transition-colors min-h-[40px] flex items-center justify-center text-center px-1 z-10" title={demo.title}>
+                                    <HoverTranslate text={demo.title} format={true} />
+                                  </h3>
+
+                                  {/* 3. Artist/Singer */}
+                                  <MarqueeText className={`${
+                                    demo.achievements && demo.achievements.length > 0
+                                      ? 'text-[#5C3E14] font-black'
+                                      : 'text-stone-500 font-semibold'
+                                  } text-xs mt-1 text-center justify-center mb-4 z-10 w-full px-2`}>
+                                    {formatText(demo.singer || demo.author || data?.artistName || 'Nghệ sĩ', true)}
+                                  </MarqueeText>
+
+                                  {/* 4. Bottom Achievement/Platform Bar (as seen in Image 1) with float/wobble */}
+                                  {demo.achievements && demo.achievements.length > 0 && (
+                                    <div className="w-full mt-auto pt-3 border-t border-[#D4AF37]/15 z-10">
+                                      <motion.div 
+                                        animate={{ 
+                                          y: [0, -1.5, 0, 1.5, 0],
+                                          rotate: [0, -0.3, 0, 0.3, 0]
+                                        }}
+                                        transition={{
+                                          duration: 5.5,
+                                          repeat: Infinity,
+                                          ease: "easeInOut"
+                                        }}
+                                        className="w-full h-14 relative overflow-hidden rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/45 flex items-center justify-between px-3.5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_4px_12px_rgba(0,0,0,0.35)]"
+                                      >
+                                        {/* Subtle looping golden pulse glow */}
+                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.22),transparent_70%)] animate-pulse" />
+                                        {/* Golden shine loop sweep */}
+                                        <motion.div 
+                                          animate={{ x: ['-100%', '200%'] }}
+                                          transition={{ repeat: Infinity, duration: 4.5, ease: "linear" }}
+                                          className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent skew-x-12 pointer-events-none"
+                                        />
+                                        <div className="relative z-10 w-full h-full flex items-center justify-between">
+                                          <AchievementCycle achievements={demo.achievements} align="left" />
+                                        </div>
+                                      </motion.div>
+                                    </div>
+                                  )}
+
+                                  {/* Share Button (no badges inside Link to prevent clipping) */}
+                                  {demo.isReleased && (
+                                    <button
+                                      key="share-btn"
+                                      onClick={async (e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        let url = window.location.origin + getArtistLink(`/playlist/released?song=${demo.slug || demo.id}`);
+                                        url = formatShareUrl(url);
+                                        await copyToClipboard(url);
+                                        setToast('Đã copy link bài hát!');
+                                        setTimeout(() => setToast(''), 3000);
+                                      }}
+                                      className="absolute bottom-16 right-5 z-20 bg-[#FAF5E6] border border-[#D4AF37]/35 text-[#AA7C11] hover:text-[#1A1303] p-1.5 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-95 group-hover:scale-100 active:scale-90"
+                                      title="Chia sẻ bài hát"
+                                    >
+                                      <Share2 className="w-3.5 h-3.5 stroke-[1.5]" />
+                                    </button>
+                                  )}
+
+                                  {(demo.password || data?.globalPassword) && !demo.isReleased && demo.linkType !== 'indirect' && (
+                                    <div className="absolute bottom-16 right-5 z-20 bg-[#FAF5E6] border border-[#D4AF37]/30 p-1.5 rounded-full shadow-md">
+                                      <Lock className="w-3.5 h-3.5 text-yellow-500" />
+                                    </div>
+                                  )}
+                                </Link>
+                              ) : (
+                                <Link 
+                                  to={activeListTab === 'released' ? getArtistLink(`/playlist/released?song=${demo.slug || demo.id}`) : getArtistLink(`/song/${demo.slug || demo.id}`)} 
+                                  onClick={(e) => {
+                                    if (demo.linkType === 'indirect') {
+                                      e.preventDefault();
+                                      const indirectLinks = [
+                                        demo.linkSpotify, 
+                                        demo.linkApple, 
+                                        demo.linkZing, 
+                                        demo.linkYoutubeMusic, 
+                                        demo.linkYoutube
+                                      ].filter(l => !!l);
+                                      
+                                      if (indirectLinks.length === 1 && indirectLinks[0]) {
+                                         window.open(indirectLinks[0], '_blank');
+                                      } else {
+                                         setActiveBioSong(demo);
+                                      }
+                                    }
+                                  }}
+                                  className={`group relative rounded-2xl p-3 sm:p-4 transition-all duration-500 flex items-center gap-3 w-full ${
+                                    demo.isBrand 
+                                      ? 'hover:border-white/10' 
+                                      : isGoldTheme
+                                        ? 'border border-[#D4AF37]/35 shadow-[0_12px_45px_rgba(212,175,55,0.06)] hover:border-[#D4AF37] hover:shadow-[0_15px_45px_rgba(212,175,55,0.16)] hover:scale-[1.015]'
+                                        : demo.achievements?.length 
+                                          ? 'hover:shadow-[0_0_20px_rgba(251,191,36,0.25)]' 
+                                          : 'hover:shadow-[0_0_30px_-5px_rgba(244,63,94,0.3)]'
+                                  }`}
+                                  style={demo.isBrand ? {
+                                    boxShadow: `0 10px 30px -10px ${activeBrandColors.primary}30`
+                                  } as React.CSSProperties : undefined}
+                                >
+                                  {demo.isBrand ? (
+                                    <div 
+                                      className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0 bg-neutral-950/65 border transition-all duration-500"
+                                      style={{
+                                        borderColor: `${activeBrandColors.primary}20`,
+                                      }}
+                                    >
+                                      {demo.brandLogoUrl && (
+                                        <>
+                                          <img 
+                                            src={demo.brandLogoUrl} 
+                                            className="absolute inset-0 w-full h-full object-cover rounded-full opacity-[0.15] blur-2xl scale-150 transition-transform duration-1000 ease-out group-hover:scale-[1.75]" 
+                                            alt="" 
+                                            referrerPolicy="no-referrer"
+                                          />
+                                          <img 
+                                            src={demo.brandLogoUrl} 
+                                            className="absolute -right-2 -bottom-2 w-32 h-20 object-contain opacity-[0.25] blur-[0.5px] animate-brand-logo-float transition-all duration-1000 ease-out group-hover:opacity-[0.45]"
+                                            alt="" 
+                                            referrerPolicy="no-referrer"
+                                          />
+                                        </>
+                                      )}
+                                      <div 
+                                        className="absolute inset-0 transition-opacity duration-700 opacity-40 group-hover:opacity-80"
+                                        style={{
+                                          background: `radial-gradient(circle at bottom right, ${activeBrandColors.primary}20, transparent 65%)`
+                                        }}
+                                      />
+                                    </div>
+                                  ) : demo.achievements && demo.achievements.length > 0 ? (
+                                    <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0">
+                                      <div className={`absolute inset-[-50%] ${isGoldTheme ? 'bg-[conic-gradient(from_0deg,transparent_0_280deg,#AA7C11_360deg)]' : 'bg-[conic-gradient(from_0deg,transparent_0_280deg,theme(colors.amber.500)_360deg)]'} animate-rotate-border z-0 opacity-80`} />
+                                      <div className={`absolute inset-[1px] rounded-[15px] ${isGoldTheme ? 'bg-[#140F03]/95 backdrop-blur-xl' : 'bg-neutral-900/80 backdrop-blur-md'} z-0`} />
+                                      <div className="absolute inset-[1px] rounded-[15px] bg-gradient-to-br from-amber-950/10 to-transparent z-0" />
+                                      <div className="absolute inset-[1px] rounded-[15px] bg-gradient-to-r from-transparent via-amber-500/10 to-transparent -translate-x-full animate-shimmer-sweep z-0 pointer-events-none skew-x-[-20deg]" />
+                                    </div>
+                                  ) : (
+                                    <div className={`absolute inset-0 rounded-[16px] overflow-hidden pointer-events-none z-0 border transition-all duration-300 ${
+                                      isGoldTheme 
+                                        ? 'bg-gradient-to-br from-amber-100 via-orange-50 to-yellow-100 border-[#D4AF37]/35 group-hover:border-[#D4AF37]' 
+                                        : 'bg-neutral-900/50 border-white/5 group-hover:border-rose-500/50'
+                                    }`}>
+                                      {isGoldTheme && !isMobile ? (
+                                        <div className="absolute inset-0 bg-gradient-to-br from-amber-400/0 to-amber-400/0 group-hover:from-amber-400/5 transition-all duration-500 z-0"></div>
+                                      ) : (
+                                        <div className="absolute inset-0 bg-gradient-to-br from-rose-500/0 to-rose-500/0 group-hover:from-rose-500/10 transition-all duration-500 z-0"></div>
+                                      )}
+                                    </div>
+                                  )}
+                                  <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 relative z-10 select-none">
+                                    <div className={`w-full h-full rounded-xl overflow-hidden relative border ${isGoldTheme ? 'border-[#D4AF37]/35 group-hover:border-[#D4AF37]' : 'border-white/10 group-hover:border-rose-500/30'} transition-colors`}>
+                                      <AnimatePresence mode="wait">
+                                        {demo.isBrand && showBrandState && demo.brandLogoUrl ? (
+                                          <motion.div
+                                            key="brand-logo"
+                                            initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
+                                            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                                            exit={{ opacity: 0, scale: 0.8, rotate: 5 }}
+                                            transition={{ duration: 0.45, ease: "easeOut" }}
+                                            className="absolute inset-0 w-full h-full flex items-center justify-center p-1 bg-transparent"
+                                          >
+                                            <img src={demo.brandLogoUrl} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 shadow-sm" alt={demo.brandName} referrerPolicy="no-referrer" />
+                                          </motion.div>
+                                        ) : (
+                                          <motion.div
+                                            key="normal-cover"
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.95 }}
+                                            transition={{ duration: 0.45, ease: "easeOut" }}
+                                            className="absolute inset-0 w-full h-full"
+                                          >
+                                            {getSongCoverUrl(demo.coverUrl) ? (
+                                               <img src={getSongCoverUrl(demo.coverUrl)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={demo.title} />
+                                            ) : (
+                                               <div className={`w-full h-full ${isGoldTheme ? 'bg-[#FAF5E6] text-stone-400 group-hover:text-[#AA7C11]' : 'bg-neutral-800 text-neutral-600 group-hover:text-rose-500'} flex items-center justify-center transition-colors`}>
+                                                  <Disc3 className="w-6 h-6 sm:w-8 sm:h-8" />
+                                               </div>
+                                            )}
+                                          </motion.div>
+                                        )}
+                                      </AnimatePresence>
+                                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
+                                        <div className={`w-8 h-8 rounded-full ${isGoldTheme ? 'bg-[#AA7C11]' : 'bg-rose-500'} flex items-center justify-center scale-75 group-hover:scale-100 transition-transform shadow-lg`}>
+                                          <Play className="w-3 h-3 text-white ml-0.5" fill="currentColor" />
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
-                                </div>
-                                <div className={`flex-1 min-w-0 relative z-10 flex flex-col justify-center h-full overflow-visible ${demo.achievements?.length ? 'pr-2.5' : (demo.isReleased ? 'pr-22' : 'pr-4')}`}>
-                                  <AnimatePresence mode="wait">
-                                    {demo.isBrand && showBrandState && demo.brandName ? (
-                                      <motion.div
-                                        key="brand-text"
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: 10 }}
-                                        transition={{ duration: 0.4, ease: "easeOut" }}
-                                        className="flex flex-col justify-center w-full"
-                                      >
-                                        <h3 
-                                          className="font-bold text-base sm:text-lg truncate filter drop-shadow-[0_0_8px_rgba(255,255,255,0.05)]"
-                                        >
-                                          <HoverTranslate text="Đối Tác: " style={{ color: activeBrandColors.secondary }} />
-                                          <HoverTranslate text={demo.brandName} style={{ color: activeBrandColors.primary }} />
-                                        </h3>
-                                        <p className="text-neutral-400 font-medium text-xs mt-1 truncate tracking-wider flex items-center gap-1.5">
-                                          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: activeBrandColors.secondary }}></span>
-                                          {t("Nhạc Thương Hiệu")}
-                                        </p>
-                                      </motion.div>
-                                    ) : (
-                                      <motion.div
-                                        key="normal-text"
-                                        initial={{ opacity: 0, x: 10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -10 }}
-                                        transition={{ duration: 0.4, ease: "easeOut" }}
-                                        className="flex flex-col justify-center w-full"
-                                      >
-                                        <h3 className={`font-bold transition-colors ${demo.achievements?.length ? 'text-[11px] sm:text-[13px] group-hover:text-amber-400 leading-tight whitespace-normal break-words' : `${(demo.title?.length || 0) > 35 ? 'text-sm sm:text-base' : 'text-base sm:text-lg'} group-hover:text-rose-400 leading-tight whitespace-normal break-words`}`} title={demo.title}>
-                                          <span className="relative inline overflow-visible">
-                                            <HoverTranslate text={demo.title} format={true} />
-                                          </span>
-                                        </h3>
-                                        <p className={`text-neutral-400 mt-1 ${demo.achievements?.length ? 'text-[9px] leading-tight whitespace-normal break-words' : 'text-xs truncate'}`}>
-                                          {formatText(demo.singer || demo.author || data?.artistName || 'Nghệ sĩ', true)}
-                                        </p>
-                                      </motion.div>
-                                    )}
-                                  </AnimatePresence>
-                                </div>
-                                {demo.achievements && demo.achievements.length > 0 && (
-                                  <div className="relative z-10 shrink-0 w-[120px] sm:w-[150px] pr-2 sm:pr-3">
-                                     <AchievementCycle achievements={demo.achievements} />
-                                  </div>
-                                )}
-                                {demo.isReleased ? (
-                                  <>
+                                  {(() => {
+                                    const hasAchievements = demo.achievements && demo.achievements.length > 0;
+                                    const titleLength = demo.title?.length || 0;
+                                    const artistLength = demo.singer?.length || demo.author?.length || 0;
+                                    const isTitleLong = titleLength > 28;
+const activeAchievements = hasAchievements && !isTitleLong;
+                                    
+                                    return (
+                                      <>
+                                        <div className={`flex-1 min-w-0 relative z-10 flex flex-col justify-center h-full overflow-visible ${activeAchievements ? 'pr-1.5' : 'pr-1.5 sm:pr-3'}`}>
+                                          <AnimatePresence mode="wait">
+                                            {demo.isBrand && showBrandState && demo.brandName ? (
+                                              <motion.div
+                                                key="brand-text"
+                                                initial={{ opacity: 0, x: -10 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                exit={{ opacity: 0, x: 10 }}
+                                                transition={{ duration: 0.4, ease: "easeOut" }}
+                                                className="flex flex-col justify-center w-full"
+                                              >
+                                                <h3 
+                                                  className="font-bold text-[8px] xs:text-[9px] sm:text-lg truncate filter drop-shadow-[0_0_8px_rgba(255,255,255,0.05)] whitespace-normal max-w-full"
+                                                >
+                                                  <HoverTranslate text="Đối Tác: " style={{ color: activeBrandColors.secondary }} />
+                                                  <HoverTranslate text={demo.brandName} style={{ color: activeBrandColors.primary }} />
+                                                </h3>
+                                                <p className="text-neutral-200 font-medium text-[8px] xs:text-[9px] mt-0.5 truncate tracking-wider flex items-center gap-1.5">
+                                                  <span className="w-1 h-1 rounded-full animate-pulse" style={{ backgroundColor: activeBrandColors.secondary }}></span>
+                                                  {t("Nhạc Thương Hiệu")}
+                                                </p>
+                                              </motion.div>
+                                            ) : (
+                                              <motion.div
+                                                key="normal-text"
+                                                initial={{ opacity: 0, x: 10 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                exit={{ opacity: 0, x: -10 }}
+                                                transition={{ duration: 0.4, ease: "easeOut" }}
+                                                className="flex flex-col justify-center w-full"
+                                              >
+                                                <h3 className={`font-bold transition-colors ${
+  activeAchievements
+     ? `text-[10px] sm:text-[13px] ${demo.isBrand ? 'text-white group-hover:text-amber-400' : (isGoldTheme ? 'text-white group-hover:text-[#D4AF37]' : 'text-white group-hover:text-amber-400')} leading-tight whitespace-normal break-words line-clamp-2`
+     : `${titleLength > 35 ? 'text-xs sm:text-base' : 'text-sm sm:text-lg'} ${demo.isBrand ? 'text-white group-hover:text-amber-400' : (isGoldTheme ? 'text-[#1A1303] group-hover:text-black' : 'group-hover:text-rose-400')} leading-tight whitespace-normal break-words line-clamp-2`
+}`} title={demo.title}>
+  <span className="relative inline overflow-visible">
+    <HoverTranslate text={demo.title} format={true} forceDark={demo.isBrand} />
+  </span>
+</h3>
+<MarqueeText className={`${
+  demo.isBrand
+     ? 'text-neutral-200 font-medium'
+     : (isGoldTheme
+         ? (activeAchievements ? 'text-amber-200/80 font-bold' : 'text-stone-500 font-bold')
+         : 'text-neutral-400')
+} mt-0.5 ${activeAchievements ? 'text-[9.5px]' : 'text-[11px]'} w-full`}>
+  {formatText(demo.singer || demo.author || data?.artistName || 'Nghệ sĩ', true, demo.isBrand ? false : isGoldTheme)}
+</MarqueeText>
+                                              </motion.div>
+                                            )}
+                                          </AnimatePresence>
+                                        </div>
+                                        {activeAchievements && (
+                                          <div className="relative z-10 shrink-0 w-[80px] sm:w-[150px] pr-1.5 sm:pr-3">
+                                             <AchievementCycle achievements={demo.achievements} />
+                                          </div>
+                                        )}
+                                      </>
+                                    );
+                                  })()}
+                                  {demo.isReleased && (
                                     <button
                                       key="share-btn"
                                       onClick={async (e) => {
@@ -6504,34 +8194,63 @@ function Home() {
                                         setToast('Đã copy link bài hát!');
                                         setTimeout(() => setToast(''), 3000);
                                       }}
-                                      className="absolute bottom-3 right-3 z-20 bg-black/40 hover:bg-black/70 text-white/80 hover:text-white p-2 rounded-full border border-white/10 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-95 group-hover:scale-100 active:scale-90"
+                                      className={`absolute bottom-3 right-3 z-20 ${
+                                        isGoldTheme 
+                                          ? 'bg-[#FAF5E6] border border-[#D4AF37]/35 text-[#AA7C11] hover:text-[#1A1303]' 
+                                          : 'bg-black/40 border border-white/10 text-white/80 hover:text-white'
+                                      } p-2 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-95 group-hover:scale-100 active:scale-90`}
                                       title="Chia sẻ bài hát"
                                     >
                                       <Share2 className="w-3.5 h-3.5 stroke-[1.5]" />
                                     </button>
-                                    <span className="absolute -top-2.5 -right-2.5 rotate-[15deg] bg-emerald-600 shadow-[0_0_12px_rgba(16,185,129,0.8)] text-[9px] font-black text-white px-2 py-0.5 rounded border border-emerald-400/50 select-none flex-shrink-0 z-30">
-                                      {t.lReleasedMark || 'RELEASED'}
-                                    </span>
-                                  </>
+                                  )}
+                                  {(demo.password || data?.globalPassword) && !demo.isReleased && demo.linkType !== 'indirect' && (
+                                    <div className={`absolute bottom-3 right-3 z-20 ${isGoldTheme ? 'bg-[#FAF5E6] border border-[#D4AF37]/30' : 'bg-black/60 border border-white/10'} p-1.5 rounded-full shadow-md`}>
+                                       <Lock className="w-3.5 h-3.5 text-yellow-500" />
+                                    </div>
+                                  )}
+                                  {demo.releaseYear && (
+                                    <div className={`absolute bottom-0 left-0 ${
+                                      isGoldTheme 
+                                        ? 'bg-gradient-to-tr from-[#FAF5E6] to-[#EADCB9] text-[#8C6B1B] border-t border-r border-[#D4AF37]/30 shadow-xs' 
+                                        : 'bg-gradient-to-tr from-rose-950/90 via-stone-900/90 to-amber-950/85 text-rose-200 border-t border-r border-rose-500/30'
+                                    } backdrop-blur-[4px] text-[8px] sm:text-[9.5px] font-mono font-black px-3 py-0.5 rounded-tr-xl rounded-bl-[15px] z-20 transition-all duration-300 group-hover:from-[#AA7C11] group-hover:to-[#D4AF37] group-hover:text-[#FAF5E6] group-hover:border-[#D4AF37]/50 pointer-events-none select-none tracking-widest flex items-center gap-1.5`}>
+                                      <span className={`w-1.5 h-1.5 rounded-full ${isGoldTheme ? 'bg-[#AA7C11] group-hover:bg-[#FAF5E6]' : 'bg-rose-500'} animate-pulse group-hover:bg-white shrink-0`}></span>
+                                      {demo.releaseYear}
+                                    </div>
+                                  )}
+                                </Link>
+                              )}
+
+                              {/* Wobbling, non-clipped absolute badge (Top-right corner, on top of any overflows) */}
+                              <motion.div
+                                animate={{ 
+                                  rotate: [15, 11, 19, 11, 15],
+                                  scale: [1, 1.05, 0.95, 1.05, 1]
+                                }}
+                                transition={{ 
+                                  duration: 4.5, 
+                                  repeat: Infinity, 
+                                  ease: "easeInOut" 
+                                }}
+                                className="absolute -top-2.5 -right-2.5 z-40 select-none pointer-events-none"
+                              >
+                                {demo.isReleased ? (
+                                  <span className="bg-emerald-600 shadow-[0_0_12px_rgba(16,185,129,0.8)] text-[9px] font-black text-white px-2.5 py-0.5 rounded border border-emerald-400/50 block">
+                                    {t.lReleasedMark || 'RELEASED'}
+                                  </span>
                                 ) : (
-                                  <>
-                                    <span className={`absolute -top-2.5 -right-2.5 rotate-[15deg] ${demo.linkType === 'indirect' ? 'bg-indigo-600 shadow-[0_0_12px_rgba(79,70,229,0.8)]' : 'bg-rose-600 shadow-[0_0_12px_rgba(225,29,72,0.8)]'} text-[9px] font-black text-white px-2 py-0.5 rounded border border-white/20 select-none flex-shrink-0 z-30`}>
-                                      {demo.linkType === 'indirect' ? 'Landing Page' : (t.lDemoMark || 'DEMO')}
-                                      </span>
-                                  </>
+                                  <span className={`shadow-md text-[9px] font-black px-2.5 py-0.5 rounded block ${
+                                    isGoldTheme 
+                                      ? 'bg-[#1A1303] text-[#FAF5E6] border border-[#D4AF37]' 
+                                      : demo.linkType === 'indirect' 
+                                        ? 'bg-indigo-600 text-white border border-white/20 shadow-[0_0_12px_rgba(79,70,229,0.5)]' 
+                                        : 'bg-rose-600 text-white border border-white/20 shadow-[0_0_12px_rgba(225,29,72,0.5)]'
+                                  }`}>
+                                    {demo.linkType === 'indirect' ? 'Landing Page' : (t.lDemoMark || 'DEMO')}
+                                  </span>
                                 )}
-                                {(demo.password || data?.globalPassword) && !demo.isReleased && demo.linkType !== 'indirect' && (
-                                  <div className="absolute bottom-3 right-3 z-20 bg-black/60 p-1.5 rounded-full border border-white/10 shadow-md">
-                                     <Lock className="w-3.5 h-3.5 text-yellow-500" />
-                                  </div>
-                                )}
-                                {demo.releaseYear && (
-                                  <div className="absolute bottom-0 left-0 bg-gradient-to-tr from-rose-950/90 via-stone-900/90 to-amber-950/85 backdrop-blur-[4px] text-[8px] sm:text-[9.5px] font-mono font-black text-rose-200 px-3 py-0.5 rounded-tr-xl rounded-bl-[15px] border-t border-r border-rose-500/30 z-20 transition-all duration-300 group-hover:from-rose-600 group-hover:to-pink-600 group-hover:text-white group-hover:border-rose-400/50 shadow-[0_2px_12px_rgba(244,63,94,0.15)] group-hover:shadow-[0_4px_20px_rgba(244,63,94,0.4)] pointer-events-none select-none tracking-widest flex items-center gap-1.5">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse group-hover:bg-white shrink-0"></span>
-                                    {demo.releaseYear}
-                                  </div>
-                                )}
-                              </Link>
+                              </motion.div>
                             </motion.div>
                           )}
                         </BrandLogoColorExtractor>
@@ -6541,8 +8260,8 @@ function Home() {
                 )}
 
                 {totalItems > 0 && (
-                  <div className="col-span-full flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-white/10">
-                    <div className="flex items-center gap-2 text-xs sm:text-sm text-neutral-300">
+                  <div className={`col-span-full flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t ${isGoldTheme ? 'border-[#D4AF37]/35' : 'border-white/10'}`}>
+                    <div className={`flex items-center gap-2 text-xs sm:text-sm ${isGoldTheme ? 'text-[#1A1303] font-semibold' : 'text-neutral-300'}`}>
                       <span>{t("Hiển thị")}</span>
                       <div className="relative">
                         <select 
@@ -6551,13 +8270,17 @@ function Home() {
                             setPageSize(Number(e.target.value));
                             setCurrentPage(1);
                           }}
-                          className={`bg-neutral-900/90 border border-white/20 rounded-xl pl-3 pr-8 py-1.5 text-white cursor-pointer backdrop-blur-md transition-all duration-300 hover:bg-neutral-800/90 hover:border-white/40 focus:outline-none focus:ring-2 ${activeRingColor} text-xs sm:text-sm shadow-lg appearance-none`}
+                          className={`cursor-pointer backdrop-blur-md transition-all duration-300 focus:outline-none focus:ring-2 text-xs sm:text-sm shadow-lg appearance-none rounded-xl pl-3 pr-8 py-1.5 ${
+                            isGoldTheme 
+                              ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37] focus:ring-[#D4AF37]/50' 
+                              : `bg-neutral-900/90 border border-white/20 text-white hover:bg-neutral-800/90 hover:border-white/40 ${activeRingColor}`
+                          }`}
                         >
-                          <option value={20} className="bg-neutral-900 text-white">20</option>
-                          <option value={50} className="bg-neutral-900 text-white">50</option>
-                          <option value={100} className="bg-neutral-900 text-white">100</option>
+                          <option value={20} className={isGoldTheme ? "bg-white text-[#1A1303]" : "bg-neutral-900 text-white"}>20</option>
+                          <option value={50} className={isGoldTheme ? "bg-white text-[#1A1303]" : "bg-neutral-900 text-white"}>50</option>
+                          <option value={100} className={isGoldTheme ? "bg-white text-[#1A1303]" : "bg-neutral-900 text-white"}>100</option>
                         </select>
-                        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                        <div className={`absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none ${isGoldTheme ? 'text-[#AA7C11]' : 'text-neutral-400'}`}>
                           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
                         </div>
                       </div>
@@ -6575,8 +8298,12 @@ function Home() {
                           }}
                           className={`px-3.5 py-2 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md ${
                             currentPage === 1 
-                              ? 'bg-white/[0.02] border-white/5 text-white/20 cursor-not-allowed select-none' 
-                              : `bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 ${activeHoverBorderColor}`
+                              ? isGoldTheme 
+                                ? 'bg-neutral-100/50 border-neutral-200 text-neutral-300 cursor-not-allowed select-none' 
+                                : 'bg-white/[0.02] border-white/5 text-white/20 cursor-not-allowed select-none' 
+                              : isGoldTheme 
+                                ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
+                                : `bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 ${activeHoverBorderColor}`
                           }`}
                         >
                           {t("Trước")}
@@ -6605,7 +8332,9 @@ function Home() {
                                 className={`w-9 h-9 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md flex items-center justify-center ${
                                   isCurrent 
                                     ? activeColorClass 
-                                    : `bg-white/5 border-white/10 text-white/70 hover:text-white hover:bg-white/15 ${activeHoverBorderColor}`
+                                    : isGoldTheme 
+                                      ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
+                                      : `bg-white/5 border-white/10 text-white/70 hover:text-white hover:bg-white/15 ${activeHoverBorderColor}`
                                 }`}
                               >
                                 {page}
@@ -6623,8 +8352,12 @@ function Home() {
                           }}
                           className={`px-3.5 py-2 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md ${
                             currentPage === totalPages 
-                              ? 'bg-white/[0.02] border-white/5 text-white/20 cursor-not-allowed select-none' 
-                              : `bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 ${activeHoverBorderColor}`
+                              ? isGoldTheme 
+                                ? 'bg-neutral-100/50 border-neutral-200 text-neutral-300 cursor-not-allowed select-none' 
+                                : 'bg-white/[0.02] border-white/5 text-white/20 cursor-not-allowed select-none' 
+                              : isGoldTheme 
+                                ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
+                                : `bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 ${activeHoverBorderColor}`
                           }`}
                         >
                           {t("Sau")}
@@ -6649,32 +8382,41 @@ function Home() {
           
           return (
             <section id="mv-section" className="mt-12">
-              <div className="flex items-center gap-3 mb-8 px-4 border-b border-white/10 pb-4">
-                <Music className="w-6 h-6 text-emerald-500" />
-                <h2 className="text-2xl font-bold tracking-tight">{t.rMv}</h2>
+              <div className={`flex items-center gap-3 mb-8 px-4 border-b pb-4 ${isGoldTheme ? 'border-[#D4AF37]/35' : 'border-white/10'}`}>
+                <Music className={`w-6 h-6 ${isGoldTheme ? 'text-[#AA7C11]' : 'text-emerald-500'}`} />
+                <h2 className={`text-2xl font-bold tracking-tight ${isGoldTheme ? 'text-[#1A1303]' : 'text-white'}`}>{t.rMv}</h2>
               </div>
               <div className="space-y-4">
                 {paginatedMVs.map((song) => (
                   <button 
                     onClick={() => setPlayingVideo(song.videoId)} key={song.videoId} 
-                    className="w-full text-left flex items-center gap-4 bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10 hover:border-white/20 rounded-xl p-3 shadow-lg shadow-black/10 transition-all duration-300 group">
-                    <div className="w-24 h-16 bg-white/5 rounded-lg overflow-hidden flex-shrink-0 relative border border-white/5">
+                    className={`w-full text-left flex items-center gap-4 rounded-xl p-3 shadow-lg transition-all duration-300 group border ${
+                      isGoldTheme 
+                        ? 'bg-[#FAF5E6] border-[#D4AF37]/35 hover:bg-white hover:border-[#D4AF37] shadow-[0_4px_20px_rgba(212,175,55,0.06)]' 
+                        : 'bg-white/5 backdrop-blur-md border-white/10 hover:bg-white/10 hover:border-white/20 shadow-black/10'
+                    }`}
+                  >
+                    <div className={`w-24 h-16 rounded-lg overflow-hidden flex-shrink-0 relative border ${isGoldTheme ? 'border-[#D4AF37]/20' : 'border-white/5'}`}>
                       <img src={`https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`} alt={song.title} className="w-full h-full object-cover opacity-85 group-hover:opacity-100 transition-all duration-300 group-hover:scale-105" />
                       <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center">
-                        <div className="p-2 bg-white/10 backdrop-blur-md border border-white/30 rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_4px_12px_rgba(0,0,0,0.3)] opacity-90 group-hover:opacity-100 scale-90 group-hover:scale-105 transition-all duration-300 flex items-center justify-center">
+                        <div className={`p-2 backdrop-blur-md border rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_4px_12px_rgba(0,0,0,0.3)] opacity-90 group-hover:opacity-100 scale-90 group-hover:scale-105 transition-all duration-300 flex items-center justify-center ${
+                          isGoldTheme ? 'bg-[#AA7C11]/20 border-[#D4AF37]' : 'bg-white/10 border-white/30'
+                        }`}>
                           <Play className="w-4 h-4 text-white fill-white translate-x-0.5" />
                         </div>
                       </div>
                     </div>
-                    <h3 className="text-base sm:text-lg font-medium group-hover:text-emerald-400 transition-colors pr-2 break-words text-white/90 group-hover:text-white">{song.title}</h3>
+                    <h3 className={`text-base sm:text-lg font-bold pr-2 break-words transition-colors ${
+                      isGoldTheme ? 'text-[#1A1303] group-hover:text-[#AA7C11]' : 'text-white/90 group-hover:text-white'
+                    }`}>{song.title}</h3>
                   </button>
                 ))}
               </div>
 
               {/* Pagination controls for MV */}
               {mvTotalItems > 0 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 mt-6 border-t border-white/10">
-                  <div className="flex items-center gap-2 text-xs sm:text-sm text-neutral-300">
+                <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 mt-6 border-t ${isGoldTheme ? 'border-[#D4AF37]/35' : 'border-white/10'}`}>
+                  <div className={`flex items-center gap-2 text-xs sm:text-sm ${isGoldTheme ? 'text-[#1A1303] font-semibold' : 'text-neutral-300'}`}>
                     <span>{t("Hiển thị")}</span>
                     <div className="relative">
                       <select 
@@ -6683,13 +8425,17 @@ function Home() {
                           setMvPageSize(Number(e.target.value));
                           setMvCurrentPage(1);
                         }}
-                        className="bg-neutral-900/90 border border-white/20 rounded-xl pl-3 pr-8 py-1.5 text-white cursor-pointer backdrop-blur-md transition-all duration-300 hover:bg-neutral-800/90 hover:border-white/40 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-xs sm:text-sm shadow-lg appearance-none"
+                        className={`cursor-pointer backdrop-blur-md transition-all duration-300 focus:outline-none focus:ring-2 text-xs sm:text-sm shadow-lg appearance-none rounded-xl pl-3 pr-8 py-1.5 ${
+                          isGoldTheme 
+                            ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37] focus:ring-[#D4AF37]/50' 
+                            : 'bg-neutral-900/90 border border-white/20 text-white hover:bg-neutral-800/90 hover:border-white/40 focus:ring-emerald-500/50'
+                        }`}
                       >
-                        <option value={8} className="bg-neutral-900 text-white">8</option>
-                        <option value={20} className="bg-neutral-900 text-white">20</option>
-                        <option value={50} className="bg-neutral-900 text-white">50</option>
+                        <option value={8} className={isGoldTheme ? "bg-white text-[#1A1303]" : "bg-neutral-900 text-white"}>8</option>
+                        <option value={20} className={isGoldTheme ? "bg-white text-[#1A1303]" : "bg-neutral-900 text-white"}>20</option>
+                        <option value={50} className={isGoldTheme ? "bg-white text-[#1A1303]" : "bg-neutral-900 text-white"}>50</option>
                       </select>
-                      <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                      <div className={`absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none ${isGoldTheme ? 'text-[#AA7C11]' : 'text-neutral-400'}`}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
                       </div>
                     </div>
@@ -6707,8 +8453,12 @@ function Home() {
                         }}
                         className={`px-3.5 py-2 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md ${
                           mvCurrentPage === 1 
-                            ? 'bg-white/[0.02] border-white/5 text-white/20 cursor-not-allowed select-none' 
-                            : 'bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 hover:border-emerald-500/50'
+                            ? isGoldTheme 
+                              ? 'bg-neutral-100/50 border-neutral-200 text-neutral-300 cursor-not-allowed select-none' 
+                              : 'bg-white/[0.02] border-white/5 text-white/20 cursor-not-allowed select-none' 
+                            : isGoldTheme 
+                              ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
+                              : 'bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 hover:border-emerald-500/50'
                         }`}
                       >
                         {t("Trước")}
@@ -6736,8 +8486,12 @@ function Home() {
                               }}
                               className={`w-9 h-9 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md flex items-center justify-center ${
                                 isCurrent 
-                                  ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.45)] border-emerald-500' 
-                                  : 'bg-white/5 border-white/10 text-white/70 hover:text-white hover:bg-white/15 hover:border-emerald-500/50'
+                                  ? isGoldTheme 
+                                    ? 'bg-[#AA7C11] text-white shadow-[0_0_15px_rgba(170,124,17,0.45)] border-[#AA7C11]' 
+                                    : 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.45)] border-emerald-500' 
+                                  : isGoldTheme 
+                                    ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
+                                    : 'bg-white/5 border-white/10 text-white/70 hover:text-white hover:bg-white/15 hover:border-emerald-500/50'
                               }`}
                             >
                               {page}
@@ -6755,8 +8509,12 @@ function Home() {
                         }}
                         className={`px-3.5 py-2 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md ${
                           mvCurrentPage === mvTotalPages 
-                            ? 'bg-white/[0.02] border-white/5 text-white/20 cursor-not-allowed select-none' 
-                            : 'bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 hover:border-emerald-500/50'
+                            ? isGoldTheme 
+                              ? 'bg-neutral-100/50 border-neutral-200 text-neutral-300 cursor-not-allowed select-none' 
+                              : 'bg-white/[0.02] border-white/5 text-white/20 cursor-not-allowed select-none' 
+                            : isGoldTheme 
+                              ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
+                              : 'bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 hover:border-emerald-500/50'
                         }`}
                       >
                         {t("Sau")}
@@ -6776,13 +8534,13 @@ function Home() {
 
       {!isVault && (
         <main className="flex-1 w-full max-w-5xl mx-auto px-6 sm:px-12 pb-32 pt-24 sm:pt-28">
-          {isAbout && <PublicAboutView aboutMe={data.aboutMe} data={data} t={t} onGoToVault={() => setActiveMenuTab(data.menus?.find((m: any) => m.type === 'vault')?.id || 'm1')} isAdmin={!!getAdminToken()} artistExtension={getArtistExtensionFromUrl()} />}
-          {isBio && <PublicBioView biography={data.biography} t={t} isAdmin={!!getAdminToken()} artistExtension={getArtistExtensionFromUrl()} />}
+          {isAbout && <PublicAboutView aboutMe={data.aboutMe} data={data} t={t} onGoToVault={() => setActiveMenuTab(data.menus?.find((m: any) => m.type === 'vault')?.id || 'm1')} isAdmin={!!getAdminToken()} artistExtension={getArtistExtensionFromUrl()} isGoldTheme={isGoldTheme} />}
+          {isBio && <PublicBioView biography={data.biography} t={t} isAdmin={!!getAdminToken()} artistExtension={getArtistExtensionFromUrl()} isGoldTheme={isGoldTheme} />}
         </main>
       )}
 
       <footer className="py-8 text-center text-sm border-t border-white/10 relative z-10">
-        <a href="https://Chorus.vn" target="_blank" rel="noopener noreferrer" className="font-bold tracking-wider text-rose-500/80 hover:text-rose-400 drop-shadow-[0_0_10px_rgba(244,63,94,0.5)] transition-all">
+        <a href="https://Chorus.vn" target="_blank" rel="noopener noreferrer" className={`font-bold tracking-wider ${isGoldTheme ? 'text-amber-500 hover:text-yellow-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]' : 'text-rose-500/80 hover:text-rose-400 drop-shadow-[0_0_10px_rgba(244,63,94,0.5)]'} transition-all`}>
           Powered by Chorus.vn
         </a>
       </footer>
@@ -8552,7 +10310,7 @@ function PlaylistPlayer() {
                             <p className={`font-bold transition-colors ${i === currentIndex ? 'text-purple-400' : (song.achievements?.length ? 'text-amber-100 hover:text-amber-300' : 'text-white')} ${song.achievements?.length ? 'text-[10px] sm:text-[11px] leading-[1.15] whitespace-normal break-words' : `${(song.title?.length || 0) > 35 ? 'text-xs sm:text-[13px]' : 'text-sm'} whitespace-normal break-words leading-tight`}`}>
                               <HoverTranslate text={song.title} format={true} />
                             </p>
-                            <p className={`text-neutral-400 mt-0.5 ${song.achievements?.length ? 'text-[8.5px] sm:text-[9px] leading-tight opacity-90 whitespace-normal break-words' : 'text-xs truncate'}`}>{formatText(song.singer || song.composer || 'Đang cập nhật', true)}</p>
+                            <MarqueeText className={`text-neutral-400 mt-0.5 ${song.achievements?.length ? 'text-[8.5px] sm:text-[9px] leading-tight opacity-90' : 'text-xs'} w-full`}>{formatText(song.singer || song.composer || 'Đang cập nhật', true, false)}</MarqueeText>
                          </div>
                          
                          {song.achievements && song.achievements.length > 0 && (
@@ -9632,18 +11390,29 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
               {demo.achievements && demo.achievements.length > 0 && (
                 <motion.div 
                   animate={{ 
-                    y: [2, -2, 3, -1, 2],
-                    rotate: [0, 0.5, -0.5, 0.3, 0]
+                    y: [0, -5, 1, -4, 0],
+                    rotate: [0, 1.5, -1.5, 1, 0],
+                    scale: [0.96, 1.02, 0.94, 1.02, 0.96]
                   }}
                   transition={{
                     repeat: Infinity,
-                    duration: 5.5,
+                    duration: 5,
                     ease: "easeInOut"
                   }}
                   className="absolute bottom-2 left-2 -translate-x-[12%] translate-y-[12%] z-50 transform scale-[0.82] md:scale-95 origin-center pointer-events-none"
                 >
-                  <div className="pl-2.5 pr-4.5 md:pl-3 md:pr-5 py-1.5 bg-gradient-to-r from-amber-950/80 via-yellow-950/80 to-amber-900/80 backdrop-blur-xl border border-amber-400/35 rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.45),0_0_8px_rgba(217,119,6,0.12),inset_0_1px_1px_rgba(255,255,255,0.15)] flex items-center justify-start w-fit min-w-[140px] sm:min-w-[165px] h-[48px] sm:h-[56px] overflow-visible">
-                    <AchievementCycle achievements={demo.achievements} align="left" />
+                  <div className="relative overflow-hidden pl-2.5 pr-4.5 md:pl-3 md:pr-5 py-1.5 bg-gradient-to-r from-[#2F1A0F]/95 via-[#1E110A]/95 to-[#3D2214]/95 border-2 border-[#D4AF37] rounded-2xl shadow-[0_10px_28px_rgba(0,0,0,0.65),0_0_15px_rgba(212,175,55,0.35),inset_0_1px_2px_rgba(255,255,255,0.25)] flex items-center justify-start w-fit min-w-[140px] sm:min-w-[165px] h-[48px] sm:h-[56px]">
+                    {/* Glowing golden pulse backdrop */}
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.25),transparent_75%)] animate-pulse" />
+                    {/* Golden shine loop sweep */}
+                    <motion.div 
+                      animate={{ x: ['-100%', '200%'] }}
+                      transition={{ repeat: Infinity, duration: 4.5, ease: "linear" }}
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/25 to-transparent skew-x-12 pointer-events-none"
+                    />
+                    <div className="relative z-10 w-full h-full flex items-center">
+                      <AchievementCycle achievements={demo.achievements} align="left" />
+                    </div>
                   </div>
                 </motion.div>
               )}
@@ -10243,12 +12012,54 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
               </div>
               <div className="grid grid-cols-1 gap-4 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">
                 {demo?.brandReferenceVideos?.map((vid, idx) => {
-                  const embedUrl = vid.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/");
-                  return (
-                    <div key={idx} className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 border border-white/10 relative z-10">
-                      <iframe src={embedUrl} className="w-full h-full" allowFullScreen></iframe>
-                    </div>
-                  );
+                  const getYoutubeId = (url: string): string | null => {
+                    if (!url) return null;
+                    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                    const match = url.match(regExp);
+                    return (match && match[2].length === 11) ? match[2] : null;
+                  };
+                  const videoId = getYoutubeId(vid);
+                  const isVietnameseDomain = window.location.hostname.endsWith('.vn') || window.location.hostname.includes('.vn.') || window.location.hostname.includes('chorus.vn');
+
+                  if (isVietnameseDomain && videoId) {
+                    const ytLink = `https://www.youtube.com/watch?v=${videoId}`;
+                    return (
+                      <a 
+                        key={idx}
+                        href={ytLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 border border-white/10 relative z-10 group block"
+                        title="Bấm để phát trên YouTube"
+                      >
+                        <img 
+                          src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`} 
+                          onError={(e) => {
+                            e.currentTarget.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                          }}
+                          alt="" 
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/20 group-hover:via-black/15 transition-all duration-300" />
+                        <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center select-none z-10 gap-2">
+                          <div className="w-12 h-12 bg-red-600/70 backdrop-blur-md border border-red-500/20 rounded-full flex items-center justify-center text-white shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:bg-red-600/90 relative">
+                            <span className="absolute inset-0 rounded-full border border-red-500/30 animate-ping opacity-40"></span>
+                            <Play className="w-6 h-6 text-white fill-white translate-x-0.5" />
+                          </div>
+                          <span className="text-xs font-black text-white uppercase tracking-wider group-hover:text-red-400 transition-colors drop-shadow-md">
+                            Bấm để phát trên YouTube
+                          </span>
+                        </div>
+                      </a>
+                    );
+                  } else {
+                    const embedUrl = vid.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/");
+                    return (
+                      <div key={idx} className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 border border-white/10 relative z-10">
+                        <iframe src={embedUrl} className="w-full h-full" allowFullScreen></iframe>
+                      </div>
+                    );
+                  }
                 })}
               </div>
             </div>
@@ -10338,11 +12149,21 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
 function formatSocialLink(url: string, platform: string) {
   if (!url) return '';
   url = url.trim();
-  if (url.startsWith('http')) return url;
+  
+  // If it already has http:// or https://, return it directly
+  if (/^https?:\/\//i.test(url)) return url;
+  
+  // If it starts with www. or directly includes the domain (e.g. facebook.com/user)
+  if (/^(www\.)?(facebook|instagram|youtube|tiktok|soundcloud)\.com/i.test(url)) {
+    return `https://${url}`;
+  }
+  
+  // Otherwise, it's just plain text, prepend the domain
   if (platform === 'fb') return `https://facebook.com/${url}`;
   if (platform === 'ig') return `https://instagram.com/${url}`;
   if (platform === 'yt') return `https://youtube.com/@${url.replace(/^@/, '')}`;
   if (platform === 'tk') return `https://tiktok.com/@${url.replace(/^@/, '')}`;
+  if (platform === 'sc') return `https://soundcloud.com/${url}`;
   return url;
 }
 
@@ -10353,7 +12174,7 @@ const FollowIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-function SocialCarousel({ data, pushDown = false }: { data: AppData, pushDown?: boolean }) {
+function SocialCarousel({ data, pushDown = false, isGoldTheme = false }: { data: AppData, pushDown?: boolean, isGoldTheme?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentIconIdx, setCurrentIconIdx] = useState(-1);
 
@@ -10402,7 +12223,7 @@ function SocialCarousel({ data, pushDown = false }: { data: AppData, pushDown?: 
     <div className={`fixed left-6 z-[105] flex flex-col items-center gap-3 transition-all duration-500 ease-in-out top-6 sm:top-8`}>
       <button 
         onClick={() => { setIsOpen(!isOpen); console.log('Clicked, new state:', !isOpen); }}
-        className="relative flex items-center justify-center w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 hover:scale-110 shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all cursor-pointer"
+        className={`relative flex items-center justify-center w-10 h-10 rounded-full ${isGoldTheme ? 'bg-[#1A1303] border-[#D4AF37]/50 text-[#D4AF37] shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:border-[#D4AF37] hover:text-amber-300 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)]' : 'bg-white/10 border-white/20 text-white hover:bg-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]'} backdrop-blur-md border hover:scale-110 shadow-md transition-all cursor-pointer`}
         title="Follow"
       >
         <AnimatePresence mode="popLayout">
@@ -10463,7 +12284,7 @@ function SocialCarousel({ data, pushDown = false }: { data: AppData, pushDown?: 
                     hidden: {  opacity: 0, y: -10, scale: 0.8 },
                     visible: { opacity: 1, y: 0, scale: 1 }
                   }}
-                  className={`flex items-center justify-center w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white ${social.color} hover:scale-110 shadow-lg transition-all`}
+                  className={`flex items-center justify-center w-10 h-10 rounded-full backdrop-blur-md border hover:scale-110 shadow-lg transition-all ${isGoldTheme ? 'bg-[#1A1303] border-[#D4AF37]/40 text-[#D4AF37] ' + social.color.replace('hover:bg-', 'hover:text-white hover:bg-') : 'bg-black/40 border-white/10 text-white ' + social.color}`}
                 >
                   <IconComponent className="w-5 h-5" />
                 </motion.a>
@@ -11237,7 +13058,7 @@ function AdminDashboard() {
   const [data, setData] = useState<AppData | null>(null);
   const getSongCoverUrl = (songUrl?: string) => songUrl || data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState<'demos'|'playlists'|'profile'|'about'|'bio'|'menus'|'socials'|'security'|'templates'|'database'|'reposts'|'tickets'|'layout'|'vouchers'>(
+  const [activeTab, setActiveTab] = useState<'demos'|'playlists'|'profile'|'about'|'bio'|'menus'|'socials'|'security'|'templates'|'database'|'reposts'|'tickets'|'layout'|'vouchers'|'admin_theme'>(
     (window.location.hash ? window.location.hash.replace('#', '') : 'demos') as any
   );
   const [demosSubTab, setDemosSubTab] = useState<'released' | 'demos' | 'drafts' | 'playlists' | 'trash' | 'landing_pages' | 'brands'>('released');
@@ -12267,8 +14088,12 @@ function AdminDashboard() {
 
   if (!data) return <LoadingScreen text={t("Đang tải AdminCP...")} />;
 
+  const userRole = (data.roles || []).find((r: any) => String(r.id || r.name).toLowerCase() === String(data.roleId || '').toLowerCase());
+  const effectiveTheme = data.adminTheme || userRole?.defaultTheme || 'liquid-glass';
+  const isGoldTheme = effectiveTheme === 'gold';
+
   return (
-    <div className="min-h-screen bg-stone-100 text-stone-900 font-sans relative">
+    <div className={`min-h-screen font-sans relative transition-all duration-500 ${isGoldTheme ? 'bg-[#FAF6F0] text-stone-900' : 'bg-stone-100 text-stone-900'}`}>
       {toast && (
         <div className="fixed bottom-6 right-6 bg-emerald-500 text-white px-6 py-3 rounded-xl shadow-xl font-bold z-50 animate-[bounce_1s_ease-in-out]">
           {toast}
@@ -12464,14 +14289,14 @@ function AdminDashboard() {
           </div>
         )}
       </AnimatePresence>
-      <header className="bg-white border-b border-stone-200 sticky top-0 z-[100] shadow-xs">
+      <header className={`sticky top-0 z-[100] transition-all duration-500 ${isGoldTheme ? 'bg-white/80 backdrop-blur-md border-b border-amber-200/60 text-amber-950 shadow-xs shadow-amber-500/5' : 'bg-white border-b border-stone-200 shadow-xs'}`}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 w-full flex items-center justify-between gap-1.5 sm:gap-2">
           <div className="flex items-center gap-2 select-none shrink-0">
             <ChorusLogo className="w-9 h-9 shrink-0" />
             <div className="hidden md:flex items-baseline mt-0.5">
-              <span className="font-sans font-black text-stone-950 tracking-tight text-xl leading-none">Chorus</span>
-              <span className="font-serif italic font-light text-stone-400 text-xl leading-none">.vn</span>
-              <span className="ml-2 font-mono text-[10px] font-bold uppercase tracking-widest text-stone-500 bg-stone-100 border border-stone-200/60 px-1.5 py-0.5 rounded shadow-xs">Admin</span>
+              <span className={`font-sans font-black tracking-tight text-xl leading-none ${isGoldTheme ? 'bg-gradient-to-r from-amber-600 to-yellow-600 bg-clip-text text-transparent font-black drop-shadow-[0_1px_2px_rgba(245,158,11,0.2)]' : 'text-stone-950'}`}>Chorus</span>
+              <span className={`font-serif italic font-light text-xl leading-none ${isGoldTheme ? 'text-amber-600' : 'text-stone-400'}`}>.vn</span>
+              <span className={`ml-2 font-mono text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded shadow-xs ${isGoldTheme ? 'text-amber-800 bg-amber-100/70 border border-amber-200' : 'text-stone-500 bg-stone-100 border border-stone-200/60'}`}>Admin</span>
             </div>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
@@ -12509,13 +14334,17 @@ function AdminDashboard() {
         <aside className={`${
           effectiveSidebarCollapsed 
             ? (showFullBleed 
-                ? 'flex flex-col w-16 bg-white border-r border-stone-200 shrink-0 py-4 items-center space-y-4 relative shadow-xs' 
-                : 'hidden md:flex flex-col w-16 bg-white border-r border-stone-200 shrink-0 py-4 items-center space-y-4 relative shadow-xs')
-            : 'w-full md:w-64 shrink-0 flex flex-col md:sticky md:top-[88px] self-start relative md:bg-white md:border md:border-stone-200/60 md:rounded-[2rem] md:p-5 md:shadow-[0_8px_30px_rgb(0,0,0,0.015)] md:backdrop-blur-md md:gap-5'
+                ? `flex flex-col w-16 shrink-0 py-4 items-center space-y-4 relative shadow-xs border-r ${isGoldTheme ? 'bg-white border-amber-200/30 text-amber-900' : 'bg-white border-stone-200 text-stone-900'}` 
+                : `hidden md:flex flex-col w-16 shrink-0 py-4 items-center space-y-4 relative shadow-xs border-r ${isGoldTheme ? 'bg-white border-amber-200/30 text-amber-900' : 'bg-white border-stone-200 text-stone-900'}`)
+            : `w-full md:w-64 shrink-0 flex flex-col md:sticky md:top-[88px] self-start relative md:rounded-[2rem] md:p-5 md:backdrop-blur-md md:gap-5 ${
+                isGoldTheme 
+                  ? 'md:bg-white md:border md:border-amber-200/60 md:shadow-[0_8px_30px_rgba(245,158,11,0.06)] text-amber-900' 
+                  : 'md:bg-white md:border md:border-stone-200/60 md:shadow-[0_8px_30px_rgb(0,0,0,0.015)] text-stone-900'
+              }`
         }`}>
           {/* Khung Tài Khoản */}
           {!effectiveSidebarCollapsed && (
-            <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-4 relative group select-none">
+            <div className={`rounded-2xl p-4 relative group select-none ${isGoldTheme ? 'bg-amber-50/50 border border-amber-200 text-amber-900' : 'bg-stone-50 border border-stone-200/80'}`}>
               <div className="flex flex-col items-center text-center">
                 <div className="relative w-16 h-16 mb-2 rounded-full overflow-hidden border border-stone-200 shadow-sm cursor-pointer group/avatar">
                   <img
@@ -12534,7 +14363,7 @@ function AdminDashboard() {
                   </button>
                 </div>
 
-                <h4 className="text-sm font-black text-stone-900 leading-tight">
+                <h4 className={`text-sm font-black leading-tight ${isGoldTheme ? 'text-amber-950' : 'text-stone-900'}`}>
                   {data?.artistName || 'Nghệ Sĩ'}
                 </h4>
                 
@@ -12555,10 +14384,10 @@ function AdminDashboard() {
                   })()}
 
                 {/* Gói Thành Viên & Lịch Sử & Bảo Mật Links */}
-                <div className="w-full border-t border-stone-200/60 mt-4 pt-3 flex flex-col gap-2.5 text-xs text-stone-500 font-bold">
+                <div className={`w-full border-t mt-4 pt-3 flex flex-col gap-2.5 text-xs font-bold ${isGoldTheme ? 'border-amber-200/60 text-amber-800' : 'border-stone-200/60 text-stone-500'}`}>
                   <button
                     onClick={() => setShowMembershipModal(true)}
-                    className="flex items-center gap-2 hover:text-stone-900 transition-colors w-full text-left"
+                    className={`flex items-center gap-2 transition-colors w-full text-left ${isGoldTheme ? 'hover:text-amber-950' : 'hover:text-stone-900'}`}
                   >
                     <Award className="w-4 h-4 text-amber-500 shrink-0" />
                     <span>{t("Gói Thành Viên")}</span>
@@ -12566,7 +14395,7 @@ function AdminDashboard() {
 
                   <button
                     onClick={() => setShowHistoryModal(true)}
-                    className="flex items-center gap-2 hover:text-stone-900 transition-colors w-full text-left"
+                    className={`flex items-center gap-2 transition-colors w-full text-left ${isGoldTheme ? 'hover:text-amber-950' : 'hover:text-stone-900'}`}
                   >
                     <History className="w-4 h-4 text-blue-500 shrink-0" />
                     <span>{t("Lịch Sử Kích Hoạt")}</span>
@@ -12574,7 +14403,7 @@ function AdminDashboard() {
 
                   <button
                     onClick={() => setActiveTab('security')}
-                    className={`flex items-center gap-2 hover:text-stone-900 transition-colors w-full text-left ${activeTab === 'security' ? 'text-indigo-600' : ''}`}
+                    className={`flex items-center gap-2 transition-colors w-full text-left ${isGoldTheme ? (activeTab === 'security' ? 'text-amber-950 font-extrabold' : 'hover:text-amber-950') : (activeTab === 'security' ? 'text-indigo-600' : 'hover:text-stone-900')}`}
                   >
                     <Lock className="w-4 h-4 text-stone-400 shrink-0" />
                     <span>{t("Bảo Mật & Email")}</span>
@@ -13115,6 +14944,40 @@ function AdminDashboard() {
                     </button>
                   )}
                   <button
+                    onClick={() => setActiveTab('admin_theme')}
+                    className={`flex items-center transition-all relative group ${
+                      effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
+                    } ${
+                      activeTab === 'admin_theme' ? 'text-white font-black' : (isGoldTheme ? 'hover:bg-amber-100/50 text-amber-800 hover:text-amber-950' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900')
+                    }`}
+                    title={t("Giao Diện")}
+                  >
+                    {activeTab === 'admin_theme' && (
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        style={{ transition: 'none' }}
+                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
+                      />
+                    )}
+                    <motion.div
+                      animate={activeTab === 'admin_theme' ? {
+                        scale: [1, 1.05, 1],
+                        rotate: [-2, 2, -2]
+                      } : { scale: 1, rotate: 0 }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                      className="relative z-10 flex items-center justify-center"
+                    >
+                      <Paintbrush className={`w-5 h-5 transition-colors ${activeTab === 'admin_theme' ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
+                    </motion.div>
+                    {!effectiveSidebarCollapsed && (
+                      <span className="relative z-10">
+                        {t("Giao Diện")}
+                      </span>
+                    )}
+                  </button>
+
+                  <button
                     onClick={() => setActiveTab('vouchers')}
                     className={`flex items-center transition-all relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
@@ -13126,8 +14989,9 @@ function AdminDashboard() {
                     {activeTab === 'vouchers' && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.32 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        style={{ transition: 'none' }}
+                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
                       />
                     )}
                     <motion.div
@@ -13147,7 +15011,17 @@ function AdminDashboard() {
           })()}
         </aside>
 
-        <main className={`flex-1 bg-white flex flex-col ${showFullBleed ? 'rounded-none border-0 shadow-none min-h-0 h-[calc(100vh-64px)] overflow-hidden p-4 md:p-6' : 'rounded-none md:rounded-3xl border-0 md:border md:border-stone-200 shadow-none md:shadow-sm p-4 md:p-8 min-h-[calc(100vh-64px)]'}`}>
+        <main className={`flex-1 flex flex-col transition-all duration-500 ${
+          isGoldTheme 
+            ? 'bg-white/95 text-stone-900 shadow-[0_8px_30px_rgba(245,158,11,0.04)]' 
+            : 'bg-white text-stone-900'
+        } ${
+          showFullBleed 
+            ? 'rounded-none border-0 shadow-none min-h-0 h-[calc(100vh-64px)] overflow-hidden p-4 md:p-6' 
+            : `rounded-none md:rounded-3xl border-0 md:border shadow-none md:shadow-sm p-4 md:p-8 min-h-[calc(100vh-64px)] ${
+                isGoldTheme ? 'md:border-amber-200/60' : 'md:border-stone-200'
+              }`
+        }`}>
           <AnimatePresence mode="wait">
           {activeTab === 'demos' && (
             <motion.div key="demos" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
@@ -13980,6 +15854,114 @@ function AdminDashboard() {
             <motion.div key="layout" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
               <div className="max-w-2xl py-1">
                 <AdminLayoutEdit data={data} t={t} onSave={handleCustomSave} />
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'admin_theme' && (
+            <motion.div key="admin_theme" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+              <div className="max-w-3xl pb-10">
+                <div className="flex flex-col gap-1 mb-6 border-b border-stone-100 pb-4">
+                  <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+                    <Palette className="w-6 h-6 text-yellow-500 animate-[pulse_2.5s_infinite]" />
+                    {t("Giao Diện Bảng Điều Khiển")}
+                  </h2>
+                  <p className="text-xs text-stone-500 mt-1">{t("Tùy chọn giao diện hiển thị cho trang quản trị của bạn.")}</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Liquid Glass Card */}
+                  <div 
+                    onClick={() => {
+                      const isVip = !!data?.landingConfig?.adminThemesVip?.['liquid-glass'];
+                      const hasVipAccess = !!(userRole?.exclusiveUi || data?.isSpecial || data?.isMasterAdmin);
+                      if (isVip && !hasVipAccess) {
+                        alert(t("Giao diện Liquid Glass yêu cầu tài khoản VIP. Vui lòng nâng cấp gói!"));
+                        return;
+                      }
+                      handleCustomSave({ adminTheme: 'liquid-glass' });
+                    }}
+                    className={`cursor-pointer rounded-3xl p-6 border-2 transition-all duration-300 flex flex-col justify-between relative overflow-hidden h-64 hover:shadow-md ${
+                      effectiveTheme === 'liquid-glass' 
+                        ? 'border-teal-500 bg-teal-50/10 ring-2 ring-teal-500/20' 
+                        : 'border-stone-200 bg-stone-50 hover:border-stone-400'
+                    }`}
+                  >
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl pointer-events-none" />
+                    <div>
+                      <div className="flex justify-between items-start mb-4">
+                        <span className="px-3 py-1 text-[10px] font-bold bg-stone-200 text-stone-700 rounded-full">
+                          Standard Theme
+                        </span>
+                        {data?.landingConfig?.adminThemesVip?.['liquid-glass'] && (
+                          <span className="px-2 py-0.5 text-[9px] font-bold bg-yellow-500 text-stone-900 rounded-full flex items-center gap-1">
+                            VIP
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-lg font-bold text-stone-900 mb-1">Liquid Glass</h3>
+                      <p className="text-xs text-stone-500 leading-relaxed">
+                        Giao diện kính mờ tinh tế kết hợp tông đen xám sang trọng và các hiệu ứng phát sáng nhẹ nhàng.
+                      </p>
+                    </div>
+                    
+                    <div className="flex justify-between items-center border-t border-stone-200/60 pt-4 mt-4">
+                      <span className="text-xs text-stone-400 font-medium">
+                        {effectiveTheme === 'liquid-glass' ? t("Đang áp dụng") : t("Bấm để áp dụng")}
+                      </span>
+                      {effectiveTheme === 'liquid-glass' && (
+                        <Check className="w-5 h-5 text-teal-500" />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Gold Card */}
+                  <div 
+                    onClick={() => {
+                      const isVip = data?.landingConfig?.adminThemesVip?.['gold'] !== false;
+                      const hasVipAccess = !!(userRole?.exclusiveUi || data?.isSpecial || data?.isMasterAdmin);
+                      if (isVip && !hasVipAccess) {
+                        alert(t("Giao diện Gold yêu cầu tài khoản VIP. Vui lòng nâng cấp gói!"));
+                        return;
+                      }
+                      handleCustomSave({ adminTheme: 'gold' });
+                    }}
+                    className={`cursor-pointer rounded-3xl p-6 border-2 transition-all duration-300 flex flex-col justify-between relative overflow-hidden h-64 hover:shadow-md ${
+                      effectiveTheme === 'gold' 
+                        ? 'border-yellow-600 bg-yellow-50/10 ring-2 ring-yellow-600/20' 
+                        : 'border-stone-200 bg-stone-50 hover:border-stone-400'
+                    }`}
+                  >
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/20 rounded-full blur-2xl pointer-events-none" />
+                    <div>
+                      <div className="flex justify-between items-start mb-4">
+                        <span className="px-3 py-1 text-[10px] font-bold bg-yellow-100 text-yellow-850 rounded-full">
+                          Luxury Theme
+                        </span>
+                        {data?.landingConfig?.adminThemesVip?.['gold'] !== false && (
+                          <span className="px-2 py-0.5 text-[9px] font-bold bg-yellow-500 text-stone-900 rounded-full flex items-center gap-1">
+                            VIP
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-lg font-bold text-stone-900 mb-1 flex items-center gap-1.5">
+                        Gold <Sparkles className="w-4 h-4 text-yellow-500 animate-pulse" />
+                      </h3>
+                      <p className="text-xs text-stone-500 leading-relaxed">
+                        Giao diện Hoàng Gia sang trọng ngập tràn ánh vàng hoàng kim rực rỡ, mang lại sự may mắn và đẳng cấp.
+                      </p>
+                    </div>
+
+                    <div className="flex justify-between items-center border-t border-stone-200/60 pt-4 mt-4">
+                      <span className="text-xs text-stone-400 font-medium">
+                        {effectiveTheme === 'gold' ? t("Đang áp dụng") : t("Bấm để áp dụng")}
+                      </span>
+                      {effectiveTheme === 'gold' && (
+                        <Check className="w-5 h-5 text-yellow-600" />
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}
@@ -18728,7 +20710,7 @@ function AdminPlaylistEdit() {
                        )}
                        <div className="flex-1 min-w-0">
                           <h4 className="font-bold text-stone-800 truncate">{song.title}</h4>
-                          <p className="text-xs text-stone-500 truncate">{song.singer || song.author}</p>
+                          <MarqueeText className="text-xs text-stone-500 w-full">{song.singer || song.author}</MarqueeText>
                        </div>
                        <button
                          type="button"
@@ -18799,7 +20781,7 @@ function AdminPlaylistEdit() {
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-stone-800 text-sm truncate">{song.title}</p>
-                        <p className="text-xs text-stone-500 truncate">{song.singer || song.author}</p>
+                        <MarqueeText className="text-xs text-stone-500 w-full">{song.singer || song.author}</MarqueeText>
                       </div>
                     </label>
                   );
@@ -19533,7 +21515,7 @@ function AdminMenuEdit({ data, t, onSave }: any) {
 
 function AdminLayoutEdit({ data, t, onSave }: any) {
   const [layoutSections, setLayoutSections] = useState<string[]>(
-    data.layoutSections || ['title', 'spotify', 'vault', 'mv']
+    data.layoutSections || ['title', 'vault', 'mv', 'spotify']
   );
 
   const getSectionName = (sec: string) => {
@@ -19617,7 +21599,7 @@ function AdminLayoutEdit({ data, t, onSave }: any) {
 }
 
 
-function PublicNavbar({ menus, activeTab, setActiveTab, t }: any) {
+function PublicNavbar({ menus, activeTab, setActiveTab, t, isGoldTheme }: any) {
   const { landingConfig } = useContext(LanguageContext);
   if (!menus || menus.length === 0) return null;
   const visibleMenus = menus.filter((m: any) => m.isVisible);
@@ -19631,7 +21613,7 @@ function PublicNavbar({ menus, activeTab, setActiveTab, t }: any) {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-6 sm:px-12 mb-12 flex items-center justify-center gap-6 sm:gap-10 border-b border-white/10 pb-4">
+    <div className={`w-full max-w-5xl mx-auto px-6 sm:px-12 mb-12 flex items-center justify-center gap-6 sm:gap-10 border-b pb-4 ${isGoldTheme ? 'border-stone-200/60' : 'border-white/10'}`}>
       {visibleMenus.map((m: any) => (
         <button
           key={m.id}
@@ -19643,12 +21625,14 @@ function PublicNavbar({ menus, activeTab, setActiveTab, t }: any) {
             }
           }}
           className={`font-bold transition-all relative text-sm sm:text-base ${
-            activeTab === m.id ? 'text-white' : 'text-white/80 hover:text-white'
+            activeTab === m.id 
+              ? (isGoldTheme ? 'text-[#AA7C11] font-black scale-102' : 'text-white') 
+              : (isGoldTheme ? 'text-stone-500 hover:text-[#AA7C11]' : 'text-white/80 hover:text-white')
           }`}
         >
           {t(getMenuTitle(m))}
           {activeTab === m.id && (
-            <motion.div layoutId="nav-indicator" className="absolute -bottom-[17px] left-0 right-0 h-[2px] bg-emerald-500" />
+            <motion.div layoutId="nav-indicator" className={`absolute -bottom-[17px] left-0 right-0 h-[2.5px] ${isGoldTheme ? 'bg-[#AA7C11]' : 'bg-emerald-500'}`} />
           )}
         </button>
       ))}
@@ -19656,13 +21640,13 @@ function PublicNavbar({ menus, activeTab, setActiveTab, t }: any) {
   );
 }
 
-function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtension }: any) {
+function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtension, isGoldTheme }: any) {
   if (!aboutMe) return null;
   
   const avatar = aboutMe.avatarUrl || data?.homeCoverUrl;
   
   return (
-    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="w-full mx-auto bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] p-6 sm:p-10 mt-4 sm:mt-8 mb-20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] relative z-10 text-white max-w-6xl flex flex-col lg:flex-row gap-10 lg:gap-16 items-center lg:items-start">
+    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto ${isGoldTheme ? 'bg-gradient-to-br from-stone-900/95 via-amber-950/30 to-stone-900/95 border-amber-500/20 shadow-[0_8px_32px_0_rgba(251,191,36,0.15)]' : 'bg-white/10 border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]'} backdrop-blur-2xl border rounded-[2.5rem] p-6 sm:p-10 mt-4 sm:mt-8 mb-20 relative z-10 text-white max-w-6xl flex flex-col lg:flex-row gap-10 lg:gap-16 items-center lg:items-start`}>
       {isAdmin && (
         <a href={getAdminLink('#about')} className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white/70 hover:text-white z-20" title={t("Chỉnh sửa")}>
           <Edit3 className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -19680,12 +21664,12 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
           <motion.div 
             animate={{ rotate: [0, 5, -5, 0], scale: [1, 1.02, 1] }}
             transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
-            className="absolute inset-0 bg-gradient-to-tr from-blue-600 via-purple-500 to-emerald-400 rounded-[2.5rem] translate-x-4 translate-y-4 sm:translate-x-5 sm:translate-y-5 -z-10 opacity-70 blur-md group-hover:blur-lg transition-all duration-700"
+            className={`absolute inset-0 bg-gradient-to-tr ${isGoldTheme ? 'from-amber-600 via-yellow-500 to-amber-400' : 'from-blue-600 via-purple-500 to-emerald-400'} rounded-[2.5rem] translate-x-4 translate-y-4 sm:translate-x-5 sm:translate-y-5 -z-10 opacity-70 blur-md group-hover:blur-lg transition-all duration-700`}
           ></motion.div>
           <motion.div 
             animate={{ rotate: [0, -5, 5, 0], scale: [1, 1.02, 1] }}
             transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
-            className="absolute inset-0 bg-gradient-to-br from-rose-500 via-orange-400 to-amber-300 rounded-[2.5rem] translate-x-3 translate-y-3 sm:translate-x-4 sm:translate-y-4 -z-10 opacity-60"
+            className={`absolute inset-0 bg-gradient-to-br ${isGoldTheme ? 'from-yellow-600 via-amber-500 to-yellow-400' : 'from-rose-500 via-orange-400 to-amber-300'} rounded-[2.5rem] translate-x-3 translate-y-3 sm:translate-x-4 sm:translate-y-4 -z-10 opacity-60`}
           ></motion.div>
           <motion.div 
             animate={{ y: [0, -10, 0] }}
@@ -19699,7 +21683,7 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
       
       {/* Details */}
       <div className={`w-full ${avatar ? "lg:flex-1" : "max-w-3xl mx-auto"} flex flex-col justify-center space-y-1 sm:space-y-2 z-10 relative mt-6 lg:mt-0`}>
-        <span className="text-[#06b6d4] font-bold text-sm sm:text-base mb-1 tracking-wide uppercase inline-block text-center lg:text-left">{aboutMe.role || 'Profile Card'}</span>
+        <span className={`${isGoldTheme ? 'text-amber-400 font-black' : 'text-[#06b6d4]'} font-bold text-sm sm:text-base mb-1 tracking-wide uppercase inline-block text-center lg:text-left`}>{aboutMe.role || 'Profile Card'}</span>
         <h2 className="text-[clamp(1.5rem,3.5vw,2.25rem)] font-black text-white drop-shadow-md mb-4 sm:mb-6 leading-tight text-center lg:text-left break-words">
           {data?.artistName || t('Về Tôi') || 'Về Tôi'}
         </h2>
@@ -19721,27 +21705,27 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
           
           <div className="flex flex-wrap items-center gap-4 mb-6">
             {data?.socialFacebook && (
-               <a href={data.socialFacebook} target="_blank" rel="noreferrer" className="w-10 h-10 bg-[#1877F2] text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform">
+               <a href={formatSocialLink(data.socialFacebook, 'fb')} target="_blank" rel="noreferrer" className="w-10 h-10 bg-[#1877F2] text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform">
                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                </a>
             )}
             {data?.socialYoutube && (
-               <a href={data.socialYoutube} target="_blank" rel="noreferrer" className="w-10 h-10 bg-[#FF0000] text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform">
+               <a href={formatSocialLink(data.socialYoutube, 'yt')} target="_blank" rel="noreferrer" className="w-10 h-10 bg-[#FF0000] text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform">
                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                </a>
             )}
             {data?.socialTiktok && (
-               <a href={data.socialTiktok} target="_blank" rel="noreferrer" className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform">
+               <a href={formatSocialLink(data.socialTiktok, 'tk')} target="_blank" rel="noreferrer" className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform">
                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.12-3.44-3.17-3.64-5.46-.22-2.39.81-4.78 2.62-6.19 1.83-1.47 4.31-1.84 6.54-1.16l-.1 4.18c-1.3-.23-2.67-.18-3.79.52-1.07.69-1.67 1.92-1.57 3.18.11 1.4 1.16 2.61 2.53 2.94 1.34.33 2.82.02 3.86-.88.94-.8 1.4-2.01 1.43-3.26.04-4.8.01-9.61.02-14.41z"/></svg>
                </a>
             )}
             {data?.socialInstagram && (
-               <a href={data.socialInstagram} target="_blank" rel="noreferrer" className="w-10 h-10 text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform overflow-hidden" style={{ background: 'radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%)' }}>
+               <a href={formatSocialLink(data.socialInstagram, 'ig')} target="_blank" rel="noreferrer" className="w-10 h-10 text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform overflow-hidden" style={{ background: 'radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%)' }}>
                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
                </a>
             )}
             {data?.socialSoundcloud && (
-               <a href={data.socialSoundcloud} target="_blank" rel="noreferrer" className="w-10 h-10 bg-[#ff5500] text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform">
+               <a href={formatSocialLink(data.socialSoundcloud, 'sc')} target="_blank" rel="noreferrer" className="w-10 h-10 bg-[#ff5500] text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform">
                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M11.758 15.864V8.895c.27-.058.536-.089.8-.089.704 0 1.258.219 1.663.655.405.436.608 1.054.608 1.854v4.549h-3.071zm9.896-1.503c0 1.139-.395 2.112-1.187 2.918-.792.807-1.748 1.21-2.868 1.21H15.11v-7.616c0-.987-.272-1.792-.816-2.414-.544-.622-1.267-.933-2.171-.933-.427 0-.822.062-1.186.187v-1.12c0-.521-.141-1.042-.423-1.564-.282-.522-.72-1.002-1.314-1.441-1.116-.838-2.39-1.258-3.82-1.258-1.517 0-2.809.537-3.879 1.611-1.07 1.074-1.605 2.366-1.605 3.875 0 .204.015.421.044.653-.787.218-1.439.638-1.956 1.26-.518.622-.777 1.348-.777 2.179 0 .91.319 1.685.956 2.325.637.639 1.411.959 2.322.959h10.963c.691 0 1.285-.245 1.78-.735.495-.49.743-1.082.743-1.776z"/></svg>
                </a>
             )}
@@ -19752,7 +21736,11 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
                 animate={{ backgroundPosition: ["0% 50%", "200% 50%"] }}
                 transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
                 onClick={onGoToVault} 
-                className="bg-[linear-gradient(110deg,#4f46e5,45%,#818cf8,55%,#4f46e5)] bg-[length:200%_100%] text-white font-bold py-3 px-10 rounded-full shadow-[0_8px_20px_rgba(79,70,229,0.4)] transition-all hover:scale-105 active:scale-95 text-lg cursor-pointer border border-white/20"
+                className={`bg-[length:200%_100%] font-bold py-3 px-10 rounded-full transition-all hover:scale-105 active:scale-95 text-lg cursor-pointer border ${
+                  isGoldTheme 
+                    ? 'bg-[linear-gradient(110deg,#f59e0b,45%,#fef08a,55%,#f59e0b)] text-stone-950 border-yellow-400/50 hover:shadow-[0_8px_20px_rgba(245,158,11,0.5)] font-black' 
+                    : 'bg-[linear-gradient(110deg,#4f46e5,45%,#818cf8,55%,#4f46e5)] text-white border-white/20 hover:shadow-[0_8px_20px_rgba(79,70,229,0.4)]'
+                }`}
              >
                 {t("Kho Nhạc")}
              </motion.button>
@@ -19772,7 +21760,7 @@ function InfoField({ label, value }: { label: string, value: string }) {
   );
 }
 
-function PublicBioView({ biography, t, isAdmin, artistExtension }: any) {
+function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme }: any) {
   if (!biography) return null;
   
   const hasEdu = biography.education?.length > 0;
@@ -19781,7 +21769,7 @@ function PublicBioView({ biography, t, isAdmin, artistExtension }: any) {
   if (!hasEdu && !hasExp) return null;
   
   return (
-    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto mt-4 sm:mt-8 mb-20 relative z-10 px-4 sm:px-8 lg:px-12 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] py-12 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] text-white max-w-7xl ${hasEdu && hasExp ? 'grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16' : 'flex flex-col'}`}>
+    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto mt-4 sm:mt-8 mb-20 relative z-10 px-4 sm:px-8 lg:px-12 ${isGoldTheme ? 'bg-gradient-to-br from-stone-900/95 via-amber-950/30 to-stone-900/95 border-amber-500/20 shadow-[0_8px_32px_0_rgba(251,191,36,0.15)]' : 'bg-white/10 border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]'} backdrop-blur-2xl border rounded-[2.5rem] py-12 text-white max-w-7xl ${hasEdu && hasExp ? 'grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16' : 'flex flex-col'}`}>
       {isAdmin && (
         <a href={getAdminLink('#bio')} className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white/70 hover:text-white z-20" title={t("Chỉnh sửa")}>
           <Edit3 className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -19798,7 +21786,7 @@ function PublicBioView({ biography, t, isAdmin, artistExtension }: any) {
               whileInView={{ height: '100%' }} 
               viewport={{ once: true }} 
               transition={{ duration: 1.5, ease: 'easeOut' }} 
-              className="absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 bg-white/20 origin-top z-0" 
+              className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${isGoldTheme ? 'bg-amber-500/30' : 'bg-white/20'} origin-top z-0`} 
             />
             {biography.education.map((item: any, idx: number) => (
               <TimelineItem key={idx} item={item} isSplit={true} color="emerald" index={idx} />
@@ -19818,7 +21806,7 @@ function PublicBioView({ biography, t, isAdmin, artistExtension }: any) {
               whileInView={{ height: '100%' }} 
               viewport={{ once: true }} 
               transition={{ duration: 1.5, ease: 'easeOut' }} 
-              className="absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 bg-white/20 origin-top z-0" 
+              className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${isGoldTheme ? 'bg-amber-500/30' : 'bg-white/20'} origin-top z-0`} 
             />
             {biography.experience.map((item: any, idx: number) => (
               <TimelineItem key={idx} item={item} isSplit={true} color="blue" index={idx} />

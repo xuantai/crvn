@@ -1770,6 +1770,7 @@ function generateCaptchaSvg(text: string) {
       releasedSongs: [],
       demos: [],
       playlists: [],
+      layoutSections: ['title', 'vault', 'mv', 'spotify'],
       menus: [
         { id: 'm1', type: 'vault', title: 'Kho Nhạc', isVisible: true },
         { id: 'm2', type: 'about', title: 'Về Tôi', isVisible: true },
@@ -2083,7 +2084,7 @@ function generateCaptchaSvg(text: string) {
       pageTitle, ogImageUrl, faviconUrl, statusBadge,
       adminUsername, adminPassword,
       menuVaultVi, menuAboutVi, menuBioVi,
-      templateNames, templateVip, demoSongInfo,
+      templateNames, templateVip, adminThemesVip, defaultAdminTheme, demoSongInfo,
       globalLayoutSections,
       faq, forbiddenKeywords, roles
     } = req.body;
@@ -2095,6 +2096,7 @@ function generateCaptchaSvg(text: string) {
       featuresTitle: featuresTitle || '',
       featuresSub: featuresSub || '',
       cloudSyncEnabled: cloudSyncEnabled !== false,
+      defaultAdminTheme: defaultAdminTheme || 'liquid-glass',
       systemIp: systemIp || '',
       pageTitle: pageTitle || '',
       ogImageUrl: ogImageUrl || '',
@@ -2105,7 +2107,10 @@ function generateCaptchaSvg(text: string) {
       menuVaultVi: menuVaultVi || 'Kho Nhạc',
       menuAboutVi: menuAboutVi || 'Về Tôi',
       menuBioVi: menuBioVi || 'Tiểu Sử',
-      templateNames: templateNames || {}, templateVip: templateVip || {}, demoSongInfo,
+      templateNames: templateNames || {}, 
+      templateVip: templateVip || {}, 
+      adminThemesVip: adminThemesVip || { 'liquid-glass': false, 'gold': true },
+      demoSongInfo,
       faq: faq !== undefined ? faq : (landingConfig as any).faq,
       forbiddenKeywords: forbiddenKeywords !== undefined ? forbiddenKeywords : (landingConfig as any).forbiddenKeywords,
       roles: roles !== undefined ? roles : (landingConfig as any).roles
@@ -3862,6 +3867,14 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     }
     if (req.body.slideshowImages) data.slideshowImages = req.body.slideshowImages;
     if (req.body.layoutSections !== undefined) data.layoutSections = req.body.layoutSections;
+    if (req.body.adminTheme !== undefined) {
+      data.adminTheme = req.body.adminTheme;
+      const artist = req.artist;
+      if (artist) {
+        artist.adminTheme = req.body.adminTheme;
+        await saveArtists(artists);
+      }
+    }
     await saveData(data);
     res.json({ ...data, pendingNameChangeNotice: nameChangeNotice });
   });
@@ -4056,22 +4069,33 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       const parts = url.split('/');
       const idStr = parts[parts.length - 1].split('?')[0]; // artist id
       const fetchUrl = `https://open.spotify.com/artist/${idStr}`;
-      const response = await fetch(fetchUrl, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
-      });
-      const html = await response.text();
       
-      const imageMatch = html.match(/<meta property="?og:image"? content="([^"]+)"/i);
-      const titleMatch = html.match(/<meta property="?og:title"? content="([^"]+)"/i);
-      const descMatch = html.match(/<meta property="?og:description"? content="([^"]+)"/i);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
       
-      if (!titleMatch && !descMatch) return res.json(null);
-      
-      res.json({
-        name: titleMatch ? titleMatch[1] : '',
-        image: imageMatch ? imageMatch[1] : '',
-        description: descMatch ? descMatch[1] : '' // Usually contains monthly listeners
-      });
+      try {
+        const response = await fetch(fetchUrl, {
+            signal: controller.signal,
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
+        });
+        clearTimeout(timeoutId);
+        const html = await response.text();
+        
+        const imageMatch = html.match(/<meta property="?og:image"? content="([^"]+)"/i);
+        const titleMatch = html.match(/<meta property="?og:title"? content="([^"]+)"/i);
+        const descMatch = html.match(/<meta property="?og:description"? content="([^"]+)"/i);
+        
+        if (!titleMatch && !descMatch) return res.json(null);
+        
+        res.json({
+          name: titleMatch ? titleMatch[1] : '',
+          image: imageMatch ? imageMatch[1] : '',
+          description: descMatch ? descMatch[1] : '' // Usually contains monthly listeners
+        });
+      } catch (innerErr) {
+        clearTimeout(timeoutId);
+        res.json(null);
+      }
     } catch(err) {
       res.json(null);
     }

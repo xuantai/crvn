@@ -114,6 +114,19 @@
   animation-iteration-count: infinite;
 }
 
+@keyframes snow-contained {
+  0% { transform: translateY(-20px) translateX(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.8; }
+  100% { transform: translateY(180px) translateX(15px) rotate(360deg); opacity: 0; }
+}
+
+.animate-snow-contained {
+  animation-name: snow-contained;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
 .animate-rain {
   animation-name: rain;
   animation-timing-function: linear;
@@ -592,24 +605,24 @@
 }
 
 .btn-black-gradient-blur {
-  background: linear-gradient(135deg, #27272a 0%, #09090b 100%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, #1A1303 0%, #090600 50%, #150E01 100%);
+  border: 1.5px solid #AA7C11;
   box-shadow: 
-    inset 0 1px 1px rgba(255, 255, 255, 0.15), 
-    0 4px 12px rgba(0, 0, 0, 0.22);
+    inset 0 1px 2px rgba(251, 191, 36, 0.35), 
+    0 4px 15px rgba(170, 124, 17, 0.25);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-black-gradient-blur:hover {
-  background: linear-gradient(135deg, #3f3f46 0%, #18181b 100%);
-  border-color: rgba(255, 255, 255, 0.25);
+  background: linear-gradient(135deg, #291E06 0%, #120C01 50%, #241902 100%);
+  border-color: #D4AF37;
   box-shadow: 
-    inset 0 1px 1px rgba(255, 255, 255, 0.25), 
-    0 6px 18px rgba(0, 0, 0, 0.3);
+    inset 0 1px 3px rgba(251, 191, 36, 0.5), 
+    0 6px 20px rgba(212, 175, 55, 0.35);
   transform: translateY(-0.5px);
-  filter: brightness(1.1);
+  filter: brightness(1.15);
 }
 
 .btn-white-glass-smoke {
