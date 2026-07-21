@@ -335,7 +335,7 @@ function formatText(text: string | null | undefined, disableLinks = false, isGol
           return (
             <span 
               key={`ft-p-${prefix}-${textClean}-${idx}`} 
-              className={`inline-block text-[10.5px] sm:text-[11.5px] mt-1 mb-0.5 leading-normal tracking-wide whitespace-normal break-words px-2 py-0.5 rounded-full ${badgeStyle}`}
+              className={`inline-block text-[9.5px] sm:text-[10.5px] mt-1 mb-0.5 leading-normal tracking-wide whitespace-normal break-words px-2 py-0.5 rounded-full ${badgeStyle}`}
             >
               {trimmedPart}
             </span>
@@ -7156,7 +7156,7 @@ function AchievementCycle({ achievements, align, isLightBg = false, prefix = 'ac
            animate={{ opacity: 1, y: 0 }}
            exit={{ opacity: 0, y: -6 }}
            transition={{ duration: 0.25, ease: "easeInOut" }}
-           className={`relative w-full flex items-center ${isLeft ? 'justify-start' : 'justify-end'}`}
+           className={`absolute inset-0 w-full h-full flex items-center ${isLeft ? 'justify-start' : 'justify-end'}`}
         >
            <AchievementBadge achievement={curAch} align={align} isLightBg={isLightBg} />
         </motion.div>
@@ -7209,10 +7209,7 @@ function RandomSongCard({
   const prevKey = prevSong ? (prevSong.id || prevSong.slug || prevSong.title || 'prev') : '';
   const currKey = displaySong ? (displaySong.id || displaySong.slug || displaySong.title || 'curr') : '';
   const hasRandomSongAchievements = displaySong?.achievements && displaySong.achievements.length > 0;
-  const titleLength = displaySong?.title?.length || 0;
-  const artistLength = (displaySong?.singer || displaySong?.author || '').length;
-  const showRandomSongAchievementsOnMobile = hasRandomSongAchievements && (titleLength + artistLength) <= 25;
-  const activeRandomSongAchievements = hasRandomSongAchievements && (!isMobile || showRandomSongAchievementsOnMobile);
+  const activeRandomSongAchievements = hasRandomSongAchievements;
 
   if (!displaySong) return null;
 
@@ -7244,7 +7241,7 @@ function RandomSongCard({
             }
           }
         }}
-        className="group relative overflow-hidden rounded-[20px] p-2.5 sm:p-3 flex flex-row items-center justify-between gap-2.5 sm:gap-4 w-full sm:hover:scale-[1.015] sm:hover:-translate-y-0.5 sm:hover:shadow-[0_16px_36px_rgba(212,175,55,0.4)] transition-all duration-300 ease-out"
+        className="group relative overflow-visible rounded-[20px] p-2.5 sm:p-3 flex flex-row items-center justify-between gap-2.5 sm:gap-4 w-full sm:hover:scale-[1.015] sm:hover:-translate-y-0.5 sm:hover:shadow-[0_16px_36px_rgba(212,175,55,0.4)] transition-all duration-300 ease-out"
         style={{ minHeight: '112px' }}
       >
         {/* PC Version Card Ambient Animation for PC */}
@@ -7409,9 +7406,9 @@ function RandomSongCard({
                 opacity: { duration: 0.35 },
                 scale: { duration: 0.35 }
               }}
-              className="shrink-0 flex items-center justify-end pl-1.5 sm:pl-4 max-w-[190px] sm:max-w-[270px] relative z-20 py-1.5 px-0.5 overflow-visible"
+              className="shrink-0 flex items-center justify-end pl-2 sm:pl-3 relative z-20 py-1.5 overflow-visible"
             >
-              {/* Desktop version */}
+              {/* Responsive Achievement Badge Container */}
               <motion.div 
                 animate={{ 
                   y: [0, -1.5, 0, 1.5, 0],
@@ -7422,33 +7419,17 @@ function RandomSongCard({
                   repeat: Infinity,
                   ease: "easeInOut"
                 }}
-                className="hidden sm:flex w-full h-14 relative overflow-hidden rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/45 items-center justify-between px-3.5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_6px_16px_rgba(0,0,0,0.45)]"
+                className="w-[110px] sm:w-[155px] h-12 sm:h-14 relative overflow-hidden rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/50 flex items-center justify-center px-1.5 sm:px-2 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_6px_16px_rgba(0,0,0,0.5)] shrink-0"
               >
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.22),transparent_70%)] animate-pulse" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.25),transparent_70%)] animate-pulse" />
                 <motion.div 
                   animate={{ x: ['-100%', '200%'] }}
                   transition={{ repeat: Infinity, duration: 4.5, ease: "linear" }}
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent skew-x-12 pointer-events-none"
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/15 to-transparent skew-x-12 pointer-events-none"
                 />
-                <div className="relative z-10 w-full h-full flex items-center justify-between">
-                  <AchievementCycle achievements={displaySong.achievements} align="right" isLightBg={false} prefix="rnd-dt" />
+                <div className="relative z-10 w-full h-full flex items-center justify-center">
+                  <AchievementCycle achievements={displaySong.achievements} align="right" isLightBg={false} prefix="rnd-badge" />
                 </div>
-              </motion.div>
-
-              {/* Mobile version */}
-              <motion.div 
-                animate={{ 
-                  y: [0, -1.5, 0, 1.5, 0],
-                  rotate: [0, -0.3, 0, 0.3, 0]
-                }}
-                transition={{
-                  duration: 5.5,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className="flex sm:hidden items-center justify-end w-[88px] shrink-0 overflow-visible"
-              >
-                <AchievementCycle achievements={displaySong.achievements} align="right" isLightBg={randStylesCurrent.isLightBg} prefix="rnd-mb" />
               </motion.div>
             </motion.div>
           )}
@@ -8287,7 +8268,7 @@ function Home() {
               </div>
 
               {(() => {
-                const isVietnameseDomain = window.location.hostname.endsWith('.vn') || window.location.hostname.includes('.vn.') || window.location.hostname.includes('chorus.vn');
+                const isVietnameseDomain = window.location.hostname.endsWith('.vn') || window.location.hostname.includes('.vn.') || window.location.hostname.includes('chorus.vn') || window.location.hostname.startsWith('xn--');
                 if (isVietnameseDomain) {
                   return (
                     <a 
@@ -8849,66 +8830,66 @@ function Home() {
                                   </div>
 
                                   {/* 2. Song Title */}
-                                  <div className="mt-4 min-h-[40px] flex items-center justify-center text-center px-1 z-10 w-full overflow-hidden">
-                                    <AnimatePresence>
-                                      {demo.isBrand && showBrandState && demo.brandName ? (
-                                        <motion.h3 
-                                          key="brand-title-vert"
-                                          initial={{ opacity: 0, y: 6 }}
-                                          animate={{ opacity: 1, y: 0 }}
-                                          exit={{ opacity: 0, y: -6 }}
-                                          transition={{ duration: 0.35 }}
-                                          className="font-black text-[#AA7C11] text-sm sm:text-base tracking-tight line-clamp-2 leading-tight flex items-center justify-center gap-1"
-                                        >
-                                          <span className="bg-[#D4AF37]/25 text-[#AA7C11] text-[10px] px-2 py-0.5 rounded-md font-bold uppercase shrink-0">{t("Thương hiệu")}</span>
-                                          <span className="truncate">{demo.brandName}</span>
-                                        </motion.h3>
-                                      ) : (
-                                        <motion.h3 
-                                          key="song-title-vert"
-                                          initial={{ opacity: 0, y: -6 }}
-                                          animate={{ opacity: 1, y: 0 }}
-                                          exit={{ opacity: 0, y: 6 }}
-                                          transition={{ duration: 0.35 }}
-                                          className="font-black text-[#1A1303] group-hover:text-[#AA7C11] text-sm sm:text-base tracking-tight line-clamp-2 leading-tight transition-colors" 
-                                          title={demo.title}
-                                        >
-                                          <HoverTranslate text={demo.title} format={true} />
-                                        </motion.h3>
-                                      )}
-                                    </AnimatePresence>
-                                  </div>
+                                   <div className="mt-4 min-h-[48px] flex items-center justify-center text-center px-1 z-10 w-full relative">
+                                     <AnimatePresence mode="wait">
+                                       {demo.isBrand && showBrandState && demo.brandName ? (
+                                         <motion.h3 
+                                           key="brand-title-vert"
+                                           initial={{ opacity: 0, y: 6 }}
+                                           animate={{ opacity: 1, y: 0 }}
+                                           exit={{ opacity: 0, y: -6 }}
+                                           transition={{ duration: 0.35 }}
+                                           className="w-full px-2 font-black text-[#AA7C11] text-sm sm:text-base tracking-tight leading-tight flex items-center justify-center gap-1 flex-wrap"
+                                         >
+                                           <span className="bg-[#D4AF37]/25 text-[#AA7C11] text-[10px] px-2 py-0.5 rounded-md font-bold uppercase shrink-0">{t("Thương hiệu")}</span>
+                                           <span className="truncate">{demo.brandName}</span>
+                                         </motion.h3>
+                                       ) : (
+                                         <motion.h3 
+                                           key="song-title-vert"
+                                           initial={{ opacity: 0, y: -6 }}
+                                           animate={{ opacity: 1, y: 0 }}
+                                           exit={{ opacity: 0, y: 6 }}
+                                           transition={{ duration: 0.35 }}
+                                           className="w-full px-2 flex items-center justify-center font-black text-[#1A1303] group-hover:text-[#AA7C11] text-sm sm:text-base tracking-tight leading-tight transition-colors" 
+                                           title={demo.title}
+                                         >
+                                           <HoverTranslate text={demo.title} format={true} />
+                                         </motion.h3>
+                                       )}
+                                     </AnimatePresence>
+                                   </div>
 
-                                  {/* 3. Artist/Singer */}
-                                  <div className="mb-4 mt-1 z-10 w-full px-2">
-                                    <AnimatePresence>
-                                      {demo.isBrand && showBrandState ? (
-                                        <motion.div
-                                          key="brand-brief-vert"
-                                          initial={{ opacity: 0 }}
-                                          animate={{ opacity: 1 }}
-                                          exit={{ opacity: 0 }}
-                                          transition={{ duration: 0.35 }}
-                                          className="text-xs text-[#5C3E14] font-bold text-center justify-center flex items-center gap-1.5 w-full"
-                                        >
-                                          <span className="w-1.5 h-1.5 rounded-full bg-[#AA7C11] animate-pulse shrink-0"></span>
-                                          <span>{t("Nhạc Thương Hiệu")}</span>
-                                        </motion.div>
-                                      ) : (
-                                        <motion.div key="artist-name-vert" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }}>
-                                          <MarqueeText className={`${
-                                            demo.achievements && demo.achievements.length > 0
-                                              ? 'text-[#5C3E14] font-black'
-                                              : 'text-stone-500 font-semibold'
-                                          } text-xs text-center justify-center w-full`}>
-                                            {formatText(demo.singer || demo.author || data?.artistName || 'Nghệ sĩ', true)}
-                                          </MarqueeText>
-                                        </motion.div>
-                                      )}
-                                    </AnimatePresence>
-                                  </div>
+                                   {/* 3. Artist/Singer */}
+                                   <div className="mb-4 mt-1 z-10 w-full px-2 min-h-[20px] relative">
+                                     <AnimatePresence mode="wait">
+                                       {demo.isBrand && showBrandState ? (
+                                         <motion.div
+                                           key="brand-brief-vert"
+                                           initial={{ opacity: 0 }}
+                                           animate={{ opacity: 1 }}
+                                           exit={{ opacity: 0 }}
+                                           transition={{ duration: 0.35 }}
+                                           className="w-full text-xs text-[#5C3E14] font-bold text-center justify-center flex items-center gap-1.5"
+                                         >
+                                           <span className="w-1.5 h-1.5 rounded-full bg-[#AA7C11] animate-pulse shrink-0"></span>
+                                           <span>{t("Nhạc Thương Hiệu")}</span>
+                                         </motion.div>
+                                       ) : (
+                                         <motion.div key="artist-name-vert" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }} className="w-full flex items-center justify-center">
+                                           <MarqueeText className={`${
+                                             demo.achievements && demo.achievements.length > 0
+                                               ? 'text-[#5C3E14] font-black'
+                                               : 'text-stone-500 font-semibold'
+                                           } text-xs text-center justify-center w-full`}>
+                                             {formatText(demo.singer || demo.author || data?.artistName || 'Nghệ sĩ', true)}
+                                           </MarqueeText>
+                                         </motion.div>
+                                       )}
+                                     </AnimatePresence>
+                                   </div>
 
-                                  {/* 4. Bottom Achievement/Platform Bar (as seen in Image 1) with float/wobble */}
+                                   {/* 4. Bottom Achievement/Platform Bar (as seen in Image 1) with float/wobble */}
                                   {demo.achievements && demo.achievements.length > 0 && (
                                     <div className="w-full mt-auto pt-3 border-t border-[#D4AF37]/15 z-10">
                                       <motion.div 
@@ -9068,7 +9049,7 @@ function Home() {
                                     const titleLength = demo.title?.length || 0;
                                     const artistLength = demo.singer?.length || demo.author?.length || 0;
                                     const isTitleLong = titleLength > 28;
-const activeAchievements = hasAchievements && !isTitleLong;
+const activeAchievements = hasAchievements;
                                     
                                     return (
                                       <>
@@ -9081,7 +9062,7 @@ const activeAchievements = hasAchievements && !isTitleLong;
                                                 animate={{ opacity: 1, x: 0 }}
                                                 exit={{ opacity: 0, x: 10 }}
                                                 transition={{ duration: 0.4, ease: "easeOut" }}
-                                                className="flex flex-col justify-center w-full"
+                                                className="absolute inset-0 flex flex-col justify-center w-full"
                                               >
                                                 <h3 
                                                   className="font-bold text-[8px] xs:text-[9px] sm:text-lg truncate filter drop-shadow-[0_0_8px_rgba(255,255,255,0.05)] whitespace-normal max-w-full"
@@ -9101,7 +9082,7 @@ const activeAchievements = hasAchievements && !isTitleLong;
                                                 animate={{ opacity: 1, x: 0 }}
                                                 exit={{ opacity: 0, x: -10 }}
                                                 transition={{ duration: 0.4, ease: "easeOut" }}
-                                                className="flex flex-col justify-center w-full"
+                                                className="absolute inset-0 flex flex-col justify-center w-full"
                                               >
                                                 <h3 className={`font-bold transition-colors ${
   activeAchievements
@@ -12949,7 +12930,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                     return (match && match[2].length === 11) ? match[2] : null;
                   };
                   const videoId = getYoutubeId(vid);
-                  const isVietnameseDomain = window.location.hostname.endsWith('.vn') || window.location.hostname.includes('.vn.') || window.location.hostname.includes('chorus.vn');
+                  const isVietnameseDomain = window.location.hostname.endsWith('.vn') || window.location.hostname.includes('.vn.') || window.location.hostname.includes('chorus.vn') || window.location.hostname.startsWith('xn--');
 
                   if (isVietnameseDomain && videoId) {
                     const ytLink = `https://www.youtube.com/watch?v=${videoId}`;
