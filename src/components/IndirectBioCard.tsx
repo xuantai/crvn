@@ -144,7 +144,7 @@ function formatBriefText(text: string | null | undefined) {
   return lines.map((line, idx) => {
     const trimmed = line.trim();
     if (!trimmed) {
-      return <div key={idx} className="h-2" />;
+      return <div key={`l147-idx-${idx}`} className="h-2" />;
     }
     
     // Check if line matches a list with bullet (- or * or + or •)
@@ -154,7 +154,7 @@ function formatBriefText(text: string | null | undefined) {
       const content = bulletMatch[3];
       const indentClass = leadingSpaces.length > 0 ? "pl-8" : "pl-4";
       return (
-        <div key={idx} className={`flex items-start gap-2 ${indentClass} py-0.5 leading-relaxed text-left`}>
+        <div key={`l157-idx-${idx}`} className={`flex items-start gap-2 ${indentClass} py-0.5 leading-relaxed text-left`}>
           <span className="text-indigo-400 select-none shrink-0">•</span>
           <span className="text-left">{content}</span>
         </div>
@@ -171,7 +171,7 @@ function formatBriefText(text: string | null | undefined) {
       if (content) {
         const indentClass = leadingSpaces.length > 0 ? "pl-8" : "pl-4";
         return (
-          <div key={idx} className={`flex items-start gap-2 ${indentClass} py-0.5 leading-relaxed text-left`}>
+          <div key={`l174-idx-${idx}`} className={`flex items-start gap-2 ${indentClass} py-0.5 leading-relaxed text-left`}>
             <span className="text-indigo-400 font-bold font-mono select-none shrink-0">{num}{separator || '.'}</span>
             <span className="text-left">{content}</span>
           </div>
@@ -179,7 +179,7 @@ function formatBriefText(text: string | null | undefined) {
       }
     }
     
-    return <div key={idx} className="text-left whitespace-pre-wrap">{line}</div>;
+    return <div key={`l182-idx-${idx}`} className="text-left whitespace-pre-wrap">{line}</div>;
   });
 }
 
@@ -860,11 +860,11 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false, lang = 'v
             className="mt-3.5 w-full space-y-2"
           >
           {links.length > 0 ? (
-            links.map((link) => (
+            links.map((link, idx) => (
               <motion.a 
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                key={link.id}
+                key={`${link.id || ''}-${idx}`}
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -1041,7 +1041,7 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false, lang = 'v
                   {demo.brandReferenceVideos?.map((vid: string, idx: number) => {
                     const embedUrl = vid.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/");
                     return (
-                      <div key={idx} className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 border border-white/10">
+                      <div key={`l1044-idx-${idx}`} className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 border border-white/10">
                         <iframe src={embedUrl} className="w-full h-full" allowFullScreen></iframe>
                       </div>
                     );

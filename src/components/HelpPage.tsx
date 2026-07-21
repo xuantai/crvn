@@ -323,11 +323,11 @@ export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
           <div>
             <div className="text-[10px] font-black text-neutral-400 uppercase tracking-wider mb-2 px-3">Hướng dẫn</div>
             <div className="space-y-1">
-              {menuItems.filter(m => m.category === 'Hướng dẫn').map(item => {
+              {menuItems.filter(m => m.category === 'Hướng dẫn').map((item, idx) => {
                 const Icon = item.icon;
                 return (
                   <button
-                    key={item.id}
+                    key={`help-item-${item.id || ''}-${idx}`}
                     onClick={() => setActiveTab(item.id)}
                     className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === item.id ? 'bg-black text-white' : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'}`}
                   >
@@ -635,7 +635,7 @@ export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
               <div className="flex flex-col lg:flex-row gap-8">
                 <div className="flex-1 space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                   {TEMPLATES.map((t, idx) => (
-                    <div key={t.id} onClick={() => setSelectedTheme(t.id)} className={`p-4 bg-white border rounded-xl cursor-pointer transition-colors flex items-center justify-between group ${selectedTheme === t.id ? 'border-black ring-1 ring-black' : 'border-neutral-200 hover:border-black'}`}>
+                    <div key={`theme-${t.id || ''}-${idx}`} onClick={() => setSelectedTheme(t.id)} className={`p-4 bg-white border rounded-xl cursor-pointer transition-colors flex items-center justify-between group ${selectedTheme === t.id ? 'border-black ring-1 ring-black' : 'border-neutral-200 hover:border-black'}`}>
                       <div className="font-bold text-neutral-800">{t.name}</div>
                       <ChevronRight className="w-4 h-4 text-neutral-300 group-hover:text-black transition-colors" />
                     </div>

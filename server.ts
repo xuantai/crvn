@@ -1624,7 +1624,16 @@ async function startServer() {
           .map((p: any) => ({ ...p, password: !!p.password, hasSecretLink: !!p.secretLink, secretLink: undefined })) || [];
       publicDemos = injectCoverUrl(publicDemos, data);
       // We send back both for simplicity, but let's just make it simple
-      res.json({ ...data, demos: publicDemos, playlists: publicPlaylists });
+      res.json({ 
+        ...data, 
+        demos: publicDemos, 
+        playlists: publicPlaylists,
+        landingConfig: landingConfig,
+        roleId: currentArtist?.roleId || '',
+        isSpecial: !!currentArtist?.isSpecial || currentArtist?.username === 'acxuantai',
+        isMasterAdmin: currentArtist?.username === 'acxuantai',
+        roles: (landingConfig as any).roles || []
+      });
     } catch (err: any) {
       console.error("Error in /api/data:", err);
       res.status(500).json({ error: err.message || 'Internal Server Error' });
@@ -3876,7 +3885,29 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       }
     }
     await saveData(data);
-    res.json({ ...data, pendingNameChangeNotice: nameChangeNotice });
+    res.json({
+      ...data,
+      memberPassword: req.artist?.memberPassword || '',
+      isMasterAdmin: req.artist?.username === 'acxuantai',
+      isSpecial: !!req.artist?.isSpecial || req.artist?.username === 'acxuantai',
+      username: req.artist?.username,
+      extension: req.artist?.extension,
+      email: req.artist?.email || '',
+      pendingNameChange: req.artist?.pendingNameChange,
+      pendingUsernameChange: req.artist?.pendingUsernameChange,
+      pendingExtensionChange: req.artist?.pendingExtensionChange,
+      systemIp: landingConfig.systemIp || '',
+      landingConfig: landingConfig,
+      roleId: req.artist?.roleId || '',
+      maxSongs: req.artist?.maxSongs,
+      maxTemplates: req.artist?.maxTemplates,
+      vipExpiry: req.artist?.vipExpiry,
+      activatedAt: req.artist?.activatedAt || '',
+      roleUpgradedAt: req.artist?.roleUpgradedAt || '',
+      createdAt: req.artist?.createdAt || '',
+      roles: (landingConfig as any).roles || [],
+      pendingNameChangeNotice: nameChangeNotice
+    });
   });
 
   app.post('/api/admin/sync-covers-to-cloud', async (req, res) => {

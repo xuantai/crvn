@@ -2,7 +2,7 @@ import { createPortal } from "react-dom";
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
 import { ChorusLogo } from './components/ChorusLogo';
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { UserCircle, BookOpen, User, Settings, Play, Music, Lock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, List, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, RefreshCw, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, Palette, LayoutTemplate, Award, History, HelpCircle, Paintbrush } from 'lucide-react';
+import { UserCircle, BookOpen, User, Settings, Play, Music, Lock, Unlock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, List, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, RefreshCw, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, Palette, LayoutTemplate, Award, History, HelpCircle, Paintbrush } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { AppData, DemoSong, TemplateConfig, Achievement } from './types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -191,11 +191,21 @@ function getLuminance(hex: string): number {
   return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
 }
 
-function getBrandBadgeStyle(primaryColor: string) {
+function getBrandBadgeStyle(primaryColor: string, isGoldTheme?: boolean) {
+  if (isGoldTheme) {
+    return {
+      backgroundColor: 'rgba(26, 19, 3, 0.95)',
+      borderColor: 'rgba(212, 175, 55, 0.8)',
+      labelColor: '#FBBF24',
+      valueColor: '#FFFFFF',
+      boxShadow: '0 4px 14px rgba(212, 175, 55, 0.35)',
+      dotColor: '#D4AF37'
+    };
+  }
   const isColorLight = getLuminance(primaryColor) > 0.5;
   const backgroundColor = isColorLight ? 'rgba(15, 15, 15, 0.85)' : 'rgba(245, 245, 245, 0.9)';
   const borderColor = isColorLight ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)';
-  const labelColor = isColorLight ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)';
+  const labelColor = isColorLight ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.75)';
   
   return {
     backgroundColor: backgroundColor,
@@ -236,7 +246,7 @@ function MarqueeText({ children, className }: { children: React.ReactNode, class
           const cWidth = containerRef.current.clientWidth;
           const tWidth = textRef.current.scrollWidth;
           
-          if (tWidth > cWidth + 2) {
+          if (tWidth > cWidth) {
             setIsOverflowing(true);
             setScrollAmount(tWidth - cWidth);
           } else {
@@ -274,7 +284,7 @@ function MarqueeText({ children, className }: { children: React.ReactNode, class
   }, [children]);
 
   return (
-    <div ref={containerRef} className={`w-full overflow-hidden flex ${className || ''}`}>
+    <div ref={containerRef} className={`w-full overflow-hidden flex items-center ${className?.includes('justify-center') || className?.includes('text-center') ? 'justify-center' : 'justify-start'} ${className || ''}`}>
       {isOverflowing ? (
         <motion.div
           className="whitespace-nowrap inline-flex items-center shrink-0 w-max pr-8"
@@ -284,7 +294,7 @@ function MarqueeText({ children, className }: { children: React.ReactNode, class
           {children}
         </motion.div>
       ) : (
-        <div ref={textRef} className="whitespace-nowrap inline-flex items-center shrink-0 w-max max-w-full text-ellipsis overflow-hidden block">
+        <div ref={textRef} className={`whitespace-nowrap inline-flex items-center shrink-0 w-max max-w-full ${className?.includes('justify-center') || className?.includes('text-center') ? 'justify-center' : 'justify-start'}`}>
           {children}
         </div>
       )}
@@ -292,9 +302,15 @@ function MarqueeText({ children, className }: { children: React.ReactNode, class
   );
 }
 
-function formatText(text: string | null | undefined, disableLinks = false, isGold = true) {
+function formatText(text: string | null | undefined, disableLinks = false, isGold = true, bgMode: 'light' | 'red' | 'dark' | boolean = 'dark', prefix = '') {
   if (!text) return null;
   
+  const effectiveBgMode: 'light' | 'red' | 'dark' = typeof bgMode === 'string' 
+    ? bgMode 
+    : (bgMode === true ? 'light' : 'dark');
+
+  const textClean = String(text).replace(/[^a-zA-Z0-9]/g, '').slice(0, 10);
+
   // Split by parenthesis segments e.g. "Song Name ( OST Movie )" -> ["Song Name", "( OST Movie )"]
   const parts = text.split(/(\([^)]+\))/g);
   return (
@@ -305,12 +321,21 @@ function formatText(text: string | null | undefined, disableLinks = false, isGol
 
         if (trimmedPart.startsWith('(') && trimmedPart.endsWith(')')) {
           // Parenthesized block: smaller font, elegant styling to prevent awkward wrapping
+          let badgeStyle = '';
+          if (effectiveBgMode === 'light') {
+            badgeStyle = 'font-black text-amber-950 bg-amber-500/25 border border-amber-600/40 drop-shadow-sm';
+          } else if (effectiveBgMode === 'red') {
+            badgeStyle = 'font-black text-white bg-black/40 border border-white/50 drop-shadow-md';
+          } else if (isGold) {
+            badgeStyle = 'font-black text-amber-100 bg-amber-950/45 border border-amber-400/40 drop-shadow-sm';
+          } else {
+            badgeStyle = 'font-bold text-rose-200 bg-rose-500/25 border border-rose-400/35 drop-shadow-md';
+          }
+
           return (
             <span 
-              key={idx} 
-              className={`inline-block text-[10.5px] sm:text-[11.5px] mt-1 mb-0.5 leading-normal tracking-wide whitespace-normal break-words px-2 py-0.5 rounded-full ${
-                isGold ? 'font-black text-[#9A6B00] bg-[#D4AF37]/15 border border-[#D4AF37]/30 drop-shadow-sm' : 'font-bold text-rose-300 bg-rose-500/15 border border-rose-400/30 drop-shadow-md'
-              }`}
+              key={`ft-p-${prefix}-${textClean}-${idx}`} 
+              className={`inline-block text-[10.5px] sm:text-[11.5px] mt-1 mb-0.5 leading-normal tracking-wide whitespace-normal break-words px-2 py-0.5 rounded-full ${badgeStyle}`}
             >
               {trimmedPart}
             </span>
@@ -321,23 +346,23 @@ function formatText(text: string | null | undefined, disableLinks = false, isGol
         const cleanedPart = idx > 0 && !parts[idx-1].startsWith('(') ? part.trimStart() : part.trim();
         const lines = cleanedPart.split('\n');
         return (
-          <React.Fragment key={idx}>
+          <React.Fragment key={`ft-n-${prefix}-${textClean}-${idx}`}>
             {lines.map((line, lineIdx) => {
               const segments = line.split(/(\s*,\s*|\s*&\s*)/g);
               return (
-                <React.Fragment key={lineIdx}>
+                <React.Fragment key={`ft-l-${prefix}-${textClean}-${idx}-${lineIdx}`}>
                   {lineIdx > 0 && <br />}
                   {segments.map((segment, segIdx) => {
                     const isSeparator = /^(\s*,\s*|\s*&\s*)$/.test(segment);
                     if (isSeparator) {
-                      return <span key={`${lineIdx}-${segIdx}`}>{segment}</span>;
+                      return <span key={`ft-s-${prefix}-${textClean}-${idx}-${lineIdx}-${segIdx}`}>{segment}</span>;
                     }
                     
                     const isSecret = segment.toLowerCase().includes("secret");
                     if (isSecret) {
                       return (
                         <span 
-                          key={`${lineIdx}-${segIdx}`}
+                          key={`ft-sec-${prefix}-${textClean}-${idx}-${lineIdx}-${segIdx}`}
                           className="select-none filter blur-[4.5px] cursor-help inline-block bg-white/5 px-1.5 py-0.5 rounded border border-white/5 mx-0.5" 
                           title="Nghệ sĩ bí mật"
                         >
@@ -346,7 +371,7 @@ function formatText(text: string | null | undefined, disableLinks = false, isGol
                       );
                     }
                     
-                    return <span key={`${lineIdx}-${segIdx}`}>{segment}</span>;
+                    return <span key={`ft-text-${prefix}-${textClean}-${idx}-${lineIdx}-${segIdx}`}>{segment}</span>;
                   })}
                 </React.Fragment>
               );
@@ -360,25 +385,26 @@ function formatText(text: string | null | undefined, disableLinks = false, isGol
 
 function renderArtistNameWithLinks(text: string | null | undefined, systemArtists: any[]) {
   if (!text) return null;
+  const textClean = String(text).replace(/[^a-zA-Z0-9]/g, '').slice(0, 10);
   const lines = text.replace(/\s+\(/g, '\n(').split('\n');
   return (
     <>
       {lines.map((line, lineIdx) => {
         const segments = line.split(/(\s*,\s*|\s*&\s*)/g);
         return (
-          <React.Fragment key={lineIdx}>
+          <React.Fragment key={`ranwl-l-${textClean}-${lineIdx}`}>
             {lineIdx > 0 && <br />}
             {segments.map((segment, segIdx) => {
               const isSeparator = /^(\s*,\s*|\s*&\s*)$/.test(segment);
               if (isSeparator) {
-                return <span key={`${lineIdx}-${segIdx}`}>{segment}</span>;
+                return <span key={`ranwl-sep-${textClean}-${lineIdx}-${segIdx}`}>{segment}</span>;
               }
               
               const isSecret = segment.toLowerCase().includes("secret");
               if (isSecret) {
                 return (
                   <span 
-                    key={`${lineIdx}-${segIdx}`}
+                    key={`ranwl-sec-${textClean}-${lineIdx}-${segIdx}`}
                     className="select-none filter blur-[4.5px] cursor-help inline-block bg-white/5 px-1.5 py-0.5 rounded border border-white/5 mx-0.5" 
                     title="Nghệ sĩ bí mật"
                   >
@@ -415,7 +441,7 @@ function renderArtistNameWithLinks(text: string | null | undefined, systemArtist
                 if (isExternal) {
                   return (
                     <a 
-                      key={`${lineIdx}-${segIdx}`}
+                      key={`l418-art-l${lineIdx}-s${segIdx}`}
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -427,7 +453,7 @@ function renderArtistNameWithLinks(text: string | null | undefined, systemArtist
                 } else {
                   return (
                     <Link 
-                      key={`${lineIdx}-${segIdx}`}
+                      key={`l430-art-l${lineIdx}-s${segIdx}`}
                       to={href}
                       className="artist-link-cool cursor-pointer text-inherit inline-flex items-baseline"
                     >
@@ -437,7 +463,7 @@ function renderArtistNameWithLinks(text: string | null | undefined, systemArtist
                 }
               }
 
-              return <span key={`${lineIdx}-${segIdx}`}>{segment}</span>;
+              return <span key={`l440-art-l${lineIdx}-s${segIdx}`}>{segment}</span>;
             })}
           </React.Fragment>
         );
@@ -450,6 +476,23 @@ function renderArtistNameWithLinks(text: string | null | undefined, systemArtist
 
 const translations: Record<string, Record<string, string>> = {
   vi: {
+    "Bài Hát Ngẫu Nhiên": "Bài Hát Ngẫu Nhiên",
+    "Bố Cục Trang Chủ": "Bố Cục Trang Chủ",
+    "Kéo thả các phần bên dưới để sắp xếp thứ tự hiển thị và tích chọn để bật/tắt hiển thị ở trang chủ nghệ sĩ.": "Kéo thả các phần bên dưới để sắp xếp thứ tự hiển thị và tích chọn để bật/tắt hiển thị ở trang chủ nghệ sĩ.",
+    "Lưu Bố Cục": "Lưu Bố Cục",
+    "Tiêu Đề (Tên & Giới thiệu ngắn)": "Tiêu Đề (Tên & Giới thiệu ngắn)",
+    "Spotify Playlist / Album": "Spotify Playlist / Album",
+    "Kho Nhạc (Danh sách Đề mô / Ra Rồi)": "Kho Nhạc (Danh sách Đề mô / Ra Rồi)",
+    "MV Đã Phát Hành (YouTube Videos)": "MV Đã Phát Hành (YouTube Videos)",
+    "Phần hiển thị tên nghệ sĩ, dấu tích xanh và lời giới thiệu ngắn.": "Phần hiển thị tên nghệ sĩ, dấu tích xanh và lời giới thiệu ngắn.",
+    "Hiển thị thẻ bài hát ngẫu nhiên xoay tua linh hoạt.": "Hiển thị thẻ bài hát ngẫu nhiên xoay tua linh hoạt.",
+    "Khung phát nhạc nhúng trực tiếp từ Spotify (nếu được cấu hình).": "Khung phát nhạc nhúng trực tiếp từ Spotify (nếu được cấu hình).",
+    "Phần danh sách bài hát chính chia theo tab Đề mô / Ra Rồi (Bắt buộc hiển thị).": "Phần danh sách bài hát chính chia theo tab Đề mô / Ra Rồi (Bắt buộc hiển thị).",
+    "Phần hiển thị các MV Youtube đã phát hành và trình phát video popup.": "Phần hiển thị các MV Youtube đã phát hành và trình phát video popup.",
+    "Admin Login": "Đăng Nhập Admin",
+    "Username": "Tên đăng nhập",
+    "Password": "Mật khẩu",
+    "Đăng nhập": "Đăng nhập",
       "Về Tôi": "Về Tôi",
       "Tiểu Sử": "Tiểu Sử", "Tải Nhạc": "Tải Nhạc", "Đến Từ": "Đến Từ", "Sinh Sống": "Sinh Sống",
       "Quản lý Menu": "Quản lý Menu",
@@ -499,6 +542,23 @@ const translations: Record<string, Record<string, string>> = {
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn",
     "Tab 3 (Album/EP)": "Album/EP", dDesc: "Thiên đường âm nhạc của", btnSpot: "Nghe trên Spotify", lDemos: "Đề Mô", lReleased: "Ra Rồi", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Cần Mật Khẩu", pNow: "Nghe Ngay", nDemo: "Chưa có demo nào.", rMv: "MV Đã Phát Hành", nMv: "Chưa có MV nào.", lMore: "Hiển thị thêm", mList: "người nghe hàng tháng", load: "Đang tải trang...", back: "Trở về", adm: "AdminCP", edit: "Chỉnh sửa", pPrompt: "Cần mật khẩu", pPrompt2: "Nhập mật khẩu để nghe demo này", unlock: "Mở khóa", wPass: "Sai mật khẩu", lyric: "Lời bài hát", nLyric: "Chưa cập nhật lời bài hát", sAuth: "Sáng tác:", lang: "Tiếng Việt", lDemosMobile: "Đề mô", lReleasedMobile: "Ra Rồi", searchSong: "Tìm kiếm bài hát...", noSongs: "Chưa có bài hát nào", noSongsDesc: "Danh sách đang được cập nhật, bạn vui lòng quay lại sau nhé!", closeSearch: "Đóng tìm kiếm", searchTitle: "Tìm kiếm bài hát", noDemoFound: "Không tìm thấy demo", mVault: "Kho Nhạc", "Hiển thị": "Hiển thị", "bài / trang": "bài / trang", "Tổng": "Tổng", "Trước": "Trước", "Sau": "Sau", pPartner: "Đối tác:", pAutoNext: "Sẽ tự động chuyển bài nếu không nhập mật khẩu", vRef: "Video Tham Khảo", nArtist: "Nghệ sĩ", "Bấm để phát trên YouTube": "Bấm để phát trên YouTube", "Đóng": "Đóng", "Bấm để phát trên YouTube ở tab mới": "Bấm để phát trên YouTube ở tab mới" },
   en: {
+    "Bài Hát Ngẫu Nhiên": "Random Song",
+    "Bố Cục Trang Chủ": "Homepage Layout",
+    "Kéo thả các phần bên dưới để sắp xếp thứ tự hiển thị và tích chọn để bật/tắt hiển thị ở trang chủ nghệ sĩ.": "Drag and drop the sections below to reorder, and check/uncheck to show or hide them on your artist homepage.",
+    "Lưu Bố Cục": "Save Layout",
+    "Tiêu Đề (Tên & Giới thiệu ngắn)": "Title (Name & Bio)",
+    "Spotify Playlist / Album": "Spotify Playlist / Album",
+    "Kho Nhạc (Danh sách Đề mô / Ra Rồi)": "Music Vault (Demo / Released)",
+    "MV Đã Phát Hành (YouTube Videos)": "Released MVs (YouTube Videos)",
+    "Phần hiển thị tên nghệ sĩ, dấu tích xanh và lời giới thiệu ngắn.": "Displays artist name, verified checkmark, and short intro bio.",
+    "Hiển thị thẻ bài hát ngẫu nhiên xoay tua linh hoạt.": "Displays a dynamic rotating random song highlight card.",
+    "Khung phát nhạc nhúng trực tiếp từ Spotify (nếu được cấu hình).": "Embedded Spotify music player frame (if configured).",
+    "Phần danh sách bài hát chính chia theo tab Đề mô / Ra Rồi (Bắt buộc hiển thị).": "Primary song catalog organized into Demo and Released tabs (Required).",
+    "Phần hiển thị các MV Youtube đã phát hành và trình phát video popup.": "Displays released YouTube MVs with a popup video player.",
+    "Admin Login": "Admin Login",
+    "Username": "Username",
+    "Password": "Password",
+    "Đăng nhập": "Log In",
     "Kho Nhạc": "Music Vault",
 
     "Quản lý Menu": "Manage Menu",
@@ -534,6 +594,23 @@ const translations: Record<string, Record<string, string>> = {
     "\u1ea8n kh\u1ecfi danh s\u00e1ch ngh\u1ec7 s\u0129 tr\u00ean trang ch\u1ee7 Chorus.vn": "Hide from artist list on Chorus.vn homepage",
     "Tab 3 (Album/EP)": "Album/EP", dDesc: "Music paradise of", btnSpot: "Listen on Spotify", lDemos: "Demo", lReleased: "Release", lDemoMark: "DEMO", lReleasedMark: "RELEASED", pReq: "Password", pNow: "Play Now", nDemo: "No demos yet.", rMv: "Released Music Videos", nMv: "No MVs yet.", lMore: "Load more", mList: "monthly listeners", load: "Loading...", back: "Back", adm: "Admin", edit: "Edit", pPrompt: "Password required", pPrompt2: "Enter password to listen to this demo", unlock: "Unlock", wPass: "Wrong password", lyric: "Lyrics", nLyric: "No lyrics yet", sAuth: "Composer:", lang: "English", searchSong: "Search songs...", noSongs: "No songs available", noSongsDesc: "The list is being updated, please come back later!", closeSearch: "Close search", searchTitle: "Search songs", noDemoFound: "Demo not found", mVault: "Music Vault", "Hiển thị": "Show", "bài / trang": "songs / page", "Tổng": "Total", "Trước": "Prev", "Sau": "Next", pPartner: "Partner:", pAutoNext: "Will auto skip if password not entered", vRef: "Reference Video", nArtist: "Artist", "Bấm để phát trên YouTube": "Click to Play on YouTube", "Đóng": "Close", "Bấm để phát trên YouTube ở tab mới": "Click to play on YouTube in a new tab" },
   ko: {
+    "Bài Hát Ngẫu Nhiên": "무작위 곡",
+    "Bố Cục Trang Chủ": "홈페이지 레이아웃",
+    "Kéo thả các phần bên dưới để sắp xếp thứ tự hiển thị và tích chọn để bật/tắt hiển thị ở trang chủ nghệ sĩ.": "아래 항목을 드래그 앤 드롭하여 순서를 변경하고, 체크박스로 아티스트 홈 표시 여부를 설정하세요.",
+    "Lưu Bố Cục": "레이아웃 저장",
+    "Tiêu Đề (Tên & Giới thiệu ngắn)": "제목 (이름 및 약력)",
+    "Spotify Playlist / Album": "Spotify 플레이리스트 / 앨범",
+    "Kho Nhạc (Danh sách Đề mô / Ra Rồi)": "음악 보관소 (데모 / 발매곡)",
+    "MV Đã Phát Hành (YouTube Videos)": "발매 MV (유튜브 비디오)",
+    "Phần hiển thị tên nghệ sĩ, dấu tích xanh và lời giới thiệu ngắn.": "아티스트 이름, 인증 마크 및 짧은 소개가 표시됩니다.",
+    "Hiển thị thẻ bài hát ngẫu nhiên xoay tua linh hoạt.": "다이내믹하게 순환하는 무작위 곡 카드를 표시합니다.",
+    "Khung phát nhạc nhúng trực tiếp từ Spotify (nếu được cấu hình).": "임베디드 Spotify 음악 플레이어 (설정된 경우).",
+    "Phần danh sách bài hát chính chia theo tab Đề mô / Ra Rồi (Bắt buộc hiển thị).": "데모 및 발매 탭으로 구성된 기본 곡 목록 (필수 표시).",
+    "Phần hiển thị các MV Youtube đã phát hành và trình phát video popup.": "발매된 YouTube MV 및 팝업 비디오 플레이어를 표시합니다.",
+    "Admin Login": "관리자 로그인",
+    "Username": "사용자 이름",
+    "Password": "비밀번호",
+    "Đăng nhập": "로그인",
     "Kho Nhạc": "음악 보관함",
     "Quản lý Menu": "메뉴 관리",
     "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "드래그 앤 드롭으로 순서를 정렬하세요. 첫 번째 탭이 기본 페이지가 됩니다. 최대 3개의 사용자 지정 탭을 지원합니다.",
@@ -611,6 +688,23 @@ const translations: Record<string, Record<string, string>> = {
     "Bấm để phát trên YouTube ở tab mới": "새 탭에서 YouTube로 재생하려면 클릭"
   },
   ja: {
+    "Bài Hát Ngẫu Nhiên": "ランダム楽曲",
+    "Bố Cục Trang Chủ": "ホームページレイアウト",
+    "Kéo thả các phần bên dưới để sắp xếp thứ tự hiển thị và tích chọn để bật/tắt hiển thị ở trang chủ nghệ sĩ.": "以下のセクションをドラッグ＆ドロップして並べ替え、チェックボックスでアーティストページの表示/非表示を切り替えます。",
+    "Lưu Bố Cục": "レイアウトを保存",
+    "Tiêu Đề (Tên & Giới thiệu ngắn)": "タイトル (名前＆プロフ)",
+    "Spotify Playlist / Album": "Spotify プレイリスト / アルバム",
+    "Kho Nhạc (Danh sách Đề mô / Ra Rồi)": "ミュージックボルト (デモ / リリース)",
+    "MV Đã Phát Hành (YouTube Videos)": "リリース済みMV (YouTube)",
+    "Phần hiển thị tên nghệ sĩ, dấu tích xanh và lời giới thiệu ngắn.": "アーティスト名、認証バッジ、簡単な紹介を表示します。",
+    "Hiển thị thẻ bài hát ngẫu nhiên xoay tua linh hoạt.": "回転表示するランダム楽曲カードを表示します。",
+    "Khung phát nhạc nhúng trực tiếp từ Spotify (nếu được cấu hình).": "埋め込み Spotify プレイヤー (設定されている場合)。",
+    "Phần danh sách bài hát chính chia theo tab Đề mô / Ra Rồi (Bắt buộc hiển thị).": "デモとリリース済みのタブに分かれたメイン楽曲リスト (必須表示)。",
+    "Phần hiển thị các MV Youtube đã phát hành và trình phát video popup.": "リリース済み YouTube MV とポップアップ プレイヤーを表示します。",
+    "Admin Login": "管理者ログイン",
+    "Username": "ユーザー名",
+    "Password": "パスワード",
+    "Đăng nhập": "ログイン",
     "Kho Nhạc": "ミュージックボルト",
     "Quản lý Menu": "メニュー管理",
     "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "ドラッグ＆ドロップで優先順位を並べ替えます。最初のタブがデフォルトの表示ページになります。最大3つのカスタムタブ作成をサポートします。",
@@ -688,6 +782,23 @@ const translations: Record<string, Record<string, string>> = {
     "Bấm để phát trên YouTube ở tab mới": "新しいタブでYouTubeで再生"
   },
   th: {
+    "Bài Hát Ngẫu Nhiên": "เพลงสุ่ม",
+    "Bố Cục Trang Chủ": "เลย์เอาต์หน้าแรก",
+    "Kéo thả các phần bên dưới để sắp xếp thứ tự hiển thị và tích chọn để bật/tắt hiển thị ở trang chủ nghệ sĩ.": "ลากและวางส่วนด้านล่างเพื่อจัดลำดับการแสดงผล และเลือกเพื่อเปิด/ปิดการแสดงผลในหน้าแรกของศิลปิน",
+    "Lưu Bố Cục": "บันทึกเลย์เอาต์",
+    "Tiêu Đề (Tên & Giới thiệu ngắn)": "หัวข้อ (ชื่อและประวัติสั้น)",
+    "Spotify Playlist / Album": "Spotify เพลย์ลิสต์ / อัลบั้ม",
+    "Kho Nhạc (Danh sách Đề mô / Ra Rồi)": "คลังเพลง (เดโม / ปล่อยแล้ว)",
+    "MV Đã Phát Hành (YouTube Videos)": "เอ็มวีที่ปล่อยแล้ว (YouTube)",
+    "Phần hiển thị tên nghệ sĩ, dấu tích xanh và lời giới thiệu ngắn.": "ส่วนแสดงชื่อศิลปิน เครื่องหมายถูกสีฟ้า และคำแนะนำตัวสั้นๆ",
+    "Hiển thị thẻ bài hát ngẫu nhiên xoay tua linh hoạt.": "แสดงการ์ดเพลงสุ่มแบบหมุนเวียน",
+    "Khung phát nhạc nhúng trực tiếp từ Spotify (nếu được cấu hình).": "เล่นเพลงจาก Spotify แบบฝัง (หากมีการกำหนดค่า)",
+    "Phần danh sách bài hát chính chia theo tab Đề mô / Ra Rồi (Bắt buộc hiển thị).": "รายการเพลงหลักแบ่งตามแท็บ เดโม / ปล่อยแล้ว (จำเป็นต้องแสดง)",
+    "Phần hiển thị các MV Youtube đã phát hành và trình phát video popup.": "แสดงมิวสิควิดีโอ YouTube ที่ปล่อยแล้วพร้อมตัวเล่นวิดีโอแบบป๊อปอัป",
+    "Admin Login": "เข้าสู่ระบบผู้ดูแลระบบ",
+    "Username": "ชื่อผู้ใช้",
+    "Password": "รหัสผ่าน",
+    "Đăng nhập": "เข้าสู่ระบบ",
     "Kho Nhạc": "คลังเพลง",
     "Quản lý Menu": "การจัดการเมนู",
     "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "ลากและวางเพื่อจัดลำดับความสำคัญ แท็บแรกจะเป็นหน้าแสดงเริ่มต้น รองรับการสร้างแท็บแบบกำหนดเองสูงสุด 3 แท็บ",
@@ -765,6 +876,23 @@ const translations: Record<string, Record<string, string>> = {
     "Bấm để phát trên YouTube ở tab mới": "คลิกเพื่อเล่นบน YouTube ในแท็บใหม่"
   },
   zh: {
+    "Bài Hát Ngẫu Nhiên": "随机歌曲",
+    "Bố Cục Trang Chủ": "主页布局",
+    "Kéo thả các phần bên dưới để sắp xếp thứ tự hiển thị và tích chọn để bật/tắt hiển thị ở trang chủ nghệ sĩ.": "拖放下方模块以调整显示顺序，勾选或取消勾选以在艺术家主页上显示或隐藏。",
+    "Lưu Bố Cục": "保存布局",
+    "Tiêu Đề (Tên & Giới thiệu ngắn)": "标题（姓名与简介）",
+    "Spotify Playlist / Album": "Spotify 播放列表 / 专辑",
+    "Kho Nhạc (Danh sách Đề mô / Ra Rồi)": "音乐库（Demo / 已发行）",
+    "MV Đã Phát Hành (YouTube Videos)": "已发行 MV（YouTube 视频）",
+    "Phần hiển thị tên nghệ sĩ, dấu tích xanh và lời giới thiệu ngắn.": "显示艺术家姓名、认证标识和简短介绍。",
+    "Hiển thị thẻ bài hát ngẫu nhiên xoay tua linh hoạt.": "动态轮播显示随机歌曲卡片。",
+    "Khung phát nhạc nhúng trực tiếp từ Spotify (nếu được cấu hình).": "嵌入式 Spotify 播放器（如果已配置）。",
+    "Phần danh sách bài hát chính chia theo tab Đề mô / Ra Rồi (Bắt buộc hiển thị).": "按 Demo / 已发行 标签分类的主歌曲列表（必须显示）。",
+    "Phần hiển thị các MV Youtube đã phát hành và trình phát video popup.": "显示已发行的 YouTube MV 和弹窗视频播放器。",
+    "Admin Login": "管理员登录",
+    "Username": "用户名",
+    "Password": "密码",
+    "Đăng nhập": "登录",
     "Kho Nhạc": "音乐库",
     "Quản lý Menu": "菜单管理",
     "Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.": "拖放以重新排序。第一个选项卡将作为默认页面。最多支持3个自定义选项卡。",
@@ -1102,6 +1230,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Người yêu cầu:": "Người yêu cầu:",
     "Người đăng tải": "Người đăng tải",
     "Nhân bản": "Nhân bản",
+    "Thương hiệu": "Thương hiệu",
     "Nhạc Thương Hiệu": "Nhạc Thương Hiệu",
     "Nhạc nền": "Nhạc nền",
     "Nhạc sĩ": "Nhạc sĩ",
@@ -1345,6 +1474,41 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Thêm đã chọn": "Thêm đã chọn",
     "Có lỗi xảy ra khi tạo playlist.": "Có lỗi xảy ra khi tạo playlist.",
     "Có lỗi xảy ra khi kết nối máy chủ.": "Có lỗi xảy ra khi kết nối máy chủ.",
+    "Hiển thị demo trong bài hát ngẫu nhiên ?": "Hiển thị demo trong bài hát ngẫu nhiên ?",
+    "Mặc định: Bật - Bao gồm cả bài Đề mô": "Mặc định: Bật - Bao gồm cả bài Đề mô",
+    "Tắt - Chỉ hiển thị bài đã Ra rồi": "Tắt - Chỉ hiển thị bài đã Ra rồi",
+    "Gói Thành Viên": "Gói Thành Viên",
+    "Lịch Sử Kích Hoạt": "Lịch Sử Kích Hoạt",
+    "Bảo Mật & Email": "Bảo Mật & Email",
+    "Thành viên": "Thành viên",
+    "So Sánh Gói Thành Viên": "So Sánh Gói Thành Viên",
+    "Xem và so sánh quyền lợi giữa các gói thành viên của bạn.": "Xem và so sánh quyền lợi giữa các gói thành viên của bạn.",
+    "Lịch Sử Kích Hoạt & Nâng Cấp": "Lịch Sử Kích Hoạt & Nâng Cấp",
+    "Giao Diện Bảng Điều Khiển": "Giao Diện Bảng Điều Khiển",
+    "Tùy chọn giao diện hiển thị cho trang quản trị của bạn.": "Tùy chọn giao diện hiển thị cho trang quản trị của bạn.",
+    "Standard Theme": "Standard Theme",
+    "Luxury Theme": "Luxury Theme",
+    "Giao diện kính mờ tinh tế kết hợp tông đen xám sang trọng và các hiệu ứng phát sáng nhẹ nhàng.": "Giao diện kính mờ tinh tế kết hợp tông đen xám sang trọng và các hiệu ứng phát sáng nhẹ nhàng.",
+    "Giao diện Hoàng Gia sang trọng ngập tràn ánh vàng hoàng kim rực rỡ, mang lại sự may mắn và đẳng cấp.": "Giao diện Hoàng Gia sang trọng ngập tràn ánh vàng hoàng kim rực rỡ, mang lại sự may mắn và đẳng cấp.",
+    "đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.": "đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.",
+    "Mã quà tặng": "Voucher",
+    "Sử dụng mã Voucher": "Sử dụng mã Voucher",
+    "Nhập mã voucher để nhận thêm đặc quyền (tăng giới hạn đăng bài, giao diện VIP, ...).": "Nhập mã voucher để nhận thêm đặc quyền (tăng giới hạn đăng bài, giao diện VIP, ...).",
+    "Mã Voucher": "Mã Voucher",
+    "Nhập mã...": "Nhập mã...",
+    "Áp dụng Voucher": "Áp dụng Voucher",
+    "Áp dụng mã thành công!": "Áp dụng mã thành công!",
+    "Chọn giao diện": "Chọn giao diện",
+    "Đổi giao diện nhanh": "Đổi giao diện nhanh",
+    "Quản trị": "Quản trị",
+    "Đến kho nhạc": "Đến kho nhạc",
+    "Giao Diện": "Giao diện",
+    "Giao diện": "Giao diện",
+    "Bấm để áp dụng": "Bấm để áp dụng",
+    "Đang áp dụng": "Đang áp dụng",
+    "Mật khẩu chung và Bảo mật Demo": "Mật khẩu chung và Bảo mật Demo",
+    "Mật khẩu chung": "Mật khẩu chung",
+    "Voucher": "Voucher",
   },
   en: {
     "Liên kết các kênh mạng xã hội chính thức của bạn": "Link your official social media channels",
@@ -1608,6 +1772,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Người yêu cầu:": "Requester:",
     "Người đăng tải": "Uploader",
     "Nhân bản": "Duplicate",
+    "Thương hiệu": "Brand",
     "Nhạc Thương Hiệu": "Brand Music",
     "Nhạc nền": "Background Image",
     "Nhạc sĩ": "Musician",
@@ -1850,6 +2015,41 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Thêm đã chọn": "Add selected",
     "Có lỗi xảy ra khi tạo playlist.": "An error occurred while creating the playlist.",
     "Có lỗi xảy ra khi kết nối máy chủ.": "An error occurred while connecting to the server.",
+    "Hiển thị demo trong bài hát ngẫu nhiên ?": "Include demos in random songs?",
+    "Mặc định: Bật - Bao gồm cả bài Đề mô": "Default: On - Includes Demo tracks",
+    "Tắt - Chỉ hiển thị bài đã Ra rồi": "Off - Released songs only",
+    "Gói Thành Viên": "Membership Plan",
+    "Lịch Sử Kích Hoạt": "Activation History",
+    "Bảo Mật & Email": "Security & Email",
+    "Thành viên": "Member",
+    "So Sánh Gói Thành Viên": "Compare Membership Plans",
+    "Xem và so sánh quyền lợi giữa các gói thành viên của bạn.": "View and compare benefits between your membership plans.",
+    "Lịch Sử Kích Hoạt & Nâng Cấp": "Activation & Upgrade History",
+    "Giao Diện Bảng Điều Khiển": "Dashboard Theme",
+    "Tùy chọn giao diện hiển thị cho trang quản trị của bạn.": "Appearance options for your admin panel.",
+    "Standard Theme": "Standard Theme",
+    "Luxury Theme": "Luxury Theme",
+    "Giao diện kính mờ tinh tế kết hợp tông đen xám sang trọng và các hiệu ứng phát sáng nhẹ nhàng.": "Refined frosted glass theme combining sleek dark tones with subtle glow effects.",
+    "Giao diện Hoàng Gia sang trọng ngập tràn ánh vàng hoàng kim rực rỡ, mang lại sự may mắn và đẳng cấp.": "Royal gold luxury theme filled with vibrant golden radiance for elegance and prestige.",
+    "đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.": "This theme is exclusive to VIP members. Please upgrade your plan to experience it.",
+    "Mã quà tặng": "Voucher",
+    "Sử dụng mã Voucher": "Redeem Voucher Code",
+    "Nhập mã voucher để nhận thêm đặc quyền (tăng giới hạn đăng bài, giao diện VIP, ...).": "Enter a voucher code to unlock additional perks (increased post limits, VIP theme, etc.).",
+    "Mã Voucher": "Voucher Code",
+    "Nhập mã...": "Enter code...",
+    "Áp dụng Voucher": "Apply Voucher",
+    "Áp dụng mã thành công!": "Voucher applied successfully!",
+    "Chọn giao diện": "Select theme",
+    "Đổi giao diện nhanh": "Quick theme switch",
+    "Quản trị": "Admin Panel",
+    "Đến kho nhạc": "Go to Music Vault",
+    "Giao Diện": "Theme",
+    "Giao diện": "Theme",
+    "Bấm để áp dụng": "Click to apply",
+    "Đang áp dụng": "Currently active",
+    "Mật khẩu chung và Bảo mật Demo": "General Password & Demo Security",
+    "Mật khẩu chung": "Shared Password",
+    "Voucher": "Voucher",
   },
   ko: {
     "Liên kết các kênh mạng xã hội chính thức của bạn": "공식 소셜 미디어 채널 링크",
@@ -2113,6 +2313,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Người yêu cầu:": "요청자:",
     "Người đăng tải": "업로더",
     "Nhân bản": "복제",
+    "Thương hiệu": "브랜드",
     "Nhạc Thương Hiệu": "브랜드 음악",
     "Nhạc nền": "배경 이미지",
     "Nhạc sĩ": "작곡가",
@@ -2355,6 +2556,41 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Thêm đã chọn": "선택한 항목 추가",
     "Có lỗi xảy ra khi tạo playlist.": "재생목록을 만드는 동안 오류가 발생했습니다.",
     "Có lỗi xảy ra khi kết nối máy chủ.": "서버에 연결하는 동안 오류가 발생했습니다.",
+    "Hiển thị demo trong bài hát ngẫu nhiên ?": "랜덤 곡에 데모곡 포함?",
+    "Mặc định: Bật - Bao gồm cả bài Đề mô": "기본값: 켜짐 - 데모 곡 포함",
+    "Tắt - Chỉ hiển thị bài đã Ra rồi": "꺼짐 - 정식 발매곡만 표시",
+    "Gói Thành Viên": "멤버십 플랜",
+    "Lịch Sử Kích Hoạt": "활성화 내역",
+    "Bảo Mật & Email": "보안 및 이메일",
+    "Thành viên": "회원",
+    "So Sánh Gói Thành Viên": "멤버십 플랜 비교",
+    "Xem và so sánh quyền lợi giữa các gói thành viên của bạn.": "멤버십 플랜 간의 혜택을 비교해 보세요.",
+    "Lịch Sử Kích Hoạt & Nâng Cấp": "활성화 및 업그레이드 내역",
+    "Giao Diện Bảng Điều Khiển": "대시보드 테마",
+    "Tùy chọn giao diện hiển thị cho trang quản trị của bạn.": "관리자 페이지의 모양을 설정합니다.",
+    "Standard Theme": "스탠다드 테마",
+    "Luxury Theme": "럭셔리 테마",
+    "Giao diện kính mờ tinh tế kết hợp tông đen xám sang trọng và các hiệu ứng phát sáng nhẹ nhàng.": "세련된 무광 글래스 테마와 은은한 발광 효과의 조화.",
+    "Giao diện Hoàng Gia sang trọng ngập tràn ánh vàng hoàng kim rực rỡ, mang lại sự may mắn và đẳng cấp.": "화려한 황금빛이 가득한 고급스러운 로열 테마.",
+    "đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.": "이 테마는 VIP 회원전용입니다. 요금제를 업그레이드하여 이용해 보세요.",
+    "Mã quà tặng": "바우처",
+    "Sử dụng mã Voucher": "바우처 코드 사용",
+    "Nhập mã voucher để nhận thêm đặc quyền (tăng giới hạn đăng bài, giao diện VIP, ...).": "바우처 코드를 입력하여 게시물 한도 증가, VIP 테마 등 더 많은 혜택을 받으세요.",
+    "Mã Voucher": "바우처 코드",
+    "Nhập mã...": "코드 입력...",
+    "Áp dụng Voucher": "바우처 적용",
+    "Áp dụng mã thành công!": "바우처가 성공적으로 적용되었습니다!",
+    "Chọn giao diện": "테마 선택",
+    "Đổi giao diện nhanh": "빠른 테마 전환",
+    "Quản trị": "관리자",
+    "Đến kho nhạc": "보관함으로 이동",
+    "Giao Diện": "테마",
+    "Giao diện": "테마",
+    "Bấm để áp dụng": "클릭하여 적용",
+    "Đang áp dụng": "적용 중",
+    "Mật khẩu chung và Bảo mật Demo": "공용 비밀번호 및 데모 보안",
+    "Mật khẩu chung": "공용 비밀번호",
+    "Voucher": "바우처",
   },
   ja: {
     "Liên kết các kênh mạng xã hội chính thức của bạn": "公式ソーシャルメディアチャンネルをリンクします",
@@ -2618,6 +2854,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Người yêu cầu:": "リクエスト元:",
     "Người đăng tải": "アップローダー",
     "Nhân bản": "複製",
+    "Thương hiệu": "ブランド",
     "Nhạc Thương Hiệu": "ブランド音楽",
     "Nhạc nền": "背景画像",
     "Nhạc sĩ": "ミュージシャン",
@@ -2860,6 +3097,41 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Thêm đã chọn": "選択した曲を追加",
     "Có lỗi xảy ra khi tạo playlist.": "プレイリストの作成中にエラーが発生しました。",
     "Có lỗi xảy ra khi kết nối máy chủ.": "サーバーへの接続中にエラーが発生しました。",
+    "Hiển thị demo trong bài hát ngẫu nhiên ?": "ランダム再生にデモ曲を含める？",
+    "Mặc định: Bật - Bao gồm cả bài Đề mô": "デフォルト: ON - デモ曲を含む",
+    "Tắt - Chỉ hiển thị bài đã Ra rồi": "OFF - リリース曲のみ表示",
+    "Gói Thành Viên": "メンバーシッププラン",
+    "Lịch Sử Kích Hoạt": "アクティベーション履歴",
+    "Bảo Mật & Email": "セキュリティ＆メール",
+    "Thành viên": "メンバー",
+    "So Sánh Gói Thành Viên": "メンバーシッププランの比較",
+    "Xem và so sánh quyền lợi giữa các gói thành viên của bạn.": "メンバーシッププランの特典を比較・確認します。",
+    "Lịch Sử Kích Hoạt & Nâng Cấp": "アクティベーション＆昇格履歴",
+    "Giao Diện Bảng Điều Khiển": "ダッシュボードテーマ",
+    "Tùy chọn giao diện hiển thị cho trang quản trị của bạn.": "管理ページの表示テーマを設定します。",
+    "Standard Theme": "スタンダードテーマ",
+    "Luxury Theme": "ラグジュアリーテーマ",
+    "Giao diện kính mờ tinh tế kết hợp tông đen xám sang trọng và các hiệu ứng phát sáng nhẹ nhàng.": "洗練されたすりガラス風デザインとエレガントなダークトーン。",
+    "Giao diện Hoàng Gia sang trọng ngập tràn ánh vàng hoàng kim rực rỡ, mang lại sự may mắn và đẳng cấp.": "豪華なゴールドに包まれたロイヤルラグジュアリーテーマ。",
+    "đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.": "このテーマはVIP会員専用です。アップグレードして体験してください。",
+    "Mã quà tặng": "バウチャー",
+    "Sử dụng mã Voucher": "ギフトコードを使用",
+    "Nhập mã voucher để nhận thêm đặc quyền (tăng giới hạn đăng bài, giao diện VIP, ...).": "ギフトコードを入力して追加特典（投稿上限増加、VIPテーマなど）を獲得しましょう。",
+    "Mã Voucher": "ギフトコード",
+    "Nhập mã...": "コードを入力...",
+    "Áp dụng Voucher": "コードを適用",
+    "Áp dụng mã thành công!": "コードが正常に適用されました！",
+    "Chọn giao diện": "テーマを選択",
+    "Đổi giao diện nhanh": "クイックテーマ切り替え",
+    "Quản trị": "管理者",
+    "Đến kho nhạc": "楽曲ライブラリへ",
+    "Giao Diện": "テーマ",
+    "Giao diện": "テーマ",
+    "Bấm để áp dụng": "クリックして適用",
+    "Đang áp dụng": "適用中",
+    "Mật khẩu chung và Bảo mật Demo": "共通パスワード & デモセキュリティ",
+    "Mật khẩu chung": "共通パスワード",
+    "Voucher": "バウチャー",
   },
   th: {
     "Liên kết các kênh mạng xã hội chính thức của bạn": "เชื่อมโยงช่องโซเชียลมีเดียอย่างเป็นทางการของคุณ",
@@ -3123,6 +3395,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Người yêu cầu:": "ผู้ร้องขอ:",
     "Người đăng tải": "ผู้อัปโหลด",
     "Nhân bản": "ทำซ้ำ",
+    "Thương hiệu": "แบรนด์",
     "Nhạc Thương Hiệu": "เพลงแบรนด์",
     "Nhạc nền": "รูปพื้นหลัง",
     "Nhạc sĩ": "นักดนตรี",
@@ -3365,7 +3638,42 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Thêm đã chọn": "เพิ่มที่เลือก",
     "Có lỗi xảy ra khi tạo playlist.": "เกิดข้อผิดพลาดขณะสร้างเพลย์ลิสต์",
     "Có lỗi xảy ra khi kết nối máy chủ.": "เกิดข้อผิดพลาดขณะเชื่อมต่อกับเซิร์वर",
-    "Tất cả bài hát đều đã ở trong playlist nàyแล้ว.": "เพลงทั้งหมดอยู่ในเพลย์ลิสต์นี้แล้ว"
+    "Tất cả bài hát đều đã ở trong playlist nàyแล้ว.": "เพลงทั้งหมดอยู่ในเพลย์ลิสต์นี้แล้ว",
+    "Hiển thị demo trong bài hát ngẫu nhiên ?": "รวมเพลงเดโมในเพลงสุ่ม?",
+    "Mặc định: Bật - Bao gồm cả bài Đề mô": "ค่าเริ่มต้น: เปิด - รวมเพลงเดโม",
+    "Tắt - Chỉ hiển thị bài đã Ra rồi": "ปิด - แสดงเฉพาะเพลงที่ปล่อยแล้ว",
+    "Gói Thành Viên": "แพ็กเกจสมาชิก",
+    "Lịch Sử Kích Hoạt": "ประวัติการเปิดใช้งาน",
+    "Bảo Mật & Email": "ความปลอดภัยและอีเมล",
+    "Thành viên": "สมาชิก",
+    "So Sánh Gói Thành Viên": "เปรียบเทียบแพ็กเกจสมาชิก",
+    "Xem và so sánh quyền lợi giữa các gói thành viên của bạn.": "ดูและเปรียบเทียบสิทธิประโยชน์ระหว่างแพ็กเกจสมาชิกของคุณ",
+    "Lịch Sử Kích Hoạt & Nâng Cấp": "ประวัติการเปิดใช้งานและอัปเกรด",
+    "Giao Diện Bảng Điều Khiển": "ธีมแดชบอร์ด",
+    "Tùy chọn giao diện hiển thị cho trang quản trị của bạn.": "ตัวเลือกธีมสำหรับหน้าผู้ดูแลระบบของคุณ",
+    "Standard Theme": "ธีมมาตรฐาน",
+    "Luxury Theme": "ธีมหรูหรา",
+    "Giao diện kính mờ tinh tế kết hợp tông đen xám sang trọng và các hiệu ứng phát sáng nhẹ nhàng.": "ธีมกระจกฝ้าหรูหราพร้อมโทนสีเข้มและเอฟเฟกต์เรืองแสง",
+    "Giao diện Hoàng Gia sang trọng ngập tràn ánh vàng hoàng kim rực rỡ, mang lại sự may mắn và đẳng cấp.": "ธีมรอยัลโกลด์หรูหราที่เต็มไปด้วยแสงสีทองผ่องใส",
+    "đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.": "ธีมนี้สำหรับสมาชิก VIP เท่านั้น โปรดอัปเกรดเพื่อใช้งาน",
+    "Mã quà tặng": "บัตรกำนัล",
+    "Sử dụng mã Voucher": "ใช้งานรหัสของขวัญ",
+    "Nhập mã voucher để nhận thêm đặc quyền (tăng giới hạn đăng bài, giao diện VIP, ...).": "กรอกรหัสของขวัญเพื่อรับสิทธิพิเศษเพิ่มเติม (เพิ่มขีดจำกัดโพสต์, ธีม VIP, ...)",
+    "Mã Voucher": "รหัสของขวัญ",
+    "Nhập mã...": "กรอกรหัส...",
+    "Áp dụng Voucher": "ใช้งานรหัส",
+    "Áp dụng mã thành công!": "ใช้งานรหัสสำเร็จแล้ว!",
+    "Chọn giao diện": "เลือกธีม",
+    "Đổi giao diện nhanh": "เปลี่ยนธีมอย่างเร็ว",
+    "Quản trị": "ผู้ดูแลระบบ",
+    "Đến kho nhạc": "ไปที่คลังเพลง",
+    "Giao Diện": "ธีม",
+    "Giao diện": "ธีม",
+    "Bấm để áp dụng": "คลิกเพื่อใช้งาน",
+    "Đang áp dụng": "กำลังใช้งาน",
+    "Mật khẩu chung và Bảo mật Demo": "รหัสผ่านทั่วไปและความปลอดภัย Demo",
+    "Mật khẩu chung": "รหัสผ่านทั่วไป",
+    "Voucher": "บัตรกำนัล",
   },
   zh: {
     "Liên kết các kênh mạng xã hội chính thức của bạn": "链接您的官方社交媒体渠道",
@@ -3629,6 +3937,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Người yêu cầu:": "请求者：",
     "Người đăng tải": "上传者",
     "Nhân bản": "复制",
+    "Thương hiệu": "品牌",
     "Nhạc Thương Hiệu": "品牌音乐",
     "Nhạc nền": "背景图片",
     "Nhạc sĩ": "音乐人",
@@ -3868,6 +4177,41 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Thêm đã chọn": "添加已选",
     "Có lỗi xảy ra khi tạo playlist.": "创建播放列表时出错。",
     "Có lỗi xảy ra khi kết nối máy chủ.": "连接到服务器时出错。",
+    "Hiển thị demo trong bài hát ngẫu nhiên ?": "在随机歌曲中显示 Demo？",
+    "Mặc định: Bật - Bao gồm cả bài Đề mô": "默认：开启 - 包含 Demo 歌曲",
+    "Tắt - Chỉ hiển thị bài đã Ra rồi": "关闭 - 仅显示已发行歌曲",
+    "Gói Thành Viên": "会员套餐",
+    "Lịch Sử Kích Hoạt": "激活历史",
+    "Bảo Mật & Email": "安全与邮箱",
+    "Thành viên": "会员",
+    "So Sánh Gói Thành Viên": "对比会员套餐",
+    "Xem và so sánh quyền lợi giữa các gói thành viên của bạn.": "查看并对比不同会员套餐权益。",
+    "Lịch Sử Kích Hoạt & Nâng Cấp": "激活与升级记录",
+    "Giao Diện Bảng Điều Khiển": "控制面板主题",
+    "Tùy chọn giao diện hiển thị cho trang quản trị của bạn.": "设置管理页面的外观主题。",
+    "Standard Theme": "标准主题",
+    "Luxury Theme": "奢华主题",
+    "Giao diện kính mờ tinh tế kết hợp tông đen xám sang trọng và các hiệu ứng phát sáng nhẹ nhàng.": "精致的磨砂玻璃主题，融合优雅暗色调与柔和发光效果。",
+    "Giao diện Hoàng Gia sang trọng ngập tràn ánh vàng hoàng kim rực rỡ, mang lại sự may mắn và đẳng cấp.": "尊贵皇家金色主题，充满璀璨金光与高雅质感。",
+    "đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.": "此主题为 VIP 会员专享，请升级套餐体验。",
+    "Mã quà tặng": "优惠券",
+    "Sử dụng mã Voucher": "兑换礼品码",
+    "Nhập mã voucher để nhận thêm đặc quyền (tăng giới hạn đăng bài, giao diện VIP, ...).": "输入礼品码解锁更多特权（增加发布上限、VIP 主题等）。",
+    "Mã Voucher": "礼品码",
+    "Nhập mã...": "输入代码...",
+    "Áp dụng Voucher": "应用礼品码",
+    "Áp dụng mã thành công!": "兑换成功！",
+    "Chọn giao diện": "选择主题",
+    "Đổi giao diện nhanh": "快速切换主题",
+    "Quản trị": "管理面板",
+    "Đến kho nhạc": "前往音乐库",
+    "Giao Diện": "主题",
+    "Giao diện": "主题",
+    "Bấm để áp dụng": "点击应用",
+    "Đang áp dụng": "已应用",
+    "Mật khẩu chung và Bảo mật Demo": "通用密码与 Demo 安全",
+    "Mật khẩu chung": "通用密码",
+    "Voucher": "优惠券",
   }
 };
 
@@ -4478,11 +4822,11 @@ function AdminLogin() {
   return (
     <div className="min-h-screen bg-stone-100 flex items-center justify-center p-4 text-stone-900 font-sans">
       <div className="bg-white p-8 rounded-3xl shadow-xl max-w-sm w-full border border-stone-200">
-        <h2 className="text-2xl font-black mb-2 text-center text-stone-800">Admin Login</h2>
+        <h2 className="text-2xl font-black mb-2 text-center text-stone-800">{t("Admin Login")}</h2>
         <p className="text-stone-500 mb-6 text-center text-sm">{t("Vui lòng nhập thông tin đăng nhập quản trị")}</p>
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-1">Username</label>
+            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-1">{t("Username")}</label>
             <input 
               type="text" 
               required
@@ -4493,7 +4837,7 @@ function AdminLogin() {
           </div>
           
           <div>
-            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-1">Password</label>
+            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-1">{t("Password")}</label>
             <PasswordInput 
               required
               autoFocus
@@ -4505,7 +4849,7 @@ function AdminLogin() {
 
           {err && <p className="text-red-500 text-sm font-bold text-center">{err}</p>}
           <button type="submit" className="w-full bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] font-bold py-3 rounded-xl hover:bg-stone-800 transition-colors">
-            Đăng nhập
+            {t("Đăng nhập")}
           </button>
         </form>
       </div>
@@ -4830,9 +5174,104 @@ function AdminFloatingControls({ onLogout }: { onLogout: () => void }) {
 
 function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void }) {
   const location = useLocation();
+  const { artistData, setArtistData } = useContext(LanguageContext);
+  const { t } = useAdminTranslation();
   const [session, setSession] = useState(getActiveAdminSession());
   const [avatar, setAvatar] = useState(session.activeAvatar);
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
+
+  const [showThemeDropdown, setShowThemeDropdown] = useState(false);
+  const [originalTheme, setOriginalTheme] = useState<string | null>(null);
+  const [pendingTheme, setPendingTheme] = useState<string | null>(null);
+  const [themeError, setThemeError] = useState<string | null>(null);
+
+  const { activeExt, activeName, activeToken } = session;
+  const currentExt = getArtistExtensionFromUrl(location.pathname);
+  const isHomepage = isArtistContext() ? (location.pathname === '/' || location.pathname === '') : (location.pathname === `/${currentExt}` || location.pathname === `/${currentExt}/`);
+  const isOnOwnArtistHomepage = activeExt && currentExt === activeExt && isHomepage;
+
+  const handlePaletteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (showThemeDropdown) {
+      // Closing the dropdown!
+      // Check if a theme was previewed and is different from original
+      const currentTheme = artistData?.adminTheme || 'liquid-glass';
+      if (originalTheme && currentTheme !== originalTheme) {
+        // Open confirmation modal for the previewed theme
+        setPendingTheme(currentTheme);
+      } else {
+        // No change or no preview, just close
+        setOriginalTheme(null);
+      }
+      setShowThemeDropdown(false);
+    } else {
+      // Opening the dropdown
+      // Store the original theme in case they change it
+      setOriginalTheme(artistData?.adminTheme || 'liquid-glass');
+      setShowThemeDropdown(true);
+    }
+  };
+
+  const handleConfirmTheme = async () => {
+    const themeVipConfig = artistData?.landingConfig?.adminThemesVip || {};
+    const isVipTheme = pendingTheme === 'gold' 
+      ? themeVipConfig['gold'] !== false 
+      : !!themeVipConfig[pendingTheme || ''];
+    const roles = artistData?.roles || [];
+    const roleId = artistData?.roleId || '';
+    const userRole = roles.find((r: any) => String(r.id || r.name).toLowerCase() === String(roleId || '').toLowerCase());
+    const hasVipAccess = !!(String(roleId).toLowerCase() === 'vip' || userRole?.exclusiveUi || artistData?.isSpecial || artistData?.isMasterAdmin);
+
+    if (isVipTheme && !hasVipAccess) {
+      setThemeError("đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.");
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'POST',
+        headers: {
+          'x-artist-extension': activeExt || getArtistExtensionFromUrl(),
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${activeToken || localStorage.getItem('adminToken') || ''}`
+        },
+        body: JSON.stringify({ adminTheme: pendingTheme })
+      });
+      if (res.ok) {
+        const updatedData = await res.json();
+        if (typeof (window as any).previewTheme === 'function') {
+          (window as any).previewTheme(pendingTheme);
+        }
+        if (setArtistData) {
+          setArtistData(updatedData);
+        }
+        setPendingTheme(null);
+        setOriginalTheme(null);
+        setThemeError(null);
+        setShowThemeDropdown(false);
+      } else {
+        setThemeError("Lỗi máy chủ khi lưu giao diện.");
+      }
+    } catch (e) {
+      setThemeError("Lỗi kết nối máy chủ.");
+    }
+  };
+
+  const handleUndoTheme = () => {
+    const revertTo = originalTheme || 'liquid-glass';
+    if (typeof (window as any).previewTheme === 'function') {
+      (window as any).previewTheme(revertTo);
+    }
+    if (setArtistData) {
+      setArtistData((prev: any) => prev ? { ...prev, adminTheme: revertTo } : prev);
+    }
+    setPendingTheme(null);
+    setOriginalTheme(null);
+    setThemeError(null);
+    setShowThemeDropdown(false);
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -4855,8 +5294,6 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
       window.removeEventListener('storage', handleUpdate);
     };
   }, []);
-
-  const { activeExt, activeName, activeToken } = session;
 
   useEffect(() => {
     if (activeExt) {
@@ -4901,7 +5338,7 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
           transition={{ duration: 0.3 }}
           className="fixed bottom-6 right-6 z-[99] flex items-center gap-3 bg-black/40 text-white px-4 py-2.5 rounded-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all hover:bg-black/50"
         >
-          <a href={getArtistAdminRedirect(activeExt, '').replace(/\/$/, '') || '/'} className="flex items-center gap-2 group cursor-pointer hover:opacity-80 transition-opacity" title="Đến kho nhạc">
+          <a href={getArtistAdminRedirect(activeExt, '').replace(/\/$/, '') || '/'} className="flex items-center gap-2 group cursor-pointer hover:opacity-80 transition-opacity" title={t("Đến kho nhạc")}>
             {avatar ? (
               <img 
                 src={getAvatarUrl(avatar)} 
@@ -4921,22 +5358,97 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
               {activeName.charAt(0).toUpperCase()}
             </div>
             <div className="text-left flex flex-col justify-center leading-none">
-              <span className="text-[10px] text-yellow-300 font-black uppercase tracking-wider leading-none mb-1 shadow-xs">Nghệ sĩ</span>
+              <span className="text-[10px] text-yellow-300 font-black uppercase tracking-wider leading-none mb-1 shadow-xs">{t("Nghệ sĩ")}</span>
               <span className="text-[11px] font-black text-white uppercase tracking-wider leading-relaxed pt-1 pb-0.5 max-w-[120px] sm:max-w-[200px] whitespace-normal break-words">{activeName}</span>
             </div>
           </a>
           <div className="w-px h-6 bg-white/10 mx-1"></div>
           <div className="flex items-center gap-1.5">
+            {/* Theme Selector Icon/Menu */}
+            {isOnOwnArtistHomepage && (
+            <div className="relative">
+              <button
+                onClick={handlePaletteClick}
+                title={t("Đổi giao diện nhanh")}
+                className="p-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center"
+              >
+                <Palette className="w-4 h-4 text-amber-400 animate-pulse shrink-0" />
+              </button>
+              
+              <AnimatePresence>
+                {showThemeDropdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute bottom-14 right-0 bg-neutral-900/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2.5 shadow-2xl w-48 flex flex-col gap-1 z-50 text-stone-200"
+                  >
+                    <div className="text-[10px] font-black uppercase text-stone-400 px-2 py-1 border-b border-white/5 mb-1 tracking-wider">
+                      {t("Chọn giao diện")}
+                    </div>
+                    <button
+                      disabled={(artistData?.adminTheme || 'liquid-glass') === 'liquid-glass'}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const current = artistData?.adminTheme || 'liquid-glass';
+                        if (!originalTheme) setOriginalTheme(current);
+                        if (typeof (window as any).previewTheme === 'function') {
+                          (window as any).previewTheme('liquid-glass');
+                        }
+                        if (setArtistData) {
+                          setArtistData((p: any) => p ? { ...p, adminTheme: 'liquid-glass' } : p);
+                        }
+                      }}
+                      className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs font-bold transition-all ${
+                        (artistData?.adminTheme || 'liquid-glass') === 'liquid-glass'
+                          ? 'opacity-50 cursor-not-allowed text-stone-500 bg-black/10'
+                          : 'hover:bg-white/10 text-stone-200 cursor-pointer'
+                      }`}
+                    >
+                      <span>Liquid Glass</span>
+                      {(artistData?.adminTheme || 'liquid-glass') === 'liquid-glass' && <Check className="w-3.5 h-3.5 text-teal-400" />}
+                    </button>
+                    
+                    <button
+                      disabled={artistData?.adminTheme === 'gold'}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const current = artistData?.adminTheme || 'liquid-glass';
+                        if (!originalTheme) setOriginalTheme(current);
+                        if (typeof (window as any).previewTheme === 'function') {
+                          (window as any).previewTheme('gold');
+                        }
+                        if (setArtistData) {
+                          setArtistData((p: any) => p ? { ...p, adminTheme: 'gold' } : p);
+                        }
+                      }}
+                      className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs font-bold transition-all ${
+                        artistData?.adminTheme === 'gold'
+                          ? 'opacity-50 cursor-not-allowed text-stone-500 bg-black/10'
+                          : 'hover:bg-white/10 text-stone-200 cursor-pointer'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1">
+                        Gold Luxury <Sparkles className="w-3 h-3 text-yellow-400" />
+                      </span>
+                      {artistData?.adminTheme === 'gold' && <Check className="w-3.5 h-3.5 text-yellow-400" />}
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            )}
+
             <a 
                 href={getArtistAdminRedirect(activeExt, 'admin')} 
-                title="Quản trị"
+                title={t("Quản trị")}
                 className="p-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center"
               >
                 <Settings className="w-4 h-4" />
               </a>
             <button
               onClick={onLogout}
-              title="Đăng xuất"
+              title={t("Đăng xuất")}
               className="p-2 bg-red-500/10 hover:bg-red-500/25 border border-red-500/30 text-red-400 rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center"
             >
               <LogOut className="w-4 h-4" />
@@ -4944,6 +5456,49 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
           </div>
         </motion.div>
       )}
+
+      {/* Confirmation Modal */}
+      <AnimatePresence>
+        {pendingTheme && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-[99999]">
+                        <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white border border-stone-200 shadow-2xl rounded-3xl p-6 w-full max-w-sm relative font-sans text-stone-900"
+            >
+              <h3 className="text-lg font-black text-stone-900 mb-2 flex items-center gap-2">
+                <Palette className="w-5 h-5 text-amber-500 animate-pulse" />
+                Xác nhận đổi giao diện
+              </h3>
+              <p className="text-xs text-stone-500 mb-6">
+                Bạn có chắc chắn muốn đổi sang giao diện <strong className="text-stone-800">{pendingTheme === 'gold' ? 'Gold Luxury' : 'Liquid Glass'}</strong> không?
+              </p>
+
+              {themeError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl text-xs text-red-600 font-bold leading-relaxed">
+                  ⚠️ {themeError}
+                </div>
+              )}
+
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={handleUndoTheme}
+                  className="px-4 py-2 border border-stone-200 hover:bg-stone-50 text-stone-600 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                >
+                  Hoàn Tác
+                </button>
+                <button
+                  onClick={handleConfirmTheme}
+                  className="px-4 py-2 bg-stone-900 hover:bg-stone-850 text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
+                >
+                  Xác Nhận
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </AnimatePresence>
   );
 }
@@ -5072,10 +5627,19 @@ function getRandomSongCardStyles(song: any) {
   let borderClass = "border-2 border-[#D4AF37]/50 hover:border-[#D4AF37]";
   let shadowClass = "shadow-[0_12px_45px_rgba(212,175,55,0.2)] hover:shadow-[0_16px_45px_rgba(212,175,55,0.3)] hover:scale-[1.015]";
   
+  let isLightBg = false;
+  let isRedBg = false;
+
+  if (tType === '1' || tType === '4' || tType === '6' || tType === '7' || tType === '9' || tType === '17' || tType === '20') {
+    isLightBg = true;
+  } else if (tType === '5' || tType === '8') {
+    isRedBg = true;
+  }
+
   if (tType === '1') {
     bgClasses = "bg-gradient-to-br from-amber-100 via-orange-50 to-yellow-100 text-orange-950";
     titleColor = "text-[#1A1303] group-hover:text-orange-700";
-    singerColor = "text-stone-500 font-bold";
+    singerColor = "text-stone-600 font-bold";
     borderClass = "border-2 border-orange-200 hover:border-orange-400";
     shadowClass = "shadow-lg shadow-orange-100 hover:scale-[1.015]";
   } else if (tType === '2') {
@@ -5188,6 +5752,7 @@ function getRandomSongCardStyles(song: any) {
     shadowClass = "shadow-[0_12px_32px_rgba(170,124,17,0.25)] hover:shadow-[0_16px_40px_rgba(170,124,17,0.4)] hover:scale-[1.02]";
     if (tType === '1') {
       bgClasses = "bg-gradient-to-tr from-[#BF953F] via-[#FCF6BA] via-45% to-[#B38728] via-70% to-[#FBF5B7]";
+      isLightBg = true;
     }
   }
 
@@ -5195,9 +5760,27 @@ function getRandomSongCardStyles(song: any) {
   const customStyle: React.CSSProperties = {};
   if (customConfig?.bgColor) {
     customStyle.backgroundColor = customConfig.bgColor;
+    const hex = customConfig.bgColor.replace('#', '');
+    if (hex.length === 6) {
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+      if (brightness > 160) {
+        isLightBg = true;
+        isRedBg = false;
+      } else {
+        isLightBg = false;
+        if (r > 160 && g < 110 && b < 110) {
+          isRedBg = true;
+        }
+      }
+    }
   }
 
-  return { bgClasses, titleColor, singerColor, borderClass, shadowClass, customStyle };
+  const bgMode: 'light' | 'red' | 'dark' = isLightBg ? 'light' : (isRedBg ? 'red' : 'dark');
+
+  return { bgClasses, titleColor, singerColor, borderClass, shadowClass, customStyle, isLightBg, isRedBg, bgMode };
 }
 
 function renderContainedEffect(templateType: string) {
@@ -5222,7 +5805,7 @@ function renderContainedEffect(templateType: string) {
           <div className="absolute inset-0 opacity-50">
             {Array.from({ length: 4 }).map((_, i) => (
               <div 
-                key={i} 
+                key={`l5435-bf-${i}`} 
                 className="absolute text-lg animate-float-shape"
                 style={{
                   left: `${(i * 22) % 75 + 10}%`,
@@ -5236,7 +5819,7 @@ function renderContainedEffect(templateType: string) {
             ))}
             {Array.from({ length: 6 }).map((_, i) => (
               <div 
-                key={i} 
+                key={`l5449-p-${i}`} 
                 className="absolute bg-amber-400/35 rounded-full animate-pulse"
                 style={{
                   left: `${(i * 15) % 85 + 5}%`,
@@ -5295,7 +5878,7 @@ function renderContainedEffect(templateType: string) {
           <div className="absolute bottom-0 right-4 flex items-end gap-1 opacity-30 h-10">
             {[14, 28, 20, 36, 16, 24, 8, 30, 18, 22].map((h, i) => (
               <div 
-                key={i} 
+                key={`l5508-i-${i}`} 
                 className="w-0.5 bg-fuchsia-400 rounded-t"
                 style={{
                   height: `${h}%`,
@@ -5333,7 +5916,7 @@ function renderContainedEffect(templateType: string) {
           <div className="absolute inset-0 opacity-40">
             {Array.from({ length: 8 }).map((_, i) => (
               <div 
-                key={i} 
+                key={`l5546-i-${i}`} 
                 className="absolute text-[8px] sm:text-[10px] text-sky-100/60 animate-snow-contained"
                 style={{
                   left: `${(i * 14) % 80 + 10}%`,
@@ -5381,7 +5964,7 @@ function renderContainedEffect(templateType: string) {
           <div className="absolute inset-0 opacity-35">
             {['♩', '♪', '♫', '♬', '♩', '♪'].map((note, i) => (
               <div 
-                key={i} 
+                key={`l5594-i-${i}`} 
                 className="absolute text-teal-600/35 font-bold text-sm animate-bounce"
                 style={{
                   left: `${(i * 18) % 75 + 15}%`,
@@ -5427,7 +6010,7 @@ function renderContainedEffect(templateType: string) {
               { icon: '🍬', left: '90%', top: '50%', rotate: '35deg', anim: 'animate-pulse' },
             ].map((item, i) => (
               <div 
-                key={i} 
+                key={`l5640-i-${i}`} 
                 className={`absolute text-sm drop-shadow-[0_2px_4px_rgba(225,29,72,0.4)] ${item.anim}`}
                 style={{
                   left: item.left,
@@ -5471,7 +6054,7 @@ function renderContainedEffect(templateType: string) {
           <div className="absolute inset-0 opacity-35">
             {Array.from({ length: 6 }).map((_, i) => (
               <div 
-                key={i} 
+                key={`l5684-i-${i}`} 
                 className="absolute text-sm animate-snow-contained"
                 style={{
                   left: `${(i * 20) % 85 + 5}%`,
@@ -5502,7 +6085,7 @@ function renderContainedEffect(templateType: string) {
           <div className="absolute inset-0 opacity-40">
             {Array.from({ length: 5 }).map((_, i) => (
               <div 
-                key={i} 
+                key={`l5715-i-${i}`} 
                 className="absolute text-sm animate-snow-contained"
                 style={{
                   left: `${(i * 22) % 80 + 10}%`,
@@ -5527,7 +6110,7 @@ function renderContainedEffect(templateType: string) {
             <g transform="translate(100, 50)">
               {Array.from({ length: 16 }).map((_, i) => (
                 <line 
-                  key={i} 
+                  key={`l5740-i-${i}`} 
                   x1="0" 
                   y1="0" 
                   x2="500" 
@@ -5546,7 +6129,7 @@ function renderContainedEffect(templateType: string) {
           <div className="absolute inset-0 opacity-45">
             {Array.from({ length: 5 }).map((_, i) => (
               <div 
-                key={i} 
+                key={`l5759-i-${i}`} 
                 className="absolute text-yellow-300 animate-pulse drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]"
                 style={{
                   left: `${(i * 22) % 75 + 15}%`,
@@ -5579,7 +6162,7 @@ function renderContainedEffect(templateType: string) {
           <div className="absolute inset-0 opacity-35">
             {Array.from({ length: 6 }).map((_, i) => (
               <div 
-                key={i} 
+                key={`l5792-i-${i}`} 
                 className="absolute rounded-full border border-pink-400/30 bg-gradient-to-tr from-sky-300/10 to-pink-300/15 animate-bounce"
                 style={{
                   left: `${(i * 18) % 80 + 10}%`,
@@ -5619,7 +6202,7 @@ function renderContainedEffect(templateType: string) {
           <div className="absolute inset-0 opacity-25">
             {['⛓️', '🎵', '⛓️', '🔥'].map((item, i) => (
               <div 
-                key={i} 
+                key={`l5832-i-${i}`} 
                 className="absolute text-sm animate-pulse"
                 style={{
                   left: `${(i * 26) % 70 + 15}%`,
@@ -5654,7 +6237,7 @@ function renderContainedEffect(templateType: string) {
           <div className="absolute inset-0 opacity-40">
             {Array.from({ length: 6 }).map((_, i) => (
               <div 
-                key={i} 
+                key={`l5867-i-${i}`} 
                 className="absolute bg-amber-300/50 rounded-full animate-pulse"
                 style={{
                   left: `${(i * 18) % 85 + 5}%`,
@@ -5688,7 +6271,7 @@ function renderContainedEffect(templateType: string) {
           <div className="absolute inset-0 opacity-25">
             {['♪', '♩', '♫', '♬'].map((note, i) => (
               <div 
-                key={i} 
+                key={`l5901-i-${i}`} 
                 className="absolute text-amber-700/40 font-serif text-sm animate-bounce"
                 style={{
                   left: `${(i * 22) % 65 + 15}%`,
@@ -5721,7 +6304,7 @@ function renderContainedEffect(templateType: string) {
           <div className="absolute inset-0 opacity-25">
             {Array.from({ length: 5 }).map((_, i) => (
               <div 
-                key={i} 
+                key={`l5934-i-${i}`} 
                 className="absolute bg-orange-300/35 rounded-full animate-pulse"
                 style={{
                   left: `${(i * 21) % 80 + 10}%`,
@@ -5754,7 +6337,7 @@ function renderContainedEffect(templateType: string) {
           <div className="absolute inset-0 opacity-35">
             {Array.from({ length: 5 }).map((_, i) => (
               <div 
-                key={i} 
+                key={`l5967-i-${i}`} 
                 className="absolute rounded-full border border-sky-400/40 bg-sky-200/10 animate-bounce"
                 style={{
                   left: `${(i * 22) % 75 + 10}%`,
@@ -5797,7 +6380,7 @@ function renderContainedEffect(templateType: string) {
           <div className="absolute inset-0 opacity-40 font-mono text-xs">
             {['👾', '🍒', '⭐', '🪙', '❤️'].map((item, i) => (
               <div 
-                key={i} 
+                key={`l6010-i-${i}`} 
                 className="absolute animate-bounce"
                 style={{
                   left: `${(i * 20) % 80 + 10}%`,
@@ -5830,7 +6413,7 @@ function renderContainedEffect(templateType: string) {
           <div className="absolute inset-0 opacity-30">
             {['🧩', '🧩', '🧩'].map((puzzle, i) => (
               <div 
-                key={i} 
+                key={`l6043-i-${i}`} 
                 className="absolute text-sm animate-bounce"
                 style={{
                   left: `${(i * 30) % 65 + 15}%`,
@@ -5870,7 +6453,7 @@ function renderContainedEffect(templateType: string) {
           <div className="absolute inset-0 opacity-40">
             {['🎉', '✨', '🎈', '✨', '🎈'].map((item, i) => (
               <div 
-                key={i} 
+                key={`l6083-i-${i}`} 
                 className="absolute text-xs animate-bounce"
                 style={{
                   left: `${(i * 21) % 80 + 10}%`,
@@ -5898,7 +6481,7 @@ function renderContainedEffect(templateType: string) {
           <div className="absolute inset-0 opacity-50">
             {Array.from({ length: 5 }).map((_, i) => (
               <div 
-                key={i} 
+                key={`l6111-c-${i}`} 
                 className="absolute bg-cyan-400/40 rounded-full animate-ping"
                 style={{
                   left: `${(i * 22) % 75 + 10}%`,
@@ -5912,7 +6495,7 @@ function renderContainedEffect(templateType: string) {
             ))}
             {Array.from({ length: 5 }).map((_, i) => (
               <div 
-                key={i} 
+                key={`l6125-f-${i}`} 
                 className="absolute bg-fuchsia-400/45 rounded-full animate-ping"
                 style={{
                   left: `${(i * 27) % 70 + 15}%`,
@@ -5940,7 +6523,7 @@ function renderContainedEffect(templateType: string) {
           <div className="absolute inset-0 opacity-40">
             {['🍁', '🌰', '🍁', '🍂', '🍂'].map((item, i) => (
               <div 
-                key={i} 
+                key={`l6153-i-${i}`} 
                 className="absolute text-sm animate-snow-contained"
                 style={{
                   left: `${(i * 20) % 80 + 10}%`,
@@ -5996,7 +6579,7 @@ function renderContainedEffect(templateType: string) {
           <div className="absolute inset-0 opacity-35">
             {['🫧', '⭐', '🫧', '✨', '💖'].map((item, i) => (
               <div 
-                key={i} 
+                key={`l6209-i-${i}`} 
                 className="absolute text-xs animate-bounce"
                 style={{
                   left: `${(i * 22) % 80 + 10}%`,
@@ -6027,7 +6610,7 @@ function renderContainedEffect(templateType: string) {
           <div className="absolute inset-0 opacity-20">
             {Array.from({ length: 4 }).map((_, i) => (
               <div 
-                key={i} 
+                key={`l6240-i-${i}`} 
                 className="absolute bg-amber-400/20 rounded-full animate-pulse"
                 style={{
                   left: `${(i * 23) % 80 + 10}%`,
@@ -6229,7 +6812,7 @@ const renderTextWithBannedKeywords = (textVal: string, keywords: string[], forma
           if (isBanned) {
             return (
               <span
-                key={idx}
+                key={`l6442-idx-3-${idx}`}
                 className="select-none filter blur-[4.5px] hover:blur-[1.5px] transition-all duration-300 cursor-help inline-block bg-white/5 px-1.5 py-0.5 rounded border border-white/5 mx-0.5"
                 title="Từ khóa bị cấm"
               >
@@ -6237,7 +6820,11 @@ const renderTextWithBannedKeywords = (textVal: string, keywords: string[], forma
               </span>
             );
           }
-          return formatTextFn ? formatTextFn(part) : part;
+          return (
+            <React.Fragment key={`rtbk-${idx}`}>
+              {formatTextFn ? formatTextFn(part) : part}
+            </React.Fragment>
+          );
         })}
       </>
     );
@@ -6246,7 +6833,7 @@ const renderTextWithBannedKeywords = (textVal: string, keywords: string[], forma
   }
 };
 
-const HoverTranslate = ({ text, className = "", format = false, style, forceDark = false }: { text: string; className?: string, format?: boolean, style?: React.CSSProperties, forceDark?: boolean }) => {
+const HoverTranslate = ({ text, className = "", format = false, style, forceDark = false, bgMode }: { text: string; className?: string, format?: boolean, style?: React.CSSProperties, forceDark?: boolean, bgMode?: 'light' | 'red' | 'dark' }) => {
   const { lang, artistData, landingConfig } = useContext(LanguageContext);
   const [translated, setTranslated] = useState(text);
   const [isHovered, setIsHovered] = useState(false);
@@ -6282,7 +6869,7 @@ const HoverTranslate = ({ text, className = "", format = false, style, forceDark
       onMouseEnter={() => setIsHovered(true)} 
       onMouseLeave={() => setIsHovered(false)}
     >
-      {renderTextWithBannedKeywords(output, keywords, format ? (t) => formatText(t, false, isGold) : undefined)}
+      {renderTextWithBannedKeywords(output, keywords, format ? (t) => formatText(t, false, isGold, bgMode) : undefined)}
     </span>
   );
 };
@@ -6358,7 +6945,7 @@ const TiktokIcon = ({ className }: { className?: string }) => (
    </svg>
 );
 
-function AchievementBadge({ achievement, align = 'right' }: { achievement: Achievement; align?: 'left' | 'right' }) {
+function AchievementBadge({ achievement, align = 'right', isLightBg = false }: { achievement: Achievement; align?: 'left' | 'right'; isLightBg?: boolean }) {
   const { lang } = useContext(LanguageContext);
   const dict: Record<string, Record<string, string>> = {
     vi: {
@@ -6443,9 +7030,17 @@ function AchievementBadge({ achievement, align = 'right' }: { achievement: Achie
            </div>
            <h4 className={`text-[6.5px] min-[360px]:text-[7.5px] sm:text-[10px] font-black text-white mt-0.5 flex flex-row items-center gap-0.5 ${isTop1Trending ? 'animate-yt-top1' : 'animate-slow-glow-yt'}`}>
              {isTrending ? (
-                 <><span className="text-amber-400 drop-shadow-[0_0_4px_rgba(251,191,36,0.5)] whitespace-nowrap">TOP {achievement.value}</span><span className="text-stone-200 drop-shadow-[0_0_2px_rgba(255,255,255,0.3)] whitespace-nowrap">{t('trending')}</span></>
+               isLightBg ? (
+                 <><span className="text-amber-800 font-extrabold drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] whitespace-nowrap">TOP {achievement.value} </span><span className="text-stone-950 font-black drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] whitespace-nowrap">{t('trending')}</span></>
+               ) : (
+                 <><span className="text-amber-400 drop-shadow-[0_0_4px_rgba(251,191,36,0.5)] whitespace-nowrap">TOP {achievement.value} </span><span className="text-stone-200 drop-shadow-[0_0_2px_rgba(255,255,255,0.3)] whitespace-nowrap">{t('trending')}</span></>
+               )
              ) : (
+               isLightBg ? (
+                 <><span className="text-red-700 font-extrabold drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] whitespace-nowrap">&gt; {achievement.value} <span className="text-stone-950 font-black whitespace-nowrap">{t('views')}</span></span></>
+               ) : (
                  <><span className="text-red-400 drop-shadow-[0_0_4px_rgba(248,113,113,0.3)] whitespace-nowrap">&gt; {achievement.value} <span className="text-stone-200 whitespace-nowrap">{t('views')}</span></span></>
+               )
              )}
            </h4>
         </div>
@@ -6467,7 +7062,11 @@ function AchievementBadge({ achievement, align = 'right' }: { achievement: Achie
                TIKTOK</span>
            </div>
            <h4 className="text-[6.5px] min-[360px]:text-[7.5px] sm:text-[10px] font-black text-white mt-0.5 animate-slow-glow-tt flex flex-row items-center">
-             <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00f2fe] via-white to-[#fe0979] drop-shadow-[0_0_4px_rgba(255,255,255,0.3)] whitespace-nowrap">✨ {t('viral').toUpperCase()} ✨</span>
+             {isLightBg ? (
+               <span className="text-stone-950 font-black drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] whitespace-nowrap">✨ {t('viral').toUpperCase()} ✨</span>
+             ) : (
+               <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00f2fe] via-white to-[#fe0979] drop-shadow-[0_0_4px_rgba(255,255,255,0.3)] whitespace-nowrap">✨ {t('viral').toUpperCase()} ✨</span>
+             )}
            </h4>
         </div>
       </div>
@@ -6488,7 +7087,11 @@ function AchievementBadge({ achievement, align = 'right' }: { achievement: Achie
                SPOTIFY</span>
            </div>
            <h4 className="text-[6.5px] min-[360px]:text-[7.5px] sm:text-[10px] font-black text-white mt-0.5 animate-slow-glow-sp flex flex-row items-center">
-             <span className="text-[#1DB954] drop-shadow-[0_0_4px_rgba(29,185,84,0.5)] whitespace-nowrap">&gt; {achievement.value} <span className="text-stone-200 whitespace-nowrap">{t('streams')}</span></span>
+             {isLightBg ? (
+               <span className="text-emerald-800 font-extrabold drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] whitespace-nowrap">&gt; {achievement.value} <span className="text-stone-950 font-black whitespace-nowrap">{t('streams')}</span></span>
+             ) : (
+               <span className="text-[#1DB954] drop-shadow-[0_0_4px_rgba(29,185,84,0.5)] whitespace-nowrap">&gt; {achievement.value} <span className="text-stone-200 whitespace-nowrap">{t('streams')}</span></span>
+             )}
            </h4>
         </div>
       </div>
@@ -6509,7 +7112,11 @@ function AchievementBadge({ achievement, align = 'right' }: { achievement: Achie
                ZING MP3</span>
            </div>
            <h4 className="text-[7.5px] min-[360px]:text-[8.5px] sm:text-[10px] font-black text-white mt-0.5 animate-slow-glow-zg flex flex-row items-center">
-             <span className="text-[#c084fc] drop-shadow-[0_0_4px_rgba(168,85,247,0.5)] whitespace-nowrap">&gt; {achievement.value} <span className="text-stone-200 whitespace-nowrap">{t('streams')}</span></span>
+             {isLightBg ? (
+               <span className="text-purple-800 font-extrabold drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] whitespace-nowrap">&gt; {achievement.value} <span className="text-stone-950 font-black whitespace-nowrap">{t('streams')}</span></span>
+             ) : (
+               <span className="text-[#c084fc] drop-shadow-[0_0_4px_rgba(168,85,247,0.5)] whitespace-nowrap">&gt; {achievement.value} <span className="text-stone-200 whitespace-nowrap">{t('streams')}</span></span>
+             )}
            </h4>
         </div>
       </div>
@@ -6519,36 +7126,335 @@ function AchievementBadge({ achievement, align = 'right' }: { achievement: Achie
   return null;
 }
 
-function AchievementCycle({ achievements, align = 'right' }: { achievements: Achievement[]; align?: 'left' | 'right' }) {
+function AchievementCycle({ achievements, align, isLightBg = false, prefix = 'ach' }: { achievements: any[]; align?: 'left' | 'right'; isLightBg?: boolean; prefix?: string }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  const achievementsKey = useMemo(() => {
+    return (achievements || []).map((a: any) => `${a.type || ''}-${a.value || ''}`).join(',');
+  }, [achievements]);
+
   useEffect(() => {
+    setCurrentIndex(0);
     if (!achievements || achievements.length <= 1) return;
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % achievements.length);
-    }, 4500);
+    }, 3500);
     return () => clearInterval(interval);
-  }, [achievements]);
+  }, [achievementsKey]);
 
   if (!achievements || achievements.length === 0) return null;
 
   const isLeft = align === 'left';
+  const curAch = achievements[currentIndex % achievements.length];
 
   return (
     <div className={`relative w-full h-[30px] sm:h-[48px] flex items-center ${isLeft ? 'justify-start' : 'justify-end'} overflow-visible`}>
       <AnimatePresence mode="wait">
-        <motion.div
-           key={currentIndex}
-           initial={{ opacity: 0.7 }}
-           animate={{ opacity: 1 }}
-           exit={{ opacity: 0.7 }}
-           transition={{ duration: 0.35, ease: "easeInOut" }}
+        <motion.div 
+           key={`${prefix}-${curAch?.type || ''}-${curAch?.value || ''}-${currentIndex}`}
+           initial={{ opacity: 0, y: 6 }}
+           animate={{ opacity: 1, y: 0 }}
+           exit={{ opacity: 0, y: -6 }}
+           transition={{ duration: 0.25, ease: "easeInOut" }}
            className={`relative w-full flex items-center ${isLeft ? 'justify-start' : 'justify-end'}`}
         >
-           <AchievementBadge achievement={achievements[currentIndex]} align={align} />
+           <AchievementBadge achievement={curAch} align={align} isLightBg={isLightBg} />
         </motion.div>
       </AnimatePresence>
     </div>
+  );
+}
+
+function RandomSongCard({ 
+  randomSong, 
+  data, 
+  isGoldTheme, 
+  activeListTab, 
+  getSongCoverUrl, 
+  isMobile, 
+  formatText, 
+  getArtistLink, 
+  setActiveBioSong, 
+  t 
+}: { 
+  randomSong: any; 
+  data: any; 
+  isGoldTheme: boolean; 
+  activeListTab: string; 
+  getSongCoverUrl: (url?: string) => string; 
+  isMobile: boolean; 
+  formatText: (text: string, flag?: boolean, goldThemeFlag?: boolean, bgMode?: 'light' | 'red' | 'dark' | boolean) => any; 
+  getArtistLink: (path: string) => string; 
+  setActiveBioSong: (song: any) => void; 
+  t: any; 
+}) {
+  const [displaySong, setDisplaySong] = useState(randomSong);
+  const [prevSong, setPrevSong] = useState<any>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  useEffect(() => {
+    if (randomSong && randomSong.id !== displaySong?.id) {
+      setPrevSong(displaySong);
+      setDisplaySong(randomSong);
+      setIsTransitioning(true);
+      const timer = setTimeout(() => {
+        setIsTransitioning(false);
+        setPrevSong(null);
+      }, 700);
+      return () => clearTimeout(timer);
+    }
+  }, [randomSong?.id, displaySong?.id]);
+
+  const randStylesCurrent = getRandomSongCardStyles(displaySong);
+  const prevKey = prevSong ? (prevSong.id || prevSong.slug || prevSong.title || 'prev') : '';
+  const currKey = displaySong ? (displaySong.id || displaySong.slug || displaySong.title || 'curr') : '';
+  const hasRandomSongAchievements = displaySong?.achievements && displaySong.achievements.length > 0;
+  const titleLength = displaySong?.title?.length || 0;
+  const artistLength = (displaySong?.singer || displaySong?.author || '').length;
+  const showRandomSongAchievementsOnMobile = hasRandomSongAchievements && (titleLength + artistLength) <= 25;
+  const activeRandomSongAchievements = hasRandomSongAchievements && (!isMobile || showRandomSongAchievementsOnMobile);
+
+  if (!displaySong) return null;
+
+  return (
+    <motion.div
+      layout
+      transition={{
+        layout: { type: "spring", stiffness: 280, damping: 28 }
+      }}
+      className="w-full relative rounded-[20px]"
+    >
+      <Link
+        to={activeListTab === 'released' ? getArtistLink(`/playlist/released?song=${displaySong.slug || displaySong.id}`) : getArtistLink(`/song/${displaySong.slug || displaySong.id}`)}
+        onClick={(e) => {
+          if (displaySong.linkType === 'indirect') {
+            e.preventDefault();
+            const indirectLinks = [
+              displaySong.linkSpotify,
+              displaySong.linkApple,
+              displaySong.linkZing,
+              displaySong.linkYoutubeMusic,
+              displaySong.linkYoutube
+            ].filter(l => !!l);
+            
+            if (indirectLinks.length === 1 && indirectLinks[0]) {
+              window.open(indirectLinks[0], '_blank');
+            } else {
+              setActiveBioSong(displaySong);
+            }
+          }
+        }}
+        className="group relative overflow-hidden rounded-[20px] p-2.5 sm:p-3 flex flex-row items-center justify-between gap-2.5 sm:gap-4 w-full sm:hover:scale-[1.015] sm:hover:-translate-y-0.5 sm:hover:shadow-[0_16px_36px_rgba(212,175,55,0.4)] transition-all duration-300 ease-out"
+        style={{ minHeight: '112px' }}
+      >
+        {/* PC Version Card Ambient Animation for PC */}
+        <div className="hidden sm:block absolute inset-0 rounded-[20px] pointer-events-none overflow-hidden z-[2] select-none">
+          <motion.div
+            animate={{
+              x: ['-100%', '200%'],
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: 5,
+              ease: "linear"
+            }}
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-300/25 to-transparent skew-x-12"
+          />
+        </div>
+        {/* Background transitions */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          {/* Prev background layer fading out */}
+          {prevSong && (
+            <motion.div 
+              layout
+              key={`${prevKey}_bg_prev`}
+              initial={{ opacity: 1 }}
+              animate={{ opacity: 0 }}
+              transition={{ duration: 0.7, ease: "easeInOut", layout: { type: "spring", stiffness: 280, damping: 28 } }}
+              style={getRandomSongCardStyles(prevSong).customStyle}
+              className={`absolute inset-0 border-2 rounded-[20px] ${getRandomSongCardStyles(prevSong).bgClasses} ${getRandomSongCardStyles(prevSong).borderClass} ${getRandomSongCardStyles(prevSong).shadowClass}`}
+            />
+          )}
+          {/* Current background layer fading in */}
+          <motion.div 
+            layout
+            key={`${currKey}_bg`}
+            initial={prevSong ? { opacity: 0 } : { opacity: 1 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.7, ease: "easeInOut", layout: { type: "spring", stiffness: 280, damping: 28 } }}
+            style={randStylesCurrent.customStyle}
+            className={`absolute inset-0 border-2 rounded-[20px] ${randStylesCurrent.bgClasses} ${randStylesCurrent.borderClass} ${randStylesCurrent.shadowClass}`}
+          />
+        </div>
+
+        {/* Dynamic theme-specific background and effects */}
+        <div className="absolute inset-0 overflow-hidden rounded-[20px] z-[1] pointer-events-none">
+          {renderContainedEffect(displaySong.template || '1')}
+        </div>
+
+        {/* Glossy overlay effect for cards with achievements */}
+        {activeRandomSongAchievements && (
+          <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-white/20 to-transparent pointer-events-none mix-blend-overlay z-[2]" />
+        )}
+        
+        {/* Left-middle area: Cover Image and Text info */}
+        <motion.div 
+          layout 
+          transition={{ layout: { type: "spring", stiffness: 280, damping: 28 } }}
+          className="flex flex-row items-center gap-4 flex-1 min-w-0 relative z-10"
+        >
+          {/* Song Cover Image Container (Left side) */}
+          <div className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-xl overflow-hidden relative border border-[#D4AF37]/25 group-hover:border-[#D4AF37] transition-colors select-none shadow-md bg-stone-900/10">
+            {/* Previous cover */}
+            {prevSong && getSongCoverUrl(prevSong.coverUrl) && (
+              <img 
+                key={`${prevKey}_cover_prev`}
+                src={getSongCoverUrl(prevSong.coverUrl)} 
+                className="absolute inset-0 w-full h-full object-cover" 
+                alt=""
+                referrerPolicy="no-referrer"
+              />
+            )}
+            {/* Current cover with fade-in */}
+            <motion.img 
+              key={`${currKey}_cover`}
+              src={getSongCoverUrl(displaySong.coverUrl) || ''} 
+              initial={prevSong ? { opacity: 0 } : { opacity: 1 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1.0, ease: "easeInOut" }}
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+              alt={displaySong.title} 
+              referrerPolicy="no-referrer"
+            />
+
+            {/* Sweeping light effect during transition */}
+            {isTransitioning && (
+              <motion.div 
+                initial={{ x: '-100%' }}
+                animate={{ x: '200%' }}
+                transition={{ duration: 1.0, ease: "easeInOut" }}
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/70 to-transparent skew-x-12 z-20 pointer-events-none"
+              />
+            )}
+
+            {/* Play hover effect */}
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
+              <div className="w-8 h-8 rounded-full bg-[#AA7C11] flex items-center justify-center scale-75 group-hover:scale-100 transition-transform shadow-lg">
+                <Play className="w-3 h-3 text-white ml-0.5" fill="currentColor" />
+              </div>
+            </div>
+
+            {/* Year Badge inside the Image */}
+            {displaySong.releaseYear && (
+              <div className="absolute bottom-1 left-1 bg-black/55 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full flex items-center gap-1 z-20">
+                {displaySong.releaseYear}
+              </div>
+            )}
+          </div>
+
+          {/* Song Content Details (Middle area) */}
+          <motion.div 
+            layout 
+            transition={{ layout: { type: "spring", stiffness: 280, damping: 28 } }}
+            className="flex-1 min-w-0 flex flex-col justify-center items-start text-left relative overflow-hidden py-1 min-h-[3.5rem]"
+          >
+            {/* Previous Text fading out */}
+            {prevSong && (
+              <motion.div
+                key={`${prevKey}_text_prev`}
+                initial={{ opacity: 1, y: 0 }}
+                animate={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+                className="absolute inset-0 w-full flex flex-col justify-center items-start text-left z-0 pointer-events-none"
+              >
+                <h3 className={`font-black text-sm sm:text-base tracking-tight line-clamp-2 leading-tight ${getRandomSongCardStyles(prevSong).titleColor}`}>
+                  {prevSong.title}
+                </h3>
+                <div className={`text-[11px] sm:text-xs mt-0.5 w-full truncate ${getRandomSongCardStyles(prevSong).singerColor}`}>
+                  {prevSong.singer || prevSong.author || data?.artistName || 'Nghệ sĩ'}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Current Text fading in */}
+            <motion.div
+              key={`${currKey}_text`}
+              initial={prevSong ? { opacity: 0, y: 8 } : { opacity: 1, y: 0 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+              className="w-full flex flex-col justify-center items-start text-left z-10 relative"
+            >
+              {/* Song Title */}
+              <h3 className={`font-black text-sm sm:text-base tracking-tight line-clamp-2 leading-tight transition-colors ${randStylesCurrent.titleColor}`} title={displaySong.title}>
+                <HoverTranslate text={displaySong.title} format={true} forceDark={displaySong.isBrand} bgMode={randStylesCurrent.bgMode} />
+              </h3>
+              {/* Artist/Singer */}
+              <MarqueeText className={`text-[11px] sm:text-xs mt-0.5 w-full ${randStylesCurrent.singerColor}`}>
+                {formatText(displaySong.singer || displaySong.author || data?.artistName || 'Nghệ sĩ', true, displaySong.isBrand ? false : isGoldTheme, randStylesCurrent.bgMode)}
+              </MarqueeText>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+
+        {/* Right area: Achievements */}
+        <AnimatePresence mode="popLayout">
+          {activeRandomSongAchievements && (
+            <motion.div 
+              layout
+              initial={{ opacity: 0, scale: 0.85, width: 0 }}
+              animate={{ opacity: 1, scale: 1, width: 'auto' }}
+              exit={{ opacity: 0, scale: 0.85, width: 0 }}
+              transition={{ 
+                layout: { type: "spring", stiffness: 280, damping: 28 },
+                opacity: { duration: 0.35 },
+                scale: { duration: 0.35 }
+              }}
+              className="shrink-0 flex items-center justify-end pl-1.5 sm:pl-4 max-w-[190px] sm:max-w-[270px] relative z-20 py-1.5 px-0.5 overflow-visible"
+            >
+              {/* Desktop version */}
+              <motion.div 
+                animate={{ 
+                  y: [0, -1.5, 0, 1.5, 0],
+                  rotate: [0, -0.3, 0, 0.3, 0]
+                }}
+                transition={{
+                  duration: 5.5,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                className="hidden sm:flex w-full h-14 relative overflow-hidden rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/45 items-center justify-between px-3.5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_6px_16px_rgba(0,0,0,0.45)]"
+              >
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.22),transparent_70%)] animate-pulse" />
+                <motion.div 
+                  animate={{ x: ['-100%', '200%'] }}
+                  transition={{ repeat: Infinity, duration: 4.5, ease: "linear" }}
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent skew-x-12 pointer-events-none"
+                />
+                <div className="relative z-10 w-full h-full flex items-center justify-between">
+                  <AchievementCycle achievements={displaySong.achievements} align="right" isLightBg={false} prefix="rnd-dt" />
+                </div>
+              </motion.div>
+
+              {/* Mobile version */}
+              <motion.div 
+                animate={{ 
+                  y: [0, -1.5, 0, 1.5, 0],
+                  rotate: [0, -0.3, 0, 0.3, 0]
+                }}
+                transition={{
+                  duration: 5.5,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                className="flex sm:hidden items-center justify-end w-[88px] shrink-0 overflow-visible"
+              >
+                <AchievementCycle achievements={displaySong.achievements} align="right" isLightBg={randStylesCurrent.isLightBg} prefix="rnd-mb" />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </Link>
+    </motion.div>
   );
 }
 
@@ -6614,25 +7520,32 @@ function Home() {
 
   const avatarSlideshowImages = useMemo(() => {
     if (!data) return [];
-    const urls: string[] = [];
-    if (data.aboutMe?.avatarUrl) urls.push(data.aboutMe.avatarUrl);
-    if (data.homeCoverUrl && !urls.includes(data.homeCoverUrl)) urls.push(data.homeCoverUrl);
+    const bgUrls: string[] = [];
+    if (data.homeCoverUrl) bgUrls.push(data.homeCoverUrl);
     
     if (data.slideshowImages && Array.isArray(data.slideshowImages)) {
       data.slideshowImages.forEach((img: string) => {
-        if (img && !urls.includes(img)) {
-          urls.push(img);
+        if (img && !bgUrls.includes(img)) {
+          bgUrls.push(img);
         }
       });
     }
     
-    return urls.filter(Boolean);
+    if (bgUrls.length > 0) {
+      return bgUrls.filter(Boolean);
+    }
+    
+    if (data.aboutMe?.avatarUrl) {
+      return [data.aboutMe.avatarUrl];
+    }
+    
+    return [];
   }, [data]);
 
   useEffect(() => {
     if (avatarSlideshowImages.length <= 1) return;
     const interval = setInterval(() => {
-      setCurrentAvatarSlideIndex(prev => (prev + 1) % avatarSlideshowImages.length);
+      setCurrentAvatarSlideIndex(prev => prev + 1);
     }, 4500);
     return () => clearInterval(interval);
   }, [avatarSlideshowImages]);
@@ -6664,32 +7577,61 @@ function Home() {
     return () => clearTimeout(timeoutId);
   }, []);
 
+  const publicSongIdsKey = useMemo(() => {
+    if (!data?.demos) return '';
+    const includeDemo = data.includeDemoInRandomSong !== false;
+    return data.demos
+      .filter((d: any) => {
+        if (d.status !== 'public' || d.isDraft || d.deleted) return false;
+        if (!includeDemo && !d.isReleased && d.linkType !== 'indirect') return false;
+        return true;
+      })
+      .map((d: any) => d.id)
+      .join(',') + `_${includeDemo}`;
+  }, [data?.demos, data?.includeDemoInRandomSong]);
+
   useEffect(() => {
-    if (!isGoldTheme || !data?.demos) return;
-    const publicSongs = data.demos.filter((d: any) => d.status === 'public' && !d.isDraft && !d.deleted);
-    if (publicSongs.length === 0) return;
+    if (!data?.demos) return;
+    const includeDemo = data.includeDemoInRandomSong !== false;
+    const publicSongs = data.demos.filter((d: any) => {
+      if (d.status !== 'public' || d.isDraft || d.deleted) return false;
+      if (!includeDemo && !d.isReleased && d.linkType !== 'indirect') return false;
+      return true;
+    });
+    if (publicSongs.length === 0) {
+      setRandomSong(null);
+      return;
+    }
     
-    // Choose initial random song
-    const initialIndex = Math.floor(Math.random() * publicSongs.length);
-    setRandomSong(publicSongs[initialIndex]);
+    // Choose initial random song if not already set or invalid
+    setRandomSong((prevSong: any) => {
+      if (prevSong && publicSongs.some((s: any) => s.id === prevSong.id)) {
+        return prevSong;
+      }
+      const initialIndex = Math.floor(Math.random() * publicSongs.length);
+      return publicSongs[initialIndex];
+    });
+
+    if (publicSongs.length <= 1) return;
 
     const interval = setInterval(() => {
       setRandomSong((prevSong: any) => {
-        // Find a different random song if there are multiple songs
-        if (publicSongs.length <= 1) return publicSongs[0];
-        let nextSong = prevSong;
-        let attempts = 0;
-        while ((!nextSong || nextSong.id === prevSong?.id) && attempts < 10) {
-          const randIndex = Math.floor(Math.random() * publicSongs.length);
-          nextSong = publicSongs[randIndex];
-          attempts++;
+        if (!publicSongs || publicSongs.length <= 1) return publicSongs[0];
+        const currentIdx = publicSongs.findIndex((s: any) => s.id === prevSong?.id);
+        let nextIdx = currentIdx >= 0 ? (currentIdx + 1) % publicSongs.length : 0;
+        if (publicSongs.length > 2) {
+          let attempts = 0;
+          while (nextIdx === currentIdx && attempts < 10) {
+            nextIdx = Math.floor(Math.random() * publicSongs.length);
+            attempts++;
+          }
         }
-        return nextSong || publicSongs[0];
+        return publicSongs[nextIdx];
       });
-    }, 5000);
+    }, 6000);
 
     return () => clearInterval(interval);
-  }, [isGoldTheme, data?.demos]);
+  }, [publicSongIdsKey]);
 
   useEffect(() => {
     if (data && data.demos && !hasInitializedTab) {
@@ -6764,38 +7706,12 @@ function Home() {
   useEffect(() => {
     if (!data?.slideshowImages?.length) return;
     const int = setInterval(() => {
-      setCurrentSlide(prev => (prev + 1) % data.slideshowImages!.length);
+      setCurrentSlide(prev => prev + 1);
     }, 4000); // 4 seconds
     return () => clearInterval(int);
   }, [data?.slideshowImages]);
 
-  // Auto scroll down to tab section after 5 seconds of inactivity
-  useEffect(() => {
-    let scrolled = false;
-    const handleScroll = () => {
-      scrolled = true;
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('touchmove', handleScroll);
-    };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('touchmove', handleScroll, { passive: true });
-
-    const timeoutId = setTimeout(() => {
-      if (!scrolled) {
-        const el = document.getElementById('music-tabs-section');
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth' });
-        }
-      }
-    }, 5000);
-
-    return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('touchmove', handleScroll);
-    };
-  }, []);
 
   const handleSharePlaylist = async (e: React.MouseEvent, playlistId: string) => {
     e.preventDefault();
@@ -6806,6 +7722,18 @@ function Home() {
     setToast(t.toastCopy || 'Đã copy link!');
     setTimeout(() => setToast(''), 3000);
   };
+
+  useEffect(() => {
+    (window as any).previewTheme = (themeId: string) => {
+      setData(prev => {
+        if (!prev) return prev;
+        return { ...prev, adminTheme: themeId };
+      });
+    };
+    return () => {
+      delete (window as any).previewTheme;
+    };
+  }, []);
 
   useEffect(() => {
     fetch('/api/data').then(res => res.json()).then(data => {
@@ -6911,44 +7839,44 @@ function Home() {
   const renderTitleSection = (isFirst: boolean) => {
     if (isGoldTheme) {
       return (
-        <section key="title" className={`relative ${isFirst ? 'pt-28 sm:pt-36' : 'pt-16 sm:pt-20'} pb-12 px-6 sm:px-12 max-w-6xl mx-auto w-full flex flex-col md:flex-row items-center justify-between gap-10 md:gap-16`}>
-          {/* Left Column: Spectacular Luxury Frame Profile Image */}
+        <section key="title-gold" className={`relative ${isFirst ? 'pt-28 sm:pt-36' : 'pt-16 sm:pt-20'} pb-12 px-6 sm:px-12 max-w-6xl mx-auto w-full flex flex-col md:flex-row items-center justify-between gap-10 md:gap-16`}>
+          {/* Left Column: Spectacular Luxury Frame Profile Image with SuperEllipse Morphing Shape */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="relative w-56 sm:w-64 md:w-72 aspect-square shrink-0"
+            className="relative w-56 sm:w-64 md:w-72 aspect-square shrink-0 group cursor-pointer"
           >
             {/* Spinning decorative golden compass/halo */}
             <motion.div 
               animate={{ rotate: 360 }}
               transition={{ repeat: Infinity, duration: 40, ease: "linear" }}
-              className="absolute inset-[-15px] border border-dashed border-[#D4AF37]/30 rounded-full"
+              className="absolute inset-[-15px] border border-dashed border-[#D4AF37]/35 rounded-[48%_/_38%] group-hover:rounded-[36px] transition-all duration-700 ease-in-out"
             />
             <motion.div 
               animate={{ rotate: -360 }}
               transition={{ repeat: Infinity, duration: 60, ease: "linear" }}
-              className="absolute inset-[-8px] border border-double border-[#AA7C11]/25 rounded-full"
+              className="absolute inset-[-8px] border border-double border-[#AA7C11]/30 rounded-[48%_/_38%] group-hover:rounded-[32px] transition-all duration-700 ease-in-out"
             />
             
             {/* Soft gold backdrop blur glow */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-[#AA7C11] to-[#F3E5AB] rounded-full blur-2xl opacity-35 -z-10" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#AA7C11] to-[#F3E5AB] rounded-[48%_/_38%] group-hover:rounded-[32px] blur-2xl opacity-40 -z-10 transition-all duration-700 ease-in-out" />
             
-            {/* Overlapping golden ring borders */}
-            <div className="absolute inset-[-4px] rounded-full p-[3px] bg-gradient-to-tr from-[#AA7C11] via-[#F3E5AB] to-[#D4AF37] shadow-[0_8px_30px_rgba(170,124,17,0.15)]">
-              <div className="w-full h-full rounded-full bg-[#FAF5E6] p-[2px]">
-                <div className="w-full h-full rounded-full overflow-hidden relative border border-[#D4AF37]/30 bg-[#FAF5E6]">
+            {/* Overlapping golden ring borders with SuperEllipse morphing */}
+            <div className="absolute inset-[-4px] rounded-[48%_/_38%] group-hover:rounded-[32px] p-[3px] bg-gradient-to-tr from-[#AA7C11] via-[#F3E5AB] to-[#D4AF37] shadow-[0_8px_30px_rgba(170,124,17,0.2)] group-hover:shadow-[0_16px_40px_rgba(212,175,55,0.4)] transition-all duration-700 ease-in-out">
+              <div className="w-full h-full rounded-[48%_/_38%] group-hover:rounded-[30px] bg-[#FAF5E6] p-[2px] transition-all duration-700 ease-in-out">
+                <div className="w-full h-full rounded-[48%_/_38%] group-hover:rounded-[28px] overflow-hidden relative border border-[#D4AF37]/30 bg-[#FAF5E6] transition-all duration-700 ease-in-out">
                   {avatarSlideshowImages && avatarSlideshowImages.length > 0 ? (
-                    <AnimatePresence mode="popLayout">
+                    <AnimatePresence mode="wait">
                       <motion.img 
                         key={currentAvatarSlideIndex}
-                        src={avatarSlideshowImages[currentAvatarSlideIndex]} 
+                        src={avatarSlideshowImages[currentAvatarSlideIndex % avatarSlideshowImages.length]} 
                         alt={data.artistName} 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 1.2, ease: "easeInOut" }}
-                        className="absolute inset-0 w-full h-full object-cover scale-105 hover:scale-115 transition-all duration-1000"
+                        className="absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-110 transition-all duration-700 ease-in-out"
                         referrerPolicy="no-referrer"
                       />
                     </AnimatePresence>
@@ -6956,7 +7884,7 @@ function Home() {
                     <img 
                       src={effectiveCoverUrl || data.aboutMe?.avatarUrl} 
                       alt={data.artistName} 
-                      className="absolute inset-0 w-full h-full object-cover scale-105 hover:scale-115 transition-all duration-1000"
+                      className="absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-110 transition-all duration-700 ease-in-out"
                       referrerPolicy="no-referrer"
                     />
                   )}
@@ -6979,7 +7907,7 @@ function Home() {
                 repeatDelay: 3.5,
                 ease: "easeInOut"
               }}
-              className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 z-20 bg-[#FAF5E6] border-2 border-[#D4AF37] p-1.5 sm:p-2 rounded-full shadow-lg"
+              className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 z-20 bg-[#FAF5E6] border-2 border-[#D4AF37] p-1.5 sm:p-2 rounded-full shadow-lg group-hover:scale-110 transition-all duration-500"
             >
               <BadgeCheck className="w-6 h-6 sm:w-7 sm:h-7 text-[#AA7C11] fill-amber-500/20" />
             </motion.div>
@@ -7009,183 +7937,13 @@ function Home() {
             >
               {data.artistName}
             </motion.h1>
-
-            {/* Random song card rotation for gold theme as requested */}
-            {randomSong && (() => {
-              const randStyles = getRandomSongCardStyles(randomSong);
-              const hasRandomSongAchievements = randomSong.achievements && randomSong.achievements.length > 0;
-              const titleLength = randomSong.title?.length || 0;
-              const artistLength = randomSong.singer?.length || randomSong.author?.length || 0;
-              const showRandomSongAchievementsOnMobile = hasRandomSongAchievements && (titleLength + artistLength) <= 25;
-              const activeRandomSongAchievements = hasRandomSongAchievements && (!isMobile || showRandomSongAchievementsOnMobile);
-
-              return (
-                <motion.div 
-                   initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.7, delay: 0.4 }}
-                  className="w-full max-w-lg sm:max-w-xl md:max-w-2xl pt-2 flex flex-col items-stretch"
-                >
-                  <div className="text-stone-500 font-bold text-xs uppercase tracking-widest mb-2.5 flex items-center gap-1.5 justify-center md:justify-start select-none">
-                    <Sparkles className="w-4 h-4 text-[#AA7C11] animate-pulse" />
-                    <span>Bài Hát Ngẫu Nhiên</span>
-                  </div>
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={randomSong.id}
-                      initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                      transition={{ duration: 0.5 }}
-                      className="w-full relative overflow-visible"
-                    >
-                      <Link
-                        to={activeListTab === 'released' ? getArtistLink(`/playlist/released?song=${randomSong.slug || randomSong.id}`) : getArtistLink(`/song/${randomSong.slug || randomSong.id}`)}
-                        onClick={(e) => {
-                          if (randomSong.linkType === 'indirect') {
-                            e.preventDefault();
-                            const indirectLinks = [
-                              randomSong.linkSpotify,
-                              randomSong.linkApple,
-                              randomSong.linkZing,
-                              randomSong.linkYoutubeMusic,
-                              randomSong.linkYoutube
-                            ].filter(l => !!l);
-                            
-                            if (indirectLinks.length === 1 && indirectLinks[0]) {
-                              window.open(indirectLinks[0], '_blank');
-                            } else {
-                              setActiveBioSong(randomSong);
-                            }
-                          }
-                        }}
-                        style={randStyles.customStyle}
-                        className={`group relative overflow-hidden rounded-[20px] p-2.5 sm:p-3 transition-all duration-300 flex flex-row items-center justify-between gap-2.5 sm:gap-4 w-full border-2 ${randStyles.bgClasses} ${randStyles.borderClass} ${randStyles.shadowClass}`}
-                      >
-                        {/* Dynamic theme-specific background and effects */}
-                        {renderContainedEffect(randomSong.template || '1')}
-
-                        {/* Glossy overlay effect for cards with achievements */}
-                        {activeRandomSongAchievements && (
-                          <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-white/20 to-transparent pointer-events-none mix-blend-overlay z-0" />
-                        )}
-                        
-                        {/* Left-middle area: Cover Image and Text info */}
-                        <div className="flex flex-row items-center gap-4 flex-1 min-w-0 relative z-10">
-                          {/* Song Cover Image Container (Left side) */}
-                          <div className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-xl overflow-hidden relative border border-[#D4AF37]/25 group-hover:border-[#D4AF37] transition-colors select-none shadow-md">
-                            {getSongCoverUrl(randomSong.coverUrl) ? (
-                               <img 
-                                 src={getSongCoverUrl(randomSong.coverUrl)} 
-                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                                 alt={randomSong.title} 
-                                 referrerPolicy="no-referrer"
-                               />
-                            ) : (
-                               <div className="w-full h-full bg-[#FAF5E6] text-stone-400 group-hover:text-[#AA7C11] flex items-center justify-center transition-colors">
-                                 <Disc3 className="w-8 h-8 animate-spin-slow" />
-                                </div>
-                            )}
-                            
-                            {/* Play hover effect */}
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
-                              <div className="w-8 h-8 rounded-full bg-[#AA7C11] flex items-center justify-center scale-75 group-hover:scale-100 transition-transform shadow-lg">
-                                <Play className="w-3 h-3 text-white ml-0.5" fill="currentColor" />
-                              </div>
-                            </div>
-
-                            {/* Year Badge inside the Image */}
-                            {randomSong.releaseYear && (
-                              <div className="absolute bottom-1 left-1 bg-black/55 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full flex items-center gap-1 z-20">
-                                {randomSong.releaseYear}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Song Content Details (Middle area) */}
-                          <div className="flex-1 min-w-0 flex flex-col justify-center items-start text-left">
-                            {/* Song Title */}
-                            <h3 className={`font-black text-sm sm:text-base tracking-tight line-clamp-2 leading-tight transition-colors ${randStyles.titleColor}`} title={randomSong.title}>
-                              <HoverTranslate text={randomSong.title} format={true} forceDark={randomSong.isBrand} />
-                            </h3>
-
-                            {/* Artist/Singer */}
-                            <MarqueeText className={`text-[11px] sm:text-xs mt-0.5 w-full ${randStyles.singerColor}`}>
-                              {formatText(randomSong.singer || randomSong.author || data?.artistName || 'Nghệ sĩ', true, randomSong.isBrand ? false : isGoldTheme)}
-                            </MarqueeText>
-                          </div>
-                        </div>
-
-                        {/* Right area: Achievements inside the framed dark-gold container with wobble loop */}
-                        {activeRandomSongAchievements && (
-                          <motion.div 
-                            animate={{ 
-                              y: [0, -2, 0, 2, 0],
-                              rotate: [0, -0.4, 0, 0.4, 0]
-                            }}
-                            transition={{
-                              duration: 5,
-                              repeat: Infinity,
-                              ease: "easeInOut"
-                            }}
-                            className="shrink-0 flex items-center justify-end pl-1.5 sm:pl-4 max-w-[170px] sm:max-w-[245px] relative z-20"
-                          >
-                            {/* Desktop version: Heavy gold framed box */}
-                            <div className="hidden sm:flex w-full h-14 relative overflow-hidden rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/45 items-center justify-between px-3.5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_4px_12px_rgba(0,0,0,0.35)]">
-                              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.22),transparent_70%)] animate-pulse" />
-                              <motion.div 
-                                animate={{ x: ['-100%', '200%'] }}
-                                transition={{ repeat: Infinity, duration: 4.5, ease: "linear" }}
-                                className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent skew-x-12 pointer-events-none"
-                              />
-                              <div className="relative z-10 w-full h-full flex items-center justify-between">
-                                <AchievementCycle achievements={randomSong.achievements} align="right" />
-                              </div>
-                            </div>
-
-                            {/* Mobile version: raw transparent AchievementCycle */}
-                            <div className="flex sm:hidden items-center justify-end w-[85px] shrink-0 overflow-visible">
-                              <AchievementCycle achievements={randomSong.achievements} align="right" />
-                            </div>
-                          </motion.div>
-                        )}
-                      </Link>
-
-                      {/* Released / Demo Badge (Outer layer top right, with wobble animation) */}
-                      <motion.div
-                        animate={{ 
-                          rotate: [15, 11, 19, 11, 15],
-                          scale: [1, 1.05, 0.95, 1.05, 1]
-                        }}
-                        transition={{ 
-                          duration: 4.5, 
-                          repeat: Infinity, 
-                          ease: "easeInOut" 
-                        }}
-                        className="absolute -top-2 -right-2 z-40 select-none pointer-events-none"
-                      >
-                        {randomSong.isReleased ? (
-                          <span className="bg-emerald-600 shadow-[0_0_12px_rgba(16,185,129,0.8)] text-[8px] font-black text-white px-2.5 py-0.5 rounded border border-emerald-400/50 block">
-                            {t.lReleasedMark || 'RELEASED'}
-                          </span>
-                        ) : (
-                          <span className="bg-[#1A1303] text-[#FAF5E6] border border-[#D4AF37] shadow-md text-[8px] font-black px-2.5 py-0.5 rounded block">
-                            {randomSong.linkType === 'indirect' ? 'Landing Page' : (t.lDemoMark || 'DEMO')}
-                          </span>
-                        )}
-                      </motion.div>
-                    </motion.div>
-                  </AnimatePresence>
-                </motion.div>
-              );
-            })()}
           </div>
         </section>
       );
     }
 
     return (
-      <section key="title" className={`relative ${isFirst ? 'pt-24 sm:pt-28' : 'pt-12 sm:pt-16'} pb-10 px-6 sm:px-12 flex flex-col items-center justify-center text-center min-h-[300px]`}>
+      <section key="title-normal" className={`relative ${isFirst ? 'pt-24 sm:pt-28' : 'pt-12 sm:pt-16'} pb-10 px-6 sm:px-12 flex flex-col items-center justify-center text-center min-h-[300px]`}>
         <div className="relative z-10 w-full max-w-5xl flex flex-col items-center mt-4 sm:mt-6">
           <div className="w-full text-center">
             {effectiveCoverUrl ? (
@@ -7208,7 +7966,7 @@ function Home() {
                   {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
                     if (index === array.length - 1) {
                       return (
-                        <span key={index} className="whitespace-nowrap"><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
+                        <span key={`l7529-idx-${index}`} className="whitespace-nowrap"><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
                             <motion.div animate={{ rotateY: [0, 360], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", repeatDelay: 3 }} className="flex items-center justify-center">
                               <BadgeCheck className={`w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 ${isGoldTheme ? 'text-amber-400 fill-amber-400/20' : 'text-blue-500 fill-blue-500/20'} shrink-0 cursor-pointer`} />
                             </motion.div>
@@ -7220,7 +7978,7 @@ function Home() {
                         </span>
                       );
                     }
-                    return <React.Fragment key={index}><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span>{' '}</React.Fragment>;
+                    return <React.Fragment key={`l7541-idx-${index}`}><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span>{' '}</React.Fragment>;
                   })}
                 </motion.h1>
               </div>
@@ -7244,7 +8002,7 @@ function Home() {
                   {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
                     if (index === array.length - 1) {
                       return (
-                        <span key={index} className="whitespace-nowrap"><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
+                        <span key={`l7565-idx-${index}`} className="whitespace-nowrap"><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
                             <motion.div animate={{ rotateY: [0, 360], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", repeatDelay: 3 }} className="flex items-center justify-center">
                               <BadgeCheck className={`w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 ${isGoldTheme ? 'text-amber-400 fill-amber-400/20' : 'text-blue-500 fill-blue-500/20'} shrink-0 cursor-pointer`} />
                             </motion.div>
@@ -7256,11 +8014,63 @@ function Home() {
                         </span>
                       );
                     }
-                    return <React.Fragment key={index}><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span>{' '}</React.Fragment>;
+                    return <React.Fragment key={`l7577-idx-${index}`}><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span>{' '}</React.Fragment>;
                   })}
                 </motion.h1>
               </div>
             )}
+          </div>
+        </div>
+      </section>
+    );
+  };
+
+  const renderRandomSongSection = (isFirst: boolean) => {
+    if (!randomSong) return null;
+    return (
+      <section key="random-song-sec" className={`w-full max-w-2xl sm:max-w-3xl mx-auto px-6 sm:px-12 ${isFirst ? 'pt-24 sm:pt-28' : 'pt-4 sm:pt-6'} pb-6`}>
+        <div className="w-full relative overflow-visible">
+          <div className={`font-bold text-xs uppercase tracking-widest mb-2.5 flex items-center gap-1.5 justify-center select-none ${isGoldTheme ? 'text-stone-500' : 'text-stone-300'}`}>
+            <Sparkles className={`w-4 h-4 ${isGoldTheme ? 'text-[#AA7C11]' : 'text-amber-400'} animate-pulse`} />
+            <span>{t("Bài Hát Ngẫu Nhiên") || "Bài Hát Ngẫu Nhiên"}</span>
+          </div>
+          <div className="w-full relative overflow-visible">
+            <RandomSongCard
+              randomSong={randomSong}
+              data={data}
+              isGoldTheme={isGoldTheme}
+              activeListTab={activeListTab}
+              getSongCoverUrl={getSongCoverUrl}
+              isMobile={isMobile}
+              formatText={formatText}
+              getArtistLink={getArtistLink}
+              setActiveBioSong={setActiveBioSong}
+              t={t}
+            />
+
+            {/* Released / Demo Badge */}
+            <motion.div
+              animate={{ 
+                rotate: [15, 11, 19, 11, 15],
+                scale: [1, 1.05, 0.95, 1.05, 1]
+              }}
+              transition={{ 
+                duration: 4.5, 
+                repeat: Infinity, 
+                ease: "easeInOut" 
+              }}
+              className="absolute -top-2 -right-2 z-40 select-none pointer-events-none"
+            >
+              {randomSong.isReleased ? (
+                <span className="bg-emerald-600 shadow-[0_0_12px_rgba(16,185,129,0.8)] text-[8px] font-black text-white px-2.5 py-0.5 rounded border border-emerald-400/50 block">
+                  {t.lReleasedMark || 'RELEASED'}
+                </span>
+              ) : (
+                <span className="bg-[#1A1303] text-[#FAF5E6] border border-[#D4AF37] shadow-md text-[8px] font-black px-2.5 py-0.5 rounded block">
+                  {randomSong.linkType === 'indirect' ? 'Landing Page' : (t.lDemoMark || 'DEMO')}
+                </span>
+              )}
+            </motion.div>
           </div>
         </div>
       </section>
@@ -7392,7 +8202,7 @@ function Home() {
         </div>
       ) : data.slideshowImages && data.slideshowImages.length > 0 ? (
         <div className="fixed inset-0 z-[-1] pointer-events-none bg-neutral-950">
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence mode="wait">
             <motion.div
               key={currentSlide}
               initial={{ opacity: 0, scale: 1.05 }}
@@ -7401,7 +8211,7 @@ function Home() {
               transition={{ duration: 1.5, ease: "easeInOut" }}
               className="absolute inset-0 bg-cover bg-center"
               style={{ 
-                 backgroundImage: `url(${data.slideshowImages[currentSlide]})`, 
+                 backgroundImage: `url(${data.slideshowImages[currentSlide % data.slideshowImages.length]})`, 
                  backgroundPosition: 'center 20%', 
                  maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)', 
                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)' 
@@ -7429,7 +8239,7 @@ function Home() {
                 <div 
                   className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
                   style={{ 
-                    backgroundImage: `url(${data.slideshowImages[currentSlide]})`,
+                    backgroundImage: `url(${data.slideshowImages[currentSlide % data.slideshowImages.length]})`,
                     backgroundPosition: 'center 20%'
                   }}
                 />
@@ -7531,26 +8341,52 @@ function Home() {
       </div>
 
       {isVault && (() => {
-        const layoutOrder = data?.layoutSections || landingConfig?.globalLayoutSections || ['title', 'vault', 'mv', 'spotify'];
-        const titleOrder = layoutOrder.indexOf('title') !== -1 ? layoutOrder.indexOf('title') : 0;
-        const spotifyOrder = layoutOrder.indexOf('spotify') !== -1 ? layoutOrder.indexOf('spotify') : 1;
-        const vaultOrder = layoutOrder.indexOf('vault') !== -1 ? layoutOrder.indexOf('vault') : 2;
-        const mvOrder = layoutOrder.indexOf('mv') !== -1 ? layoutOrder.indexOf('mv') : 3;
-        const firstSection = layoutOrder[0] || 'title';
+        const layoutOrder: string[] = data?.layoutSections || landingConfig?.globalLayoutSections || ['title', 'random_song', 'vault', 'mv', 'spotify'];
+        const finalLayoutOrder = Array.from(new Set(layoutOrder));
+        if (!finalLayoutOrder.includes('random_song')) {
+          const tIdx = finalLayoutOrder.indexOf('title');
+          if (tIdx !== -1) finalLayoutOrder.splice(tIdx + 1, 0, 'random_song');
+          else finalLayoutOrder.splice(1, 0, 'random_song');
+        }
+
+        const hiddenSections = data?.hiddenSections || [];
+        const isSectionVisible = (secKey: string) => {
+          if (secKey === 'vault') return true; // Kho Nhạc không bao giờ bị ẩn
+          return !hiddenSections.includes(secKey);
+        };
+
+        const titleOrder = finalLayoutOrder.indexOf('title') !== -1 ? finalLayoutOrder.indexOf('title') : 0;
+        const randomSongOrder = finalLayoutOrder.indexOf('random_song') !== -1 ? finalLayoutOrder.indexOf('random_song') : 1;
+        const vaultOrder = finalLayoutOrder.indexOf('vault') !== -1 ? finalLayoutOrder.indexOf('vault') : 2;
+        const mvOrder = finalLayoutOrder.indexOf('mv') !== -1 ? finalLayoutOrder.indexOf('mv') : 3;
+        const spotifyOrder = finalLayoutOrder.indexOf('spotify') !== -1 ? finalLayoutOrder.indexOf('spotify') : 4;
+
+        const visibleSectionsInOrder = finalLayoutOrder.filter(secKey => isSectionVisible(secKey));
+        const firstVisibleSection = visibleSectionsInOrder[0] || 'title';
+
         return (
           <main className="flex-1 w-full flex flex-col pb-32">
-            <div style={{ order: titleOrder }} className="w-full">
-              {renderTitleSection(firstSection === 'title')}
-            </div>
-            {data.spotifyUrl && (
+            {isSectionVisible('title') && (
+              <div style={{ order: titleOrder }} className="w-full">
+                {renderTitleSection(firstVisibleSection === 'title')}
+              </div>
+            )}
+
+            {isSectionVisible('random_song') && randomSong && (
+              <div style={{ order: randomSongOrder }} className="w-full">
+                {renderRandomSongSection(firstVisibleSection === 'random_song')}
+              </div>
+            )}
+
+            {isSectionVisible('spotify') && data.spotifyUrl && (
               <div style={{ order: spotifyOrder }} className="w-full">
-                {renderSpotifySection(firstSection === 'spotify')}
+                {renderSpotifySection(firstVisibleSection === 'spotify')}
               </div>
             )}
 
             <div style={{ order: vaultOrder }} className="w-full">
               {/* Demos Section */}
-              <section id="music-tabs-section" className={`scroll-mt-24 w-full max-w-5xl mx-auto px-6 sm:px-12 pb-10 ${firstSection === 'vault' ? 'pt-24 sm:pt-28' : ''}`}>
+              <section id="music-tabs-section" className={`scroll-mt-24 w-full max-w-5xl mx-auto px-6 sm:px-12 pb-10 ${firstVisibleSection === 'vault' ? 'pt-24 sm:pt-28' : ''}`}>
           {/* Header Row with compact Search Box */}
           <div className="flex items-center justify-between mb-4">
             <div className={`${isHomeSearchExpanded ? 'hidden sm:flex' : 'flex'} text-base sm:text-lg font-bold tracking-tight ${isGoldTheme ? 'text-amber-950 font-black' : 'text-white/95'} items-center gap-2 shrink-0`}>
@@ -7763,9 +8599,9 @@ function Home() {
                     className={isGoldTheme && !isMobile && activeListTab !== 'albums' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" : "grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[1400px] mx-auto"}
                   >
                     {activeListTab === 'albums' ? (
-                      paginatedItems.map((playlist: any) => {
+                      paginatedItems.map((playlist: any, idx: number) => {
                         const songsInPlaylist = (data?.demos || []).filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id));
-                        if (songsInPlaylist.length === 0) return <React.Fragment key={playlist.id} />;
+                        if (songsInPlaylist.length === 0) return <React.Fragment key={`l8086-${playlist.id || ''}-${idx}`} />;
                         
                         let coverUrl = playlist.coverUrl || '';
                         if (!coverUrl && data.slideshowImages && data.slideshowImages.length > 0) {
@@ -7775,7 +8611,7 @@ function Home() {
 
                         return (
                           <motion.div
-                            key={playlist.id}
+                            key={`l8096-${playlist.id || ''}-${idx}`}
                             variants={{
                               hidden: {  opacity: 0, y: 15 },
                               show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
@@ -7841,9 +8677,9 @@ function Home() {
                         );
                       })
                     ) : (
-                      paginatedItems.map((demo: any) => (
+                      paginatedItems.map((demo: any, idx: number) => (
                         <BrandLogoColorExtractor 
-                          key={demo.id} 
+                          key={`l8164-demo-${demo.id || ""}-${idx}`} 
                           logoUrl={demo.isBrand ? demo.brandLogoUrl : undefined} 
                           defaultColor={demo.brandColor}
                         >
@@ -7881,27 +8717,85 @@ function Home() {
                                       ? 'border-[3px] border-[#D4AF37] shadow-[0_12px_32px_rgba(170,124,17,0.25)] hover:shadow-[0_16px_40px_rgba(170,124,17,0.4)] hover:scale-[1.02] bg-gradient-to-tr from-[#BF953F] via-[#FCF6BA] via-45% to-[#B38728] via-70% to-[#FBF5B7]'
                                       : 'border-2 border-[#D4AF37]/35 hover:border-[#D4AF37] shadow-[0_12px_45px_rgba(212,175,55,0.06)] hover:shadow-[0_16px_45px_rgba(212,175,55,0.16)] hover:scale-[1.015] bg-[#FAF5E6]'
                                   }`}
+                                  style={demo.isBrand && activeBrandColors.primary && (!demo.achievements || demo.achievements.length === 0) ? {
+                                    background: `linear-gradient(135deg, ${activeBrandColors.primary}1A 0%, ${activeBrandColors.secondary}15 100%)`,
+                                    borderColor: `${activeBrandColors.primary}45`
+                                  } : {}}
                                 >
+                                  {/* Animated Brand Logo Background */}
+                                  {demo.isBrand && demo.brandLogoUrl && (
+                                    <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none opacity-[0.08] group-hover:opacity-[0.15] transition-opacity duration-700 flex items-center justify-center mix-blend-multiply">
+                                      <motion.img
+                                        src={demo.brandLogoUrl}
+                                        alt="brand background"
+                                        className="w-[140%] h-[140%] object-contain filter blur-[1px]"
+                                        animate={{ 
+                                          rotate: [0, 5, -5, 0],
+                                          scale: [1, 1.05, 1]
+                                        }}
+                                        transition={{ 
+                                          duration: 15, 
+                                          repeat: Infinity, 
+                                          ease: "easeInOut" 
+                                        }}
+                                      />
+                                    </div>
+                                  )}
+                                  
                                   {/* Glossy overlay effect for cards with achievements */}
                                   {demo.achievements && demo.achievements.length > 0 && (
                                     <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-white/20 to-transparent pointer-events-none mix-blend-overlay z-0" />
                                   )}
 
                                   {/* 1. Song Cover Image Container */}
-                                  <div className="w-full aspect-square rounded-2xl overflow-hidden relative border border-[#D4AF37]/25 group-hover:border-[#D4AF37] transition-colors select-none shadow-md z-10">
-                                    {getSongCoverUrl(demo.coverUrl) ? (
-                                      <img 
-                                        src={getSongCoverUrl(demo.coverUrl)} 
-                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                                        alt={demo.title} 
-                                        referrerPolicy="no-referrer"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full bg-[#FAF5E6] text-stone-400 group-hover:text-[#AA7C11] flex items-center justify-center transition-colors">
-                                        <Disc3 className="w-10 h-10 animate-spin-slow" />
-                                      </div>
-                                    )}
-                                    
+                                  <div className="w-full aspect-square rounded-2xl overflow-hidden relative border border-[#D4AF37]/25 group-hover:border-[#D4AF37] transition-colors select-none shadow-md z-10 bg-[#FAF5E6]">
+                                    <AnimatePresence mode="wait">
+                                      {demo.isBrand && showBrandState && demo.brandLogoUrl ? (
+                                        <motion.div
+                                          key="brand-logo-vert"
+                                          initial={{ opacity: 0, scale: 0.8, rotate: -6 }}
+                                          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                                          exit={{ opacity: 0, scale: 0.8, rotate: 6 }}
+                                          transition={{ duration: 0.45, ease: "easeOut" }}
+                                          className="absolute inset-0 w-full h-full flex items-center justify-center p-4 bg-[#FAF5E6]"
+                                        >
+                                          <motion.img 
+                                            src={demo.brandLogoUrl} 
+                                            animate={{ 
+                                              scale: [1, 1.06, 1],
+                                              rotate: [0, 1.5, -1.5, 0]
+                                            }}
+                                            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                                            className="w-full h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-700" 
+                                            alt={demo.brandName || ''} 
+                                            referrerPolicy="no-referrer" 
+                                          />
+                                        </motion.div>
+                                      ) : (
+                                        <motion.div
+                                          key="normal-cover-vert"
+                                          initial={{ opacity: 0, scale: 0.95 }}
+                                          animate={{ opacity: 1, scale: 1 }}
+                                          exit={{ opacity: 0, scale: 0.95 }}
+                                          transition={{ duration: 0.45, ease: "easeOut" }}
+                                          className="absolute inset-0 w-full h-full"
+                                        >
+                                          {getSongCoverUrl(demo.coverUrl) ? (
+                                            <img 
+                                              src={getSongCoverUrl(demo.coverUrl)} 
+                                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                                              alt={demo.title} 
+                                              referrerPolicy="no-referrer"
+                                            />
+                                          ) : (
+                                            <div className="w-full h-full bg-[#FAF5E6] text-stone-400 group-hover:text-[#AA7C11] flex items-center justify-center transition-colors">
+                                              <Disc3 className="w-10 h-10 animate-spin-slow" />
+                                            </div>
+                                          )}
+                                        </motion.div>
+                                      )}
+                                    </AnimatePresence>
+
                                     {/* Play hover effect */}
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
                                       <div className="w-11 h-11 rounded-full bg-[#AA7C11] flex items-center justify-center scale-75 group-hover:scale-100 transition-transform shadow-lg">
@@ -7916,21 +8810,94 @@ function Home() {
                                         {demo.releaseYear}
                                       </div>
                                     )}
+
+                                    {/* Share Button inside the Image (top right) */}
+                                    {demo.isReleased && (
+                                      <button
+                                        key={`l8265-share-btn-top-${demo.id || ''}-${idx}`}
+                                        onClick={async (e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          let url = window.location.origin + getArtistLink(`/playlist/released?song=${demo.slug || demo.id}`);
+                                          url = formatShareUrl(url);
+                                          await copyToClipboard(url);
+                                          setToast('Đã copy link bài hát!');
+                                          setTimeout(() => setToast(''), 3000);
+                                        }}
+                                        className="absolute top-2.5 right-2.5 z-30 bg-[#FAF5E6]/95 hover:bg-white border border-[#D4AF37]/50 text-[#AA7C11] hover:text-[#1A1303] p-1.5 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-90 group-hover:scale-100 active:scale-90"
+                                        title="Chia sẻ bài hát"
+                                      >
+                                        <Share2 className="w-3.5 h-3.5 stroke-[2]" />
+                                      </button>
+                                    )}
+
+                                    {/* Lock badge inside the Image (top left) */}
+                                    {(demo.password || data?.globalPassword) && !demo.isReleased && demo.linkType !== 'indirect' && (
+                                      <div className="absolute top-2.5 left-2.5 z-30 bg-[#FAF5E6]/90 border border-[#D4AF37]/30 p-1.5 rounded-full shadow-md">
+                                        <Lock className="w-3.5 h-3.5 text-yellow-500" />
+                                      </div>
+                                    )}
                                   </div>
 
                                   {/* 2. Song Title */}
-                                  <h3 className="font-black text-[#1A1303] group-hover:text-[#AA7C11] text-sm sm:text-base tracking-tight mt-4 line-clamp-2 leading-tight transition-colors min-h-[40px] flex items-center justify-center text-center px-1 z-10" title={demo.title}>
-                                    <HoverTranslate text={demo.title} format={true} />
-                                  </h3>
+                                  <div className="mt-4 min-h-[40px] flex items-center justify-center text-center px-1 z-10 w-full overflow-hidden">
+                                    <AnimatePresence mode="wait">
+                                      {demo.isBrand && showBrandState && demo.brandName ? (
+                                        <motion.h3 
+                                          key="brand-title-vert"
+                                          initial={{ opacity: 0, y: 6 }}
+                                          animate={{ opacity: 1, y: 0 }}
+                                          exit={{ opacity: 0, y: -6 }}
+                                          transition={{ duration: 0.35 }}
+                                          className="font-black text-[#AA7C11] text-sm sm:text-base tracking-tight line-clamp-2 leading-tight flex items-center justify-center gap-1"
+                                        >
+                                          <span className="bg-[#D4AF37]/25 text-[#AA7C11] text-[10px] px-2 py-0.5 rounded-md font-bold uppercase shrink-0">{t("Thương hiệu")}</span>
+                                          <span className="truncate">{demo.brandName}</span>
+                                        </motion.h3>
+                                      ) : (
+                                        <motion.h3 
+                                          key="song-title-vert"
+                                          initial={{ opacity: 0, y: -6 }}
+                                          animate={{ opacity: 1, y: 0 }}
+                                          exit={{ opacity: 0, y: 6 }}
+                                          transition={{ duration: 0.35 }}
+                                          className="font-black text-[#1A1303] group-hover:text-[#AA7C11] text-sm sm:text-base tracking-tight line-clamp-2 leading-tight transition-colors" 
+                                          title={demo.title}
+                                        >
+                                          <HoverTranslate text={demo.title} format={true} />
+                                        </motion.h3>
+                                      )}
+                                    </AnimatePresence>
+                                  </div>
 
                                   {/* 3. Artist/Singer */}
-                                  <MarqueeText className={`${
-                                    demo.achievements && demo.achievements.length > 0
-                                      ? 'text-[#5C3E14] font-black'
-                                      : 'text-stone-500 font-semibold'
-                                  } text-xs mt-1 text-center justify-center mb-4 z-10 w-full px-2`}>
-                                    {formatText(demo.singer || demo.author || data?.artistName || 'Nghệ sĩ', true)}
-                                  </MarqueeText>
+                                  <div className="mb-4 mt-1 z-10 w-full px-2">
+                                    <AnimatePresence mode="wait">
+                                      {demo.isBrand && showBrandState ? (
+                                        <motion.div
+                                          key="brand-brief-vert"
+                                          initial={{ opacity: 0 }}
+                                          animate={{ opacity: 1 }}
+                                          exit={{ opacity: 0 }}
+                                          transition={{ duration: 0.35 }}
+                                          className="text-xs text-[#5C3E14] font-bold text-center justify-center flex items-center gap-1.5 w-full"
+                                        >
+                                          <span className="w-1.5 h-1.5 rounded-full bg-[#AA7C11] animate-pulse shrink-0"></span>
+                                          <span>{t("Nhạc Thương Hiệu")}</span>
+                                        </motion.div>
+                                      ) : (
+                                        <motion.div key="artist-name-vert" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }}>
+                                          <MarqueeText className={`${
+                                            demo.achievements && demo.achievements.length > 0
+                                              ? 'text-[#5C3E14] font-black'
+                                              : 'text-stone-500 font-semibold'
+                                          } text-xs text-center justify-center w-full`}>
+                                            {formatText(demo.singer || demo.author || data?.artistName || 'Nghệ sĩ', true)}
+                                          </MarqueeText>
+                                        </motion.div>
+                                      )}
+                                    </AnimatePresence>
+                                  </div>
 
                                   {/* 4. Bottom Achievement/Platform Bar (as seen in Image 1) with float/wobble */}
                                   {demo.achievements && demo.achievements.length > 0 && (
@@ -7962,31 +8929,6 @@ function Home() {
                                     </div>
                                   )}
 
-                                  {/* Share Button (no badges inside Link to prevent clipping) */}
-                                  {demo.isReleased && (
-                                    <button
-                                      key="share-btn"
-                                      onClick={async (e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        let url = window.location.origin + getArtistLink(`/playlist/released?song=${demo.slug || demo.id}`);
-                                        url = formatShareUrl(url);
-                                        await copyToClipboard(url);
-                                        setToast('Đã copy link bài hát!');
-                                        setTimeout(() => setToast(''), 3000);
-                                      }}
-                                      className="absolute bottom-16 right-5 z-20 bg-[#FAF5E6] border border-[#D4AF37]/35 text-[#AA7C11] hover:text-[#1A1303] p-1.5 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-95 group-hover:scale-100 active:scale-90"
-                                      title="Chia sẻ bài hát"
-                                    >
-                                      <Share2 className="w-3.5 h-3.5 stroke-[1.5]" />
-                                    </button>
-                                  )}
-
-                                  {(demo.password || data?.globalPassword) && !demo.isReleased && demo.linkType !== 'indirect' && (
-                                    <div className="absolute bottom-16 right-5 z-20 bg-[#FAF5E6] border border-[#D4AF37]/30 p-1.5 rounded-full shadow-md">
-                                      <Lock className="w-3.5 h-3.5 text-yellow-500" />
-                                    </div>
-                                  )}
                                 </Link>
                               ) : (
                                 <Link 
@@ -8138,8 +9080,8 @@ const activeAchievements = hasAchievements && !isTitleLong;
                                                   <HoverTranslate text="Đối Tác: " style={{ color: activeBrandColors.secondary }} />
                                                   <HoverTranslate text={demo.brandName} style={{ color: activeBrandColors.primary }} />
                                                 </h3>
-                                                <p className="text-neutral-200 font-medium text-[8px] xs:text-[9px] mt-0.5 truncate tracking-wider flex items-center gap-1.5">
-                                                  <span className="w-1 h-1 rounded-full animate-pulse" style={{ backgroundColor: activeBrandColors.secondary }}></span>
+                                                <p className="text-white font-bold text-[8.5px] xs:text-[10px] sm:text-xs mt-0.5 truncate tracking-wider flex items-center gap-1.5 drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)]">
+                                                  <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: activeBrandColors.secondary }}></span>
                                                   {t("Nhạc Thương Hiệu")}
                                                 </p>
                                               </motion.div>
@@ -8163,7 +9105,7 @@ const activeAchievements = hasAchievements && !isTitleLong;
 </h3>
 <MarqueeText className={`${
   demo.isBrand
-     ? 'text-neutral-200 font-medium'
+     ? 'text-white font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] text-xs'
      : (isGoldTheme
          ? (activeAchievements ? 'text-amber-200/80 font-bold' : 'text-stone-500 font-bold')
          : 'text-neutral-400')
@@ -8184,7 +9126,7 @@ const activeAchievements = hasAchievements && !isTitleLong;
                                   })()}
                                   {demo.isReleased && (
                                     <button
-                                      key="share-btn"
+                                      key={`l8531-share-btn-bottom-${demo.id || ''}-${idx}`}
                                       onClick={async (e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
@@ -8263,27 +9205,15 @@ const activeAchievements = hasAchievements && !isTitleLong;
                   <div className={`col-span-full flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t ${isGoldTheme ? 'border-[#D4AF37]/35' : 'border-white/10'}`}>
                     <div className={`flex items-center gap-2 text-xs sm:text-sm ${isGoldTheme ? 'text-[#1A1303] font-semibold' : 'text-neutral-300'}`}>
                       <span>{t("Hiển thị")}</span>
-                      <div className="relative">
-                        <select 
-                          value={pageSize} 
-                          onChange={(e) => {
-                            setPageSize(Number(e.target.value));
-                            setCurrentPage(1);
-                          }}
-                          className={`cursor-pointer backdrop-blur-md transition-all duration-300 focus:outline-none focus:ring-2 text-xs sm:text-sm shadow-lg appearance-none rounded-xl pl-3 pr-8 py-1.5 ${
-                            isGoldTheme 
-                              ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37] focus:ring-[#D4AF37]/50' 
-                              : `bg-neutral-900/90 border border-white/20 text-white hover:bg-neutral-800/90 hover:border-white/40 ${activeRingColor}`
-                          }`}
-                        >
-                          <option value={20} className={isGoldTheme ? "bg-white text-[#1A1303]" : "bg-neutral-900 text-white"}>20</option>
-                          <option value={50} className={isGoldTheme ? "bg-white text-[#1A1303]" : "bg-neutral-900 text-white"}>50</option>
-                          <option value={100} className={isGoldTheme ? "bg-white text-[#1A1303]" : "bg-neutral-900 text-white"}>100</option>
-                        </select>
-                        <div className={`absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none ${isGoldTheme ? 'text-[#AA7C11]' : 'text-neutral-400'}`}>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                        </div>
-                      </div>
+                      <BeautifulSelect 
+                        value={pageSize} 
+                        onChange={(val) => {
+                          setPageSize(val);
+                          setCurrentPage(1);
+                        }}
+                        options={[20, 50, 100]}
+                        isGoldTheme={isGoldTheme}
+                      />
                       <span>{t("bài / trang")} ({t("Tổng")}: {totalItems})</span>
                     </div>
                     
@@ -8323,7 +9253,7 @@ const activeAchievements = hasAchievements && !isTitleLong;
                             const isCurrent = currentPage === page;
                             return (
                               <button
-                                key={page}
+                                key={`l8658-page-btn-1-${page}`}
                                 onClick={() => {
                                   setCurrentPage(page);
                                   const el = document.getElementById('music-tabs-section');
@@ -8372,8 +9302,8 @@ const activeAchievements = hasAchievements && !isTitleLong;
         </section>
             </div>
 
-            {ytVideos.length > 0 && (
-              <div style={{ order: mvOrder }} className={`w-full max-w-5xl mx-auto px-6 sm:px-12 pb-32 ${firstSection === 'mv' ? 'pt-24 sm:pt-28' : ''}`}>
+            {isSectionVisible('mv') && ytVideos.length > 0 && (
+              <div style={{ order: mvOrder }} className={`w-full max-w-5xl mx-auto px-6 sm:px-12 pb-32 ${firstVisibleSection === 'mv' ? 'pt-24 sm:pt-28' : ''}`}>
                 {(() => {
           const mvTotalItems = ytVideos.length;
           const mvTotalPages = Math.ceil(mvTotalItems / mvPageSize);
@@ -8387,9 +9317,9 @@ const activeAchievements = hasAchievements && !isTitleLong;
                 <h2 className={`text-2xl font-bold tracking-tight ${isGoldTheme ? 'text-[#1A1303]' : 'text-white'}`}>{t.rMv}</h2>
               </div>
               <div className="space-y-4">
-                {paginatedMVs.map((song) => (
+                {paginatedMVs.map((song, idx) => (
                   <button 
-                    onClick={() => setPlayingVideo(song.videoId)} key={song.videoId} 
+                    onClick={() => setPlayingVideo(song.videoId)} key={`l8724-${song.videoId || ''}-${song.id || ''}-${idx}`} 
                     className={`w-full text-left flex items-center gap-4 rounded-xl p-3 shadow-lg transition-all duration-300 group border ${
                       isGoldTheme 
                         ? 'bg-[#FAF5E6] border-[#D4AF37]/35 hover:bg-white hover:border-[#D4AF37] shadow-[0_4px_20px_rgba(212,175,55,0.06)]' 
@@ -8418,27 +9348,15 @@ const activeAchievements = hasAchievements && !isTitleLong;
                 <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 mt-6 border-t ${isGoldTheme ? 'border-[#D4AF37]/35' : 'border-white/10'}`}>
                   <div className={`flex items-center gap-2 text-xs sm:text-sm ${isGoldTheme ? 'text-[#1A1303] font-semibold' : 'text-neutral-300'}`}>
                     <span>{t("Hiển thị")}</span>
-                    <div className="relative">
-                      <select 
-                        value={mvPageSize} 
-                        onChange={(e) => {
-                          setMvPageSize(Number(e.target.value));
-                          setMvCurrentPage(1);
-                        }}
-                        className={`cursor-pointer backdrop-blur-md transition-all duration-300 focus:outline-none focus:ring-2 text-xs sm:text-sm shadow-lg appearance-none rounded-xl pl-3 pr-8 py-1.5 ${
-                          isGoldTheme 
-                            ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37] focus:ring-[#D4AF37]/50' 
-                            : 'bg-neutral-900/90 border border-white/20 text-white hover:bg-neutral-800/90 hover:border-white/40 focus:ring-emerald-500/50'
-                        }`}
-                      >
-                        <option value={8} className={isGoldTheme ? "bg-white text-[#1A1303]" : "bg-neutral-900 text-white"}>8</option>
-                        <option value={20} className={isGoldTheme ? "bg-white text-[#1A1303]" : "bg-neutral-900 text-white"}>20</option>
-                        <option value={50} className={isGoldTheme ? "bg-white text-[#1A1303]" : "bg-neutral-900 text-white"}>50</option>
-                      </select>
-                      <div className={`absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none ${isGoldTheme ? 'text-[#AA7C11]' : 'text-neutral-400'}`}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                      </div>
-                    </div>
+                    <BeautifulSelect 
+                      value={mvPageSize} 
+                      onChange={(val) => {
+                        setMvPageSize(val);
+                        setMvCurrentPage(1);
+                      }}
+                      options={[8, 20, 50]}
+                      isGoldTheme={isGoldTheme}
+                    />
                     <span>{t("bài / trang")} ({t("Tổng")}: {mvTotalItems})</span>
                   </div>
 
@@ -8478,7 +9396,7 @@ const activeAchievements = hasAchievements && !isTitleLong;
                           const isCurrent = mvCurrentPage === page;
                           return (
                             <button
-                              key={page}
+                              key={`l8801-page-btn-2-${page}`}
                               onClick={() => {
                                 setMvCurrentPage(page);
                                 const el = document.getElementById('mv-section');
@@ -8808,7 +9726,7 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
           const randDur = 0.5 + Math.random() * 0.8;
           return (
              <div 
-              key={i} 
+              key={`l9131-i-${i}`} 
               className={`w-1 rounded-full ${waveColorClass} transition-all duration-300 origin-bottom opacity-90 drop-shadow-sm`}
               style={{
                 height: shouldAnimateWave ? '100%' : '15%',
@@ -8937,7 +9855,7 @@ function ButterflyEffect() {
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-[30] opacity-60">
       {Array.from({ length: 12 }).map((_, i) => (
         <div 
-          key={i} 
+          key={`l9260-i-${i}`} 
           className="absolute animate-float-shape"
           style={{
             left: `${Math.random() * 100}%`,
@@ -8959,7 +9877,7 @@ function CandyEffect() {
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 opacity-80">
       {Array.from({ length: 20 }).map((_, i) => (
         <div 
-          key={i} 
+          key={`l9282-i-${i}`} 
           className="absolute text-xl md:text-2xl animate-snow will-change-transform"
           style={{
             left: `${Math.random() * 100}%`,
@@ -8994,7 +9912,7 @@ function ElectricEffect() {
         const blinkDelay = Math.random() * 1.8;
         return (
           <div 
-            key={i} 
+            key={`l9317-i-${i}`} 
             className={`absolute w-1 rounded-full ${item.bg}`}
             style={{
               left: `${Math.random() * 100}%`,
@@ -9016,7 +9934,7 @@ function ChainEffect() {
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-[30] opacity-70">
       {Array.from({ length: 25 }).map((_, i) => (
         <div 
-          key={i} 
+          key={`l9339-i-${i}`} 
           className="absolute text-2xl md:text-3xl animate-snow will-change-transform drop-shadow-md"
           style={{
             left: `${Math.random() * 100}%`,
@@ -9038,7 +9956,7 @@ function NoteEffect() {
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 opacity-40">
       {Array.from({ length: 20 }).map((_, i) => (
         <div 
-          key={i} 
+          key={`l9361-i-${i}`} 
           className="absolute text-2xl md:text-4xl animate-snow will-change-transform drop-shadow-sm text-stone-100"
           style={{
             left: `${Math.random() * 100}%`,
@@ -9058,7 +9976,7 @@ function EightBitEffect() {
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-[30] opacity-30">
       {Array.from({ length: 30 }).map((_, i) => (
         <div 
-          key={i} 
+          key={`l9381-i-${i}`} 
           className="absolute w-4 h-4 bg-white animate-snow will-change-transform"
           style={{
             left: `${Math.random() * 100}%`,
@@ -9078,7 +9996,7 @@ function SnowEffect() {
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       {Array.from({ length: 40 }).map((_, i) => (
         <div 
-          key={i} 
+          key={`l9401-i-${i}`} 
           className="absolute bg-white/30 rounded-full animate-snow will-change-transform"
           style={{
             left: `${Math.random() * 100}%`,
@@ -9099,7 +10017,7 @@ function CuteEffect() {
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 opacity-30">
       {Array.from({ length: 15 }).map((_, i) => (
         <div 
-          key={i} 
+          key={`l9422-i-${i}`} 
           className={`absolute bg-[#fef08a] animate-float-shape ${shapes[i % 3]}`}
           style={{
             left: `${Math.random() * 100}%`,
@@ -9120,7 +10038,7 @@ function BlossomEffect() {
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       {Array.from({ length: 30 }).map((_, i) => (
         <div 
-          key={i} 
+          key={`l9443-i-${i}`} 
           className="absolute bg-pink-300 animate-snow will-change-transform opacity-70 shadow-[0_0_8px_rgba(244,114,182,0.4)]"
           style={{
             left: `${Math.random() * 100}%`,
@@ -9142,7 +10060,7 @@ function LeavesEffect() {
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       {Array.from({ length: 25 }).map((_, i) => (
         <div 
-          key={i} 
+          key={`l9465-i-${i}`} 
           className="absolute bg-yellow-600/30 animate-snow will-change-transform"
           style={{
             left: `${Math.random() * 100}%`,
@@ -9245,7 +10163,7 @@ function RainbowEffect() {
               const angle = (idx * 360) / 12;
               return (
                 <line
-                  key={idx}
+                  key={`l9568-idx-4-${idx}`}
                   x1="50"
                   y1="50"
                   x2={50 + 42 * Math.cos((angle * Math.PI) / 180)}
@@ -9275,7 +10193,7 @@ function RainbowEffect() {
       {/* Floating clouds looping left to right */}
       {cloudsData.map((cloud, idx) => (
         <svg 
-          key={idx}
+          key={`l9598-idx-5-${idx}`}
           className={`absolute ${cloud.size} ${cloud.opacity} animate-cloud-slow pointer-events-none z-10 w-28 md:w-36`} 
           style={{ 
             top: cloud.top, 
@@ -9337,7 +10255,7 @@ function RetroNotesEffect() {
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 opacity-40">
       {Array.from({ length: 25 }).map((_, i) => (
         <div 
-          key={i} 
+          key={`l9660-i-${i}`} 
           className="absolute text-xl sm:text-2xl animate-snow will-change-transform drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] text-[#a16207]"
           style={{
             left: `${Math.random() * 100}%`,
@@ -9370,7 +10288,7 @@ function SunsetLeavesEffect() {
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       {Array.from({ length: 30 }).map((_, i) => (
         <div 
-          key={i} 
+          key={`l9693-i-${i}`} 
           className={`absolute ${colors[i % colors.length]} animate-snow will-change-transform`}
           style={{
             left: `${Math.random() * 100}%`,
@@ -9430,7 +10348,7 @@ function OceanNightSkyEffect() {
       {/* Drifting Clouds */}
       {clouds.map((c, i) => (
         <div
-          key={i}
+          key={`l9753-i-${i}`}
           className="absolute text-5xl sm:text-7xl pointer-events-none select-none text-white/12"
           style={{
             top: c.top,
@@ -9459,7 +10377,7 @@ function EightBitGameEffect() {
       
       {Array.from({ length: 28 }).map((_, i) => (
         <div 
-          key={i} 
+          key={`l9782-i-${i}`} 
           className="absolute text-xl sm:text-3xl animate-snow drop-shadow-[0_3px_6px_rgba(236,72,153,0.6)] font-mono select-none will-change-transform"
           style={{
             left: `${Math.random() * 100}%`,
@@ -9499,7 +10417,7 @@ function PuzzleEffect() {
         const randomScale = 0.5 + Math.random() * 1.5;
         return (
           <div 
-            key={i} 
+            key={`l9822-i-${i}`} 
             className={`absolute text-2xl sm:text-4xl animate-snow will-change-transform select-none ${colorClass}`}
             style={{
               left: `${Math.random() * 100}%`,
@@ -9644,7 +10562,7 @@ function CheeringEffect() {
         {hatWaves.map(wave => 
           wave.items.map((hat, i) => (
             <div
-              key={`${wave.id}-${i}`}
+              key={`l9967-${wave.id}-${i}`}
               className="absolute text-5xl md:text-6xl drop-shadow-xl will-change-transform"
               style={{
                 left: hat.left,
@@ -9669,7 +10587,7 @@ function CheeringEffect() {
         {confettiBursts.map(burst => 
           burst.items.map((conf, i) => (
             <div
-              key={`${burst.id}-${i}`}
+              key={`l9992-${burst.id}-${i}`}
               className={`absolute ${conf.color} ${conf.isSquare ? 'w-2 h-2' : 'w-1.5 h-3'} will-change-transform`}
               style={{
                 left: conf.isLeft ? '-10%' : '110%',
@@ -9781,7 +10699,7 @@ function AutumnLeavesEffect() {
       {/* Uneven vintage stains (loang lổ) */}
       {stains.map((stain, idx) => (
         <div
-          key={`stain-${idx}`}
+          key={`l10104-stain-${idx}`}
           className="absolute rounded-full filter blur-[60px] opacity-70 mix-blend-multiply"
           style={{
             left: stain.left,
@@ -9804,7 +10722,7 @@ function AutumnLeavesEffect() {
       {/* Falling dried leaves */}
       {Array.from({ length: 15 }).map((_, i) => (
         <div 
-          key={i} 
+          key={`l10127-i-${i}`} 
           className="absolute text-xl sm:text-2xl animate-snow will-change-transform drop-shadow-md mix-blend-overlay z-[3]"
           style={{
             left: `${10 + Math.random() * 80}%`,
@@ -9879,7 +10797,7 @@ function PastelShapesEffect() {
       {/* 6. Falling Sparkles, Stars, Sweets, and Hearts */}
       {Array.from({ length: 28 }).map((_, i) => (
         <div 
-          key={i} 
+          key={`l10202-i-${i}`} 
           className="absolute text-xl sm:text-2xl animate-snow will-change-transform drop-shadow-[0_2px_4px_rgba(255,182,193,0.4)]"
           style={{
             left: `${Math.random() * 100}%`,
@@ -9913,7 +10831,7 @@ function FireworksEffect() {
         const left = 10 + Math.random() * 80;
         return (
           <div
-            key={i}
+            key={`l10236-i-${i}`}
             className="absolute bottom-0"
             style={{ left: `${left}%` }}
           >
@@ -9941,7 +10859,7 @@ function FireworksEffect() {
       {/* City Skyline */}
       <div className="absolute bottom-0 inset-x-0 h-[25vh] flex items-end justify-center px-2 opacity-95 z-0">
          {buildings.map((b, i) => (
-            <div key={i} className="bg-[#0a0a0a] border-t border-white/5 mx-[1px]" style={{
+            <div key={`l10264-i-${i}`} className="bg-[#0a0a0a] border-t border-white/5 mx-[1px]" style={{
                 height: `${b.height}%`,
                 width: `${b.width}px`,
                 position: 'relative'
@@ -10289,8 +11207,8 @@ function PlaylistPlayer() {
 
                  <div className="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar" onScroll={resetTimer}>
                    {songs.map((song, i) => (
-                      <button 
-                        key={song.id} 
+                       <button
+                         key={`l10613-${song.id || ''}-${i}`} 
                         ref={i === currentIndex ? activeSongRef : null}
                         onClick={() => setCurrentIndex(i)}
                         className={`w-full text-left p-2 rounded-xl flex items-center gap-2 sm:gap-3 transition-colors relative overflow-hidden ${i === currentIndex ? 'bg-purple-500/20 border-purple-500/30 border' : 'hover:bg-white/5 border border-transparent'} ${song.achievements?.length && i !== currentIndex ? 'hover:shadow-[0_0_15px_rgba(251,191,36,0.15)] bg-neutral-900' : ''}`}
@@ -10364,7 +11282,7 @@ function formatBriefText(text: string | null | undefined) {
   return lines.map((line, idx) => {
     const trimmed = line.trim();
     if (!trimmed) {
-      return <div key={idx} className="h-2" />;
+      return <div key={`l10687-idx-6-${idx}`} className="h-2" />;
     }
     
     // Check if line matches a list with bullet (- or * or + or •)
@@ -10374,7 +11292,7 @@ function formatBriefText(text: string | null | undefined) {
       const content = bulletMatch[3];
       const indentClass = leadingSpaces.length > 0 ? "pl-8" : "pl-4";
       return (
-        <div key={idx} className={`flex items-start gap-2 ${indentClass} py-0.5 leading-relaxed text-left`}>
+        <div key={`l10697-idx-7-${idx}`} className={`flex items-start gap-2 ${indentClass} py-0.5 leading-relaxed text-left`}>
           <span className="text-indigo-400 select-none shrink-0">•</span>
           <span className="text-left">{content}</span>
         </div>
@@ -10391,7 +11309,7 @@ function formatBriefText(text: string | null | undefined) {
       if (content) {
         const indentClass = leadingSpaces.length > 0 ? "pl-8" : "pl-4";
         return (
-          <div key={idx} className={`flex items-start gap-2 ${indentClass} py-0.5 leading-relaxed text-left`}>
+          <div key={`l10714-idx-8-${idx}`} className={`flex items-start gap-2 ${indentClass} py-0.5 leading-relaxed text-left`}>
             <span className="text-indigo-400 font-bold font-mono select-none shrink-0">{num}{separator || '.'}</span>
             <span className="text-left">{content}</span>
           </div>
@@ -10401,7 +11319,7 @@ function formatBriefText(text: string | null | undefined) {
 
     // Fallback regular line
     return (
-      <p key={idx} className="leading-relaxed py-0.5 text-left">
+      <p key={`l10724-idx-9-${idx}`} className="leading-relaxed py-0.5 text-left">
         {line}
       </p>
     );
@@ -10441,6 +11359,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
   const [unlocked, setUnlocked] = useState(false);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState('');
+  const isGoldTheme = previewData?.adminTheme === 'gold';
 
   // Drag-to-scroll for mobile preview on PC
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -10738,7 +11657,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
           textShadow: isLight ? '0 1px 1px rgba(255,255,255,0.5)' : '0 1px 3px rgba(0,0,0,0.7)'
         }}
       >
-        {cleanedLines.map(({ text, origIdx }) => {
+        {cleanedLines.map(({ text, origIdx }, arrIdx) => {
           const trimmed = text.trim();
           const lower = trimmed.toLowerCase();
           
@@ -10800,7 +11719,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
           
           if (annotation) {
             return (
-              <div key={origIdx} className="flex items-center my-6 select-none animate-fade-in">
+              <div key={`l11123-lyr-${origIdx}-1-${arrIdx}`} className="flex items-center my-6 select-none animate-fade-in">
                 <span className={`text-[10px] md:text-sm font-black tracking-widest uppercase px-3 py-1 rounded-full ${badgeClass}`}>
                   {annotation}
                 </span>
@@ -10811,12 +11730,12 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
           }
           
           if (trimmed === "") {
-            return <div key={origIdx} className="h-4" />;
+            return <div key={`l11134-lyr-${origIdx}-2-${arrIdx}`} className="h-4" />;
           }
           
           return (
             <div 
-              key={origIdx} 
+              key={`l11139-lyr-${origIdx}-3-${arrIdx}`} 
               className="text-lg/relaxed sm:text-xl/loose font-semibold opacity-95 hover:opacity-100 transition-opacity"
             >
               <HoverTranslate text={trimmed} format={false} />
@@ -11141,19 +12060,29 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
             <HoverTranslate text={demo.title} />
           </h2>
           {demo.isBrand && demo.brandName && (() => {
-            const badgeStyle = getBrandBadgeStyle(brandColors.primary);
+            const badgeStyle = getBrandBadgeStyle(brandColors.primary, isGoldTheme);
             return (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
-                className="my-3 flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-xl border shadow-md w-fit mx-auto"
+                className={`my-3 flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-xl border shadow-md w-fit mx-auto ${demo.brandBrief ? 'cursor-pointer hover:scale-105 transition-transform' : ''}`}
                 style={{
                   borderColor: badgeStyle.borderColor,
                   backgroundColor: badgeStyle.backgroundColor,
                   boxShadow: badgeStyle.boxShadow
                 }}
+                onClick={() => demo.brandBrief ? setShowBrandBrief(true) : undefined}
+                title={demo.brandBrief ? "Bấm để xem Brief Khách hàng" : undefined}
               >
+                {demo.brandLogoUrl && (
+                  <img 
+                    src={demo.brandLogoUrl} 
+                    className="h-3.5 sm:h-4 max-h-4 w-auto object-contain rounded shrink-0 filter contrast-125 saturate-110" 
+                    alt={demo.brandName || ''} 
+                    referrerPolicy="no-referrer" 
+                  />
+                )}
                 <span className="text-[10px] uppercase tracking-widest font-black flex items-center gap-1">
                   <span style={{ color: badgeStyle.labelColor }}>{t.pPartner || "Đối tác:"}</span>
                   <span style={{ color: badgeStyle.valueColor }}>{demo.brandName}</span>
@@ -11278,24 +12207,6 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
             className={`fixed top-0 inset-x-0 h-16 bg-gradient-to-b ${isLight ? 'from-[#faf9f6]/50' : 'from-black/40'} to-transparent pointer-events-none z-40`}
           />
 
-          {demo?.isBrand && demo?.brandLogoUrl && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8, y: -20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 100, delay: 0.5 }}
-              className="fixed top-6 right-6 z-[300]"
-            >
-              <img 
-                src={demo.brandLogoUrl} 
-                className="w-12 h-12 md:w-14 md:h-14 object-contain bg-white rounded-2xl p-2 shadow-lg border border-white/40 animate-brand-logo-bounce hover:scale-115 transition-all duration-300 cursor-pointer" 
-                alt={demo.brandName || ''} 
-                referrerPolicy="no-referrer"
-                onClick={() => setShowBrandBrief(true)}
-                title="Xem Brief Khách hàng"
-              />
-            </motion.div>
-          )}
-
           <div className={`fixed top-6 left-6 flex items-center gap-3 z-[300] ${isLight ? 'text-stone-900' : 'text-white'} ${templateType === '20' ? 'hidden' : ''}`}>
             <button onClick={handleBack} className="opacity-60 hover:opacity-100 p-2 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center transition-all drop-shadow-md cursor-pointer text-current" title={t.back}>
               <ArrowLeft className="w-5 h-5" />
@@ -11351,7 +12262,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                 className="opacity-60 hover:opacity-100 p-2 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center transition-all drop-shadow-md cursor-pointer text-current"
                 title="Copy Secret Link"
               >
-                <Lock className="w-4.5 h-4.5" />
+                <Unlock className="w-4.5 h-4.5" />
               </button>
             )}
           </div>
@@ -11549,7 +12460,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                           const dustChars = ['🍂', '🍁', '✨', '•', '·', '🍂'];
                           return (
                             <div 
-                              key={`dust-${i}`} 
+                              key={`l11872-dust-${i}`} 
                               className="absolute text-amber-800/40 animate-dust-fall select-none"
                               style={{
                                 left: `${15 + Math.random() * 70}%`,
@@ -11571,7 +12482,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                            {/* Left Film Sprocket Strip inside the photo frame */}
                            <div className="absolute top-0 bottom-0 left-0 w-[12%] bg-[#151515] border-r border-[#2c2c2c] z-20 flex flex-col justify-around py-1.5 shadow-lg select-none">
                              {Array.from({length: 6}).map((_, i) => (
-                               <div key={`sprocket-l-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2]/20 mx-auto rounded-[1.5px] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.9)]"></div>
+                               <div key={`l11894-sprocket-l-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2]/20 mx-auto rounded-[1.5px] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.9)]"></div>
                              ))}
                              <div className="absolute top-[25%] left-1/2 -translate-x-1/2 text-white/10 text-[6px] font-mono tracking-widest font-black select-none pointer-events-none rotate-90 scale-90">KODAK</div>
                            </div>
@@ -11579,7 +12490,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                            {/* Right Film Sprocket Strip inside the photo frame */}
                            <div className="absolute top-0 bottom-0 right-0 w-[12%] bg-[#151515] border-l border-[#2c2c2c] z-20 flex flex-col justify-around py-1.5 shadow-lg select-none">
                              {Array.from({length: 6}).map((_, i) => (
-                               <div key={`sprocket-r-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2]/20 mx-auto rounded-[1.5px] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.9)]"></div>
+                               <div key={`l11902-sprocket-r-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2]/20 mx-auto rounded-[1.5px] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.9)]"></div>
                              ))}
                              <div className="absolute top-[65%] left-1/2 -translate-x-1/2 text-white/10 text-[6px] font-mono tracking-widest font-black select-none pointer-events-none rotate-90 scale-90">500T</div>
                            </div>
@@ -11675,10 +12586,10 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
 
                          {/* Sound Speaker Grille (Physical-looking dots with pulsing notes) */}
                          <div className="relative flex flex-col gap-1 w-11 py-1.5 px-2 bg-black/10 rounded-lg shadow-[inset_0_1px_3px_rgba(0,0,0,0.2)]">
-                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={n} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
-                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={n} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
-                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={n} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
-                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={n} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
+                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={`l11998-g1-${n}`} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
+                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={`l11999-g2-${n}`} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
+                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={`l12000-g3-${n}`} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
+                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={`l12001-g4-${n}`} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
                          </div>
 
 
@@ -11750,19 +12661,29 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
             </span>
           </h1>
           {demo.isBrand && demo.brandName && (() => {
-            const badgeStyle = getBrandBadgeStyle(brandColors.primary);
+            const badgeStyle = getBrandBadgeStyle(brandColors.primary, isGoldTheme);
             return (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
-                className="my-3 flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-xl border shadow-md w-fit mx-auto relative z-30"
+                className={`my-3 flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-xl border shadow-md w-fit mx-auto relative z-30 ${demo.brandBrief ? 'cursor-pointer hover:scale-105 transition-transform' : ''}`}
                 style={{
                   borderColor: badgeStyle.borderColor,
                   backgroundColor: badgeStyle.backgroundColor,
                   boxShadow: badgeStyle.boxShadow
                 }}
+                onClick={() => demo.brandBrief ? setShowBrandBrief(true) : undefined}
+                title={demo.brandBrief ? "Bấm để xem Brief Khách hàng" : undefined}
               >
+                {demo.brandLogoUrl && (
+                  <img 
+                    src={demo.brandLogoUrl} 
+                    className="h-3.5 sm:h-4 max-h-4 w-auto object-contain rounded shrink-0 filter contrast-125 saturate-110" 
+                    alt={demo.brandName || ''} 
+                    referrerPolicy="no-referrer" 
+                  />
+                )}
                 <span className="text-[10px] uppercase tracking-widest font-black flex items-center gap-1">
                   <span style={{ color: badgeStyle.labelColor }}>{t.pPartner || "Đối tác:"}</span>
                   <span style={{ color: badgeStyle.valueColor }}>{demo.brandName}</span>
@@ -12025,7 +12946,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                     const ytLink = `https://www.youtube.com/watch?v=${videoId}`;
                     return (
                       <a 
-                        key={idx}
+                        key={`l12348-idx-10-${idx}`}
                         href={ytLink}
                         target="_blank"
                         rel="noreferrer"
@@ -12055,7 +12976,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                   } else {
                     const embedUrl = vid.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/");
                     return (
-                      <div key={idx} className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 border border-white/10 relative z-10">
+                      <div key={`l12378-idx-11-${idx}`} className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 border border-white/10 relative z-10">
                         <iframe src={embedUrl} className="w-full h-full" allowFullScreen></iframe>
                       </div>
                     );
@@ -12226,7 +13147,7 @@ function SocialCarousel({ data, pushDown = false, isGoldTheme = false }: { data:
         className={`relative flex items-center justify-center w-10 h-10 rounded-full ${isGoldTheme ? 'bg-[#1A1303] border-[#D4AF37]/50 text-[#D4AF37] shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:border-[#D4AF37] hover:text-amber-300 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)]' : 'bg-white/10 border-white/20 text-white hover:bg-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]'} backdrop-blur-md border hover:scale-110 shadow-md transition-all cursor-pointer`}
         title="Follow"
       >
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence mode="wait">
            {!isOpen ? (
              <motion.div
                 key={currentIconIdx === -1 ? 'follow' : `social-${currentIconIdx}`}
@@ -12272,11 +13193,11 @@ function SocialCarousel({ data, pushDown = false, isGoldTheme = false }: { data:
             }}
             className="flex flex-col gap-3"
           >
-            {socials.map((social) => {
+            {socials.map((social, idx) => {
               const IconComponent = social.Icon;
               return (
                 <motion.a
-                  key={social.id}
+                  key={`l12599-${social.id || ''}-${idx}`}
                   href={social.url}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -12509,11 +13430,11 @@ function AdminTemplatesSettings({ isPCPreviewMode, setIsPCPreviewMode }: { isPCP
       </div>
       
       <div className="space-y-3">
-        {templateConfigs.map(config => {
+        {templateConfigs.map((config, idx) => {
           const isExpanded = expandedTemplateIds.includes(config.id);
           const activeDemos = demos.filter(d => (d.template || '1') === config.id);
           return (
-          <div key={config.id} className="space-y-1">
+          <div key={`l12836-${config.id || ''}-${idx}`} className="space-y-1">
           <div 
             draggable
             onDragStart={(e) => handleDragStart(e, config.id)}
@@ -12541,8 +13462,8 @@ function AdminTemplatesSettings({ isPCPreviewMode, setIsPCPreviewMode }: { isPCP
           </div>
           {isExpanded && activeDemos.length > 0 && (
             <div className="pl-14 pr-4 py-2 bg-stone-50/50 rounded-xl border border-stone-100 space-y-1">
-               {activeDemos.map(d => (
-                 <div key={d.id} className="text-sm font-medium text-stone-600 flex items-center gap-2 truncate">
+               {activeDemos.map((d, idx) => (
+                 <div key={`l12865-${d.id || ''}-${idx}`} className="text-sm font-medium text-stone-600 flex items-center gap-2 truncate">
                    <span className="w-1.5 h-1.5 rounded-full bg-stone-300 shrink-0"></span>
                    <span className="truncate">{d.title}</span>
                  </div>
@@ -12643,8 +13564,8 @@ function AdminTemplateEdit({ config, demos, onBack, onSave, isPCPreviewMode, set
                     <label className={`${isPCPreviewMode ? 'text-xs' : 'text-sm'} block font-semibold text-stone-700 mb-2`}>{t("Bài hát Preview")}</label>
                     <div className="relative">
                        <select className={`w-full border border-stone-300 rounded-xl pl-4 pr-10 ${isPCPreviewMode ? 'py-2 text-sm' : 'py-3'} bg-white shadow-xs appearance-none cursor-pointer hover:border-stone-400 transition-colors`} value={previewSongId} onChange={e => setPreviewSongId(e.target.value)}>
-                          {demos.map((d: any) => (
-                              <option key={d.id} value={d.id}>{d.title}</option>
+                          {demos.map((d: any, idx: number) => (
+                              <option key={`l12967-${d.id || ''}-${idx}`} value={d.id}>{d.title}</option>
                           ))}
                        </select>
                        <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
@@ -13023,10 +13944,10 @@ function AdminDatabaseSettings({ artistUsername }: { artistUsername?: string }) 
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {configsData?.configs?.map((c: any) => {
+        {configsData?.configs?.map((c: any, idx: number) => {
           const isActive = c.id === configsData.activeId;
           return (
-            <div key={c.id} className={`p-5 rounded-2xl border-2 transition-all ${isActive ? 'border-blue-500 bg-blue-50/30' : 'border-stone-200 bg-white hover:border-stone-300'}`}>
+            <div key={`l13349-${c.id || ''}-${idx}`} className={`p-5 rounded-2xl border-2 transition-all ${isActive ? 'border-blue-500 bg-blue-50/30' : 'border-stone-200 bg-white hover:border-stone-300'}`}>
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
@@ -13082,6 +14003,7 @@ function AdminDashboard() {
   const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
   const [previewAvatar, setPreviewAvatar] = useState<string | null>(null);
   const [chatMessageText, setChatMessageText] = useState('');
+  const [themeSelectError, setThemeSelectError] = useState<string | null>(null);
   
   // General Feedback Popup State
   const [showCreateFeedbackModal, setShowCreateFeedbackModal] = useState(false);
@@ -14129,11 +15051,11 @@ function AdminDashboard() {
                   { id: 'free', name: 'Gói Miễn Phí', price: '0', features: ['Quản lý bài hát cơ bản', 'Upload tối đa 5 bản nhạc demo', 'Chủ đề cơ bản'] },
                   { id: 'pro', name: 'Gói Chuyên Nghiệp', price: '199.000', features: ['Không giới hạn số bài hát', 'Tự tùy biến chủ đề', 'Hỗ trợ nâng cao', 'Sử dụng tên miền riêng'] },
                   { id: 'vip', name: 'Gói VIP', price: '500.000', features: ['Tất cả quyền lợi Pro', 'Hiệu ứng hiển thị đặc biệt', 'Hỗ trợ 1-1', 'Nhạc thương hiệu (Brand Music)'] }
-                ]).map((role: any) => {
+                ]).map((role: any, idx: number) => {
                   const isActive = data?.roleId === role.id || data?.roleId === role.name;
                   return (
                     <div
-                      key={role.id || role.name}
+                      key={`l14457-${role.id || role.name || ''}-${idx}`}
                       className={`border p-5 rounded-2xl flex flex-col justify-between transition-all relative ${
                         isActive
                           ? 'border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-600/25'
@@ -14170,7 +15092,7 @@ function AdminDashboard() {
                         {/* Features list */}
                         <ul className={`space-y-2 text-xs ${role.id === 'vip' ? 'text-amber-900/80 font-medium' : 'text-stone-600'}`}>
                           {(Array.isArray(role.features) ? role.features : (role.features || '').split('\n').filter(Boolean)).map((feat: string, idx: number) => (
-                            <li key={idx} className="flex items-start gap-1.5">
+                            <li key={`l14494-idx-12-${idx}`} className="flex items-start gap-1.5">
                               <Check className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${role.id === 'vip' ? 'text-amber-500' : 'text-emerald-500'}`} />
                               <span>{feat}</span>
                             </li>
@@ -14380,7 +15302,7 @@ function AdminDashboard() {
                       badgeClasses += "text-indigo-600 bg-indigo-50 border-indigo-100";
                     }
                     const matchedRole = (data as any)?.roles?.find((r: any) => r.id === data?.roleId || r.name === data?.roleId);
-                    return <span className={badgeClasses}>{matchedRole ? matchedRole.name : (data?.roleId || 'Thành viên')}</span>;
+                    return <span className={badgeClasses}>{matchedRole ? matchedRole.name : (data?.roleId || t("Thành viên"))}</span>;
                   })()}
 
                 {/* Gói Thành Viên & Lịch Sử & Bảo Mật Links */}
@@ -14984,7 +15906,7 @@ function AdminDashboard() {
                     } ${
                       activeTab === 'vouchers' ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
                     }`}
-                    title={t("Mã quà tặng")}
+                    title={t("Voucher")}
                   >
                     {activeTab === 'vouchers' && (
                       <motion.span
@@ -15001,7 +15923,7 @@ function AdminDashboard() {
                     </motion.div>
                     {!effectiveSidebarCollapsed && (
                       <span className="relative z-10">
-                        {t("Mã quà tặng")}
+                        {t("Voucher")}
                       </span>
                     )}
                   </button>
@@ -15270,7 +16192,7 @@ function AdminDashboard() {
                         const idx = (currentPage - 1) * itemsPerPage + localIdx;
                         return (
                         <div
-                          key={demo.id}
+                          key={`l15594-demo-${demo.id || ""}-${idx}`}
                           className="border border-stone-100 rounded-xl p-3 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white hover:bg-stone-50/50 transition-all shadow-sm"
                         >
                           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -15323,7 +16245,7 @@ function AdminDashboard() {
                         const idx = (currentPage - 1) * itemsPerPage + localIdx;
                         return (
                         <div
-                          key={demo.id}
+                          key={`l15647-demo-${demo.id || ""}-${idx}`}
                           draggable
                           onDragStart={() => setDraggedItemIdx(idx)}
                           onDragOver={(e) => e.preventDefault()}
@@ -15377,7 +16299,7 @@ function AdminDashboard() {
                             </button>
                             {demo.secretKey && (demo.linkType === 'indirect' ? demo.password : (demo.password || (data?.globalPassword && !demo.isReleased))) && (
                               <button type="button" onClick={() => handleShareSecret(demo)} className="text-amber-600 hover:bg-amber-50 p-2 rounded-lg transition-colors animate-[fade-in_0.3s_ease-out]" title="Copy Secret Link">
-                                 <Lock className="w-4 h-4 text-amber-500" />
+                                 <Unlock className="w-4 h-4 text-amber-500" />
                               </button>
                             )}
                             <button type="button" onClick={() => handleDuplicate(demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Nhân bản")}>
@@ -15398,7 +16320,7 @@ function AdminDashboard() {
                   );
                 })()}</motion.div>)}
 
-                {demosSubTab === 'demos' && (<motion.div key="demos" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
+                {demosSubTab === 'demos' && (<motion.div key="sub-demos" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
                   let demoList = data.demos?.filter(d => !d.isReleased && !d.deleted && !d.isDraft && d.linkType !== 'indirect') || [];
                   if (adminSearchQuery.trim()) {
                     demoList = demoList.filter(d => d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase()));
@@ -15415,7 +16337,7 @@ function AdminDashboard() {
                         const idx = (currentPage - 1) * itemsPerPage + localIdx;
                         return (
                         <div
-                          key={demo.id}
+                          key={`l15739-demo-${demo.id || ""}-${idx}`}
                           draggable
                           onDragStart={() => setDraggedItemIdx(idx)}
                           onDragOver={(e) => e.preventDefault()}
@@ -15473,7 +16395,7 @@ function AdminDashboard() {
                             </button>
                             {demo.secretKey && (demo.linkType === 'indirect' ? demo.password : (demo.password || (data?.globalPassword && !demo.isReleased))) && (
                               <button type="button" onClick={() => handleShareSecret(demo)} className="text-amber-600 hover:bg-amber-50 p-2 rounded-lg transition-colors animate-[fade-in_0.3s_ease-out]" title="Copy Secret Link">
-                                 <Lock className="w-4 h-4 text-amber-500" />
+                                 <Unlock className="w-4 h-4 text-amber-500" />
                               </button>
                             )}
                             <button type="button" onClick={() => handleDuplicate(demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Nhân bản")}>
@@ -15511,7 +16433,7 @@ function AdminDashboard() {
                         const idx = (currentPage - 1) * itemsPerPage + localIdx;
                         return (
                         <div
-                          key={demo.id}
+                          key={`l15835-demo-${demo.id || ""}-${idx}`}
                           draggable
                           onDragStart={() => setDraggedItemIdx(idx)}
                           onDragOver={(e) => e.preventDefault()}
@@ -15573,7 +16495,7 @@ function AdminDashboard() {
                             </button>
                             {demo.secretKey && (demo.linkType === 'indirect' ? demo.password : (demo.password || (data?.globalPassword && !demo.isReleased))) && (
                               <button type="button" onClick={() => handleShareSecret(demo)} className="text-amber-600 hover:bg-amber-50 p-2 rounded-lg transition-colors animate-[fade-in_0.3s_ease-out]" title="Copy Secret Link">
-                                 <Lock className="w-4 h-4 text-amber-500" />
+                                 <Unlock className="w-4 h-4 text-amber-500" />
                               </button>
                             )}
                             <button type="button" onClick={() => handleDuplicate(demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Nhân bản")}>
@@ -15610,7 +16532,7 @@ function AdminDashboard() {
                         const idx = (currentPage - 1) * itemsPerPage + localIdx;
                         return (
                         <div
-                          key={demo.id}
+                          key={`l15934-demo-${demo.id || ""}-${idx}`}
                           draggable
                           onDragStart={() => setDraggedItemIdx(idx)}
                           onDragOver={(e) => e.preventDefault()}
@@ -15695,7 +16617,7 @@ function AdminDashboard() {
 
                         return (
                           <div
-                            key={pl.id}
+                            key={`l16019-${pl.id || ''}-${idx}`}
                             draggable
                             onDragStart={() => setDraggedItemIdx(idx)}
                             onDragOver={(e) => e.preventDefault()}
@@ -15796,8 +16718,8 @@ function AdminDashboard() {
                       <div>
                         <h4 className="text-stone-500 text-xs font-bold uppercase tracking-wider mb-2 px-1">{t('Các mục trong thùng rác')} ({allTrashed.length})</h4>
                         <div className="space-y-2">
-                          {allTrashed.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item: any) => (
-                            <div key={`${item._type}-${item.id}`} className="border border-stone-100 p-3 rounded-xl flex items-center justify-between gap-3 bg-white shadow-sm hover:bg-stone-50/30 transition-all">
+                          {allTrashed.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item: any, idx: number) => (
+                            <div key={`l16121-${item._type}-${item.id || ''}-${idx}`} className="border border-stone-100 p-3 rounded-xl flex items-center justify-between gap-3 bg-white shadow-sm hover:bg-stone-50/30 transition-all">
                               <div className="flex flex-col min-w-0">
                                 <span className="font-bold text-stone-850 text-sm md:text-base truncate">{item.title || t("(Chưa đặt tiêu đề)")}</span>
                                 <div className="flex items-center gap-2 mt-0.5 text-xs text-stone-400">
@@ -15874,24 +16796,25 @@ function AdminDashboard() {
                   <div 
                     onClick={() => {
                       const isVip = !!data?.landingConfig?.adminThemesVip?.['liquid-glass'];
-                      const hasVipAccess = !!(userRole?.exclusiveUi || data?.isSpecial || data?.isMasterAdmin);
+                      const hasVipAccess = !!(String(data?.roleId || '').toLowerCase() === 'vip' || userRole?.exclusiveUi || data?.isSpecial || data?.isMasterAdmin);
                       if (isVip && !hasVipAccess) {
-                        alert(t("Giao diện Liquid Glass yêu cầu tài khoản VIP. Vui lòng nâng cấp gói!"));
+                        setThemeSelectError(t("đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.") || "đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.");
                         return;
                       }
+                      setThemeSelectError(null);
                       handleCustomSave({ adminTheme: 'liquid-glass' });
                     }}
                     className={`cursor-pointer rounded-3xl p-6 border-2 transition-all duration-300 flex flex-col justify-between relative overflow-hidden h-64 hover:shadow-md ${
                       effectiveTheme === 'liquid-glass' 
                         ? 'border-teal-500 bg-teal-50/10 ring-2 ring-teal-500/20' 
                         : 'border-stone-200 bg-stone-50 hover:border-stone-400'
-                    }`}
+                     }`}
                   >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl pointer-events-none" />
                     <div>
                       <div className="flex justify-between items-start mb-4">
                         <span className="px-3 py-1 text-[10px] font-bold bg-stone-200 text-stone-700 rounded-full">
-                          Standard Theme
+                          {t("Standard Theme")}
                         </span>
                         {data?.landingConfig?.adminThemesVip?.['liquid-glass'] && (
                           <span className="px-2 py-0.5 text-[9px] font-bold bg-yellow-500 text-stone-900 rounded-full flex items-center gap-1">
@@ -15901,7 +16824,7 @@ function AdminDashboard() {
                       </div>
                       <h3 className="text-lg font-bold text-stone-900 mb-1">Liquid Glass</h3>
                       <p className="text-xs text-stone-500 leading-relaxed">
-                        Giao diện kính mờ tinh tế kết hợp tông đen xám sang trọng và các hiệu ứng phát sáng nhẹ nhàng.
+                        {t("Giao diện kính mờ tinh tế kết hợp tông đen xám sang trọng và các hiệu ứng phát sáng nhẹ nhàng.")}
                       </p>
                     </div>
                     
@@ -15919,11 +16842,12 @@ function AdminDashboard() {
                   <div 
                     onClick={() => {
                       const isVip = data?.landingConfig?.adminThemesVip?.['gold'] !== false;
-                      const hasVipAccess = !!(userRole?.exclusiveUi || data?.isSpecial || data?.isMasterAdmin);
+                      const hasVipAccess = !!(String(data?.roleId || '').toLowerCase() === 'vip' || userRole?.exclusiveUi || data?.isSpecial || data?.isMasterAdmin);
                       if (isVip && !hasVipAccess) {
-                        alert(t("Giao diện Gold yêu cầu tài khoản VIP. Vui lòng nâng cấp gói!"));
+                        setThemeSelectError(t("đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.") || "đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.");
                         return;
                       }
+                      setThemeSelectError(null);
                       handleCustomSave({ adminTheme: 'gold' });
                     }}
                     className={`cursor-pointer rounded-3xl p-6 border-2 transition-all duration-300 flex flex-col justify-between relative overflow-hidden h-64 hover:shadow-md ${
@@ -15936,7 +16860,7 @@ function AdminDashboard() {
                     <div>
                       <div className="flex justify-between items-start mb-4">
                         <span className="px-3 py-1 text-[10px] font-bold bg-yellow-100 text-yellow-850 rounded-full">
-                          Luxury Theme
+                          {t("Luxury Theme")}
                         </span>
                         {data?.landingConfig?.adminThemesVip?.['gold'] !== false && (
                           <span className="px-2 py-0.5 text-[9px] font-bold bg-yellow-500 text-stone-900 rounded-full flex items-center gap-1">
@@ -15948,7 +16872,7 @@ function AdminDashboard() {
                         Gold <Sparkles className="w-4 h-4 text-yellow-500 animate-pulse" />
                       </h3>
                       <p className="text-xs text-stone-500 leading-relaxed">
-                        Giao diện Hoàng Gia sang trọng ngập tràn ánh vàng hoàng kim rực rỡ, mang lại sự may mắn và đẳng cấp.
+                        {t("Giao diện Hoàng Gia sang trọng ngập tràn ánh vàng hoàng kim rực rỡ, mang lại sự may mắn và đẳng cấp.")}
                       </p>
                     </div>
 
@@ -15962,6 +16886,13 @@ function AdminDashboard() {
                     </div>
                   </div>
                 </div>
+
+                {themeSelectError && (
+                  <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-2xl text-xs md:text-sm text-red-600 font-bold flex items-center gap-2 shadow-xs max-w-2xl">
+                    <span>⚠️</span>
+                    {themeSelectError}
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
@@ -15999,7 +16930,7 @@ function AdminDashboard() {
                 }}>
                   <div className="mb-6">
                     <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Mã Voucher")}</label>
-                    <input name="voucherCode" required placeholder="Nhập mã..." className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
+                    <input name="voucherCode" required placeholder={t("Nhập mã...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
                   </div>
                   <button type="submit" className="w-full bg-stone-900 text-white font-bold py-3.5 rounded-xl hover:bg-stone-800 transition-colors shadow-sm text-center cursor-pointer">
                     {t("Áp dụng Voucher")}
@@ -16724,12 +17655,12 @@ function AdminDashboard() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-stone-150 text-sm text-stone-700">
-                        {otherSongs.map((song) => {
+                        {otherSongs.map((song, idx) => {
                           const isSinger = song.singer?.toLowerCase().includes(data?.artistName?.toLowerCase() || '');
                           const isComposer = song.composer?.toLowerCase().includes(data?.artistName?.toLowerCase() || '');
                           
                           return (
-                            <tr key={song.id} className="hover:bg-stone-50/40 transition-colors">
+                            <tr key={`l17062-${song.id || ''}-${idx}`} className="hover:bg-stone-50/40 transition-colors">
                               <td className="px-6 py-4">
                                 <div className="flex items-center gap-3">
                                   <div className="w-10 h-10 rounded-lg overflow-hidden border border-stone-200 shrink-0 bg-stone-100 flex items-center justify-center">
@@ -16840,13 +17771,13 @@ function AdminDashboard() {
                         {t("Không có ticket nào hiện tại.")}
                       </div>
                     ) : (
-                      ticketsList.map((ticket) => {
+                      ticketsList.map((ticket, idx) => {
                         const isSelected = selectedTicket?.id === ticket.id;
                         const lastMsg = ticket.messages[ticket.messages.length - 1];
                         
                         return (
                           <button
-                            key={ticket.id}
+                            key={`l17179-${ticket.id || ''}-${idx}`}
                             onClick={() => setSelectedTicket(ticket)}
                             className={`w-full p-4 text-left transition-all flex flex-col gap-2 hover:bg-stone-100/50 ${isSelected ? 'bg-white shadow-[inset_4px_0_0_0_#1c1917]' : ''}`}
                           >
@@ -16988,7 +17919,7 @@ function AdminDashboard() {
 
                           return (
                             <div 
-                              key={msg.id || idx} 
+                              key={`l17321-msg-${msg.id || idx}-${idx}`} 
                               className={`flex gap-3 items-end w-full ${isMe ? 'flex-row-reverse' : 'flex-row'} mb-4`}
                             >
                               {/* Avatar */}
@@ -17492,9 +18423,9 @@ function CustomSelect({
 
       {isOpen && (
         <div className={`absolute top-full left-0 right-0 mt-1.5 bg-white border border-stone-200 rounded-xl shadow-xl z-[150] py-1.5 max-h-60 overflow-y-auto custom-scrollbar ${dropdownClassName}`}>
-          {options.map(opt => (
+          {options.map((opt, idx) => (
             <button
-              key={opt.value}
+              key={`l17827-${opt.value}-${idx}`}
               type="button"
               disabled={opt.disabled}
               onClick={() => {
@@ -17598,8 +18529,8 @@ function PlaylistSelect({ selectedIds, onChange }: { selectedIds: string[], onCh
       
       {isOpen && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-stone-200 rounded-xl shadow-2xl z-[100] p-2 space-y-1 max-h-80 overflow-y-auto custom-scrollbar">
-              {playlists.map(p => (
-                 <label className="flex items-center gap-3 px-3 py-2.5 hover:bg-stone-50 rounded-lg cursor-pointer transition-colors" key={p.id}>
+              {playlists.map((p, idx) => (
+                 <label className="flex items-center gap-3 px-3 py-2.5 hover:bg-stone-50 rounded-lg cursor-pointer transition-colors" key={`l17932-${p.id || ''}-${idx}`}>
                     <input type="checkbox" checked={selectedIds.includes(p.id)} onChange={(e) => toggle(p.id, e)} className="w-[18px] h-[18px] rounded border-stone-300 text-stone-900 focus:ring-stone-900" />
                     <span className="flex-1 truncate text-sm font-medium text-stone-800">{p.title}</span>
                  </label>
@@ -17656,8 +18587,8 @@ function TemplatePickerModal({
          <div className={`w-full h-auto md:h-full ${isPCPreviewMode ? 'md:w-[260px] p-4 space-y-4' : 'md:w-[400px] p-6 md:p-8 space-y-6'} bg-white flex-shrink-0 border-b md:border-b-0 md:border-r overflow-visible md:overflow-y-auto custom-scrollbar`}>
             <h3 className="text-xl font-black mb-4">{t("Chọn Template")}</h3>
             <div className="space-y-2 pb-6">
-               {configs.map(c => (
-                  <button type="button" key={c.id} onClick={() => setSelectedId(c.id)} className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-colors flex justify-between items-center ${selectedId === c.id ? 'border-stone-900 bg-stone-50 font-bold' : 'border-transparent bg-white hover:bg-stone-100'}`}>
+               {configs.map((c, idx) => (
+                  <button type="button" key={`l17990-${c.id || ''}-${idx}`} onClick={() => setSelectedId(c.id)} className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-colors flex justify-between items-center ${selectedId === c.id ? 'border-stone-900 bg-stone-50 font-bold' : 'border-transparent bg-white hover:bg-stone-100'}`}>
                       <span>{t(c.name)}</span>
                       {landingConfig?.templateVip?.[c.id] && (
                         <span className="bg-yellow-100 text-yellow-700 text-[10px] font-black px-1.5 py-0.5 rounded border border-yellow-200 ml-2">VIP</span>
@@ -17730,7 +18661,7 @@ function AchievementEditor({ achievements, onChange }: { achievements: Achieveme
       {achievements.length > 0 && (
         <div className="space-y-4 mb-4">
           {achievements.map((ach, index) => (
-            <div key={index} className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl border border-stone-200 shadow-sm relative group items-end">
+            <div key={`l18063-idx-${index}`} className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl border border-stone-200 shadow-sm relative group items-end">
               <div className="w-full sm:w-[220px] shrink-0">
                 <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-2">{t("Loại thành tích")}</label>
                 <CustomSelect
@@ -18588,7 +19519,7 @@ function AdminCreateDemo() {
                           )}
                         </label>
                         {brandReferenceVideos.map((vid, idx) => (
-                          <div key={idx} className="flex gap-2 mb-2">
+                          <div key={`l18921-idx-13-${idx}`} className="flex gap-2 mb-2">
                             <input type="text" value={vid} onChange={e => { const newVids = [...brandReferenceVideos]; newVids[idx] = e.target.value; setBrandReferenceVideos(newVids); }} className="flex-1 border border-stone-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm text-sm" placeholder="Link video Youtube..." />
                             <button type="button" onClick={() => { const newVids = brandReferenceVideos.filter((_, i) => i !== idx); setBrandReferenceVideos(newVids); }} className="px-3 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100"><Trash2 className="w-4 h-4"/></button>
                           </div>
@@ -18678,9 +19609,9 @@ function AdminCreateDemo() {
                         { label: 'Bridge', value: 'Bridge', className: 'bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200' },
                         { label: 'Outro', value: 'Outro', className: 'bg-pink-50 hover:bg-pink-100 text-pink-700 border-pink-200' },
                         { label: 'Ending', value: 'Ending', className: 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200' }
-                      ].map((tag) => (
+                      ].map((tag, tagIdx) => (
                         <button
-                          key={tag.value}
+                          key={`l19013-tag-badge-1-${tag.value}-${tagIdx}`}
                           type="button"
                           onClick={() => handleInsertTag(tag.value)}
                           className={`text-[11px] font-bold px-2 py-1 rounded-lg border transition-colors cursor-pointer shadow-xs ${tag.className}`}
@@ -18750,7 +19681,7 @@ function AdminCreateDemo() {
                           )}
                         </label>
                         {brandReferenceVideos.map((vid, idx) => (
-                          <div key={idx} className="flex gap-2 mb-2">
+                          <div key={`l19083-idx-14-${idx}`} className="flex gap-2 mb-2">
                             <input type="text" value={vid} onChange={e => { const newVids = [...brandReferenceVideos]; newVids[idx] = e.target.value; setBrandReferenceVideos(newVids); }} className="flex-1 border border-stone-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm text-sm" placeholder="Link video Youtube..." />
                             <button type="button" onClick={() => { const newVids = brandReferenceVideos.filter((_, i) => i !== idx); setBrandReferenceVideos(newVids); }} className="px-3 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100"><Trash2 className="w-4 h-4"/></button>
                           </div>
@@ -19529,12 +20460,6 @@ function AdminEditDemo() {
     formData.set('brandColor', brandColor);
     formData.set('brandLogoUrl', uploadedBrandLogoUrl);
     formData.set('brandReferenceVideos', JSON.stringify(brandReferenceVideos));
-    formData.set('isBrand', isBrand ? 'true' : 'false');
-    formData.set('brandName', brandName);
-    formData.set('brandBrief', brandBrief);
-    formData.set('brandColor', brandColor);
-    formData.set('brandLogoUrl', uploadedBrandLogoUrl);
-    formData.set('brandReferenceVideos', JSON.stringify(brandReferenceVideos));
     
     try {
         const res = await fetch(`/api/demos/${id}/update`, {
@@ -19931,7 +20856,7 @@ function AdminEditDemo() {
                           )}
                         </label>
                         {brandReferenceVideos.map((vid, idx) => (
-                          <div key={idx} className="flex gap-2 mb-2">
+                          <div key={`l20264-idx-15-${idx}`} className="flex gap-2 mb-2">
                             <input type="text" value={vid} onChange={e => { const newVids = [...brandReferenceVideos]; newVids[idx] = e.target.value; setBrandReferenceVideos(newVids); }} className="flex-1 border border-stone-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm text-sm" placeholder="Link video Youtube..." />
                             <button type="button" onClick={() => { const newVids = brandReferenceVideos.filter((_, i) => i !== idx); setBrandReferenceVideos(newVids); }} className="px-3 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100"><Trash2 className="w-4 h-4"/></button>
                           </div>
@@ -20021,9 +20946,9 @@ function AdminEditDemo() {
                         { label: 'Bridge', value: 'Bridge', className: 'bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200' },
                         { label: 'Outro', value: 'Outro', className: 'bg-pink-50 hover:bg-pink-100 text-pink-700 border-pink-200' },
                         { label: 'Ending', value: 'Ending', className: 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200' }
-                      ].map((tag) => (
+                      ].map((tag, tagIdx) => (
                         <button
-                          key={tag.value}
+                          key={`l20356-tag-badge-2-${tag.value}-${tagIdx}`}
                           type="button"
                           onClick={() => handleInsertTag(tag.value)}
                           className={`text-[11px] font-bold px-2 py-1 rounded-lg border transition-colors cursor-pointer shadow-xs ${tag.className}`}
@@ -20094,7 +21019,7 @@ function AdminEditDemo() {
                           )}
                         </label>
                         {brandReferenceVideos.map((vid, idx) => (
-                          <div key={idx} className="flex gap-2 mb-2">
+                          <div key={`l20427-idx-16-${idx}`} className="flex gap-2 mb-2">
                             <input type="text" value={vid} onChange={e => { const newVids = [...brandReferenceVideos]; newVids[idx] = e.target.value; setBrandReferenceVideos(newVids); }} className="flex-1 border border-stone-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm text-sm" placeholder="Link video Youtube..." />
                             <button type="button" onClick={() => { const newVids = brandReferenceVideos.filter((_, i) => i !== idx); setBrandReferenceVideos(newVids); }} className="px-3 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100"><Trash2 className="w-4 h-4"/></button>
                           </div>
@@ -20274,7 +21199,7 @@ function AdminEditDemo() {
                   <div className="bg-amber-50 border border-amber-250/60 rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between gap-5 mt-6 animate-[fade-in_0.3s_ease-out] w-full min-w-0 overflow-hidden">
                     <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:flex-1 min-w-0">
                       <div className="w-12 h-12 bg-amber-100/75 text-amber-700 rounded-xl flex items-center justify-center font-bold shrink-0 mx-auto sm:mx-0 shadow-xs">
-                        <Lock className="w-6 h-6 text-amber-600" />
+                        <Unlock className="w-6 h-6 text-amber-600" />
                       </div>
                       <div className="min-w-0 flex-1 text-center sm:text-left flex flex-col items-center sm:items-start">
                         <div className="font-bold text-stone-800 text-sm tracking-tight">{t("Secret Link (Chia sẻ trực tiếp xem không hỏi mật khẩu)")}</div>
@@ -20297,7 +21222,7 @@ function AdminEditDemo() {
                       }}
                       className="w-full md:w-auto px-5 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-sm transition-colors cursor-pointer flex items-center justify-center gap-2 shrink-0 shadow-sm"
                     >
-                      <Lock className="w-4 h-4" /> Copy Secret Link
+                      <Unlock className="w-4 h-4" /> Copy Secret Link
                     </button>
                   </div>
                 )}
@@ -20360,7 +21285,7 @@ function AdminEditDemo() {
                       }} 
                       className="border-2 border-red-200 text-red-500 hover:bg-red-50 text-sm sm:text-base font-semibold py-2.5 px-5 sm:px-6 rounded-xl transition-all disabled:opacity-80 flex justify-center items-center gap-2 active:scale-[0.98] sm:flex-initial sm:min-w-[150px] shadow-sm"
                     >
-                      <Lock className="w-5 h-5 text-red-500" />
+                      <Unlock className="w-5 h-5 text-red-500" />
                       Làm mới Secret Link
                     </button>
                   )}
@@ -20691,8 +21616,8 @@ function AdminPlaylistEdit() {
              ) : (
                <div className="space-y-2">
                  {songs.map((song, i) => (
-                    <div 
-                       key={song.id}
+                     <div
+                        key={`l21025-${song.id || ''}-${i}`}
                        draggable
                        onDragStart={() => handleDragStart(i)}
                        onDragEnter={() => handleDragEnter(i)}
@@ -20753,11 +21678,11 @@ function AdminPlaylistEdit() {
                 if (availableSongs.length === 0) {
                   return <p className="text-center text-stone-500 py-8">{t("Tất cả bài hát đều đã ở trong playlist này rồi.")}</p>;
                 }
-                return availableSongs.map((song: any) => {
+                return availableSongs.map((song: any, i: number) => {
                   const isChecked = selectedNewSongIds.includes(song.id);
                   return (
                     <label 
-                      key={song.id} 
+                      key={`l21090-${song.id || ''}-${i}`} 
                       className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${isChecked ? 'bg-stone-50 border-stone-450 font-semibold' : 'hover:bg-stone-50 border-stone-200'}`}
                     >
                       <input 
@@ -21088,7 +22013,7 @@ function MultiImageDropzone({ values = [], onChange, onRemove, onReorder, t }: a
         <div className="grid grid-cols-4 gap-3">
           {values.map((url: string, index: number) => (
             <div 
-              key={index} 
+              key={`l21421-idx-${index}`} 
               draggable="true"
               onDragStart={(e) => handleDragStart(e, index)}
               onDragOver={(e) => handleDragOver(e, index)}
@@ -21256,7 +22181,7 @@ function AdminBioEdit({ data, t, onSave }: any) {
             </div>
             <div className="space-y-4">
               {education.map((edu, idx) => (
-                <div key={idx} className="bg-white border border-stone-200 rounded-xl p-4 flex flex-col gap-4 relative">
+                <div key={`l21589-idx-17-${idx}`} className="bg-white border border-stone-200 rounded-xl p-4 flex flex-col gap-4 relative">
                   <div className="flex justify-end">
                     <button type="button" onClick={() => removeEdu(idx)} className="text-stone-400 hover:text-red-500 p-2 cursor-pointer">
                       <Trash2 className="w-5 h-5" />
@@ -21322,7 +22247,7 @@ function AdminBioEdit({ data, t, onSave }: any) {
             </div>
             <div className="space-y-4">
               {experience.map((exp, idx) => (
-                <div key={idx} className="bg-white border border-stone-200 rounded-xl p-4 flex flex-col gap-4 relative">
+                <div key={`l21655-idx-18-${idx}`} className="bg-white border border-stone-200 rounded-xl p-4 flex flex-col gap-4 relative">
                   <div className="flex justify-end">
                     <button type="button" onClick={() => removeExp(idx)} className="text-stone-400 hover:text-red-500 p-2 cursor-pointer">
                       <Trash2 className="w-5 h-5" />
@@ -21455,7 +22380,7 @@ function AdminMenuEdit({ data, t, onSave }: any) {
       <div className="space-y-3 mb-6">
         {menus.map((m: any, i: number) => (
           <div 
-            key={m.id} 
+            key={`l21788-${m.id || ''}-${i}`} 
             draggable 
             onDragStart={(e) => handleDragStart(e, i)}
             onDragOver={(e) => e.preventDefault()}
@@ -21514,12 +22439,32 @@ function AdminMenuEdit({ data, t, onSave }: any) {
 
 
 function AdminLayoutEdit({ data, t, onSave }: any) {
-  const [layoutSections, setLayoutSections] = useState<string[]>(
-    data.layoutSections || ['title', 'vault', 'mv', 'spotify']
-  );
+  const defaultSections = ['title', 'random_song', 'vault', 'mv', 'spotify'];
+  const rawSections = data.layoutSections && Array.isArray(data.layoutSections) ? data.layoutSections : defaultSections;
+  const initialSections = Array.from(new Set(rawSections));
+  if (!initialSections.includes('random_song')) {
+    const titleIdx = initialSections.indexOf('title');
+    if (titleIdx !== -1) {
+      initialSections.splice(titleIdx + 1, 0, 'random_song');
+    } else {
+      initialSections.splice(1, 0, 'random_song');
+    }
+  }
+
+  const [layoutSections, setLayoutSections] = useState<string[]>(initialSections);
+  const [hiddenSections, setHiddenSections] = useState<string[]>(data.hiddenSections || []);
+  const [includeDemoInRandomSong, setIncludeDemoInRandomSong] = useState<boolean>(data.includeDemoInRandomSong !== false);
+
+  const toggleVisibility = (sec: string) => {
+    if (sec === 'vault') return; // Kho Nhạc không được ẩn
+    setHiddenSections(prev => 
+      prev.includes(sec) ? prev.filter(s => s !== sec) : [...prev, sec]
+    );
+  };
 
   const getSectionName = (sec: string) => {
     if (sec === 'title') return t("Tiêu Đề (Tên & Giới thiệu ngắn)");
+    if (sec === 'random_song') return t("Bài Hát Ngẫu Nhiên");
     if (sec === 'spotify') return t("Spotify Playlist / Album");
     if (sec === 'vault') return t("Kho Nhạc (Danh sách Đề mô / Ra Rồi)");
     if (sec === 'mv') return t("MV Đã Phát Hành (YouTube Videos)");
@@ -21541,7 +22486,7 @@ function AdminLayoutEdit({ data, t, onSave }: any) {
   };
 
   const handleSave = () => {
-    onSave({ layoutSections });
+    onSave({ layoutSections, hiddenSections, includeDemoInRandomSong });
   };
 
   return (
@@ -21552,37 +22497,95 @@ function AdminLayoutEdit({ data, t, onSave }: any) {
             <LayoutTemplate className="w-6 h-6 text-teal-600 animate-[pulse_2.5s_infinite]" />
             {t("Bố Cục Trang Chủ")}
           </h2>
-          <p className="text-xs text-stone-500 mt-1">{t("Kéo thả các phần dưới đây để sắp xếp thứ tự hiển thị của chúng ở trang chủ nghệ sĩ.")}</p>
+          <p className="text-xs text-stone-500 mt-1">{t("Kéo thả các phần bên dưới để sắp xếp thứ tự hiển thị và tích chọn để bật/tắt hiển thị ở trang chủ nghệ sĩ.")}</p>
         </div>
       </div>
 
       <div className="space-y-3 mb-6">
-        {layoutSections.map((sec, i) => (
-          <div 
-            key={sec} 
-            draggable 
-            onDragStart={(e) => handleDragStart(e, i)}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => handleDrop(e, i)}
-            className="flex items-center gap-4 bg-stone-50 border border-stone-200 hover:border-stone-300 rounded-xl p-4 cursor-grab active:cursor-grabbing transition-all hover:shadow-sm select-none"
-          >
-            <GripVertical className="text-stone-400 w-5 h-5 shrink-0" />
-            <div className="flex-1">
-              <div className="font-bold text-stone-800 text-sm">
-                {getSectionName(sec)}
+        {layoutSections.map((sec, i) => {
+          const isHidden = hiddenSections.includes(sec);
+          const isVault = sec === 'vault';
+          return (
+            <div 
+              key={`l21892-${sec}-${i}`} 
+              className={`flex flex-col border rounded-xl p-4 transition-all hover:shadow-sm select-none ${
+                isHidden ? 'bg-stone-100/60 border-stone-200 opacity-60' : 'bg-stone-50 border-stone-200 hover:border-stone-300'
+              }`}
+            >
+              <div 
+                draggable 
+                onDragStart={(e) => handleDragStart(e, i)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => handleDrop(e, i)}
+                className="flex items-center gap-4 cursor-grab active:cursor-grabbing"
+              >
+                <GripVertical className="text-stone-400 w-5 h-5 shrink-0" />
+
+                {/* Visibility Checkbox Tick */}
+                <label 
+                  className={`flex items-center gap-2.5 shrink-0 cursor-pointer ${isVault ? 'cursor-not-allowed opacity-90' : ''}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <input 
+                    type="checkbox" 
+                    checked={isVault ? true : !isHidden}
+                    disabled={isVault}
+                    onChange={() => toggleVisibility(sec)}
+                    className="w-4 h-4 rounded text-teal-600 border-stone-300 focus:ring-teal-500 cursor-pointer disabled:cursor-not-allowed"
+                  />
+                </label>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className={`font-bold text-sm ${isHidden ? 'text-stone-500 line-through' : 'text-stone-800'}`}>
+                      {getSectionName(sec)}
+                    </span>
+                    {isVault && (
+                      <span className="text-[10px] font-extrabold bg-stone-200 text-stone-700 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        {t("Bắt buộc")}
+                      </span>
+                    )}
+                    {isHidden && !isVault && (
+                      <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+                        {t("Đã ẩn")}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-stone-400 mt-0.5">
+                    {sec === 'title' && t("Phần hiển thị tên nghệ sĩ, dấu tích xanh và lời giới thiệu ngắn.")}
+                    {sec === 'random_song' && t("Hiển thị thẻ bài hát ngẫu nhiên xoay tua linh hoạt.")}
+                    {sec === 'spotify' && t("Khung phát nhạc nhúng trực tiếp từ Spotify (nếu được cấu hình).")}
+                    {sec === 'vault' && t("Phần danh sách bài hát chính chia theo tab Đề mô / Ra Rồi (Bắt buộc hiển thị).")}
+                    {sec === 'mv' && t("Phần hiển thị các MV Youtube đã phát hành và trình phát video popup.")}
+                  </div>
+                </div>
+
+                <div className="w-6 h-6 rounded-full bg-stone-200/80 flex items-center justify-center text-xs font-bold text-stone-600 shrink-0">
+                  {i + 1}
+                </div>
               </div>
-              <div className="text-xs text-stone-400 mt-0.5">
-                {sec === 'title' && t("Phần hiển thị tên nghệ sĩ, dấu tích xanh và lời giới thiệu ngắn.")}
-                {sec === 'spotify' && t("Khung phát nhạc nhúng trực tiếp từ Spotify (nếu được cấu hình).")}
-                {sec === 'vault' && t("Phần danh sách bài hát chính chia theo tab Đề mô / Ra Rồi.")}
-                {sec === 'mv' && t("Phần hiển thị các MV Youtube đã phát hành và trình phát video popup.")}
-              </div>
+
+              {sec === 'random_song' && (
+                <div className="mt-3 pt-3 border-t border-stone-200/70 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 pl-9 cursor-auto" onClick={(e) => e.stopPropagation()}>
+                  <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                    <input 
+                      type="checkbox"
+                      checked={includeDemoInRandomSong}
+                      onChange={(e) => setIncludeDemoInRandomSong(e.target.checked)}
+                      className="w-4 h-4 rounded text-teal-600 border-stone-300 focus:ring-teal-500 cursor-pointer"
+                    />
+                    <span className="text-xs font-bold text-stone-800">
+                      {t("Hiển thị demo trong bài hát ngẫu nhiên ?")}
+                    </span>
+                  </label>
+                  <span className="text-[11px] text-stone-400 font-medium">
+                    ({includeDemoInRandomSong ? t("Mặc định: Bật - Bao gồm cả bài Đề mô") : t("Tắt - Chỉ hiển thị bài đã Ra rồi")})
+                  </span>
+                </div>
+              )}
             </div>
-            <div className="w-6 h-6 rounded-full bg-stone-100 flex items-center justify-center text-xs font-bold text-stone-500">
-              {i + 1}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="flex items-center gap-4 border-t border-stone-100 pt-6 mt-6">
@@ -21594,6 +22597,91 @@ function AdminLayoutEdit({ data, t, onSave }: any) {
           {t("Lưu Bố Cục")}
         </button>
       </div>
+    </div>
+  );
+}
+
+
+function BeautifulSelect({ 
+  value, 
+  onChange, 
+  options, 
+  isGoldTheme 
+}: { 
+  value: number, 
+  onChange: (val: number) => void, 
+  options: number[], 
+  isGoldTheme: boolean 
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative inline-block z-30" ref={containerRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`flex items-center justify-between gap-1.5 cursor-pointer backdrop-blur-md transition-all duration-300 focus:outline-none text-xs sm:text-sm shadow-md rounded-xl pl-3 pr-2 py-1.5 border min-w-[55px] font-bold ${
+          isGoldTheme 
+            ? 'bg-[#FAF5E6] border-[#D4AF37] text-[#1A1303] hover:bg-white hover:border-[#AA7C11] hover:shadow-lg' 
+            : 'bg-[#18181b]/95 border-white/20 text-white hover:bg-[#27272a]/95 hover:border-white/45'
+        }`}
+      >
+        <span>{value}</span>
+        <svg 
+          className={`w-3 h-3 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${isGoldTheme ? 'text-[#AA7C11]' : 'text-neutral-400'}`} 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="3.5" 
+          strokeLinecap="round" 
+          strokeLinejoin="round"
+        >
+          <path d="m6 9 6 6 6-6"/>
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div 
+          className={`absolute bottom-full left-0 mb-1.5 w-full min-w-[65px] rounded-xl shadow-2xl border backdrop-blur-lg overflow-hidden py-1 z-40 animate-in fade-in slide-in-from-bottom-2 duration-150 ${
+            isGoldTheme 
+              ? 'bg-[#FAF5E6]/95 border-[#D4AF37] shadow-[0_8px_30px_rgba(170,124,17,0.2)]' 
+              : 'bg-[#18181b]/95 border-white/10 shadow-black/80'
+          }`}
+        >
+          {options.map((opt, optIdx) => (
+            <button
+              key={`l21991-${opt}-${optIdx}`}
+              type="button"
+              onClick={() => {
+                onChange(opt);
+                setIsOpen(false);
+              }}
+              className={`w-full text-center px-3 py-1.5 text-xs sm:text-sm font-semibold transition-colors cursor-pointer ${
+                opt === value
+                  ? isGoldTheme
+                    ? 'bg-[#D4AF37]/20 text-[#1A1303] font-bold'
+                    : 'bg-white/15 text-white font-bold'
+                  : isGoldTheme
+                    ? 'text-stone-600 hover:bg-[#D4AF37]/10 hover:text-[#1A1303]'
+                    : 'text-neutral-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -21614,9 +22702,9 @@ function PublicNavbar({ menus, activeTab, setActiveTab, t, isGoldTheme }: any) {
 
   return (
     <div className={`w-full max-w-5xl mx-auto px-6 sm:px-12 mb-12 flex items-center justify-center gap-6 sm:gap-10 border-b pb-4 ${isGoldTheme ? 'border-stone-200/60' : 'border-white/10'}`}>
-      {visibleMenus.map((m: any) => (
+      {visibleMenus.map((m: any, i: number) => (
         <button
-          key={m.id}
+          key={`l22034-${m.id || ''}-${i}`}
           onClick={() => {
             if (m.type === 'custom' && m.link) {
               window.open(m.link, '_blank');
@@ -21789,7 +22877,7 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme }: 
               className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${isGoldTheme ? 'bg-amber-500/30' : 'bg-white/20'} origin-top z-0`} 
             />
             {biography.education.map((item: any, idx: number) => (
-              <TimelineItem key={idx} item={item} isSplit={true} color="emerald" index={idx} />
+              <TimelineItem key={`l22207-idx-19-${idx}`} item={item} isSplit={true} color="emerald" index={idx} />
             ))}
           </div>
         </div>
@@ -21809,7 +22897,7 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme }: 
               className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${isGoldTheme ? 'bg-amber-500/30' : 'bg-white/20'} origin-top z-0`} 
             />
             {biography.experience.map((item: any, idx: number) => (
-              <TimelineItem key={idx} item={item} isSplit={true} color="blue" index={idx} />
+              <TimelineItem key={`l22227-idx-20-${idx}`} item={item} isSplit={true} color="blue" index={idx} />
             ))}
           </div>
         </div>
@@ -21916,7 +23004,7 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0 }: {
                   const content = bulletMatch[2];
                   const isNumber = /^\d+/.test(bullet);
                   return (
-                    <div key={idx} className="flex items-start gap-2.5 pl-3 text-white/85 text-sm leading-relaxed">
+                    <div key={`l22334-idx-21-${idx}`} className="flex items-start gap-2.5 pl-3 text-white/85 text-sm leading-relaxed">
                       <span className={`text-amber-400 shrink-0 select-none ${isNumber ? 'font-bold text-xs mt-0.5' : 'text-base -mt-0.5'}`}>
                         {isNumber ? bullet : '•'}
                       </span>
@@ -21925,7 +23013,7 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0 }: {
                   );
                 }
                 return (
-                  <p key={idx} className="text-white/80 text-sm leading-relaxed min-h-[1rem]">
+                  <p key={`l22343-idx-22-${idx}`} className="text-white/80 text-sm leading-relaxed min-h-[1rem]">
                     {line}
                   </p>
                 );
@@ -21965,7 +23053,7 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0 }: {
                 <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex items-center gap-0.5 pointer-events-none">
                   {images.map((_, i) => (
                     <div 
-                      key={i} 
+                      key={`l22383-i-${i}`} 
                       className={`w-1 h-1 rounded-full transition-all duration-300 ${i === activeImgIdx ? 'bg-amber-500 scale-125' : 'bg-stone-300'}`} 
                     />
                   ))}
@@ -22062,7 +23150,7 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0 }: {
                   <div className="flex justify-center gap-1.5 mt-3 select-none">
                     {images.map((_, i) => (
                       <button
-                        key={i}
+                        key={`l22480-i-${i}`}
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();

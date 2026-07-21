@@ -1633,8 +1633,8 @@ export default function ACPControlPanel() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
-                      {filteredArtists.slice(artistCurrentPage * artistPageSize, (artistCurrentPage + 1) * artistPageSize).map((artist) => (
-                        <tr key={artist.username} className="hover:bg-white/[0.02] transition-colors">
+                      {filteredArtists.slice(artistCurrentPage * artistPageSize, (artistCurrentPage + 1) * artistPageSize).map((artist, idx) => (
+                        <tr key={`${artist.username || ''}-${artist.id || ''}-${idx}`} className="hover:bg-white/[0.02] transition-colors">
                           <td className="p-4 pl-6">
                             <div className="flex items-center gap-2.5">
                               <div>
@@ -1944,7 +1944,7 @@ export default function ACPControlPanel() {
                 <div className="space-y-2">
                   {globalLayoutSections.map((sec, i) => (
                     <div 
-                      key={sec} 
+                      key={`${sec}-${i}`} 
                       draggable 
                       onDragStart={(e) => handleDragStartLayout(e, i)}
                       onDragOver={(e) => e.preventDefault()}
@@ -2548,7 +2548,7 @@ export default function ACPControlPanel() {
                 <div className="overflow-y-auto custom-scrollbar flex-grow space-y-2 pr-1">
                   {subscribers.map((email, idx) => (
                     <div 
-                      key={idx} 
+                      key={`l2551-idx-${idx}`} 
                       className="bg-black/30 border border-white/5 px-3 py-2.5 rounded-xl flex items-center justify-between group hover:border-purple-500/20 transition-all"
                     >
                       <span className="text-xs font-mono text-neutral-300 select-all truncate">{email}</span>
@@ -2611,13 +2611,13 @@ export default function ACPControlPanel() {
                   </div>
                 ) : (
                   <div className="overflow-y-auto custom-scrollbar flex-grow space-y-2 pr-1">
-                    {tickets.map((ticket: any) => {
+                    {tickets.map((ticket: any, idx: number) => {
                       const isSelected = selectedTicket?.id === ticket.id;
                       const lastMsg = ticket.messages[ticket.messages.length - 1];
                       
                       return (
                         <button
-                          key={ticket.id}
+                          key={`${ticket.id || ''}-${idx}`}
                           onClick={() => setSelectedTicket(ticket)}
                           className={`w-full text-left p-3.5 rounded-2xl border transition-all flex flex-col gap-2 cursor-pointer ${
                             isSelected
@@ -2770,7 +2770,7 @@ export default function ACPControlPanel() {
 
                         return (
                           <div 
-                            key={msg.id || idx} 
+                            key={`msg-${msg.id || idx}-${idx}`} 
                             className={`flex gap-3 items-end w-full ${isMe ? 'flex-row-reverse' : 'flex-row'} mb-4`}
                           >
                             {/* Avatar */}
@@ -3126,7 +3126,7 @@ export default function ACPControlPanel() {
               ) : (
                 <div className="space-y-3">
                   {faqs.map((f: any, idx: number) => (
-                    <div key={idx} className="bg-neutral-900/40 border border-white/5 rounded-2xl p-4 flex items-start justify-between gap-4">
+                    <div key={`l3129-idx-${idx}`} className="bg-neutral-900/40 border border-white/5 rounded-2xl p-4 flex items-start justify-between gap-4">
                       <div className="space-y-1">
                         <h4 className="text-sm font-bold text-white flex items-center gap-1.5">
                           <span className="text-purple-400 font-mono">Q:</span> {f.q}
@@ -3206,7 +3206,7 @@ export default function ACPControlPanel() {
                 <div className="flex flex-wrap gap-2.5 bg-black/20 border border-white/5 rounded-2xl p-5">
                   {keywords.map((kw: string, idx: number) => (
                     <span
-                      key={idx}
+                      key={`l3209-idx-${idx}`}
                       className="inline-flex items-center gap-1.5 bg-neutral-800 border border-white/5 text-white pl-3.5 pr-2.5 py-1.5 rounded-full text-xs font-bold shadow-sm hover:border-rose-500/30 hover:bg-rose-950/20 group transition-all"
                     >
                       <span className="font-mono">{kw}</span>
@@ -3257,7 +3257,7 @@ export default function ACPControlPanel() {
             ) : (
               <div className="space-y-4">
                 {flaggedSongs.map((song: any, idx: number) => (
-                  <div key={idx} className="bg-neutral-900/40 border border-rose-500/15 rounded-2xl p-5 flex flex-col gap-4 relative overflow-hidden">
+                  <div key={`l3260-idx-${idx}`} className="bg-neutral-900/40 border border-rose-500/15 rounded-2xl p-5 flex flex-col gap-4 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-1 h-full bg-rose-500" />
                     
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
@@ -3297,7 +3297,7 @@ export default function ACPControlPanel() {
                       <div className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">Từ khóa bị dính:</div>
                       <div className="flex flex-wrap gap-1.5">
                         {song.matchingKeywords.map((kw: string, i: number) => (
-                          <span key={i} className="bg-rose-500/10 border border-rose-500/20 text-rose-300 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold">
+                          <span key={`l3300-i-${i}`} className="bg-rose-500/10 border border-rose-500/20 text-rose-300 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold">
                             {kw}
                           </span>
                         ))}
@@ -3439,8 +3439,8 @@ export default function ACPControlPanel() {
                   </tr>
                 </thead>
                 <tbody>
-                  {vouchers?.map(v => (
-                    <tr key={v.id} className="border-b border-white/5">
+                  {vouchers?.map((v, idx) => (
+                    <tr key={`${v.id || ''}-${idx}`} className="border-b border-white/5">
                       <td className="p-4 text-sm font-mono text-purple-400">{v.code}</td>
                       <td className="p-4 text-sm text-neutral-300">
                         {v.increaseSongs > 0 && <span className="block">+ {v.increaseSongs} bài</span>}
@@ -3519,7 +3519,7 @@ export default function ACPControlPanel() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {roles.map((r: any, idx: number) => (
-                  <div key={idx} className="bg-neutral-900/40 border border-white/5 hover:border-white/10 rounded-2xl p-5 space-y-4 transition-all relative">
+                  <div key={`l3522-idx-${idx}`} className="bg-neutral-900/40 border border-white/5 hover:border-white/10 rounded-2xl p-5 space-y-4 transition-all relative">
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <h3 className="text-base font-black text-white flex items-center gap-2">
@@ -4594,7 +4594,7 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                   <div className="overflow-y-auto custom-scrollbar space-y-3 flex-grow pr-1">
                     {sentMails.map((mail, idx) => (
                       <div
-                        key={idx}
+                        key={`l4597-idx-${idx}`}
                         className="bg-black/30 border border-white/5 p-4 rounded-2xl space-y-2 hover:border-pink-500/20 transition-all text-left"
                       >
                         <div className="flex items-center justify-between">

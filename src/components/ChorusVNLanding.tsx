@@ -562,7 +562,7 @@ function ArtistLandingCard({ artist, t }: { artist: any; t: any; key?: any }) {
             {artist.artistName.split(' ').map((word, index, array) => {
               if (index === array.length - 1) {
                 return (
-                  <span key={index} className="whitespace-nowrap">
+                  <span key={`l565-index-${index}`} className="whitespace-nowrap">
                     {word}
                     {artist.verified && (
                       <motion.span 
@@ -576,7 +576,7 @@ function ArtistLandingCard({ artist, t }: { artist: any; t: any; key?: any }) {
                   </span>
                 );
               }
-              return word + ' ';
+              return <span key={`l579-index-${index}`}>{word} </span>;
             })}
           </h3>
         </div>
@@ -1525,7 +1525,7 @@ export default function ChorusVNLanding() {
             <span className="flex">
               {"Chorus".split("").map((char, index) => (
                 <motion.span
-                  key={index}
+                  key={`l1528-index-${index}`}
                   initial={{ opacity: 0, y: 35, scale: 0.7, filter: 'blur(6px)' }}
                   animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
                   transition={{
@@ -1728,11 +1728,11 @@ export default function ChorusVNLanding() {
                       }}
                       className={isMobile ? "grid grid-cols-4 gap-3 w-full max-w-sm mx-auto px-1 justify-items-center" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"}
                     >
-                      {getArtistsForPage(currentPage, filteredArtists).map((artist) => (
+                      {getArtistsForPage(currentPage, filteredArtists).map((artist, idx) => (
                         isMobile ? (
-                          <ArtistLandingMobileItem key={artist.extension} artist={artist} />
+                          <ArtistLandingMobileItem key={`l1733-${artist.extension || ''}-${idx}`} artist={artist} />
                         ) : (
-                          <ArtistLandingCard key={artist.extension} artist={artist} t={t} />
+                          <ArtistLandingCard key={`l1735-${artist.extension || ''}-${idx}`} artist={artist} t={t} />
                         )
                       ))}
                     </motion.div>
@@ -1753,7 +1753,7 @@ export default function ChorusVNLanding() {
                     <div className="flex items-center gap-2">
                       {Array.from({ length: totalPages }).map((_, idx) => (
                         <button
-                          key={idx}
+                          key={`l1756-idx-${idx}`}
                           type="button"
                           onClick={() => handlePageChange(idx)}
                           className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
@@ -1881,7 +1881,7 @@ export default function ChorusVNLanding() {
 
                 return (
                   <div 
-                    key={idx} 
+                    key={`l1884-idx-${idx}`} 
                     className="bg-white border border-neutral-200/60 hover:border-neutral-300 rounded-[2.5rem] p-8 flex flex-col justify-between transition-all shadow-sm hover:shadow-md relative overflow-hidden"
                   >
                     <div>
@@ -2012,7 +2012,7 @@ export default function ChorusVNLanding() {
               const isOpen = openFaqIdx === idx;
               return (
                 <div 
-                  key={idx} 
+                  key={`l2015-idx-${idx}`} 
                   className="bg-white border border-neutral-200/60 rounded-2xl md:rounded-[1.5rem] overflow-hidden transition-all duration-300 hover:border-neutral-300 shadow-xs"
                 >
                   <button
@@ -2047,7 +2047,7 @@ export default function ChorusVNLanding() {
               const isOpen = openFaqIdx === idx;
               return (
                 <div 
-                  key={idx} 
+                  key={`l2050-idx-${idx}`} 
                   className="bg-white border border-neutral-200/60 rounded-2xl md:rounded-[1.5rem] overflow-hidden transition-all duration-300 hover:border-neutral-300 shadow-xs"
                 >
                   <button

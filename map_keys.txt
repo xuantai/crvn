@@ -1,0 +1,115 @@
+              key={idx} 
+                <React.Fragment key={lineIdx}>
+                      return <span key={`${lineIdx}-${segIdx}`}>{segment}</span>;
+                          key={`${lineIdx}-${segIdx}`}
+          <React.Fragment key={lineIdx}>
+                return <span key={`${lineIdx}-${segIdx}`}>{segment}</span>;
+                    key={`${lineIdx}-${segIdx}`}
+                key={`bf-${i}`} 
+                key={`p-${i}`} 
+                key={i} 
+                key={i} 
+                key={i} 
+                key={i} 
+                key={i} 
+                key={i} 
+                  key={i} 
+                key={i} 
+                key={i} 
+                key={i} 
+                key={i} 
+                key={i} 
+                key={i} 
+                key={i} 
+                key={i} 
+                key={i} 
+                key={i} 
+                key={`c-${i}`} 
+                key={`f-${i}`} 
+                key={i} 
+                key={i} 
+                key={i} 
+                key={idx}
+                key={l}
+                        <span key={index} className="whitespace-nowrap"><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
+                        <span key={index} className="whitespace-nowrap"><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
+                        if (songsInPlaylist.length === 0) return <React.Fragment key={`${playlist.id || ''}-${idx}`} />;
+                          key={`${demo.id || ''}-${idx}`} 
+                                key={page}
+                    onClick={() => setPlayingVideo(song.videoId)} key={`${song.videoId || ''}-${song.id || ''}-${idx}`} 
+                              key={page}
+              key={i} 
+          key={i} 
+          key={i} 
+            key={i} 
+          key={i} 
+          key={i} 
+          key={i} 
+          key={i} 
+          key={i} 
+          key={i} 
+          key={i} 
+                  key={idx}
+          key={idx}
+          key={i} 
+          key={i} 
+          key={i}
+          key={i} 
+            key={i} 
+              key={`${wave.id}-${i}`}
+              key={`${burst.id}-${i}`}
+          key={`stain-${idx}`}
+          key={i} 
+          key={i} 
+            key={i}
+            <div key={i} className="bg-[#0a0a0a] border-t border-white/5 mx-[1px]" style={{
+                         key={`${song.id || ''}-${i}`} 
+      return <div key={idx} className="h-2" />;
+                              key={`dust-${i}`} 
+                               <div key={`sprocket-l-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2]/20 mx-auto rounded-[1.5px] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.9)]"></div>
+                               <div key={`sprocket-r-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2]/20 mx-auto rounded-[1.5px] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.9)]"></div>
+                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={`g1-${n}`} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
+                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={`g2-${n}`} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
+                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={`g3-${n}`} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
+                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={`g4-${n}`} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
+                  key={`${social.id || ''}-${idx}`}
+          <div key={`${config.id || ''}-${idx}`} className="space-y-1">
+                 <div key={`${d.id || ''}-${idx}`} className="text-sm font-medium text-stone-600 flex items-center gap-2 truncate">
+                              <option key={`${d.id || ''}-${idx}`} value={d.id}>{d.title}</option>
+            <div key={`${c.id || ''}-${idx}`} className={`p-5 rounded-2xl border-2 transition-all ${isActive ? 'border-blue-500 bg-blue-50/30' : 'border-stone-200 bg-white hover:border-stone-300'}`}>
+                      key={`${role.id || role.name || ''}-${idx}`}
+                            <li key={idx} className="flex items-start gap-1.5">
+                          key={`${demo.id || ''}-${idx}`}
+                          key={`${demo.id || ''}-${idx}`}
+                          key={`${demo.id || ''}-${idx}`}
+                          key={`${demo.id || ''}-${idx}`}
+                          key={`${demo.id || ''}-${idx}`}
+                            key={`${pl.id || ''}-${idx}`}
+                            <div key={`${item._type}-${item.id || ''}-${idx}`} className="border border-stone-100 p-3 rounded-xl flex items-center justify-between gap-3 bg-white shadow-sm hover:bg-stone-50/30 transition-all">
+                             key={src + i} 
+                            <tr key={`${song.id || ''}-${idx}`} className="hover:bg-stone-50/40 transition-colors">
+                            key={`${ticket.id || ''}-${idx}`}
+              key={`${opt.value}-${idx}`}
+                 <label className="flex items-center gap-3 px-3 py-2.5 hover:bg-stone-50 rounded-lg cursor-pointer transition-colors" key={`${p.id || ''}-${idx}`}>
+                  <button type="button" key={`${c.id || ''}-${idx}`} onClick={() => setSelectedId(c.id)} className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-colors flex justify-between items-center ${selectedId === c.id ? 'border-stone-900 bg-stone-50 font-bold' : 'border-transparent bg-white hover:bg-stone-100'}`}>
+            <div key={index} className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl border border-stone-200 shadow-sm relative group items-end">
+                          <div key={idx} className="flex gap-2 mb-2">
+                          key={tag.value}
+                          <div key={idx} className="flex gap-2 mb-2">
+                          <div key={idx} className="flex gap-2 mb-2">
+                          key={tag.value}
+                          <div key={idx} className="flex gap-2 mb-2">
+                        key={`${song.id || ''}-${i}`}
+                      key={`${song.id || ''}-${i}`} 
+              key={index} 
+                <div key={idx} className="bg-white border border-stone-200 rounded-xl p-4 flex flex-col gap-4 relative">
+                <div key={idx} className="bg-white border border-stone-200 rounded-xl p-4 flex flex-col gap-4 relative">
+            key={`${m.id || ''}-${i}`} 
+            key={`${sec}-${i}`} 
+              key={`${opt}-${optIdx}`}
+          key={`${m.id || ''}-${i}`}
+              <TimelineItem key={idx} item={item} isSplit={true} color="emerald" index={idx} />
+              <TimelineItem key={idx} item={item} isSplit={true} color="blue" index={idx} />
+                    <div key={idx} className="flex items-start gap-2.5 pl-3 text-white/85 text-sm leading-relaxed">
+                      key={i} 
+                        key={i}
