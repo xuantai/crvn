@@ -9062,7 +9062,7 @@ const activeAchievements = hasAchievements;
                                                 animate={{ opacity: 1, x: 0 }}
                                                 exit={{ opacity: 0, x: 10 }}
                                                 transition={{ duration: 0.4, ease: "easeOut" }}
-                                                className="absolute inset-0 flex flex-col justify-center w-full"
+                                                className="relative flex flex-col justify-center w-full min-w-0"
                                               >
                                                 <h3 
                                                   className="font-bold text-[8px] xs:text-[9px] sm:text-lg truncate filter drop-shadow-[0_0_8px_rgba(255,255,255,0.05)] whitespace-normal max-w-full"
@@ -9082,7 +9082,7 @@ const activeAchievements = hasAchievements;
                                                 animate={{ opacity: 1, x: 0 }}
                                                 exit={{ opacity: 0, x: -10 }}
                                                 transition={{ duration: 0.4, ease: "easeOut" }}
-                                                className="absolute inset-0 flex flex-col justify-center w-full"
+                                                className="relative flex flex-col justify-center w-full min-w-0"
                                               >
                                                 <h3 className={`font-bold transition-colors ${
   activeAchievements
