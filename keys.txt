@@ -1,178 +1,186 @@
-310:              key={idx} 
-324:          <React.Fragment key={idx}>
-328:                <React.Fragment key={lineIdx}>
-333:                      return <span key={`${lineIdx}-${segIdx}`}>{segment}</span>;
-340:                          key={`${lineIdx}-${segIdx}`}
-349:                    return <span key={`${lineIdx}-${segIdx}`}>{segment}</span>;
-369:          <React.Fragment key={lineIdx}>
-374:                return <span key={`${lineIdx}-${segIdx}`}>{segment}</span>;
-381:                    key={`${lineIdx}-${segIdx}`}
-418:                      key={`${lineIdx}-${segIdx}`}
-430:                      key={`${lineIdx}-${segIdx}`}
-440:              return <span key={`${lineIdx}-${segIdx}`}>{segment}</span>;
-4797:      <Routes location={location} key={location.pathname}>
-5435:                key={`bf-${i}`} 
-5449:                key={`p-${i}`} 
-5508:                key={i} 
-5546:                key={i} 
-5594:                key={i} 
-5640:                key={i} 
-5684:                key={i} 
-5715:                key={i} 
-5740:                  key={i} 
-5759:                key={i} 
-5792:                key={i} 
-5832:                key={i} 
-5867:                key={i} 
-5901:                key={i} 
-5934:                key={i} 
-5967:                key={i} 
-6010:                key={i} 
-6043:                key={i} 
-6083:                key={i} 
-6111:                key={`c-${i}`} 
-6125:                key={`f-${i}`} 
-6153:                key={i} 
-6209:                key={i} 
-6240:                key={i} 
-6442:                key={idx}
-6545:                key={l}
-6751:           key={currentIndex}
-6845:            key={prevSong.id + '_bg_prev'}
-6852:          key={displaySong.id + '_bg'}
-6878:              key={prevSong.id + '_cover_prev'}
-6887:            key={displaySong.id + '_cover'}
-6926:              key={displaySong.id + '_text'}
-6950:          key={displaySong.id + '_achieve'}
-7329:        <section key="title" className={`relative ${isFirst ? 'pt-28 sm:pt-36' : 'pt-16 sm:pt-20'} pb-12 px-6 sm:px-12 max-w-6xl mx-auto w-full flex flex-col md:flex-row items-center justify-between gap-10 md:gap-16`}>
-7359:                        key={currentAvatarSlideIndex}
-7486:      <section key="title" className={`relative ${isFirst ? 'pt-24 sm:pt-28' : 'pt-12 sm:pt-16'} pb-10 px-6 sm:px-12 flex flex-col items-center justify-center text-center min-h-[300px]`}>
-7509:                        <span key={index} className="whitespace-nowrap"><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
-7521:                    return <React.Fragment key={index}><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span>{' '}</React.Fragment>;
-7545:                        <span key={index} className="whitespace-nowrap"><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
-7557:                    return <React.Fragment key={index}><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span>{' '}</React.Fragment>;
-7571:      <section key="spotify" className={`w-full max-w-5xl mx-auto px-6 sm:px-12 ${isFirst ? 'pt-24 sm:pt-28 pb-10' : 'pb-6'}`}>
-7578:                  key="spotify-embed"
-7695:              key={currentSlide}
-8030:                    key="empty-state"
-8047:                    key={activeListTab}
-8066:                        if (songsInPlaylist.length === 0) return <React.Fragment key={`${playlist.id || ''}-${idx}`} />;
-8076:                            key={`${playlist.id || ''}-${idx}`}
-8144:                          key={`${demo.id || ''}-${idx}`} 
-8221:                                        key="share-btn"
-8380:                                            key="brand-logo"
-8391:                                            key="normal-cover"
-8428:                                                key="brand-text"
-8448:                                                key="normal-text"
-8487:                                      key="share-btn"
-8614:                                key={page}
-8680:                    onClick={() => setPlayingVideo(song.videoId)} key={`${song.videoId || ''}-${song.id || ''}-${idx}`} 
-8757:                              key={page}
-9087:              key={i} 
-9216:          key={i} 
-9238:          key={i} 
-9273:            key={i} 
-9295:          key={i} 
-9317:          key={i} 
-9337:          key={i} 
-9357:          key={i} 
-9378:          key={i} 
-9399:          key={i} 
-9421:          key={i} 
-9524:                  key={idx}
-9554:          key={idx}
-9616:          key={i} 
-9649:          key={i} 
-9709:          key={i}
-9738:          key={i} 
-9778:            key={i} 
-9923:              key={`${wave.id}-${i}`}
-9948:              key={`${burst.id}-${i}`}
-10060:          key={`stain-${idx}`}
-10083:          key={i} 
-10158:          key={i} 
-10192:            key={i}
-10220:            <div key={i} className="bg-[#0a0a0a] border-t border-white/5 mx-[1px]" style={{
-10569:                         key={`${song.id || ''}-${i}`} 
-10643:      return <div key={idx} className="h-2" />;
-10653:        <div key={idx} className={`flex items-start gap-2 ${indentClass} py-0.5 leading-relaxed text-left`}>
-10670:          <div key={idx} className={`flex items-start gap-2 ${indentClass} py-0.5 leading-relaxed text-left`}>
-10680:      <p key={idx} className="leading-relaxed py-0.5 text-left">
-11079:              <div key={origIdx} className="flex items-center my-6 select-none animate-fade-in">
-11090:            return <div key={origIdx} className="h-4" />;
-11095:              key={origIdx} 
-11828:                              key={`dust-${i}`} 
-11850:                               <div key={`sprocket-l-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2]/20 mx-auto rounded-[1.5px] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.9)]"></div>
-11858:                               <div key={`sprocket-r-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2]/20 mx-auto rounded-[1.5px] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.9)]"></div>
-11954:                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={`g1-${n}`} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
-11955:                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={`g2-${n}`} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
-11956:                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={`g3-${n}`} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
-11957:                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={`g4-${n}`} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
-12304:                        key={idx}
-12334:                      <div key={idx} className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 border border-white/10 relative z-10">
-12508:                key={currentIconIdx === -1 ? 'follow' : `social-${currentIconIdx}`}
-12526:                key="close"
-12555:                  key={`${social.id || ''}-${idx}`}
-12792:          <div key={`${config.id || ''}-${idx}`} className="space-y-1">
-12821:                 <div key={`${d.id || ''}-${idx}`} className="text-sm font-medium text-stone-600 flex items-center gap-2 truncate">
-12923:                              <option key={`${d.id || ''}-${idx}`} value={d.id}>{d.title}</option>
-13305:            <div key={`${c.id || ''}-${idx}`} className={`p-5 rounded-2xl border-2 transition-all ${isActive ? 'border-blue-500 bg-blue-50/30' : 'border-stone-200 bg-white hover:border-stone-300'}`}>
-14413:                      key={`${role.id || role.name || ''}-${idx}`}
-14450:                            <li key={idx} className="flex items-start gap-1.5">
-15304:            <motion.div key="demos" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
-15533:                {demosSubTab === 'landing_pages' && (<motion.div key="landing_pages" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
-15550:                          key={`${demo.id || ''}-${idx}`}
-15586:                {demosSubTab === 'released' && (<motion.div key="released" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
-15603:                          key={`${demo.id || ''}-${idx}`}
-15678:                {demosSubTab === 'demos' && (<motion.div key="demos" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
-15695:                          key={`${demo.id || ''}-${idx}`}
-15774:                {demosSubTab === 'brands' && (<motion.div key="brands" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
-15791:                          key={`${demo.id || ''}-${idx}`}
-15873:                {demosSubTab === 'drafts' && (<motion.div key="drafts" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
-15890:                          key={`${demo.id || ''}-${idx}`}
-15953:                {demosSubTab === 'playlists' && (<motion.div key="playlists" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
-15975:                            key={`${pl.id || ''}-${idx}`}
-16030:                {demosSubTab === 'trash' && (<motion.div key="trash" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
-16077:                            <div key={`${item._type}-${item.id || ''}-${idx}`} className="border border-stone-100 p-3 rounded-xl flex items-center justify-between gap-3 bg-white shadow-sm hover:bg-stone-50/30 transition-all">
-16123:            <motion.div key="menus" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
-16131:            <motion.div key="layout" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
-16139:            <motion.div key="admin_theme" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
-16256:            <motion.div key="vouchers" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
-16299:            <motion.div key="profile" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
-16388:                             key={src + i} 
-16711:            <motion.div key="socials" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
-16749:            <motion.div key="templates" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
-16755:            <motion.div key="security" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
-16933:            <motion.div key="database" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
-16941:            <motion.div key="reposts" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
-17018:                            <tr key={`${song.id || ''}-${idx}`} className="hover:bg-stone-50/40 transition-colors">
-17099:            <motion.div key="tickets" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
-17135:                            key={`${ticket.id || ''}-${idx}`}
-17277:                              key={`msg-${msg.id || idx}-${idx}`} 
-17783:              key={`${opt.value}-${idx}`}
-17888:                 <label className="flex items-center gap-3 px-3 py-2.5 hover:bg-stone-50 rounded-lg cursor-pointer transition-colors" key={`${p.id || ''}-${idx}`}>
-17946:                  <button type="button" key={`${c.id || ''}-${idx}`} onClick={() => setSelectedId(c.id)} className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-colors flex justify-between items-center ${selectedId === c.id ? 'border-stone-900 bg-stone-50 font-bold' : 'border-transparent bg-white hover:bg-stone-100'}`}>
-18019:            <div key={index} className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl border border-stone-200 shadow-sm relative group items-end">
-18877:                          <div key={idx} className="flex gap-2 mb-2">
-18969:                          key={tag.value}
-19039:                          <div key={idx} className="flex gap-2 mb-2">
-20220:                          <div key={idx} className="flex gap-2 mb-2">
-20312:                          key={tag.value}
-20383:                          <div key={idx} className="flex gap-2 mb-2">
-20981:                        key={`${song.id || ''}-${i}`}
-21046:                      key={`${song.id || ''}-${i}`} 
-21134:    <motion.div key="about" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
-21377:              key={index} 
-21522:    <motion.div key="bio" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
-21545:                <div key={idx} className="bg-white border border-stone-200 rounded-xl p-4 flex flex-col gap-4 relative">
-21611:                <div key={idx} className="bg-white border border-stone-200 rounded-xl p-4 flex flex-col gap-4 relative">
-21744:            key={`${m.id || ''}-${i}`} 
-21848:            key={`${sec}-${i}`} 
-21947:              key={`${opt}-${optIdx}`}
-21990:          key={`${m.id || ''}-${i}`}
-22163:              <TimelineItem key={idx} item={item} isSplit={true} color="emerald" index={idx} />
-22183:              <TimelineItem key={idx} item={item} isSplit={true} color="blue" index={idx} />
-22290:                    <div key={idx} className="flex items-start gap-2.5 pl-3 text-white/85 text-sm leading-relaxed">
-22299:                  <p key={idx} className="text-white/80 text-sm leading-relaxed min-h-[1rem]">
-22339:                      key={i} 
-22436:                        key={i}
+Line 337: key={`ft-p-${prefix}-${textClean}-${idx}`}
+Line 349: <React.Fragment key={`ft-n-${prefix}-${textClean}-${idx}`}>
+Line 353: <React.Fragment key={`ft-l-${prefix}-${textClean}-${idx}-${lineIdx}`}>
+Line 358: return <span key={`ft-s-${prefix}-${textClean}-${idx}-${lineIdx}-${segIdx}`}>{segment}</span>;
+Line 365: key={`ft-sec-${prefix}-${textClean}-${idx}-${lineIdx}-${segIdx}`}
+Line 374: return <span key={`ft-text-${prefix}-${textClean}-${idx}-${lineIdx}-${segIdx}`}>{segment}</span>;
+Line 395: <React.Fragment key={`ranwl-l-${textClean}-${lineIdx}`}>
+Line 400: return <span key={`ranwl-sep-${textClean}-${lineIdx}-${segIdx}`}>{segment}</span>;
+Line 407: key={`ranwl-sec-${textClean}-${lineIdx}-${segIdx}`}
+Line 444: key={`l418-art-l${lineIdx}-s${segIdx}`}
+Line 456: key={`l430-art-l${lineIdx}-s${segIdx}`}
+Line 466: return <span key={`l440-art-l${lineIdx}-s${segIdx}`}>{segment}</span>;
+Line 5141: <Routes location={location} key={location.pathname}>
+Line 5808: key={`l5435-bf-${i}`}
+Line 5822: key={`l5449-p-${i}`}
+Line 5881: key={`l5508-i-${i}`}
+Line 5919: key={`l5546-i-${i}`}
+Line 5967: key={`l5594-i-${i}`}
+Line 6013: key={`l5640-i-${i}`}
+Line 6057: key={`l5684-i-${i}`}
+Line 6088: key={`l5715-i-${i}`}
+Line 6113: key={`l5740-i-${i}`}
+Line 6132: key={`l5759-i-${i}`}
+Line 6165: key={`l5792-i-${i}`}
+Line 6205: key={`l5832-i-${i}`}
+Line 6240: key={`l5867-i-${i}`}
+Line 6274: key={`l5901-i-${i}`}
+Line 6307: key={`l5934-i-${i}`}
+Line 6340: key={`l5967-i-${i}`}
+Line 6383: key={`l6010-i-${i}`}
+Line 6416: key={`l6043-i-${i}`}
+Line 6456: key={`l6083-i-${i}`}
+Line 6484: key={`l6111-c-${i}`}
+Line 6498: key={`l6125-f-${i}`}
+Line 6526: key={`l6153-i-${i}`}
+Line 6582: key={`l6209-i-${i}`}
+Line 6613: key={`l6240-i-${i}`}
+Line 6815: key={`l6442-idx-3-${idx}`}
+Line 6824: <React.Fragment key={`rtbk-${idx}`}>
+Line 6922: key={l}
+Line 7154: key={`${prefix}-${curAch?.type || ''}-${curAch?.value || ''}-${currentIndex}`}
+Line 7270: key={`${prevKey}_bg_prev`}
+Line 7281: key={`${currKey}_bg`}
+Line 7311: key={`${prevKey}_cover_prev`}
+Line 7320: key={`${currKey}_cover`}
+Line 7364: key={`${prevKey}_text_prev`}
+Line 7381: key={`${currKey}_text`}
+Line 7842: <section key="title-gold" className={`relative ${isFirst ? 'pt-28 sm:pt-36' : 'pt-16 sm:pt-20'} pb-12 px-6 sm:px-12 max-w-6xl mx-auto w-full flex flex-col md:flex-row items-center justify-between gap-10 md:gap-16`}>
+Line 7872: key={currentAvatarSlideIndex}
+Line 7946: <section key="title-normal" className={`relative ${isFirst ? 'pt-24 sm:pt-28' : 'pt-12 sm:pt-16'} pb-10 px-6 sm:px-12 flex flex-col items-center justify-center text-center min-h-[300px]`}>
+Line 7969: <span key={`l7529-idx-${index}`} className="whitespace-nowrap"><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
+Line 7981: return <React.Fragment key={`l7541-idx-${index}`}><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span>{' '}</React.Fragment>;
+Line 8005: <span key={`l7565-idx-${index}`} className="whitespace-nowrap"><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
+Line 8017: return <React.Fragment key={`l7577-idx-${index}`}><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span>{' '}</React.Fragment>;
+Line 8031: <section key="random-song-sec" className={`w-full max-w-2xl sm:max-w-3xl mx-auto px-6 sm:px-12 ${isFirst ? 'pt-24 sm:pt-28' : 'pt-4 sm:pt-6'} pb-6`}>
+Line 8083: <section key="spotify" className={`w-full max-w-5xl mx-auto px-6 sm:px-12 ${isFirst ? 'pt-24 sm:pt-28 pb-10' : 'pb-6'}`}>
+Line 8090: key="spotify-embed"
+Line 8207: key={currentSlide}
+Line 8568: key="empty-state"
+Line 8585: key={activeListTab}
+Line 8604: if (songsInPlaylist.length === 0) return <React.Fragment key={`l8086-${playlist.id || ''}-${idx}`} />;
+Line 8614: key={`l8096-${playlist.id || ''}-${idx}`}
+Line 8682: key={`l8164-demo-${demo.id || ""}-${idx}`}
+Line 8755: key="brand-logo-vert"
+Line 8776: key="normal-cover-vert"
+Line 8817: key={`l8265-share-btn-top-${demo.id || ''}-${idx}`}
+Line 8847: key="brand-title-vert"
+Line 8859: key="song-title-vert"
+Line 8878: key="brand-brief-vert"
+Line 8889: <motion.div key="artist-name-vert" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }}>
+Line 9022: key="brand-logo"
+Line 9033: key="normal-cover"
+Line 9070: key="brand-text"
+Line 9090: key="normal-text"
+Line 9129: key={`l8531-share-btn-bottom-${demo.id || ''}-${idx}`}
+Line 9256: key={`l8658-page-btn-1-${page}`}
+Line 9322: onClick={() => setPlayingVideo(song.videoId)} key={`l8724-${song.videoId || ''}-${song.id || ''}-${idx}`}
+Line 9399: key={`l8801-page-btn-2-${page}`}
+Line 9729: key={`l9131-i-${i}`}
+Line 9858: key={`l9260-i-${i}`}
+Line 9880: key={`l9282-i-${i}`}
+Line 9915: key={`l9317-i-${i}`}
+Line 9937: key={`l9339-i-${i}`}
+Line 9959: key={`l9361-i-${i}`}
+Line 9979: key={`l9381-i-${i}`}
+Line 9999: key={`l9401-i-${i}`}
+Line 10020: key={`l9422-i-${i}`}
+Line 10041: key={`l9443-i-${i}`}
+Line 10063: key={`l9465-i-${i}`}
+Line 10166: key={`l9568-idx-4-${idx}`}
+Line 10196: key={`l9598-idx-5-${idx}`}
+Line 10258: key={`l9660-i-${i}`}
+Line 10291: key={`l9693-i-${i}`}
+Line 10351: key={`l9753-i-${i}`}
+Line 10380: key={`l9782-i-${i}`}
+Line 10420: key={`l9822-i-${i}`}
+Line 10565: key={`l9967-${wave.id}-${i}`}
+Line 10590: key={`l9992-${burst.id}-${i}`}
+Line 10702: key={`l10104-stain-${idx}`}
+Line 10725: key={`l10127-i-${i}`}
+Line 10800: key={`l10202-i-${i}`}
+Line 10834: key={`l10236-i-${i}`}
+Line 10862: <div key={`l10264-i-${i}`} className="bg-[#0a0a0a] border-t border-white/5 mx-[1px]" style={{
+Line 11211: key={`l10613-${song.id || ''}-${i}`}
+Line 11285: return <div key={`l10687-idx-6-${idx}`} className="h-2" />;
+Line 11295: <div key={`l10697-idx-7-${idx}`} className={`flex items-start gap-2 ${indentClass} py-0.5 leading-relaxed text-left`}>
+Line 11312: <div key={`l10714-idx-8-${idx}`} className={`flex items-start gap-2 ${indentClass} py-0.5 leading-relaxed text-left`}>
+Line 11322: <p key={`l10724-idx-9-${idx}`} className="leading-relaxed py-0.5 text-left">
+Line 11722: <div key={`l11123-lyr-${origIdx}-1-${arrIdx}`} className="flex items-center my-6 select-none animate-fade-in">
+Line 11733: return <div key={`l11134-lyr-${origIdx}-2-${arrIdx}`} className="h-4" />;
+Line 11738: key={`l11139-lyr-${origIdx}-3-${arrIdx}`}
+Line 12463: key={`l11872-dust-${i}`}
+Line 12485: <div key={`l11894-sprocket-l-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2]/20 mx-auto rounded-[1.5px] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.9)]"></div>
+Line 12493: <div key={`l11902-sprocket-r-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2]/20 mx-auto rounded-[1.5px] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.9)]"></div>
+Line 12589: <div className="flex justify-between">{[1,2,3,4].map(n=><div key={`l11998-g1-${n}`} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
+Line 12590: <div className="flex justify-between">{[1,2,3,4].map(n=><div key={`l11999-g2-${n}`} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
+Line 12591: <div className="flex justify-between">{[1,2,3,4].map(n=><div key={`l12000-g3-${n}`} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
+Line 12592: <div className="flex justify-between">{[1,2,3,4].map(n=><div key={`l12001-g4-${n}`} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
+Line 12949: key={`l12348-idx-10-${idx}`}
+Line 12979: <div key={`l12378-idx-11-${idx}`} className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 border border-white/10 relative z-10">
+Line 13153: key={currentIconIdx === -1 ? 'follow' : `social-${currentIconIdx}`}
+Line 13171: key="close"
+Line 13200: key={`l12599-${social.id || ''}-${idx}`}
+Line 13437: <div key={`l12836-${config.id || ''}-${idx}`} className="space-y-1">
+Line 13466: <div key={`l12865-${d.id || ''}-${idx}`} className="text-sm font-medium text-stone-600 flex items-center gap-2 truncate">
+Line 13568: <option key={`l12967-${d.id || ''}-${idx}`} value={d.id}>{d.title}</option>
+Line 13950: <div key={`l13349-${c.id || ''}-${idx}`} className={`p-5 rounded-2xl border-2 transition-all ${isActive ? 'border-blue-500 bg-blue-50/30' : 'border-stone-200 bg-white hover:border-stone-300'}`}>
+Line 15058: key={`l14457-${role.id || role.name || ''}-${idx}`}
+Line 15095: <li key={`l14494-idx-12-${idx}`} className="flex items-start gap-1.5">
+Line 15949: <motion.div key="demos" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+Line 16178: {demosSubTab === 'landing_pages' && (<motion.div key="landing_pages" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
+Line 16195: key={`l15594-demo-${demo.id || ""}-${idx}`}
+Line 16231: {demosSubTab === 'released' && (<motion.div key="released" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
+Line 16248: key={`l15647-demo-${demo.id || ""}-${idx}`}
+Line 16323: {demosSubTab === 'demos' && (<motion.div key="sub-demos" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
+Line 16340: key={`l15739-demo-${demo.id || ""}-${idx}`}
+Line 16419: {demosSubTab === 'brands' && (<motion.div key="brands" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
+Line 16436: key={`l15835-demo-${demo.id || ""}-${idx}`}
+Line 16518: {demosSubTab === 'drafts' && (<motion.div key="drafts" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
+Line 16535: key={`l15934-demo-${demo.id || ""}-${idx}`}
+Line 16598: {demosSubTab === 'playlists' && (<motion.div key="playlists" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
+Line 16620: key={`l16019-${pl.id || ''}-${idx}`}
+Line 16675: {demosSubTab === 'trash' && (<motion.div key="trash" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
+Line 16722: <div key={`l16121-${item._type}-${item.id || ''}-${idx}`} className="border border-stone-100 p-3 rounded-xl flex items-center justify-between gap-3 bg-white shadow-sm hover:bg-stone-50/30 transition-all">
+Line 16768: <motion.div key="menus" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+Line 16776: <motion.div key="layout" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+Line 16784: <motion.div key="admin_theme" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+Line 16901: <motion.div key="vouchers" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+Line 16944: <motion.div key="profile" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+Line 17033: key={src + i}
+Line 17356: <motion.div key="socials" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+Line 17394: <motion.div key="templates" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+Line 17400: <motion.div key="security" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+Line 17578: <motion.div key="database" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+Line 17586: <motion.div key="reposts" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+Line 17663: <tr key={`l17062-${song.id || ''}-${idx}`} className="hover:bg-stone-50/40 transition-colors">
+Line 17744: <motion.div key="tickets" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+Line 17780: key={`l17179-${ticket.id || ''}-${idx}`}
+Line 17922: key={`l17321-msg-${msg.id || idx}-${idx}`}
+Line 18428: key={`l17827-${opt.value}-${idx}`}
+Line 18533: <label className="flex items-center gap-3 px-3 py-2.5 hover:bg-stone-50 rounded-lg cursor-pointer transition-colors" key={`l17932-${p.id || ''}-${idx}`}>
+Line 18591: <button type="button" key={`l17990-${c.id || ''}-${idx}`} onClick={() => setSelectedId(c.id)} className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-colors flex justify-between items-center ${selectedId === c.id ? 'border-stone-900 bg-stone-50 font-bold' : 'border-transparent bg-white hover:bg-stone-100'}`}>
+Line 18664: <div key={`l18063-idx-${index}`} className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl border border-stone-200 shadow-sm relative group items-end">
+Line 19522: <div key={`l18921-idx-13-${idx}`} className="flex gap-2 mb-2">
+Line 19614: key={`l19013-tag-badge-1-${tag.value}-${tagIdx}`}
+Line 19684: <div key={`l19083-idx-14-${idx}`} className="flex gap-2 mb-2">
+Line 20859: <div key={`l20264-idx-15-${idx}`} className="flex gap-2 mb-2">
+Line 20951: key={`l20356-tag-badge-2-${tag.value}-${tagIdx}`}
+Line 21022: <div key={`l20427-idx-16-${idx}`} className="flex gap-2 mb-2">
+Line 21620: key={`l21025-${song.id || ''}-${i}`}
+Line 21685: key={`l21090-${song.id || ''}-${i}`}
+Line 21773: <motion.div key="about" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+Line 22016: key={`l21421-idx-${index}`}
+Line 22161: <motion.div key="bio" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+Line 22184: <div key={`l21589-idx-17-${idx}`} className="bg-white border border-stone-200 rounded-xl p-4 flex flex-col gap-4 relative">
+Line 22250: <div key={`l21655-idx-18-${idx}`} className="bg-white border border-stone-200 rounded-xl p-4 flex flex-col gap-4 relative">
+Line 22383: key={`l21788-${m.id || ''}-${i}`}
+Line 22510: key={`l21892-${sec}-${i}`}
+Line 22664: key={`l21991-${opt}-${optIdx}`}
+Line 22707: key={`l22034-${m.id || ''}-${i}`}
+Line 22880: <TimelineItem key={`l22207-idx-19-${idx}`} item={item} isSplit={true} color="emerald" index={idx} />
+Line 22900: <TimelineItem key={`l22227-idx-20-${idx}`} item={item} isSplit={true} color="blue" index={idx} />
+Line 23007: <div key={`l22334-idx-21-${idx}`} className="flex items-start gap-2.5 pl-3 text-white/85 text-sm leading-relaxed">
+Line 23016: <p key={`l22343-idx-22-${idx}`} className="text-white/80 text-sm leading-relaxed min-h-[1rem]">
+Line 23056: key={`l22383-i-${i}`}
+Line 23153: key={`l22480-i-${i}`}

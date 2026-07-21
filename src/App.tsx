@@ -5331,7 +5331,7 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
   return (
     <AnimatePresence>
       {showWidget && (
-        <motion.div
+        <motion.div key="widget"
           initial={{ opacity: 0, y: 50, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 50, scale: 0.9 }}
@@ -5377,7 +5377,7 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
               
               <AnimatePresence>
                 {showThemeDropdown && (
-                  <motion.div
+                  <motion.div key="theme-dropdown"
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -5460,7 +5460,7 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
       {/* Confirmation Modal */}
       <AnimatePresence>
         {pendingTheme && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-[99999]">
+          <div key="pending-theme" className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-[99999]">
                         <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -5549,7 +5549,7 @@ const AdminFloatingAddButton = () => {
         >
           <AnimatePresence>
             {showTooltip && (
-              <motion.div
+              <motion.div key="tooltip"
                 initial={{ opacity: 0, x: 15, scale: 0.9, filter: 'blur(4px)' }}
                 animate={{ opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, x: 15, scale: 0.9, filter: 'blur(4px)' }}
@@ -7149,7 +7149,7 @@ function AchievementCycle({ achievements, align, isLightBg = false, prefix = 'ac
 
   return (
     <div className={`relative w-full h-[30px] sm:h-[48px] flex items-center ${isLeft ? 'justify-start' : 'justify-end'} overflow-visible`}>
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         <motion.div 
            key={`${prefix}-${curAch?.type || ''}-${curAch?.value || ''}-${currentIndex}`}
            initial={{ opacity: 0, y: 6 }}
@@ -7867,19 +7867,20 @@ function Home() {
               <div className="w-full h-full rounded-[48%_/_38%] group-hover:rounded-[30px] bg-[#FAF5E6] p-[2px] transition-all duration-700 ease-in-out">
                 <div className="w-full h-full rounded-[48%_/_38%] group-hover:rounded-[28px] overflow-hidden relative border border-[#D4AF37]/30 bg-[#FAF5E6] transition-all duration-700 ease-in-out">
                   {avatarSlideshowImages && avatarSlideshowImages.length > 0 ? (
-                    <AnimatePresence mode="wait">
-                      <motion.img 
-                        key={currentAvatarSlideIndex}
-                        src={avatarSlideshowImages[currentAvatarSlideIndex % avatarSlideshowImages.length]} 
-                        alt={data.artistName} 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 1.2, ease: "easeInOut" }}
-                        className="absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-110 transition-all duration-700 ease-in-out"
-                        referrerPolicy="no-referrer"
-                      />
-                    </AnimatePresence>
+                    <>
+                      {avatarSlideshowImages.map((imgUrl, idx) => {
+                        const isActive = idx === (currentAvatarSlideIndex % avatarSlideshowImages.length);
+                        return (
+                          <img 
+                            key={"avatar-slide-" + idx}
+                            src={imgUrl}
+                            alt={data.artistName}
+                            className={`absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-110 transition-all duration-[1500ms] ease-in-out ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                            referrerPolicy="no-referrer"
+                          />
+                        );
+                      })}
+                    </>
                   ) : (
                     <img 
                       src={effectiveCoverUrl || data.aboutMe?.avatarUrl} 
@@ -8202,12 +8203,12 @@ function Home() {
         </div>
       ) : data.slideshowImages && data.slideshowImages.length > 0 ? (
         <div className="fixed inset-0 z-[-1] pointer-events-none bg-neutral-950">
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
             <motion.div
               key={currentSlide}
-              initial={{ opacity: 0, scale: 1.05 }}
-              animate={{ opacity: 0.8, scale: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0, scale: 1.05, zIndex: 10 }}
+              animate={{ opacity: 0.8, scale: 1, zIndex: 10 }}
+              exit={{ opacity: 0.8, zIndex: 0 }}
               transition={{ duration: 1.5, ease: "easeInOut" }}
               className="absolute inset-0 bg-cover bg-center"
               style={{ 
@@ -8236,13 +8237,21 @@ function Home() {
             {/* Slideshow background behind main overlay player */}
             <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
               {data && data.slideshowImages && data.slideshowImages.length > 0 ? (
-                <div 
-                  className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
-                  style={{ 
-                    backgroundImage: `url(${data.slideshowImages[currentSlide % data.slideshowImages.length]})`,
-                    backgroundPosition: 'center 20%'
-                  }}
-                />
+                <>
+                  {data.slideshowImages.map((imgUrl, idx) => {
+                    const isActive = idx === (currentSlide % data.slideshowImages.length);
+                    return (
+                      <div
+                        key={"vid-bg-" + idx}
+                        className={`absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out ${isActive ? 'opacity-100' : 'opacity-0'}`}
+                        style={{ 
+                          backgroundImage: `url(${imgUrl})`,
+                          backgroundPosition: 'center 20%'
+                        }}
+                      />
+                    );
+                  })}
+                </>
               ) : data && effectiveCoverUrl ? (
                 <div 
                   className="absolute inset-0 bg-cover bg-center"
@@ -8562,7 +8571,7 @@ function Home() {
               : 'hover:border-purple-500/50';
 
             return (
-              <AnimatePresence mode="wait">
+              <AnimatePresence>
                 {totalItems === 0 ? (
                   <motion.div
                     key="empty-state"
@@ -8749,7 +8758,7 @@ function Home() {
 
                                   {/* 1. Song Cover Image Container */}
                                   <div className="w-full aspect-square rounded-2xl overflow-hidden relative border border-[#D4AF37]/25 group-hover:border-[#D4AF37] transition-colors select-none shadow-md z-10 bg-[#FAF5E6]">
-                                    <AnimatePresence mode="wait">
+                                    <AnimatePresence>
                                       {demo.isBrand && showBrandState && demo.brandLogoUrl ? (
                                         <motion.div
                                           key="brand-logo-vert"
@@ -8841,7 +8850,7 @@ function Home() {
 
                                   {/* 2. Song Title */}
                                   <div className="mt-4 min-h-[40px] flex items-center justify-center text-center px-1 z-10 w-full overflow-hidden">
-                                    <AnimatePresence mode="wait">
+                                    <AnimatePresence>
                                       {demo.isBrand && showBrandState && demo.brandName ? (
                                         <motion.h3 
                                           key="brand-title-vert"
@@ -8872,7 +8881,7 @@ function Home() {
 
                                   {/* 3. Artist/Singer */}
                                   <div className="mb-4 mt-1 z-10 w-full px-2">
-                                    <AnimatePresence mode="wait">
+                                    <AnimatePresence>
                                       {demo.isBrand && showBrandState ? (
                                         <motion.div
                                           key="brand-brief-vert"
@@ -9016,7 +9025,7 @@ function Home() {
                                   )}
                                   <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 relative z-10 select-none">
                                     <div className={`w-full h-full rounded-xl overflow-hidden relative border ${isGoldTheme ? 'border-[#D4AF37]/35 group-hover:border-[#D4AF37]' : 'border-white/10 group-hover:border-rose-500/30'} transition-colors`}>
-                                      <AnimatePresence mode="wait">
+                                      <AnimatePresence>
                                         {demo.isBrand && showBrandState && demo.brandLogoUrl ? (
                                           <motion.div
                                             key="brand-logo"
@@ -9064,7 +9073,7 @@ const activeAchievements = hasAchievements && !isTitleLong;
                                     return (
                                       <>
                                         <div className={`flex-1 min-w-0 relative z-10 flex flex-col justify-center h-full overflow-visible ${activeAchievements ? 'pr-1.5' : 'pr-1.5 sm:pr-3'}`}>
-                                          <AnimatePresence mode="wait">
+                                          <AnimatePresence>
                                             {demo.isBrand && showBrandState && demo.brandName ? (
                                               <motion.div
                                                 key="brand-text"
@@ -9473,7 +9482,7 @@ const activeAchievements = hasAchievements && !isTitleLong;
       {/* Indirect Bio Card Popup */}
       <AnimatePresence>
         {activeBioSong && (
-          <IndirectBioCard 
+          <IndirectBioCard key="indirect-bio-card" 
             demo={{...activeBioSong, coverUrl: getPreviewUrl(getSongCoverUrl(activeBioSong.coverUrl))}} 
             onClose={() => setActiveBioSong(null)} 
             isStandalone={false}
@@ -11173,7 +11182,7 @@ function PlaylistPlayer() {
       {/* Frame on top */}
       <AnimatePresence>
          {!isMinimized && (
-            <motion.div 
+            <motion.div key="not-minimized"
                initial={{ opacity: 0, scale: 0.9, y: 20 }}
                animate={{ opacity: 1, scale: 1, y: 0 }}
                exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -11249,7 +11258,7 @@ function PlaylistPlayer() {
 
       <AnimatePresence>
          {isMinimized && (
-            <motion.div
+            <motion.div key="minimized"
                initial={{ opacity: 0, scale: 0.5, y: -20, x: 20 }}
                animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
                exit={{ opacity: 0, scale: 0.5, y: -20, x: 20 }}
@@ -13147,7 +13156,7 @@ function SocialCarousel({ data, pushDown = false, isGoldTheme = false }: { data:
         className={`relative flex items-center justify-center w-10 h-10 rounded-full ${isGoldTheme ? 'bg-[#1A1303] border-[#D4AF37]/50 text-[#D4AF37] shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:border-[#D4AF37] hover:text-amber-300 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)]' : 'bg-white/10 border-white/20 text-white hover:bg-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]'} backdrop-blur-md border hover:scale-110 shadow-md transition-all cursor-pointer`}
         title="Follow"
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
            {!isOpen ? (
              <motion.div
                 key={currentIconIdx === -1 ? 'follow' : `social-${currentIconIdx}`}
@@ -13183,7 +13192,7 @@ function SocialCarousel({ data, pushDown = false, isGoldTheme = false }: { data:
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <motion.div key="is-open"
             initial="hidden"
             animate="visible"
             exit="hidden"
@@ -15025,7 +15034,7 @@ function AdminDashboard() {
       {/* Modal So sánh Gói Thành Viên */}
       <AnimatePresence>
         {showMembershipModal && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[999] overflow-y-auto">
+          <div key="membership-modal" className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[999] overflow-y-auto">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -15120,7 +15129,7 @@ function AdminDashboard() {
       {/* Modal Lịch sử Kích Hoạt */}
       <AnimatePresence>
         {showHistoryModal && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[999]">
+          <div key="history-modal" className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[999]">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -15944,7 +15953,7 @@ function AdminDashboard() {
                 isGoldTheme ? 'md:border-amber-200/60' : 'md:border-stone-200'
               }`
         }`}>
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
           {activeTab === 'demos' && (
             <motion.div key="demos" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
             <div>
@@ -16174,7 +16183,7 @@ function AdminDashboard() {
 
               {/* Action area for selected subtab */}
               <div className="overflow-x-auto min-h-[300px]">
-<AnimatePresence mode="wait">
+<AnimatePresence>
                 {demosSubTab === 'landing_pages' && (<motion.div key="landing_pages" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
                   let landingList = data.demos?.filter(d => d.linkType === 'indirect' && !d.deleted) || [];
                   if (adminSearchQuery.trim()) {
@@ -16751,6 +16760,7 @@ function AdminDashboard() {
 
           
           {activeTab === 'about' && (
+            <motion.div key="about" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
              <AdminAboutEdit 
   data={data} 
   t={t} 
@@ -16759,9 +16769,12 @@ function AdminDashboard() {
   getPreviewUrl={getPreviewUrl} 
   onPreviewAvatar={(url: string | null) => setPreviewAvatar(url)}
 />
+            </motion.div>
           )}
           {activeTab === 'bio' && (
-             <AdminBioEdit data={data} t={t} onSave={handleCustomSave} />
+            <motion.div key="bio" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+             <AdminBioEdit key="bio" data={data} t={t} onSave={handleCustomSave} />
+            </motion.div>
           )}
 
           {activeTab === 'menus' && (
@@ -23040,12 +23053,18 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0 }: {
               <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-6 sm:w-8 h-3 sm:h-4 bg-white/60 backdrop-blur-sm shadow-sm rotate-[4deg] z-10 border border-white/40"></div>
               
               {/* Image with preserved aspect ratio */}
-              <div className="w-14 sm:w-20 md:w-24 flex items-center justify-center overflow-hidden bg-stone-50 rounded-sm">
-                <img 
-                  src={images[activeImgIdx]} 
-                  className="w-full h-auto max-h-28 sm:max-h-40 md:max-h-48 object-contain rounded-sm border border-stone-100"
-                  alt={item.title}
-                />
+              <div className="w-14 sm:w-20 md:w-24 flex items-center justify-center overflow-hidden bg-stone-50 rounded-sm relative" style={{aspectRatio: "1/1"}}>
+                {images.map((imgUrl, idx) => {
+                  const isActive = idx === activeImgIdx;
+                  return (
+                    <img
+                      key={"timeline-img-" + idx}
+                      src={imgUrl}
+                      className={`absolute inset-0 w-full h-full object-contain rounded-sm border border-stone-100 transition-opacity duration-1000 ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                      alt={item.title}
+                    />
+                  );
+                })}
               </div>
 
               {/* Indicator dots for multiple images on miniature Polaroid */}
@@ -23068,7 +23087,7 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0 }: {
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
           {isImgOpen && (
-            <motion.div 
+            <motion.div key="img-open"
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
