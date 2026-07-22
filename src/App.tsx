@@ -7017,8 +7017,8 @@ function AchievementBadge({ achievement, align = 'right', isLightBg = false }: {
     const isTrending = type === 'youtube_trending';
     const isTop1Trending = isTrending && (achievement.value?.toString().trim() === '1' || achievement.value?.toString().toLowerCase().trim() === 'top 1' || achievement.value?.toString().trim() === '#1');
     return (
-      <div className={`flex flex-row items-center gap-1.5 sm:gap-2.5 w-full ${isLeft ? 'justify-start' : 'justify-end'} group/badge`}>
-        <div className="w-5 h-5 min-[360px]:w-6 min-[360px]:h-6 sm:w-10 sm:h-10 bg-gradient-to-br from-[#ff0f7b] to-[#f89b29] p-[1px] rounded-[4px] sm:rounded-xl shrink-0 shadow-[0_0_10px_rgba(239,68,68,0.3)] animate-flicker-yt">
+      <div className={`flex flex-row items-center gap-1.5 sm:gap-2 w-full ${isLeft ? 'justify-start' : 'justify-end'} group/badge`}>
+        <div className="w-5 h-5 min-[360px]:w-6 min-[360px]:h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-[#ff0f7b] to-[#f89b29] p-[1px] rounded-[4px] sm:rounded-xl shrink-0 shadow-[0_0_10px_rgba(239,68,68,0.3)] animate-flicker-yt">
           <div className="w-full h-full bg-gradient-to-br from-red-600 to-red-800 rounded-[3px] sm:rounded-[11px] flex items-center justify-center border border-red-400/20">
             <Play className="w-2 h-2 min-[360px]:w-2.5 min-[360px]:h-2.5 sm:w-4 sm:h-4 text-white ml-0.5 shadow-sm drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]" fill="currentColor" />
           </div>
@@ -7050,8 +7050,8 @@ function AchievementBadge({ achievement, align = 'right', isLightBg = false }: {
 
   if (type === 'tiktok_viral') {
     return (
-      <div className={`flex flex-row items-center gap-1.5 sm:gap-2.5 w-full ${isLeft ? 'justify-start' : 'justify-end'} group/badge`}>
-        <div className="w-5 h-5 min-[360px]:w-6 min-[360px]:h-6 sm:w-10 sm:h-10 bg-gradient-to-bl from-[#00f2fe] via-black to-[#fe0979] p-[1px] rounded-[4px] sm:rounded-xl shrink-0 shadow-[0_0_10px_rgba(34,211,238,0.3)] animate-flicker-tt">
+      <div className={`flex flex-row items-center gap-1.5 sm:gap-2 w-full ${isLeft ? 'justify-start' : 'justify-end'} group/badge`}>
+        <div className="w-5 h-5 min-[360px]:w-6 min-[360px]:h-6 sm:w-8 sm:h-8 bg-gradient-to-bl from-[#00f2fe] via-black to-[#fe0979] p-[1px] rounded-[4px] sm:rounded-xl shrink-0 shadow-[0_0_10px_rgba(34,211,238,0.3)] animate-flicker-tt">
           <div className="w-full h-full bg-black rounded-[3px] sm:rounded-[11px] flex items-center justify-center border border-white/5">
             <TiktokIcon className="w-2.5 h-2.5 min-[360px]:w-3 min-[360px]:h-3 sm:w-5 sm:h-5 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]" />
           </div>
@@ -7075,8 +7075,8 @@ function AchievementBadge({ achievement, align = 'right', isLightBg = false }: {
 
   if (type === 'spotify_streams') {
     return (
-      <div className={`flex flex-row items-center gap-1.5 sm:gap-2.5 w-full ${isLeft ? 'justify-start' : 'justify-end'} group/badge`}>
-        <div className="w-5 h-5 min-[360px]:w-6 min-[360px]:h-6 sm:w-10 sm:h-10 bg-gradient-to-br from-[#1ED760] to-[#128a3c] p-[1px] rounded-full shrink-0 shadow-[0_0_10px_rgba(29,185,84,0.3)] animate-flicker-sp">
+      <div className={`flex flex-row items-center gap-1.5 sm:gap-2 w-full ${isLeft ? 'justify-start' : 'justify-end'} group/badge`}>
+        <div className="w-5 h-5 min-[360px]:w-6 min-[360px]:h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-[#1ED760] to-[#128a3c] p-[1px] rounded-full shrink-0 shadow-[0_0_10px_rgba(29,185,84,0.3)] animate-flicker-sp">
           <div className="w-full h-full bg-gradient-to-br from-[#1DB954] to-[#169c46] rounded-full flex items-center justify-center border border-white/20">
             <SpotifyIcon className="w-2.5 h-2.5 min-[360px]:w-3 min-[360px]:h-3 sm:w-5 sm:h-5 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]" />
           </div>
@@ -7100,8 +7100,8 @@ function AchievementBadge({ achievement, align = 'right', isLightBg = false }: {
 
   if (type === 'zing_streams') {
     return (
-      <div className={`flex flex-row items-center gap-1.5 sm:gap-2.5 w-full ${isLeft ? 'justify-start' : 'justify-end'} group/badge`}>
-        <div className="w-6 h-6 min-[360px]:w-7 min-[360px]:h-7 sm:w-10 sm:h-10 bg-gradient-to-br from-[#a855f7] to-[#6b21a8] p-[1px] rounded-full shrink-0 shadow-[0_0_10px_rgba(168,85,247,0.3)] animate-flicker-zg">
+      <div className={`flex flex-row items-center gap-1.5 sm:gap-2 w-full ${isLeft ? 'justify-start' : 'justify-end'} group/badge`}>
+        <div className="w-5 h-5 min-[360px]:w-6 min-[360px]:h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-[#a855f7] to-[#6b21a8] p-[1px] rounded-full shrink-0 shadow-[0_0_10px_rgba(168,85,247,0.3)] animate-flicker-zg">
           <div className="w-full h-full bg-gradient-to-br from-[#bc56fd] to-[#801bb6] rounded-full flex items-center justify-center border border-white/20 overflow-hidden">
             <ZingIcon className="w-3 h-3 min-[360px]:w-3.5 min-[360px]:h-3.5 sm:w-5 sm:h-5 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)] scale-[1.8]" />
           </div>
@@ -7161,6 +7161,164 @@ function AchievementCycle({ achievements, align, isLightBg = false, prefix = 'ac
            <AchievementBadge achievement={curAch} align={align} isLightBg={isLightBg} />
         </motion.div>
       </AnimatePresence>
+    </div>
+  );
+}
+
+function SmartYouTubePlayer({
+  videoId,
+  title,
+  className = "w-full h-full",
+  autoPlay = true
+}: {
+  videoId: string;
+  title?: string;
+  className?: string;
+  autoPlay?: boolean;
+}) {
+  const [hasError, setHasError] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const ytLink = `https://www.youtube.com/watch?v=${videoId}`;
+
+  useEffect(() => {
+    setHasError(false);
+    if (!videoId) return;
+
+    let player: any = null;
+    let isMounted = true;
+
+    const handleMessage = (e: MessageEvent) => {
+      if (!isMounted) return;
+      try {
+        const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+        if (data) {
+          if (data.event === 'onError' || (data.info && data.info.error)) {
+            const errCode = data.info?.error || data.info;
+            if ([2, 5, 100, 101, 150].includes(errCode)) {
+              setHasError(true);
+            }
+          }
+        }
+      } catch (err) {}
+    };
+    window.addEventListener('message', handleMessage);
+
+    const initPlayer = () => {
+      if (!containerRef.current || !(window as any).YT || !(window as any).YT.Player) return;
+      try {
+        const elemId = `yt-player-container-${videoId}-${Math.random().toString(36).substring(2, 7)}`;
+        containerRef.current.innerHTML = `<div id="${elemId}" class="w-full h-full"></div>`;
+        player = new (window as any).YT.Player(elemId, {
+          height: '100%',
+          width: '100%',
+          videoId: videoId,
+          playerVars: {
+            autoplay: autoPlay ? 1 : 0,
+            rel: 0,
+            enablejsapi: 1,
+            origin: window.location.origin
+          },
+          events: {
+            onReady: (evt: any) => {
+              if (autoPlay && evt.target && evt.target.playVideo) {
+                try {
+                  evt.target.playVideo();
+                } catch (e) {}
+              }
+            },
+            onError: (evt: any) => {
+              console.warn("YouTube player error:", evt.data);
+              if (isMounted) {
+                setHasError(true);
+              }
+            }
+          }
+        });
+      } catch (err) {
+        console.warn("Error creating YT Player:", err);
+      }
+    };
+
+    if ((window as any).YT && (window as any).YT.Player) {
+      initPlayer();
+    } else {
+      if (!document.getElementById('youtube-iframe-api-script')) {
+        const tag = document.createElement('script');
+        tag.id = 'youtube-iframe-api-script';
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.body.appendChild(tag);
+      }
+      const prevReady = (window as any).onYouTubeIframeAPIReady;
+      (window as any).onYouTubeIframeAPIReady = () => {
+        if (prevReady) prevReady();
+        if (isMounted) initPlayer();
+      };
+    }
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('message', handleMessage);
+      if (player && player.destroy) {
+        try {
+          player.destroy();
+        } catch (e) {}
+      }
+    };
+  }, [videoId, autoPlay]);
+
+  if (hasError) {
+    return (
+      <a 
+        href={ytLink} 
+        target="_blank" 
+        rel="noreferrer" 
+        className="w-full h-full relative bg-neutral-950 group overflow-hidden flex flex-col items-center justify-center cursor-pointer p-4 text-decoration-none"
+        title="Bấm để phát trực tiếp trên YouTube"
+      >
+        <img 
+          src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`} 
+          onError={(e) => {
+            e.currentTarget.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+          }}
+          alt={title || "YouTube Video"} 
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-50"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 to-black/50 group-hover:via-black/50 transition-all duration-300" />
+        
+        <div className="relative z-10 flex flex-col items-center justify-center text-center max-w-lg gap-3 p-4">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-red-600/90 backdrop-blur-md border border-red-500/40 rounded-full flex items-center justify-center text-white shadow-[0_0_35px_rgba(239,68,68,0.6)] transition-all duration-300 group-hover:scale-110 relative">
+            <span className="absolute inset-0 rounded-full border border-red-500/50 animate-ping opacity-40"></span>
+            <Play className="w-8 h-8 sm:w-9 sm:h-9 text-white fill-white translate-x-0.5" />
+          </div>
+
+          <div className="flex flex-col gap-2 items-center">
+            <h4 className="text-base sm:text-lg font-black text-white tracking-wide group-hover:text-red-400 transition-colors drop-shadow-md">
+              Bấm để mở & phát trực tiếp trên YouTube ↗
+            </h4>
+            <p className="text-xs sm:text-sm font-medium text-stone-200 bg-red-950/80 border border-red-500/30 px-3.5 py-2 rounded-xl backdrop-blur-md max-w-md shadow-lg">
+              Video này bị chủ sở hữu/YouTube giới hạn phát nhúng trên trang web. Vui lòng bấm vào đây để mở và xem trực tiếp trên YouTube.
+            </p>
+          </div>
+        </div>
+      </a>
+    );
+  }
+
+  return (
+    <div className={`relative ${className} bg-neutral-950`}>
+      <div ref={containerRef} className="w-full h-full" />
+      <a
+        href={ytLink}
+        target="_blank"
+        rel="noreferrer"
+        className="absolute top-2 right-2 z-20 bg-black/70 hover:bg-red-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-md border border-white/20 backdrop-blur-md transition-all flex items-center gap-1 opacity-80 hover:opacity-100"
+        title="Mở trực tiếp trong tab YouTube mới"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Youtube className="w-3.5 h-3.5 text-red-500 group-hover:text-white" />
+        <span>YouTube</span>
+        <ExternalLink className="w-3 h-3" />
+      </a>
     </div>
   );
 }
@@ -7319,7 +7477,7 @@ function RandomSongCard({
               initial={prevSong ? { opacity: 0 } : { opacity: 1 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 1.0, ease: "easeInOut" }}
-              className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+              className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700" 
               alt={displaySong.title} 
               referrerPolicy="no-referrer"
             />
@@ -7406,7 +7564,7 @@ function RandomSongCard({
                 opacity: { duration: 0.35 },
                 scale: { duration: 0.35 }
               }}
-              className="shrink-0 flex items-center justify-end pl-2 sm:pl-3 relative z-20 py-1.5 overflow-visible"
+              className="hidden sm:flex shrink-0 items-center justify-end pl-2 sm:pl-3 relative z-20 py-1.5 overflow-visible"
             >
               {/* Responsive Achievement Badge Container */}
               <motion.div 
@@ -7419,7 +7577,7 @@ function RandomSongCard({
                   repeat: Infinity,
                   ease: "easeInOut"
                 }}
-                className="w-[110px] sm:w-[155px] h-12 sm:h-14 relative overflow-hidden rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/50 flex items-center justify-center px-1.5 sm:px-2 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_6px_16px_rgba(0,0,0,0.5)] shrink-0"
+                className="w-auto min-w-[140px] sm:min-w-[185px] md:min-w-[200px] h-12 sm:h-14 relative overflow-hidden rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/45 flex items-center justify-center px-3 sm:px-4 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_4px_12px_rgba(0,0,0,0.35)] shrink-0"
               >
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.25),transparent_70%)] animate-pulse" />
                 <motion.div 
@@ -7428,7 +7586,7 @@ function RandomSongCard({
                   className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/15 to-transparent skew-x-12 pointer-events-none"
                 />
                 <div className="relative z-10 w-full h-full flex items-center justify-center">
-                  <AchievementCycle achievements={displaySong.achievements} align="right" isLightBg={false} prefix="rnd-badge" />
+                  <AchievementCycle achievements={displaySong.achievements} align="left" isLightBg={false} prefix="rnd-badge" />
                 </div>
               </motion.div>
             </motion.div>
@@ -7856,7 +8014,7 @@ function Home() {
                             key={"avatar-slide-" + idx}
                             src={imgUrl}
                             alt={data.artistName}
-                            className={`absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-110 transition-all duration-[1500ms] ease-in-out ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                            className={`absolute inset-0 w-full h-full object-cover object-top scale-105 group-hover:scale-110 transition-all duration-[1500ms] ease-in-out ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
                             referrerPolicy="no-referrer"
                           />
                         );
@@ -7866,7 +8024,7 @@ function Home() {
                     <img 
                       src={effectiveCoverUrl || data.aboutMe?.avatarUrl} 
                       alt={data.artistName} 
-                      className="absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-110 transition-all duration-700 ease-in-out"
+                      className="absolute inset-0 w-full h-full object-cover object-top scale-105 group-hover:scale-110 transition-all duration-700 ease-in-out"
                       referrerPolicy="no-referrer"
                     />
                   )}
@@ -8107,7 +8265,7 @@ function Home() {
                       height="450" 
                       frameBorder="0" 
                       allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                      loading="lazy" 
+                      loading="eager" 
                       onLoad={() => setSpotifyLoaded(true)}
                       className={`w-full bg-neutral-900 transition-opacity duration-1000 ${spotifyLoaded ? 'opacity-100' : 'opacity-0'}`}
                     ></iframe>
@@ -8257,6 +8415,16 @@ function Home() {
                     </span>
                 </div>
                 <div className="flex items-center gap-3 justify-end shrink-0">
+                  <a
+                    href={`https://www.youtube.com/watch?v=${playingVideo}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-stone-300 bg-white/10 hover:bg-red-600 hover:text-white rounded-lg transition-all border border-white/10"
+                    title="Mở trên trang YouTube"
+                  >
+                    <Youtube className="w-3.5 h-3.5 text-red-500" />
+                    <span>Mở trên YouTube</span>
+                  </a>
                   <button 
                     className="text-neutral-400 hover:text-white px-2.5 py-0.5 font-bold transition-colors text-base sm:text-lg shrink-0 cursor-pointer"
                     onClick={() => setPlayingVideo(null)}
@@ -8267,59 +8435,9 @@ function Home() {
                 </div>
               </div>
 
-              {(() => {
-                const isVietnameseDomain = window.location.hostname.endsWith('.vn') || window.location.hostname.includes('.vn.') || window.location.hostname.includes('chorus.vn') || window.location.hostname.startsWith('xn--');
-                if (isVietnameseDomain) {
-                  return (
-                    <a 
-                      href={ytLink} 
-                      target="_blank" 
-                      rel="noreferrer" 
-                      className="flex-1 w-full h-full relative bg-neutral-950 group overflow-hidden block"
-                      title={t("Bấm để phát trên YouTube ở tab mới")}
-                    >
-                      {/* Image with fallback urls in standard CSS support structure */}
-                      <img 
-                        src={`https://img.youtube.com/vi/${playingVideo}/maxresdefault.jpg`} 
-                        onError={(e) => {
-                          // Fallback to hqdefault in case maxresdefault doesn't exist (can happen for older uploads)
-                          e.currentTarget.src = `https://img.youtube.com/vi/${playingVideo}/hqdefault.jpg`;
-                        }}
-                        alt={activeTitle} 
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                      
-                      {/* Vignette Overlay shadow */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/30 group-hover:via-black/20 transition-all duration-300" />
-                      
-                      {/* Glow ring Play button in middle */}
-                      <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center select-none z-10 gap-3 sm:gap-4">
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-red-600/75 backdrop-blur-lg border border-red-500/30 rounded-full flex items-center justify-center text-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.35),0_12px_24px_-4px_rgba(0,0,0,0.5),0_0_25px_rgba(239,68,68,0.4)] transition-all duration-350 sm:group-hover:scale-110 sm:group-active:scale-95 sm:group-hover:bg-red-600/90 sm:group-hover:border-red-500/50 relative">
-                          <span className="absolute inset-0 rounded-full border border-red-500/50 animate-ping opacity-50"></span>
-                          <Play className="w-8 h-8 sm:w-9 sm:h-9 text-white fill-white translate-x-0.5" />
-                        </div>
-                        
-                        <div className="flex flex-col gap-1 sm:gap-2">
-                          <h4 className="text-sm sm:text-lg font-black text-white tracking-widest uppercase drop-shadow-md sm:group-hover:text-red-400 transition-colors">
-                            {t("Bấm để phát trên YouTube")}
-                          </h4>
-                        </div>
-                      </div>
-                    </a>
-                  );
-                } else {
-                  return (
-                    <div className="flex-1 w-full h-full relative bg-neutral-950">
-                      <iframe 
-                        src={`https://www.youtube.com/embed/${playingVideo}?autoplay=1`} 
-                        className="w-full h-full border-0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowFullScreen
-                      ></iframe>
-                    </div>
-                  );
-                }
-              })()}
+              <div className="flex-1 w-full h-full relative bg-neutral-950">
+                <SmartYouTubePlayer videoId={playingVideo} title={activeTitle} />
+              </div>
             </div>
           </div>
         );
@@ -12930,47 +13048,21 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                     return (match && match[2].length === 11) ? match[2] : null;
                   };
                   const videoId = getYoutubeId(vid);
-                  const isVietnameseDomain = window.location.hostname.endsWith('.vn') || window.location.hostname.includes('.vn.') || window.location.hostname.includes('chorus.vn') || window.location.hostname.startsWith('xn--');
 
-                  if (isVietnameseDomain && videoId) {
-                    const ytLink = `https://www.youtube.com/watch?v=${videoId}`;
-                    return (
-                      <a 
-                        key={`l12348-idx-10-${idx}`}
-                        href={ytLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 border border-white/10 relative z-10 group block"
-                        title="Bấm để phát trên YouTube"
-                      >
-                        <img 
-                          src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`} 
-                          onError={(e) => {
-                            e.currentTarget.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                          }}
-                          alt="" 
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/20 group-hover:via-black/15 transition-all duration-300" />
-                        <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center select-none z-10 gap-2">
-                          <div className="w-12 h-12 bg-red-600/70 backdrop-blur-md border border-red-500/20 rounded-full flex items-center justify-center text-white shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:bg-red-600/90 relative">
-                            <span className="absolute inset-0 rounded-full border border-red-500/30 animate-ping opacity-40"></span>
-                            <Play className="w-6 h-6 text-white fill-white translate-x-0.5" />
-                          </div>
-                          <span className="text-xs font-black text-white uppercase tracking-wider group-hover:text-red-400 transition-colors drop-shadow-md">
-                            Bấm để phát trên YouTube
-                          </span>
-                        </div>
-                      </a>
-                    );
-                  } else {
-                    const embedUrl = vid.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/");
-                    return (
-                      <div key={`l12378-idx-11-${idx}`} className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 border border-white/10 relative z-10">
-                        <iframe src={embedUrl} className="w-full h-full" allowFullScreen></iframe>
-                      </div>
-                    );
-                  }
+                  return (
+                    <div key={`l12378-idx-11-${idx}`} className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 border border-white/10 relative z-10">
+                      {videoId ? (
+                        <SmartYouTubePlayer videoId={videoId} />
+                      ) : (
+                        <iframe 
+                          src={vid.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/")} 
+                          className="w-full h-full border-0" 
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                          allowFullScreen
+                        ></iframe>
+                      )}
+                    </div>
+                  );
                 })}
               </div>
             </div>
@@ -22758,7 +22850,7 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
             transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
             className="aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-black/50 border border-white/20 shadow-2xl relative z-10"
           >
-            <img src={avatar} alt="Profile" className="w-full h-full object-cover hover:scale-110 transition-transform duration-1000" />
+            <img src={avatar} alt="Profile" className="w-full h-full object-cover object-top hover:scale-110 transition-transform duration-1000" />
           </motion.div>
         </motion.div>
       )}
