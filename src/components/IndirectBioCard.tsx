@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Disc, Music, Apple, Youtube, Play, Share2, X, ExternalLink, ArrowLeft, Check, Edit3, FileText, Download } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { SmartYouTubePlayer, getYoutubeId } from './SmartYouTubePlayer';
 
 interface IndirectBioCardProps {
   key?: React.Key;
@@ -376,6 +377,7 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false, lang = 'v
   const [publicArtists, setPublicArtists] = useState<any[]>([]);
   const [showBrandBrief, setShowBrandBrief] = useState(false);
   const [showBrandVideos, setShowBrandVideos] = useState(false);
+  const [playingVideo, setPlayingVideo] = useState<string | null>(null);
   const navigate = useNavigate();
   const primaryColor = demo.brandColor || '#6366f1';
 
@@ -1038,13 +1040,53 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false, lang = 'v
                   <h3 className="font-bold text-lg flex items-center gap-2"><Youtube className="w-5 h-5 text-rose-400" /> {bt('videoTitle')}</h3>
                   <button onClick={() => setShowBrandVideos(false)} className="p-1 hover:bg-white/10 rounded-lg cursor-pointer"><X className="w-5 h-5" /></button>
                 </div>
-                <div className="grid grid-cols-1 gap-4 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">
+                <div className="grid grid-cols-1 gap-3 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">
                   {demo.brandReferenceVideos?.map((vid: string, idx: number) => {
-                    const embedUrl = vid.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/");
+                    const videoId = getYoutubeId(vid);
                     return (
-                      <div key={`l1044-idx-${idx}`} className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 border border-white/10">
-                        <iframe src={embedUrl} className="w-full h-full" allowFullScreen></iframe>
-                      </div>
+                      <button
+                        key={`brand-vid-${idx}`}
+                        onClick={() => {
+                          if (videoId) {
+                            setShowBrandVideos(false);
+                            setPlayingVideo(videoId);
+                          } else if (vid) {
+                            window.open(vid, '_blank');
+                          }
+                        }}
+                        className="w-full flex items-center gap-3 sm:gap-4 p-2.5 sm:p-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 hover:border-rose-400/50 transition-all text-left group cursor-pointer shadow-md"
+                      >
+                        <div className="w-28 sm:w-36 aspect-video rounded-xl overflow-hidden relative shrink-0 border border-white/20 bg-black">
+                          {videoId ? (
+                            <img 
+                              src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`} 
+                              alt=""
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-stone-900 flex items-center justify-center">
+                              <Youtube className="w-6 h-6 text-stone-500" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                            <div className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                              <Play className="w-4 h-4 fill-white translate-x-0.5" />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-1 min-w-0 flex-1">
+                          <span className="text-[10px] sm:text-xs font-bold text-rose-300 uppercase tracking-wider">
+                            Video tham khảo #{idx + 1}
+                          </span>
+                          <h4 className="text-xs sm:text-sm font-extrabold text-white truncate group-hover:text-rose-200 transition-colors">
+                            {demo?.title ? `${demo.title} - Ref #${idx + 1}` : `Video Tham Khảo ${idx + 1}`}
+                          </h4>
+                          <span className="text-[11px] text-stone-300/80 flex items-center gap-1 mt-0.5">
+                            <Youtube className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                            <span className="truncate">Bấm để phát video</span>
+                          </span>
+                        </div>
+                      </button>
                     );
                   })}
                 </div>
@@ -1053,6 +1095,48 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false, lang = 'v
           </div>
         )}
       </AnimatePresence>
+
+      {playingVideo && (() => {
+        const activeTitle = demo?.title ? `${demo.title} - Video` : "Video Tham Khảo";
+        return (
+          <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 cursor-pointer bg-black/80 backdrop-blur-md" onClick={() => setPlayingVideo(null)}>
+            <div 
+              className="relative w-full max-w-4xl aspect-video bg-neutral-900 rounded-2xl overflow-hidden shadow-2xl border border-white/20 flex flex-col"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between px-4 py-3 bg-neutral-900 border-b border-white/10 shrink-0">
+                <div className="flex items-center gap-2 min-w-0 pr-2">
+                  <Youtube className="w-5 h-5 text-red-500 shrink-0" />
+                  <span className="font-bold text-sm text-white truncate">{activeTitle}</span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <a 
+                    href={`https://www.youtube.com/watch?v=${playingVideo}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-stone-300 bg-white/10 hover:bg-red-600 hover:text-white rounded-lg transition-all border border-white/10"
+                    title="Mở trên trang YouTube"
+                  >
+                    <Youtube className="w-3.5 h-3.5 text-red-500" />
+                    <span>Mở trên YouTube</span>
+                  </a>
+                  <button 
+                    className="text-neutral-400 hover:text-white px-2.5 py-0.5 font-bold transition-colors text-base sm:text-lg shrink-0 cursor-pointer"
+                    onClick={() => setPlayingVideo(null)}
+                    title="Đóng"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex-1 w-full h-full relative bg-neutral-950">
+                <SmartYouTubePlayer videoId={playingVideo} title={activeTitle} />
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 

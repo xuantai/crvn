@@ -8,6 +8,7 @@ import { AppData, DemoSong, TemplateConfig, Achievement } from './types';
 import { motion, AnimatePresence } from 'motion/react';
 import { IndirectBioCard } from './components/IndirectBioCard';
 import { LoadingScreen } from './components/LoadingScreen';
+import { getYoutubeId } from './components/SmartYouTubePlayer';
 
 
 function Portal({ children }: { children: React.ReactNode }) {
@@ -13028,28 +13029,54 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                 </h3>
                 <button onClick={() => setShowBrandVideos(false)} className="p-1 hover:bg-white/10 rounded-lg"><X className="w-5 h-5" /></button>
               </div>
-              <div className="grid grid-cols-1 gap-4 max-h-[70vh] overflow-y-auto custom-scrollbar pr-1">
+              <div className="grid grid-cols-1 gap-3 max-h-[70vh] overflow-y-auto custom-scrollbar pr-1">
                 {demo?.brandReferenceVideos?.map((vid, idx) => {
-                  const getEmbedUrl = (url: string) => {
-                    if (!url) return '';
-                    if (url.includes('embed/')) return url;
-                    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-                    const match = url.match(regExp);
-                    if (match && match[2].length === 11) {
-                      return `https://www.youtube.com/embed/${match[2]}`;
-                    }
-                    return url.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/");
-                  };
-                  const embedUrl = getEmbedUrl(vid);
+                  const videoId = getYoutubeId(vid);
+
                   return (
-                    <div key={`brand-embed-${idx}`} className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 border border-white/10 shadow-lg">
-                      <iframe 
-                        src={embedUrl} 
-                        className="w-full h-full" 
-                        allowFullScreen 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      ></iframe>
-                    </div>
+                    <button
+                      key={`brand-vid-${idx}`}
+                      onClick={() => {
+                        if (videoId) {
+                          setShowBrandVideos(false);
+                          setPlayingVideo(videoId);
+                        } else if (vid) {
+                          window.open(vid, '_blank');
+                        }
+                      }}
+                      className="w-full flex items-center gap-3 sm:gap-4 p-2.5 sm:p-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 hover:border-rose-400/50 transition-all text-left group cursor-pointer shadow-md"
+                    >
+                      <div className="w-28 sm:w-36 aspect-video rounded-xl overflow-hidden relative shrink-0 border border-white/20 bg-black">
+                        {videoId ? (
+                          <img 
+                            src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`} 
+                            alt=""
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-stone-900 flex items-center justify-center">
+                            <Youtube className="w-6 h-6 text-stone-500" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                          <div className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                            <Play className="w-4 h-4 fill-white translate-x-0.5" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1 min-w-0 flex-1">
+                        <span className="text-[10px] sm:text-xs font-bold text-rose-300 uppercase tracking-wider">
+                          Video tham khảo #{idx + 1}
+                        </span>
+                        <h4 className="text-xs sm:text-sm font-extrabold text-white truncate group-hover:text-rose-200 transition-colors">
+                          {demo?.title ? `${demo.title} - Ref #${idx + 1}` : `Video Tham Khảo ${idx + 1}`}
+                        </h4>
+                        <span className="text-[11px] text-stone-300/80 flex items-center gap-1 mt-0.5">
+                          <Youtube className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                          <span className="truncate">Bấm để phát video</span>
+                        </span>
+                      </div>
+                    </button>
                   );
                 })}
               </div>
