@@ -7169,20 +7169,22 @@ function SmartYouTubePlayer({
   videoId,
   title,
   className = "w-full h-full",
-  autoPlay = true
+  autoPlay = true,
+  preferFallback = false
 }: {
   videoId: string;
   title?: string;
   className?: string;
   autoPlay?: boolean;
+  preferFallback?: boolean;
 }) {
-  const [hasError, setHasError] = useState(false);
+  const [hasError, setHasError] = useState(preferFallback);
   const containerRef = useRef<HTMLDivElement>(null);
   const ytLink = `https://www.youtube.com/watch?v=${videoId}`;
 
   useEffect(() => {
-    setHasError(false);
-    if (!videoId) return;
+    setHasError(preferFallback);
+    if (!videoId || preferFallback) return;
 
     let player: any = null;
     let isMounted = true;
@@ -7190,14 +7192,18 @@ function SmartYouTubePlayer({
     const handleMessage = (e: MessageEvent) => {
       if (!isMounted) return;
       try {
-        const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+        const rawData = e.data;
+        const data = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
         if (data) {
-          if (data.event === 'onError' || (data.info && data.info.error)) {
+          if (data.event === 'onError' || (data.info && (data.info.error || typeof data.info === 'number'))) {
             const errCode = data.info?.error || data.info;
-            if ([2, 5, 100, 101, 150].includes(errCode)) {
+            if ([2, 5, 100, 101, 150, 151, 152, 153].includes(errCode)) {
               setHasError(true);
             }
           }
+        }
+        if (typeof rawData === 'string' && (rawData.includes('"error"') || rawData.includes('153') || rawData.includes('152') || rawData.includes('150'))) {
+          setHasError(true);
         }
       } catch (err) {}
     };
@@ -7236,6 +7242,7 @@ function SmartYouTubePlayer({
         });
       } catch (err) {
         console.warn("Error creating YT Player:", err);
+        if (isMounted) setHasError(true);
       }
     };
 
@@ -7264,7 +7271,7 @@ function SmartYouTubePlayer({
         } catch (e) {}
       }
     };
-  }, [videoId, autoPlay]);
+  }, [videoId, autoPlay, preferFallback]);
 
   if (hasError) {
     return (
@@ -7293,10 +7300,10 @@ function SmartYouTubePlayer({
 
           <div className="flex flex-col gap-2 items-center">
             <h4 className="text-base sm:text-lg font-black text-white tracking-wide group-hover:text-red-400 transition-colors drop-shadow-md">
-              Bấm để mở & phát trực tiếp trên YouTube ↗
+              {title || "Bấm để mở & phát trực tiếp trên YouTube ↗"}
             </h4>
             <p className="text-xs sm:text-sm font-medium text-stone-200 bg-red-950/80 border border-red-500/30 px-3.5 py-2 rounded-xl backdrop-blur-md max-w-md shadow-lg">
-              Video này bị chủ sở hữu/YouTube giới hạn phát nhúng trên trang web. Vui lòng bấm vào đây để mở và xem trực tiếp trên YouTube.
+              Video này bị YouTube/Chủ sở hữu giới hạn phát nhúng. Vui lòng bấm vào đây để xem trực tiếp trên YouTube.
             </p>
           </div>
         </div>
@@ -7305,8 +7312,19 @@ function SmartYouTubePlayer({
   }
 
   return (
-    <div className={`relative ${className} bg-neutral-950`}>
+    <div className={`relative ${className} bg-neutral-950 group`}>
       <div ref={containerRef} className="w-full h-full" />
+      <button 
+        onClick={(e) => {
+          e.stopPropagation();
+          setHasError(true);
+        }}
+        className="absolute bottom-3 right-3 z-20 px-3 py-1.5 rounded-lg bg-black/80 hover:bg-red-600 text-white text-xs font-semibold border border-white/20 transition-all shadow-lg flex items-center gap-1.5 cursor-pointer backdrop-blur-md opacity-80 hover:opacity-100"
+        title="Lỗi phát nhúng? Chuyển sang giao diện xem trên YouTube"
+      >
+        <Youtube className="w-4 h-4 text-red-500 fill-red-500" />
+        <span>Gặp lỗi 153? Xem trên YouTube</span>
+      </button>
     </div>
   );
 }
@@ -13037,51 +13055,84 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                     return (match && match[2].length === 11) ? match[2] : null;
                   };
                   const videoId = getYoutubeId(vid);
+                  const ytUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : (vid || '#');
 
                   return (
-                    <button
+                    <div
                       key={`brand-vid-${idx}`}
-                      onClick={() => {
-                        if (videoId) {
-                          setShowBrandVideos(false);
-                          setPlayingVideo(videoId);
-                        } else if (vid) {
-                          window.open(vid, '_blank');
-                        }
-                      }}
-                      className="w-full flex items-center gap-3 sm:gap-4 p-2.5 sm:p-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 hover:border-rose-400/50 transition-all text-left group cursor-pointer shadow-md"
+                      className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 hover:border-rose-400/50 transition-all text-left shadow-md"
                     >
-                      <div className="w-28 sm:w-36 aspect-video rounded-xl overflow-hidden relative shrink-0 border border-white/20 bg-black">
-                        {videoId ? (
-                          <img 
-                            src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`} 
-                            alt=""
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-stone-900 flex items-center justify-center">
-                            <Youtube className="w-6 h-6 text-stone-500" />
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                          <div className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                            <Play className="w-4 h-4 fill-white translate-x-0.5" />
+                      <div 
+                        onClick={() => {
+                          if (videoId) {
+                            setShowBrandVideos(false);
+                            setPlayingVideo(videoId);
+                          } else if (vid) {
+                            window.open(vid, '_blank');
+                          }
+                        }}
+                        className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 cursor-pointer group"
+                      >
+                        <div className="w-28 sm:w-36 aspect-video rounded-xl overflow-hidden relative shrink-0 border border-white/20 bg-black">
+                          {videoId ? (
+                            <img 
+                              src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`} 
+                              alt=""
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-stone-900 flex items-center justify-center">
+                              <Youtube className="w-6 h-6 text-stone-500" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                            <div className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                              <Play className="w-4 h-4 fill-white translate-x-0.5" />
+                            </div>
                           </div>
                         </div>
+                        <div className="flex flex-col gap-1 min-w-0 flex-1">
+                          <span className="text-[10px] sm:text-xs font-bold text-rose-300 uppercase tracking-wider">
+                            Video tham khảo #{idx + 1}
+                          </span>
+                          <h4 className="text-xs sm:text-sm font-extrabold text-white truncate group-hover:text-rose-200 transition-colors">
+                            {demo?.title ? `${demo.title} - Ref #${idx + 1}` : `Video Tham Khảo ${idx + 1}`}
+                          </h4>
+                          <span className="text-[11px] text-stone-300/80 flex items-center gap-1 mt-0.5">
+                            <Youtube className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                            <span className="truncate">Bấm để xem video</span>
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex flex-col gap-1 min-w-0 flex-1">
-                        <span className="text-[10px] sm:text-xs font-bold text-rose-300 uppercase tracking-wider">
-                          Video tham khảo #{idx + 1}
-                        </span>
-                        <h4 className="text-xs sm:text-sm font-extrabold text-white truncate group-hover:text-rose-200 transition-colors">
-                          {demo?.title ? `${demo.title} - Ref #${idx + 1}` : `Video Tham Khảo ${idx + 1}`}
-                        </h4>
-                        <span className="text-[11px] text-stone-300/80 flex items-center gap-1 mt-0.5">
-                          <Youtube className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                          <span className="truncate">Bấm để phát video</span>
-                        </span>
+
+                      <div className="flex items-center gap-2 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-white/10">
+                        <button
+                          onClick={() => {
+                            if (videoId) {
+                              setShowBrandVideos(false);
+                              setPlayingVideo(videoId);
+                            } else if (vid) {
+                              window.open(vid, '_blank');
+                            }
+                          }}
+                          className="flex-1 sm:flex-initial px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <Play className="w-3.5 h-3.5 fill-white" />
+                          <span>Phát Video</span>
+                        </button>
+                        <a
+                          href={ytUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex-1 sm:flex-initial px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-stone-200 text-xs font-bold border border-white/15 transition-all flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap"
+                          title="Mở trực tiếp trên YouTube trong tab mới"
+                        >
+                          <Youtube className="w-3.5 h-3.5 text-red-500" />
+                          <span>Xem trên YouTube ↗</span>
+                        </a>
                       </div>
-                    </button>
+                    </div>
                   );
                 })}
               </div>
