@@ -1714,7 +1714,7 @@ export default function ChorusVNLanding() {
                       </div>
                     </div>
                   )}
-                  <AnimatePresence mode="popLayout" custom={slideDirection}>
+                  <AnimatePresence mode="wait" custom={slideDirection}>
                     <motion.div
                       key={currentPage}
                       custom={slideDirection}

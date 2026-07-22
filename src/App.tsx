@@ -8679,16 +8679,16 @@ function Home() {
                   </motion.div>
                 ) : (
                   <motion.div 
-                    key={activeListTab}
+                    key={`${activeListTab}-page-${currentPage}`}
                     variants={{
-                      hidden: {  opacity: 0, y: 15 },
+                      hidden: { opacity: 0, y: 8 },
                       show: {
                         opacity: 1, y: 0,
                         transition: {
-                          staggerChildren: 0.04
+                          staggerChildren: 0.03
                         }
                       },
-                      exit: { opacity: 0, y: -15 }
+                      exit: { opacity: 0, y: -8 }
                     }}
                     initial="hidden"
                     animate="show"
@@ -9113,14 +9113,14 @@ function Home() {
                                   )}
                                   <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 relative z-10 select-none">
                                     <div className={`w-full h-full rounded-xl overflow-hidden relative border ${isGoldTheme ? 'border-[#D4AF37]/35 group-hover:border-[#D4AF37]' : 'border-white/10 group-hover:border-rose-500/30'} transition-colors`}>
-                                      <AnimatePresence>
+                                      <AnimatePresence mode="wait">
                                         {demo.isBrand && showBrandState && demo.brandLogoUrl ? (
                                           <motion.div
                                             key="brand-logo"
                                             initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
                                             animate={{ opacity: 1, scale: 1, rotate: 0 }}
                                             exit={{ opacity: 0, scale: 0.8, rotate: 5 }}
-                                            transition={{ duration: 0.45, ease: "easeOut" }}
+                                            transition={{ duration: 0.25, ease: "easeOut" }}
                                             className="absolute inset-0 w-full h-full flex items-center justify-center p-1 bg-transparent"
                                           >
                                             <img src={demo.brandLogoUrl} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 shadow-sm" alt={demo.brandName} referrerPolicy="no-referrer" />
@@ -9161,14 +9161,14 @@ const activeAchievements = hasAchievements;
                                     return (
                                       <>
                                         <div className={`flex-1 min-w-0 relative z-10 flex flex-col justify-center h-full overflow-visible ${activeAchievements ? 'pr-1.5' : 'pr-1.5 sm:pr-3'}`}>
-                                          <AnimatePresence>
+                                          <AnimatePresence mode="wait">
                                             {demo.isBrand && showBrandState && demo.brandName ? (
                                               <motion.div
                                                 key="brand-text"
-                                                initial={{ opacity: 0, x: -10 }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                exit={{ opacity: 0, x: 10 }}
-                                                transition={{ duration: 0.4, ease: "easeOut" }}
+                                                initial={{ opacity: 0, y: 3 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -3 }}
+                                                transition={{ duration: 0.2, ease: "easeOut" }}
                                                 className="relative flex flex-col justify-center w-full min-w-0"
                                               >
                                                 <h3 
@@ -9185,10 +9185,10 @@ const activeAchievements = hasAchievements;
                                             ) : (
                                               <motion.div
                                                 key="normal-text"
-                                                initial={{ opacity: 0, x: 10 }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                exit={{ opacity: 0, x: -10 }}
-                                                transition={{ duration: 0.4, ease: "easeOut" }}
+                                                initial={{ opacity: 0, y: -3 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 3 }}
+                                                transition={{ duration: 0.2, ease: "easeOut" }}
                                                 className="relative flex flex-col justify-center w-full min-w-0"
                                               >
                                                 <h3 className={`font-bold transition-colors ${
@@ -9321,7 +9321,9 @@ const activeAchievements = hasAchievements;
                           onClick={() => {
                             setCurrentPage(prev => Math.max(prev - 1, 1));
                             const el = document.getElementById('music-tabs-section');
-                            if (el) el.scrollIntoView({ behavior: 'smooth' });
+                            if (el && el.getBoundingClientRect().top < 0) {
+                              window.scrollTo({ top: window.scrollY + el.getBoundingClientRect().top - 80, behavior: 'smooth' });
+                            }
                           }}
                           className={`px-3.5 py-2 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md ${
                             currentPage === 1 
@@ -9354,7 +9356,9 @@ const activeAchievements = hasAchievements;
                                 onClick={() => {
                                   setCurrentPage(page);
                                   const el = document.getElementById('music-tabs-section');
-                                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                  if (el && el.getBoundingClientRect().top < 0) {
+                                    window.scrollTo({ top: window.scrollY + el.getBoundingClientRect().top - 80, behavior: 'smooth' });
+                                  }
                                 }}
                                 className={`w-9 h-9 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md flex items-center justify-center ${
                                   isCurrent 
@@ -9375,7 +9379,9 @@ const activeAchievements = hasAchievements;
                           onClick={() => {
                             setCurrentPage(prev => Math.min(prev + 1, totalPages));
                             const el = document.getElementById('music-tabs-section');
-                            if (el) el.scrollIntoView({ behavior: 'smooth' });
+                            if (el && el.getBoundingClientRect().top < 0) {
+                              window.scrollTo({ top: window.scrollY + el.getBoundingClientRect().top - 80, behavior: 'smooth' });
+                            }
                           }}
                           className={`px-3.5 py-2 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md ${
                             currentPage === totalPages 
@@ -9413,7 +9419,14 @@ const activeAchievements = hasAchievements;
                 <Music className={`w-6 h-6 ${isGoldTheme ? 'text-[#AA7C11]' : 'text-emerald-500'}`} />
                 <h2 className={`text-2xl font-bold tracking-tight ${isGoldTheme ? 'text-[#1A1303]' : 'text-white'}`}>{t.rMv}</h2>
               </div>
-              <div className="space-y-4">
+              <motion.div 
+                key={`mv-page-${mvCurrentPage}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="space-y-4"
+              >
                 {paginatedMVs.map((song, idx) => (
                   <button 
                     onClick={() => setPlayingVideo(song.videoId)} key={`l8724-${song.videoId || ''}-${song.id || ''}-${idx}`} 
@@ -9438,7 +9451,7 @@ const activeAchievements = hasAchievements;
                     }`}>{song.title}</h3>
                   </button>
                 ))}
-              </div>
+              </motion.div>
 
               {/* Pagination controls for MV */}
               {mvTotalItems > 0 && (
@@ -9464,7 +9477,9 @@ const activeAchievements = hasAchievements;
                         onClick={() => {
                           setMvCurrentPage(prev => Math.max(prev - 1, 1));
                           const el = document.getElementById('mv-section');
-                          if (el) el.scrollIntoView({ behavior: 'smooth' });
+                          if (el && el.getBoundingClientRect().top < 0) {
+                            window.scrollTo({ top: window.scrollY + el.getBoundingClientRect().top - 80, behavior: 'smooth' });
+                          }
                         }}
                         className={`px-3.5 py-2 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md ${
                           mvCurrentPage === 1 
@@ -9497,7 +9512,9 @@ const activeAchievements = hasAchievements;
                               onClick={() => {
                                 setMvCurrentPage(page);
                                 const el = document.getElementById('mv-section');
-                                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                if (el && el.getBoundingClientRect().top < 0) {
+                                  window.scrollTo({ top: window.scrollY + el.getBoundingClientRect().top - 80, behavior: 'smooth' });
+                                }
                               }}
                               className={`w-9 h-9 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md flex items-center justify-center ${
                                 isCurrent 
@@ -9520,7 +9537,9 @@ const activeAchievements = hasAchievements;
                         onClick={() => {
                           setMvCurrentPage(prev => Math.min(prev + 1, mvTotalPages));
                           const el = document.getElementById('mv-section');
-                          if (el) el.scrollIntoView({ behavior: 'smooth' });
+                          if (el && el.getBoundingClientRect().top < 0) {
+                            window.scrollTo({ top: window.scrollY + el.getBoundingClientRect().top - 80, behavior: 'smooth' });
+                          }
                         }}
                         className={`px-3.5 py-2 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md ${
                           mvCurrentPage === mvTotalPages 
@@ -12956,7 +12975,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
               >
                 <img 
                   src={demo.brandLogoUrl} 
-                  className="w-56 h-56 object-contain filter grayscale" 
+                  className="w-56 h-56 object-contain filter saturate-110" 
                   alt="" 
                   referrerPolicy="no-referrer" 
                 />
@@ -13012,7 +13031,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
               >
                 <img 
                   src={demo.brandLogoUrl} 
-                  className="w-72 h-72 object-contain filter grayscale" 
+                  className="w-72 h-72 object-contain filter saturate-110" 
                   alt="" 
                   referrerPolicy="no-referrer" 
                 />

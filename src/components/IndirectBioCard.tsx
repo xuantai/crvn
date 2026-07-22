@@ -936,6 +936,25 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false, lang = 'v
               />
               {demo.brandLogoUrl && (
                 <>
+                  <motion.div 
+                    className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-15 select-none"
+                    animate={{
+                      scale: [1, 1.05, 1],
+                      rotate: [0, 1.5, 0]
+                    }}
+                    transition={{
+                      duration: 8,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  >
+                    <img 
+                      src={demo.brandLogoUrl} 
+                      className="w-56 h-56 object-contain filter saturate-110" 
+                      alt="" 
+                      referrerPolicy="no-referrer" 
+                    />
+                  </motion.div>
                   <motion.img 
                     src={demo.brandLogoUrl} 
                     className="absolute inset-0 w-full h-full object-cover opacity-[0.12] blur-2xl pointer-events-none z-0" 
@@ -951,27 +970,16 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false, lang = 'v
                       ease: "easeInOut"
                     }}
                   />
-                  <motion.img 
-                    src={demo.brandLogoUrl} 
-                    className="absolute -right-4 -bottom-4 w-28 h-28 opacity-[0.35] blur-[0.5px] pointer-events-none z-0 animate-[spin_30s_linear_infinite]" 
-                    alt="" 
-                    referrerPolicy="no-referrer"
-                    animate={{
-                      y: [0, -4, 2, -3, 0],
-                      x: [0, 2, -2, 1, 0],
-                      rotate: [0, 5, -5, 3, 0]
-                    }}
-                    transition={{
-                      duration: 8,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                  />
                 </>
               )}
               <div className="relative z-10">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-bold text-lg flex items-center gap-2"><FileText className="w-5 h-5 text-indigo-400" /> {bt('briefTitle')}</h3>
+                  <h3 className="font-bold text-lg flex items-center gap-2">
+                    {demo.brandLogoUrl && (
+                      <img src={demo.brandLogoUrl} className="w-6 h-6 object-contain rounded-md" alt="" referrerPolicy="no-referrer" />
+                    )}
+                    <FileText className="w-5 h-5 text-indigo-400" /> {bt('briefTitle')}
+                  </h3>
                   <button onClick={() => setShowBrandBrief(false)} className="p-1 hover:bg-white/10 rounded-lg cursor-pointer"><X className="w-5 h-5" /></button>
                 </div>
                 <div className="text-sm text-stone-200 leading-relaxed max-h-[60vh] overflow-y-auto custom-scrollbar space-y-1">{formatBriefText(demo.brandBrief)}</div>
@@ -1002,6 +1010,25 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false, lang = 'v
               />
               {demo.brandLogoUrl && (
                 <>
+                  <motion.div 
+                    className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-15 select-none"
+                    animate={{
+                      scale: [1, 1.05, 1],
+                      rotate: [0, 1.5, 0]
+                    }}
+                    transition={{
+                      duration: 8,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  >
+                    <img 
+                      src={demo.brandLogoUrl} 
+                      className="w-72 h-72 object-contain filter saturate-110" 
+                      alt="" 
+                      referrerPolicy="no-referrer" 
+                    />
+                  </motion.div>
                   <motion.img 
                     src={demo.brandLogoUrl} 
                     className="absolute inset-0 w-full h-full object-cover opacity-[0.12] blur-2xl pointer-events-none z-0" 
@@ -1017,27 +1044,16 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false, lang = 'v
                       ease: "easeInOut"
                     }}
                   />
-                  <motion.img 
-                    src={demo.brandLogoUrl} 
-                    className="absolute -right-4 -bottom-4 w-28 h-28 opacity-[0.35] blur-[0.5px] pointer-events-none z-0" 
-                    alt="" 
-                    referrerPolicy="no-referrer"
-                    animate={{
-                      y: [0, -4, 2, -3, 0],
-                      x: [0, 2, -2, 1, 0],
-                      rotate: [0, 5, -5, 3, 0]
-                    }}
-                    transition={{
-                      duration: 8,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                  />
                 </>
               )}
               <div className="relative z-10">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-bold text-lg flex items-center gap-2"><Youtube className="w-5 h-5 text-rose-400" /> {bt('videoTitle')}</h3>
+                  <h3 className="font-bold text-lg flex items-center gap-2">
+                    {demo.brandLogoUrl && (
+                      <img src={demo.brandLogoUrl} className="w-6 h-6 object-contain rounded-md" alt="" referrerPolicy="no-referrer" />
+                    )}
+                    <Youtube className="w-5 h-5 text-rose-400" /> {bt('videoTitle')}
+                  </h3>
                   <button onClick={() => setShowBrandVideos(false)} className="p-1 hover:bg-white/10 rounded-lg cursor-pointer"><X className="w-5 h-5" /></button>
                 </div>
                 <div className="grid grid-cols-1 gap-3 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">
