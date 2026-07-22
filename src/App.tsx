@@ -13200,7 +13200,12 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
               </div>
 
               <div className="flex-1 w-full h-full relative bg-neutral-950">
-                <SmartYouTubePlayer videoId={playingVideo} title={activeTitle} />
+                <iframe 
+                  src={`https://www.youtube.com/embed/${playingVideo}?autoplay=1&rel=0`} 
+                  className="w-full h-full border-0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                  allowFullScreen
+                ></iframe>
               </div>
             </div>
           </div>
