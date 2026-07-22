@@ -4,6 +4,7 @@ import { Disc, Music, Apple, Youtube, Play, Share2, X, ExternalLink, ArrowLeft, 
 import { Link, useNavigate } from 'react-router-dom';
 
 interface IndirectBioCardProps {
+  key?: React.Key;
   demo: {
     id: string;
     slug?: string;
