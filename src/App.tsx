@@ -7830,13 +7830,14 @@ function Home() {
   }, [data]);
 
   // For slideshow
+  const slideshowLen = data?.slideshowImages?.length || 0;
   useEffect(() => {
-    if (!data?.slideshowImages?.length) return;
+    if (slideshowLen <= 1) return;
     const int = setInterval(() => {
-      setCurrentSlide(prev => prev + 1);
-    }, 4000); // 4 seconds
+      setCurrentSlide(prev => (prev + 1) % slideshowLen);
+    }, 5000);
     return () => clearInterval(int);
-  }, [data?.slideshowImages]);
+  }, [slideshowLen]);
 
 
 
@@ -8329,23 +8330,22 @@ function Home() {
           </svg>
         </div>
       ) : data.slideshowImages && data.slideshowImages.length > 0 ? (
-        <div className="fixed inset-0 z-[-1] pointer-events-none bg-neutral-950">
-          <AnimatePresence>
-            <motion.div
-              key={currentSlide}
-              initial={{ opacity: 0, scale: 1.05, zIndex: 10 }}
-              animate={{ opacity: 0.8, scale: 1, zIndex: 10 }}
-              exit={{ opacity: 0.8, zIndex: 0 }}
-              transition={{ duration: 1.5, ease: "easeInOut" }}
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ 
-                 backgroundImage: `url(${data.slideshowImages[currentSlide % data.slideshowImages.length]})`, 
-                 backgroundPosition: 'center 20%', 
-                 maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)', 
-                 WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)' 
-              }}
-            />
-          </AnimatePresence>
+        <div className="fixed inset-0 z-[-1] pointer-events-none bg-neutral-950 overflow-hidden">
+          {data.slideshowImages.map((src: string, idx: number) => {
+            const isActive = idx === (currentSlide % data.slideshowImages.length);
+            return (
+              <div
+                key={`bg-slide-${idx}`}
+                className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${isActive ? 'opacity-80 z-10' : 'opacity-0 z-0'}`}
+                style={{ 
+                  backgroundImage: `url(${src})`, 
+                  backgroundPosition: 'center 20%', 
+                  maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)', 
+                  WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)' 
+                }}
+              />
+            );
+          })}
         </div>
       ) : effectiveCoverUrl ? (
         <div className="fixed inset-0 z-[-1] pointer-events-none relative_mask bg-neutral-950">
@@ -13200,12 +13200,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
               </div>
 
               <div className="flex-1 w-full h-full relative bg-neutral-950">
-                <iframe 
-                  src={`https://www.youtube.com/embed/${playingVideo}?autoplay=1&rel=0`} 
-                  className="w-full h-full border-0" 
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                  allowFullScreen
-                ></iframe>
+                <SmartYouTubePlayer videoId={playingVideo} title={activeTitle} />
               </div>
             </div>
           </div>
