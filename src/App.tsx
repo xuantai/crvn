@@ -1354,14 +1354,13 @@ function MusicianSongCard({
     };
   }, [demo.id]);
 
-  let songYear = '2025';
-  if (demo.year) {
-    songYear = String(demo.year);
-  } else if (demo.releaseDate) {
+  let songYear = demo.releaseYear || demo.year || demo.release_year || '';
+  if (!songYear && demo.releaseDate) {
     songYear = String(demo.releaseDate).substring(0, 4);
-  } else if (demo.created_at) {
+  } else if (!songYear && demo.created_at) {
     songYear = String(demo.created_at).substring(0, 4);
   }
+  if (!songYear) songYear = '2025';
 
   let rawArtistStr = demo.singers || demo.singer || demo.artist || data?.artistName || 'Nghệ Sĩ';
   const singersList = String(rawArtistStr).split(/,\s*|\s+&\s+|\s+ft\.?\s+|\s+feat\.?\s+/i).filter(Boolean);
@@ -1586,18 +1585,49 @@ function MusicianSongCard({
         </div>
 
         {/* ── FRONT FACE PANEL (z-30: covers bottom half of crate & album cover, creating slot pocket) ── */}
-        <div className="relative z-30 w-full rounded-b-xl overflow-hidden shadow-2xl"
+        <div className="relative z-30 w-full rounded-b-xl overflow-visible shadow-2xl"
           style={{ borderTop: '3px solid rgba(120,65,15,0.8)' }}>
+          
+          {/* Floating Gold Achievement Badge (Floats over top seam) */}
+          {activeAchievements && activeAchievements.length > 0 && (
+            <motion.div 
+              animate={{ 
+                y: [0, -1.5, 0, 1.5, 0],
+                rotate: [0, -0.3, 0, 0.3, 0]
+              }}
+              transition={{ 
+                duration: 5.5, 
+                repeat: Infinity, 
+                ease: "easeInOut" 
+              }}
+              className="absolute -top-4 sm:-top-5 left-2 sm:left-3 z-40 shrink-0 w-auto min-w-[135px] sm:min-w-[185px] max-w-[200px] sm:max-w-[240px] h-8 sm:h-10 px-2.5 sm:px-4 py-0.5 sm:py-1 rounded-xl sm:rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/90 shadow-[0_4px_12px_rgba(0,0,0,0.65),0_0_8px_rgba(212,175,55,0.3)] flex items-center justify-start overflow-hidden pointer-events-none"
+            >
+              {/* Glowing radial background animation */}
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.25),transparent_70%)] animate-pulse pointer-events-none rounded-xl sm:rounded-2xl" />
+              
+              {/* Light sweep animation */}
+              <motion.div 
+                animate={{ x: ['-100%', '200%'] }}
+                transition={{ repeat: Infinity, duration: 4.5, ease: "linear" }}
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/20 to-transparent skew-x-12 pointer-events-none rounded-xl sm:rounded-2xl overflow-hidden"
+              />
+              
+              {/* Achievement cycle text & icon */}
+              <div className="relative z-10 w-full h-full flex items-center justify-start">
+                <AchievementCycle achievements={activeAchievements} align="left" isLightBg={false} />
+              </div>
+            </motion.div>
+          )}
+
           <Link
             to={targetLink}
             onClick={handleClick}
-            className="block w-full relative"
+            className="block w-full relative pt-3 pb-2 px-2.5 sm:pt-3.5 sm:pb-3 sm:px-4"
             style={{
               background: isElevated 
                 ? 'linear-gradient(to bottom, #FFF7DC, #FCE8B3)' 
                 : 'linear-gradient(to bottom, rgba(240,212,158,0.98), rgba(220,186,120,0.99))',
               boxShadow: isElevated ? 'inset 0 0 20px rgba(255,255,255,0.8)' : 'none',
-              padding: '8px 10px 8px',
             }}
           >
             {/* Shimmer when playing */}
@@ -1607,44 +1637,15 @@ function MusicianSongCard({
               </div>
             )}
 
-            {/* Row 1: Achievement + Year (Floating Gold Layer Badge) */}
-            <div className="flex items-center justify-between gap-1 mb-2 sm:mb-1.5 min-h-[44px] sm:min-h-[48px] relative z-30 overflow-visible">
-              {activeAchievements && activeAchievements.length > 0 ? (
-                <motion.div 
-                  animate={{ 
-                    y: [0, -1.5, 0, 1.5, 0],
-                    rotate: [0, -0.3, 0, 0.3, 0]
-                  }}
-                  transition={{ 
-                    duration: 5.5, 
-                    repeat: Infinity, 
-                    ease: "easeInOut" 
-                  }}
-                  className="relative shrink-0 mx-auto sm:mx-0 w-auto min-w-[155px] sm:min-w-[185px] max-w-[215px] sm:max-w-[240px] h-11 sm:h-12 px-3.5 sm:px-4 py-1.5 rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/80 shadow-[0_2px_6px_rgba(0,0,0,0.4),0_0_6px_rgba(212,175,55,0.2)] flex items-center justify-start overflow-hidden z-30"
-                >
-                  {/* Glowing radial background animation */}
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.25),transparent_70%)] animate-pulse pointer-events-none rounded-2xl" />
-                  
-                  {/* Light sweep animation */}
-                  <motion.div 
-                    animate={{ x: ['-100%', '200%'] }}
-                    transition={{ repeat: Infinity, duration: 4.5, ease: "linear" }}
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/20 to-transparent skew-x-12 pointer-events-none rounded-2xl overflow-hidden"
-                  />
-                  
-                  {/* Achievement cycle text & icon */}
-                  <div className="relative z-10 w-full h-full flex items-center justify-start">
-                    <AchievementCycle achievements={activeAchievements} align="left" isLightBg={false} />
-                  </div>
-                </motion.div>
-              ) : null}
-              <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full text-[8.5px] sm:text-[10.5px] font-black shrink-0 border border-amber-700/40 text-amber-900 bg-amber-100/90 shadow-sm ml-auto relative z-30">
+            {/* Desktop Year Badge (Top right of info panel on desktop only) */}
+            <div className="hidden sm:flex items-center justify-end mb-1 relative z-30">
+              <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-black shrink-0 border border-amber-700/40 text-amber-900 bg-amber-100/90 shadow-sm">
                 {songYear}
               </span>
             </div>
 
-            {/* Row 2: Title & Artist on Left + Mini Thumbnail on Right */}
-            <div className="flex items-center justify-between gap-2 mt-1">
+            {/* Title & Artist on Left + Mini Thumbnail on Right */}
+            <div className="flex items-center justify-between gap-2">
               <div className="flex-1 min-w-0">
                 <SongTitleMarquee 
                   title={demo.title} 
@@ -1656,7 +1657,7 @@ function MusicianSongCard({
                 />
               </div>
 
-              {/* Mini square thumbnail */}
+              {/* Mini square thumbnail (desktop only) */}
               <div className="hidden sm:block sm:w-14 sm:h-14 shrink-0 rounded-lg overflow-hidden shadow-md"
                 style={{ border: '2px solid rgba(130,75,18,0.45)' }}>
                 {coverUrl ? (
