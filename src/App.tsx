@@ -1588,7 +1588,7 @@ function MusicianSongCard({
         <div className="relative z-30 w-full rounded-b-xl overflow-visible shadow-2xl"
           style={{ borderTop: '3px solid rgba(120,65,15,0.8)' }}>
           
-          {/* Floating Gold Achievement Badge (Floats over top seam) */}
+          {/* Floating Gold Achievement Badge (Centered & Floats higher over top seam) */}
           {activeAchievements && activeAchievements.length > 0 && (
             <motion.div 
               animate={{ 
@@ -1600,7 +1600,7 @@ function MusicianSongCard({
                 repeat: Infinity, 
                 ease: "easeInOut" 
               }}
-              className="absolute -top-4 sm:-top-5 left-2 sm:left-3 z-40 shrink-0 w-auto min-w-[135px] sm:min-w-[185px] max-w-[200px] sm:max-w-[240px] h-8 sm:h-10 px-2.5 sm:px-4 py-0.5 sm:py-1 rounded-xl sm:rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/90 shadow-[0_4px_12px_rgba(0,0,0,0.65),0_0_8px_rgba(212,175,55,0.3)] flex items-center justify-start overflow-hidden pointer-events-none"
+              className="absolute -top-6 sm:-top-7 left-1/2 -translate-x-1/2 z-40 shrink-0 w-auto min-w-[135px] sm:min-w-[185px] max-w-[85%] sm:max-w-[240px] h-8 sm:h-10 px-2.5 sm:px-4 py-0.5 sm:py-1 rounded-xl sm:rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/90 shadow-[0_4px_12px_rgba(0,0,0,0.65),0_0_8px_rgba(212,175,55,0.3)] flex items-center justify-center overflow-hidden pointer-events-none"
             >
               {/* Glowing radial background animation */}
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.25),transparent_70%)] animate-pulse pointer-events-none rounded-xl sm:rounded-2xl" />
@@ -1613,8 +1613,8 @@ function MusicianSongCard({
               />
               
               {/* Achievement cycle text & icon */}
-              <div className="relative z-10 w-full h-full flex items-center justify-start">
-                <AchievementCycle achievements={activeAchievements} align="left" isLightBg={false} />
+              <div className="relative z-10 w-full h-full flex items-center justify-center">
+                <AchievementCycle achievements={activeAchievements} align="center" isLightBg={false} />
               </div>
             </motion.div>
           )}
@@ -1622,7 +1622,7 @@ function MusicianSongCard({
           <Link
             to={targetLink}
             onClick={handleClick}
-            className="block w-full relative pt-3 pb-2 px-2.5 sm:pt-3.5 sm:pb-3 sm:px-4"
+            className="block w-full relative pt-3.5 pb-2 px-2.5 sm:pt-4 sm:pb-3 sm:px-4"
             style={{
               background: isElevated 
                 ? 'linear-gradient(to bottom, #FFF7DC, #FCE8B3)' 
