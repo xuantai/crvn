@@ -1424,7 +1424,7 @@ function MusicianSongCard({
             ease: "easeInOut" 
           }}
           style={{ zIndex: 8 }}
-          className="absolute -top-3.5 sm:-top-4.5 left-1/2 -translate-x-1/2 shrink-0 w-auto min-w-[140px] sm:min-w-[185px] md:min-w-[200px] max-w-[90%] sm:max-w-[240px] h-10 sm:h-12 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_4px_14px_rgba(0,0,0,0.65),0_0_10px_rgba(212,175,55,0.25)] flex items-center justify-center overflow-hidden pointer-events-none"
+          className="absolute -top-5.5 sm:-top-6.5 left-1/2 -translate-x-1/2 shrink-0 w-auto min-w-[140px] sm:min-w-[185px] md:min-w-[200px] max-w-[90%] sm:max-w-[240px] h-10 sm:h-12 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_4px_14px_rgba(0,0,0,0.65),0_0_10px_rgba(212,175,55,0.25)] flex items-center justify-center overflow-hidden pointer-events-none"
         >
           {/* Glowing radial background animation */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.25),transparent_70%)] animate-pulse pointer-events-none rounded-2xl" />
@@ -1494,7 +1494,7 @@ function MusicianSongCard({
           <motion.div
             className="absolute z-10 pointer-events-none left-[5%] w-[90%] aspect-square"
             style={{
-              bottom: isElevated ? (isDesktop ? '60px' : '48px') : (isDesktop ? '-55px' : '-40px'),
+              bottom: isElevated ? (isDesktop ? '46px' : '36px') : (isDesktop ? '-55px' : '-40px'),
               transition: 'bottom 0.5s cubic-bezier(0.34,1.56,0.64,1)',
             }}
             animate={{
@@ -1552,7 +1552,7 @@ function MusicianSongCard({
           <motion.div
             className="absolute z-20 left-[5%] w-[90%] aspect-square"
             style={{
-              bottom: isElevated ? '20px' : (isDesktop ? '-36px' : '-22px'),
+              bottom: isElevated ? '-6px' : (isDesktop ? '-36px' : '-22px'),
               transformOrigin: 'center bottom',
               transition: 'bottom 0.45s cubic-bezier(0.34,1.56,0.64,1)',
             }}
