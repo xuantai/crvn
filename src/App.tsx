@@ -1600,21 +1600,21 @@ function MusicianSongCard({
                 repeat: Infinity, 
                 ease: "easeInOut" 
               }}
-              className="absolute -top-6 sm:-top-7 left-1/2 -translate-x-1/2 z-40 shrink-0 w-auto min-w-[135px] sm:min-w-[185px] max-w-[85%] sm:max-w-[240px] h-8 sm:h-10 px-2.5 sm:px-4 py-0.5 sm:py-1 rounded-xl sm:rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/90 shadow-[0_4px_12px_rgba(0,0,0,0.65),0_0_8px_rgba(212,175,55,0.3)] flex items-center justify-center overflow-hidden pointer-events-none"
+              className="absolute -top-7 sm:-top-8 left-1/2 -translate-x-1/2 z-40 shrink-0 w-auto min-w-[140px] sm:min-w-[185px] md:min-w-[200px] max-w-[90%] sm:max-w-[240px] h-11 sm:h-13 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_4px_14px_rgba(0,0,0,0.65),0_0_10px_rgba(212,175,55,0.25)] flex items-center justify-center overflow-hidden pointer-events-none"
             >
               {/* Glowing radial background animation */}
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.25),transparent_70%)] animate-pulse pointer-events-none rounded-xl sm:rounded-2xl" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.25),transparent_70%)] animate-pulse pointer-events-none rounded-2xl" />
               
               {/* Light sweep animation */}
               <motion.div 
                 animate={{ x: ['-100%', '200%'] }}
                 transition={{ repeat: Infinity, duration: 4.5, ease: "linear" }}
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/20 to-transparent skew-x-12 pointer-events-none rounded-xl sm:rounded-2xl overflow-hidden"
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/20 to-transparent skew-x-12 pointer-events-none rounded-2xl overflow-hidden"
               />
               
               {/* Achievement cycle text & icon */}
               <div className="relative z-10 w-full h-full flex items-center justify-center">
-                <AchievementCycle achievements={activeAchievements} align="center" isLightBg={false} />
+                <AchievementCycle achievements={activeAchievements} align="center" isLightBg={false} prefix="mus-badge" />
               </div>
             </motion.div>
           )}
@@ -8915,20 +8915,22 @@ function AchievementBadge({ achievement, align = 'right', isLightBg = false }: {
     return l[key] || key;
   };
 
-  const isLeft = align === 'left';
+  const isLeft = align !== 'right';
+  const isCenter = align === 'center';
+  const justifyClass = isCenter ? 'justify-center' : (isLeft ? 'justify-start' : 'justify-end');
   const type = achievement.type;
 
   if (type === 'youtube_trending' || type === 'youtube_views') {
     const isTrending = type === 'youtube_trending';
     const isTop1Trending = isTrending && (achievement.value?.toString().trim() === '1' || achievement.value?.toString().toLowerCase().trim() === 'top 1' || achievement.value?.toString().trim() === '#1');
     return (
-      <div className={`flex flex-row items-center gap-1.5 sm:gap-2 w-full ${isLeft ? 'justify-start' : 'justify-end'} group/badge`}>
+      <div className={`flex flex-row items-center gap-1.5 sm:gap-2 w-full ${justifyClass} group/badge`}>
         <div className="w-5 h-5 min-[360px]:w-6 min-[360px]:h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-[#ff0f7b] to-[#f89b29] p-[1px] rounded-[4px] sm:rounded-xl shrink-0 shadow-[0_0_10px_rgba(239,68,68,0.3)] animate-flicker-yt">
           <div className="w-full h-full bg-gradient-to-br from-red-600 to-red-800 rounded-[3px] sm:rounded-[11px] flex items-center justify-center border border-red-400/20">
             <Play className="w-2 h-2 min-[360px]:w-2.5 min-[360px]:h-2.5 sm:w-4 sm:h-4 text-white ml-0.5 shadow-sm drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]" fill="currentColor" />
           </div>
         </div>
-        <div className={`flex flex-col gap-0 sm:gap-0.5 ${isLeft ? 'items-start' : 'items-end'} justify-center`}>
+        <div className={`flex flex-col gap-0 sm:gap-0.5 items-start justify-center`}>
            <div className="flex border border-red-500 bg-red-500/10 px-1 sm:px-1.5 py-0.2 sm:py-0.5 rounded-md items-center justify-center shadow-[0_0_4px_rgba(239,68,68,0.15)] animate-flicker-yt">
              <span className="text-[7px] min-[360px]:text-[7.5px] sm:text-[8px] font-black text-red-500 tracking-widest uppercase text-center block" style={{ marginRight: '-0.1em' }}>
                YOUTUBE</span>
@@ -8955,13 +8957,13 @@ function AchievementBadge({ achievement, align = 'right', isLightBg = false }: {
 
   if (type === 'tiktok_viral') {
     return (
-      <div className={`flex flex-row items-center gap-1.5 sm:gap-2 w-full ${isLeft ? 'justify-start' : 'justify-end'} group/badge`}>
+      <div className={`flex flex-row items-center gap-1.5 sm:gap-2 w-full ${justifyClass} group/badge`}>
         <div className="w-5 h-5 min-[360px]:w-6 min-[360px]:h-6 sm:w-8 sm:h-8 bg-gradient-to-bl from-[#00f2fe] via-black to-[#fe0979] p-[1px] rounded-[4px] sm:rounded-xl shrink-0 shadow-[0_0_10px_rgba(34,211,238,0.3)] animate-flicker-tt">
           <div className="w-full h-full bg-black rounded-[3px] sm:rounded-[11px] flex items-center justify-center border border-white/5">
             <TiktokIcon className="w-2.5 h-2.5 min-[360px]:w-3 min-[360px]:h-3 sm:w-5 sm:h-5 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]" />
           </div>
         </div>
-        <div className={`flex flex-col gap-0 sm:gap-0.5 ${isLeft ? 'items-start' : 'items-end'} justify-center`}>
+        <div className={`flex flex-col gap-0 sm:gap-0.5 items-start justify-center`}>
            <div className="flex border border-teal-400 bg-teal-400/10 px-1 sm:px-1.5 py-0.2 sm:py-0.5 rounded-md items-center justify-center shadow-[0_0_4px_rgba(20,184,166,0.15)] animate-flicker-tt">
              <span className="text-[7px] min-[360px]:text-[7.5px] sm:text-[8px] font-black text-teal-400 tracking-widest uppercase text-center block" style={{ marginRight: '-0.1em' }}>
                TIKTOK</span>
@@ -8980,13 +8982,13 @@ function AchievementBadge({ achievement, align = 'right', isLightBg = false }: {
 
   if (type === 'spotify_streams') {
     return (
-      <div className={`flex flex-row items-center gap-1.5 sm:gap-2 w-full ${isLeft ? 'justify-start' : 'justify-end'} group/badge`}>
+      <div className={`flex flex-row items-center gap-1.5 sm:gap-2 w-full ${justifyClass} group/badge`}>
         <div className="w-5 h-5 min-[360px]:w-6 min-[360px]:h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-[#1ED760] to-[#128a3c] p-[1px] rounded-full shrink-0 shadow-[0_0_10px_rgba(29,185,84,0.3)] animate-flicker-sp">
           <div className="w-full h-full bg-gradient-to-br from-[#1DB954] to-[#169c46] rounded-full flex items-center justify-center border border-white/20">
             <SpotifyIcon className="w-2.5 h-2.5 min-[360px]:w-3 min-[360px]:h-3 sm:w-5 sm:h-5 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]" />
           </div>
         </div>
-        <div className={`flex flex-col gap-0 sm:gap-0.5 ${isLeft ? 'items-start' : 'items-end'} justify-center`}>
+        <div className={`flex flex-col gap-0 sm:gap-0.5 items-start justify-center`}>
            <div className="flex border border-[#1DB954] bg-[#1DB954]/10 px-1 sm:px-1.5 py-0.2 sm:py-0.5 rounded-md items-center justify-center shadow-[0_0_4px_rgba(29,185,84,0.15)] animate-flicker-sp">
              <span className="text-[7px] min-[360px]:text-[7.5px] sm:text-[8px] font-black text-[#1DB954] tracking-widest uppercase text-center block" style={{ marginRight: '-0.1em' }}>
                SPOTIFY</span>
@@ -9005,13 +9007,13 @@ function AchievementBadge({ achievement, align = 'right', isLightBg = false }: {
 
   if (type === 'zing_streams') {
     return (
-      <div className={`flex flex-row items-center gap-1.5 sm:gap-2 w-full ${isLeft ? 'justify-start' : 'justify-end'} group/badge`}>
+      <div className={`flex flex-row items-center gap-1.5 sm:gap-2 w-full ${justifyClass} group/badge`}>
         <div className="w-5 h-5 min-[360px]:w-6 min-[360px]:h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-[#a855f7] to-[#6b21a8] p-[1px] rounded-full shrink-0 shadow-[0_0_10px_rgba(168,85,247,0.3)] animate-flicker-zg">
           <div className="w-full h-full bg-gradient-to-br from-[#bc56fd] to-[#801bb6] rounded-full flex items-center justify-center border border-white/20 overflow-hidden">
             <ZingIcon className="w-3 h-3 min-[360px]:w-3.5 min-[360px]:h-3.5 sm:w-5 sm:h-5 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)] scale-[1.8]" />
           </div>
         </div>
-        <div className={`flex flex-col gap-0 sm:gap-0.5 ${isLeft ? 'items-start' : 'items-end'} justify-center`}>
+        <div className={`flex flex-col gap-0 sm:gap-0.5 items-start justify-center`}>
            <div className="flex border border-[#a855f7] bg-[#a855f7]/10 px-1 sm:px-1.5 py-0.2 sm:py-0.5 rounded-md items-center justify-center shadow-[0_0_4px_rgba(168,85,247,0.15)] animate-flicker-zg">
              <span className="text-[7px] min-[360px]:text-[7.5px] sm:text-[8px] font-black text-[#bc56fd] tracking-widest uppercase text-center block" style={{ marginRight: '-0.1em' }}>
                ZING MP3</span>
@@ -9031,7 +9033,7 @@ function AchievementBadge({ achievement, align = 'right', isLightBg = false }: {
   return null;
 }
 
-function AchievementCycle({ achievements, align, isLightBg = false, prefix = 'ach' }: { achievements: any[]; align?: 'left' | 'right'; isLightBg?: boolean; prefix?: string }) {
+function AchievementCycle({ achievements, align, isLightBg = false, prefix = 'ach' }: { achievements: any[]; align?: 'left' | 'right' | 'center'; isLightBg?: boolean; prefix?: string }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const achievementsKey = useMemo(() => {
@@ -9049,11 +9051,13 @@ function AchievementCycle({ achievements, align, isLightBg = false, prefix = 'ac
 
   if (!achievements || achievements.length === 0) return null;
 
-  const isLeft = align === 'left';
+  const isLeft = align !== 'right';
+  const isCenter = align === 'center';
+  const justifyClass = isCenter ? 'justify-center' : (isLeft ? 'justify-start' : 'justify-end');
   const curAch = achievements[currentIndex % achievements.length];
 
   return (
-    <div className={`relative w-full h-[30px] sm:h-[48px] flex items-center ${isLeft ? 'justify-start' : 'justify-end'} overflow-visible`}>
+    <div className={`relative w-full h-full flex items-center ${justifyClass} overflow-visible`}>
       <AnimatePresence>
         <motion.div 
            key={`${prefix}-${curAch?.type || ''}-${curAch?.value || ''}-${currentIndex}`}
@@ -9061,7 +9065,7 @@ function AchievementCycle({ achievements, align, isLightBg = false, prefix = 'ac
            animate={{ opacity: 1, y: 0 }}
            exit={{ opacity: 0, y: -6 }}
            transition={{ duration: 0.25, ease: "easeInOut" }}
-           className={`absolute inset-0 w-full h-full flex items-center ${isLeft ? 'justify-start' : 'justify-end'}`}
+           className={`absolute inset-0 w-full h-full flex items-center ${justifyClass}`}
         >
            <AchievementBadge achievement={curAch} align={align} isLightBg={isLightBg} />
         </motion.div>
