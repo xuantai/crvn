@@ -1,1 +1,0 @@
-sed -i '/if (req.body.isDraft !== undefined) {/i\        if (req.body.isBrand !== undefined) {\n             updatedData.isBrand = req.body.isBrand === "true";\n        }\n        if (req.body.brandReferenceVideos !== undefined) {\n            updatedData.brandReferenceVideos = JSON.parse(req.body.brandReferenceVideos);\n        }' server.ts

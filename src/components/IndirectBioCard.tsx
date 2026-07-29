@@ -98,13 +98,21 @@ const getArtistLink = (subPath: string = '') => {
 };
 
 const getAdminLink = (subPath: string = '') => {
-  const host = window.location.hostname.replace(/^www\./, '');
-  const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
-  if (isSubdomain) {
-    return `/admin${subPath}`;
+  const pagePath = subPath ? (subPath.startsWith('/') ? subPath : `/${subPath}`) : '';
+  if (typeof window === 'undefined') return `/admin${pagePath}`;
+  const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
+  const isBBB = host.endsWith('.bbb.bz') || host === 'bbb.bz';
+  const isLocal = host === 'localhost' || host === '127.0.0.1' || host.includes('localhost');
+  const port = window.location.port ? `:${window.location.port}` : '';
+  const parts = host.split('.');
+
+  if ((!isLocal && parts.length > 2) || (isLocal && parts.length > 1 && parts[0] !== 'localhost' && parts[0] !== '127')) {
+    if (isBBB) return `https://bbb.bz/admin${pagePath}`;
+    if (isLocal) return `http://localhost${port}/admin${pagePath}`;
+    return `https://chorus.vn/admin${pagePath}`;
   }
-  const ext = getArtistExtensionFromUrl();
-  return ext ? `/${ext}/admin${subPath}` : `/admin${subPath}`;
+
+  return `/admin${pagePath}`;
 };
 
 const getLuminance = (hex: string) => {
@@ -469,8 +477,7 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false, lang = 'v
   };
 
   useEffect(() => {
-    const getAdminTokenKey = () => getArtistExtensionFromUrl() ? `adminToken_${getArtistExtensionFromUrl()}` : 'adminToken';
-    setIsAdmin(!!localStorage.getItem(getAdminTokenKey()));
+    setIsAdmin(!!localStorage.getItem('adminToken'));
 
     fetch('/api/public/artists')
       .then(res => res.json())

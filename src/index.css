@@ -602,6 +602,11 @@
   background-clip: text;
   animation: text-shine 4s linear infinite;
   display: inline-block;
+  padding-top: 0.25em;
+  padding-bottom: 0.1em;
+  margin-top: -0.25em;
+  margin-bottom: -0.1em;
+  overflow: visible;
 }
 
 .btn-black-gradient-blur {
@@ -822,5 +827,30 @@ input[name="title"]:not([class*="pr-"]) {
   animation: brand-logo-float 8s ease-in-out infinite;
 }
 
+@keyframes shimmer-sweep {
+  0% { transform: translateX(-120%) skewX(-20deg); }
+  100% { transform: translateX(220%) skewX(-20deg); }
+}
 
+.animate-shimmer-sweep {
+  animation: shimmer-sweep 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
 
+@keyframes marquee-pingpong {
+  0%, 12% { transform: translateX(0%); }
+  45%, 58% { transform: translateX(calc(-100% + 280px)); }
+  90%, 100% { transform: translateX(0%); }
+}
+
+.animate-marquee-pingpong {
+  animation: marquee-pingpong 10s ease-in-out infinite;
+}
+
+@keyframes window-float {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.animate-window-float {
+  animation: window-float 8s ease-in-out infinite;
+}

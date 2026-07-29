@@ -4,17 +4,52 @@ import punycode from 'punycode';
 
 import fsSync from 'fs';
 import path from 'path';
-import fs from 'fs/promises';
+const fs = fsSync.promises;
 import crypto from 'crypto';
 import cors from 'cors';
-import { createServer as createViteServer } from 'vite';
+let createViteServer: any;
 import { GoogleGenAI } from '@google/genai';
 import multer from 'multer';
-import sharp from 'sharp';
-import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
-import ffmpeg from 'fluent-ffmpeg';
+let sharp: any;
+try { sharp = require('sharp'); } catch (e) {}
+let ffmpegInstaller: any;
+try { ffmpegInstaller = require('@ffmpeg-installer/ffmpeg'); } catch (e) {}
+let ffmpeg: any;
+try { ffmpeg = require('fluent-ffmpeg'); } catch (e) {}
 
-ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+import nodemailer from 'nodemailer';
+
+export function normalizeEmail(email: string): string {
+  if (!email || typeof email !== 'string') return '';
+  const cleanEmail = email.toLowerCase().trim();
+  const parts = cleanEmail.split('@');
+  if (parts.length !== 2) return cleanEmail;
+
+  let [user, domain] = parts;
+
+  // Anti-fraud Gmail alias normalization (removes +tag and dot .)
+  if (domain === 'gmail.com' || domain === 'googlemail.com') {
+    user = user.split('+')[0];
+    user = user.replace(/\./g, '');
+    domain = 'gmail.com';
+  } else if (domain === 'outlook.com' || domain === 'hotmail.com' || domain === 'live.com' || domain === 'icloud.com') {
+    user = user.split('+')[0];
+  }
+
+  return `${user}@${domain}`;
+}
+
+const mailTransporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER || '',
+    pass: process.env.SMTP_PASS || ''
+  }
+});
+
+if (ffmpeg && ffmpegInstaller?.path) ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
@@ -397,6 +432,101 @@ async function saveVouchers() {
     try {
       const docRef = doc(db, 'app_data', 'vouchers');
       await setDoc(docRef, { vouchers });
+    } catch (e) {}
+  }
+}
+
+const PRICING_FILE = path.join(process.cwd(), 'pricing.json');
+let pricingSettings: any = {
+  free: {
+    name: 'Gói Miễn Phí',
+    monthlyOriginalPrice: 0,
+    monthlySalePrice: 0,
+    yearlyOriginalPrice: 0,
+    yearlySalePrice: 0,
+    features: [
+      'Số Bài Hát Tối Đa: 5',
+      'Giao Diện Kho Nhạc: 1',
+      'Template Chủ Đề Tiêu Chuẩn',
+      'Backup 24/7'
+    ]
+  },
+  pro: {
+    name: 'Gói Pro',
+    monthlyOriginalPrice: 150000,
+    monthlySalePrice: 99000,
+    yearlyOriginalPrice: 1800000,
+    yearlySalePrice: 890000,
+    features: [
+      'Số Bài Hát Tối Đa: 50 bài',
+      'Giao Diện Kho Nhạc: Đầy đủ Pro',
+      'Trang tiểu sử nghệ sĩ (Bio)',
+      'Mật khẩu bảo vệ Demo & Kho nhạc',
+      'Tạo đường dẫn chia sẻ bí mật',
+      'Backup 24/7'
+    ]
+  },
+  vip: {
+    name: 'Gói VIP',
+    monthlyOriginalPrice: 350000,
+    monthlySalePrice: 249000,
+    yearlyOriginalPrice: 4200000,
+    yearlySalePrice: 1990000,
+    features: [
+      'Số Bài Hát: KHÔNG GIỚI HẠN',
+      'Giao Diện Kho Nhạc: Không giới hạn',
+      'Tùy chỉnh tên miền riêng (.com, .vn)',
+      'Template Độc Quyền VIP',
+      'Tạo đường dẫn chia sẻ bí mật',
+      'Hỗ trợ ưu tiên 1:1 chuyên sâu'
+    ]
+  }
+};
+
+try {
+  if (fsSync.existsSync(PRICING_FILE)) {
+    const loaded = JSON.parse(fsSync.readFileSync(PRICING_FILE, 'utf-8'));
+    pricingSettings = { ...pricingSettings, ...loaded };
+  }
+} catch (e) { console.error('Error loading pricing settings', e); }
+
+async function savePricingSettings() {
+  await fs.writeFile(PRICING_FILE, JSON.stringify(pricingSettings, null, 2), 'utf-8');
+  if (!isFirestoreDisabled && (landingConfig as any).cloudSyncEnabled !== false) {
+    try {
+      const docRef = doc(db, 'app_data', 'pricing');
+      await setDoc(docRef, { pricingSettings });
+    } catch (e) {}
+  }
+}
+
+const ROLES_MATRIX_FILE = path.join(process.cwd(), 'roles_matrix.json');
+let rolesMatrix: any[] = [
+  { id: 'f1', name: 'Số Bài Hát Tối Đa', free: true, pro: true, vip: true, freeText: 'Số Bài Hát Tối Đa: 5', proText: 'Số Bài Hát Tối Đa: 50', vipText: 'Số Bài Hát: KHÔNG GIỚI HẠN' },
+  { id: 'f2', name: 'Giao Diện Kho Nhạc', free: true, pro: true, vip: true, freeText: 'Giao Diện Kho Nhạc: 1', proText: 'Giao Diện Kho Nhạc: Đầy đủ Pro', vipText: 'Giao Diện Kho Nhạc: Không giới hạn' },
+  { id: 'f3', name: 'Template Chủ Đề', free: true, pro: true, vip: true, freeText: 'Template Chủ Đề: 14 Tiêu Chuẩn', proText: 'Template Chủ Đề: 14 Tiêu Chuẩn', vipText: 'Template Chủ Đề: 18 (Bao gồm VIP)' },
+  { id: 'f4', name: 'Backup 24/7', free: true, pro: true, vip: true, freeText: '', proText: '', vipText: '' },
+  { id: 'f5', name: 'Trang tiểu sử (Bio)', free: false, pro: true, vip: true, freeText: '', proText: '', vipText: '' },
+  { id: 'f6', name: 'Mật khẩu bảo vệ Demo & Kho nhạc', free: false, pro: true, vip: true, freeText: '', proText: '', vipText: '' },
+  { id: 'f7', name: 'Tạo đường dẫn chia sẻ bí mật', free: false, pro: true, vip: true, freeText: '', proText: '', vipText: '' },
+  { id: 'f8', name: 'Tùy chỉnh tên miền riêng', free: false, pro: false, vip: true, freeText: '', proText: '', vipText: '' },
+  { id: 'f9', name: 'Template Độc Quyền', free: false, pro: false, vip: true, freeText: '', proText: '', vipText: '' },
+  { id: 'f10', name: 'Hỗ trợ ưu tiên 1:1', free: false, pro: false, vip: true, freeText: '', proText: '', vipText: '' }
+];
+
+try {
+  if (fsSync.existsSync(ROLES_MATRIX_FILE)) {
+    const loaded = JSON.parse(fsSync.readFileSync(ROLES_MATRIX_FILE, 'utf-8'));
+    if (Array.isArray(loaded)) rolesMatrix = loaded;
+  }
+} catch (e) { console.error('Error loading roles matrix', e); }
+
+async function saveRolesMatrix() {
+  await fs.writeFile(ROLES_MATRIX_FILE, JSON.stringify(rolesMatrix, null, 2), 'utf-8');
+  if (!isFirestoreDisabled && (landingConfig as any).cloudSyncEnabled !== false) {
+    try {
+      const docRef = doc(db, 'app_data', 'roles_matrix');
+      await setDoc(docRef, { rolesMatrix });
     } catch (e) {}
   }
 }
@@ -910,6 +1040,20 @@ const upload = multer({
 let currentAdminPassword = 'MatKhauDay123';
 let currentMemberPassword = 'XuanTaiDepTrai';
 
+function normalizeArtistData(data: any, artist?: any) {
+  if (!data) return data;
+  const resolvedBio = data.artistBio || artist?.artistBio || '';
+  const resolvedAvatar = data.avatarUrl || data.aboutMe?.avatarUrl || data.homeCoverUrl || data.slideshowImages?.[0] || artist?.avatarUrl || '';
+
+  data.artistBio = resolvedBio;
+  data.avatarUrl = resolvedAvatar;
+
+  if (!data.aboutMe) data.aboutMe = {};
+  if (!data.aboutMe.avatarUrl && resolvedAvatar) data.aboutMe.avatarUrl = resolvedAvatar;
+
+  return data;
+}
+
 async function loadData(explicitUsername?: string) {
   const storeUsername = artistStorage.getStore();
   const currentUsername = explicitUsername || storeUsername || 'acxuantai';
@@ -986,7 +1130,7 @@ async function loadData(explicitUsername?: string) {
            await fs.writeFile(artistDataFile, JSON.stringify(data, null, 2), 'utf-8');
         } catch (e) {}
 
-        return data;
+        return normalizeArtistData(data, artist);
       }
     } catch (error: any) {
       console.error("Firebase load error for artist " + currentUsername + ":", error.message || error);
@@ -1037,13 +1181,13 @@ async function loadData(explicitUsername?: string) {
           handleFirebaseError(e);
         }
       }
-      return parsedData;
+      return normalizeArtistData(parsedData, artist);
     } else if (currentUsername === 'acxuantai' && fsSync.existsSync(DATA_FILE)) {
       // Copy existing data.json for master artist acxuantai
       const data = await fs.readFile(DATA_FILE, 'utf-8');
       await fs.writeFile(artistDataFile, data, 'utf-8');
       const parsedData = JSON.parse(data);
-      return parsedData;
+      return normalizeArtistData(parsedData, artist);
     }
   } catch (error: any) {
     console.error("Local data fallback error for artist " + currentUsername + ":", error);
@@ -1078,7 +1222,7 @@ async function loadData(explicitUsername?: string) {
     await fs.writeFile(artistDataFile, JSON.stringify(defaultData, null, 2), 'utf-8');
   } catch (e) {}
 
-  return defaultData;
+  return normalizeArtistData(defaultData, artist);
 }
 
 async function saveData(usernameOrData: any, data?: any) {
@@ -1180,7 +1324,7 @@ async function startServer() {
   };
 
   const getArtistFromRequest = (req: express.Request): any => {
-    let ext = (req.query.artist || req.query.extension || req.query.artistExtension) as string;
+    let ext = (req.query.ext || req.query.artist || req.query.extension || req.query.artistExtension) as string;
     
     if (!ext) {
       ext = (req.headers['x-artist-extension'] || req.headers['x-artist']) as string;
@@ -1190,20 +1334,10 @@ async function startServer() {
     if (!ext && req.path) {
       const segments = req.path.split('/').filter(Boolean);
       if (segments.length > 0) {
-        const possibleExt = segments[0];
-        const reserved = ['admin', 'acp', 'mem', 'demo', 'song', 'playlist', 'api', 'uploads'];
+        const possibleExt = segments[0].toLowerCase();
+        const reserved = ['admin', 'acp', 'master', 'mem', 'demo', 'song', 'playlist', 'api', 'uploads', 'verify-email', 'help'];
         if (!reserved.includes(possibleExt)) {
-          const matchedArtist = artists.find(a => {
-            if (a.extension === possibleExt || a.username === possibleExt) return true;
-            if (a.extraUsernames) {
-              const extras = a.extraUsernames.split(',').map((u: string) => u.trim().toLowerCase()).filter(Boolean);
-              if (extras.includes(possibleExt.toLowerCase().trim())) return true;
-            }
-            return false;
-          });
-          if (matchedArtist) {
-            ext = matchedArtist.extension;
-          }
+          ext = possibleExt;
         }
       }
     }
@@ -1249,8 +1383,8 @@ async function startServer() {
           if (!ext) {
             const segments = parsedUrl.pathname.split('/').filter(Boolean);
             if (segments.length > 0) {
-              const possibleExt = segments[0];
-              const reserved = ['admin', 'acp', 'mem', 'demo', 'song', 'playlist', 'api'];
+              const possibleExt = segments[0].toLowerCase();
+              const reserved = ['admin', 'acp', 'master', 'mem', 'demo', 'song', 'playlist', 'api', 'verify-email', 'help'];
               if (!reserved.includes(possibleExt)) {
                 ext = possibleExt;
               }
@@ -1260,9 +1394,9 @@ async function startServer() {
       }
     }
 
-            if (ext) {
+    if (ext) {
       const artist = artists.find(a => {
-        if (a.extension === ext || a.username === ext) return true;
+        if (a.extension.toLowerCase() === ext.toLowerCase() || a.username.toLowerCase() === ext.toLowerCase()) return true;
         if (a.extraUsernames) {
           const extras = a.extraUsernames.split(',').map((u: string) => u.trim().toLowerCase()).filter(Boolean);
           if (extras.includes(ext.toLowerCase().trim())) return true;
@@ -1270,6 +1404,7 @@ async function startServer() {
         return false;
       });
       if (artist) return artist;
+      return null; // Explicitly return null if an extension was requested but artist does NOT exist!
     }
     return artists.find(a => a.username === 'acxuantai') || artists[0] || { username: 'acxuantai', artistName: 'A.C Xuân Tài', password: 'XuanTaiDepTrai' };
   };
@@ -1329,7 +1464,12 @@ async function startServer() {
     const artist = (req as any).artist;
     if (artist && token === artist.password) return true;
 
-    if (token === 'master_token_MatKhauDay123' || token === 'MatKhauDay123') return true;
+    if (token === 'master_token_MatKhauDay123' || token === 'MatKhauDay123') {
+      if (!(req as any).artist) {
+        (req as any).artist = artists.find(a => a.username === 'acxuantai') || artists[0];
+      }
+      return true;
+    }
 
     // Fallback: if domain match failed, but token is valid for an artist
     const match = artists.find(a => a.password === token);
@@ -1395,7 +1535,7 @@ async function startServer() {
             return false;
           });
           if (!matchedArtist) {
-            return res.redirect(302, `https://chorus.vn${req.originalUrl}`);
+            return res.redirect(302, 'https://chorus.vn/');
           }
         }
       }
@@ -1404,7 +1544,7 @@ async function startServer() {
     const artist = getArtistFromRequest(req);
     req.artist = artist;
     req.artists = artists;
-    artistStorage.run(artist.username, () => {
+    artistStorage.run(artist ? artist.username : 'acxuantai', () => {
       next();
     });
   });
@@ -1600,6 +1740,13 @@ async function startServer() {
     console.log('API DATA REQUEST URL:', req.originalUrl, 'RESOLVED ARTIST:', (req as any).artist?.username);
     try {
       const currentArtist = (req as any).artist;
+      if (currentArtist === null) {
+        return res.status(404).json({
+          error: 'Artist not found',
+          notFound: true,
+          message: 'Không tìm thấy trang nghệ sĩ này!'
+        });
+      }
       if (currentArtist && currentArtist.activated === false) {
         return res.json({
           error: 'inactive',
@@ -1617,8 +1764,28 @@ async function startServer() {
          data.playlists = data.playlists.filter((p: any) => !p.deleted);
       }
 
-      // Do not leak passwords
-      let publicDemos = data.demos.map((d: any) => ({ ...d, password: !!(d.password || data.globalPassword) })); 
+      // Do not leak passwords & hide audio URLs of demo/unreleased songs for non-auth users
+      const isAuthUser = isRequestAdmin(req) || isRequestMember(req);
+      let publicDemos = data.demos.map((d: any) => {
+        const isReleased = d.isReleased === true || d.isReleased === 'true';
+        const isDemoSong = !isReleased && d.linkType !== 'indirect';
+        const effectivePassword = isReleased ? d.password : (d.password || data.globalPassword);
+        const hasPwd = !!effectivePassword;
+        const shouldHideAudio = (isDemoSong || hasPwd) && !isAuthUser;
+        if (shouldHideAudio) {
+          return {
+            ...d,
+            password: hasPwd,
+            audioUrl: '',
+            backupAudioUrl: '',
+            audio_url: ''
+          };
+        }
+        return {
+          ...d,
+          password: hasPwd
+        };
+      }); 
       let publicPlaylists = data.playlists
           ?.filter((p: any) => !p.isDraft)
           .map((p: any) => ({ ...p, password: !!p.password, hasSecretLink: !!p.secretLink, secretLink: undefined })) || [];
@@ -1691,31 +1858,33 @@ function generateCaptchaSvg(text: string) {
   });
 
   app.post('/api/public/register', async (req, res) => {
-    const { artistName, username, extension, email, password, captchaAnswer, captchaToken } = req.body;
+    const { artistName, username, extension, email, password, captchaAnswer, captchaToken, isGoogleEmailVerified } = req.body;
     
-    console.log(`[Register Request] Incoming: artistName="${artistName}", username="${username}", extension="${extension}", email="${email}", captchaAnswer="${captchaAnswer}"`);
+    console.log(`[Register Request] Incoming: artistName="${artistName}", username="${username}", extension="${extension}", email="${email}", captchaAnswer="${captchaAnswer}", isGoogleEmailVerified=${isGoogleEmailVerified}`);
 
-    if (!artistName || !username || !extension || !email || !password || !captchaAnswer || !captchaToken) {
+    if (!artistName || !username || !extension || !email || !password || (!isGoogleEmailVerified && (!captchaAnswer || !captchaToken))) {
       console.warn('[Register Request] Missing required fields');
       return res.status(400).json({ error: 'Vui lòng điền đầy đủ tất cả các trường dữ liệu!' });
     }
 
-    // Verify Captcha
-    try {
-      const [expiry, hash] = captchaToken.split(':');
-      if (Date.now() > parseInt(expiry)) {
-        console.warn(`[Register Request] Captcha expired. Current time: ${Date.now()}, Expiry: ${expiry}`);
-        return res.status(400).json({ error: 'Mã xác nhận Captcha đã hết hạn, vui lòng tải lại captcha mới!' });
+    // Verify Captcha (only if not Google verified)
+    if (!isGoogleEmailVerified) {
+      try {
+        const [expiry, hash] = captchaToken.split(':');
+        if (Date.now() > parseInt(expiry)) {
+          console.warn(`[Register Request] Captcha expired. Current time: ${Date.now()}, Expiry: ${expiry}`);
+          return res.status(400).json({ error: 'Mã xác nhận Captcha đã hết hạn, vui lòng tải lại captcha mới!' });
+        }
+        const CAPTCHA_SECRET = 'chorus_vn_captcha_secret_key_123';
+        const expectedHash = crypto.createHmac('sha256', CAPTCHA_SECRET).update(captchaAnswer.toLowerCase().trim() + ':' + expiry).digest('hex');
+        if (hash !== expectedHash) {
+          console.warn(`[Register Request] Captcha mismatch! Answer provided: "${captchaAnswer}" (normalized: "${captchaAnswer.toLowerCase().trim()}"), Expected hash: "${expectedHash}", Received hash in token: "${hash}"`);
+          return res.status(400).json({ error: 'Mã xác nhận Captcha không chính xác!' });
+        }
+      } catch (e: any) {
+        console.error('[Register Request] Captcha validation error:', e.message || e);
+        return res.status(400).json({ error: 'Xác thực Captcha không hợp lệ!' });
       }
-      const CAPTCHA_SECRET = 'chorus_vn_captcha_secret_key_123';
-      const expectedHash = crypto.createHmac('sha256', CAPTCHA_SECRET).update(captchaAnswer.toLowerCase().trim() + ':' + expiry).digest('hex');
-      if (hash !== expectedHash) {
-        console.warn(`[Register Request] Captcha mismatch! Answer provided: "${captchaAnswer}" (normalized: "${captchaAnswer.toLowerCase().trim()}"), Expected hash: "${expectedHash}", Received hash in token: "${hash}"`);
-        return res.status(400).json({ error: 'Mã xác nhận Captcha không chính xác!' });
-      }
-    } catch (e: any) {
-      console.error('[Register Request] Captcha validation error:', e.message || e);
-      return res.status(400).json({ error: 'Xác thực Captcha không hợp lệ!' });
     }
 
     // Standard validations
@@ -1731,19 +1900,33 @@ function generateCaptchaSvg(text: string) {
       return res.status(400).json({ error: 'Email không đúng định dạng!' });
     }
 
-    // Check existing
+    // Check existing with Gmail normalization anti-fraud check
     const uLower = username.toLowerCase().trim();
     const eLower = extension.toLowerCase().trim();
     const emailLower = email.toLowerCase().trim();
+    const normEmail = normalizeEmail(emailLower);
 
-    const existingUser = artists.find(a => a.username.toLowerCase() === uLower || a.extension.toLowerCase() === eLower);
+    const existingUser = artists.find(a => {
+      if (a.username && a.username.toLowerCase() === uLower) return true;
+      if (a.extension && a.extension.toLowerCase() === eLower) return true;
+      if (a.email && normalizeEmail(a.email) === normEmail) return true;
+      return false;
+    });
+
     if (existingUser) {
       if (existingUser.username.toLowerCase() === uLower) {
         return res.status(400).json({ error: 'Tên đăng nhập đã tồn tại trong hệ thống!' });
-      } else {
+      } else if (existingUser.extension.toLowerCase() === eLower) {
         return res.status(400).json({ error: 'Phần mở rộng (Sub-domain) đã được đăng ký bởi nghệ sĩ khác!' });
+      } else {
+        return res.status(400).json({ error: 'Email này (hoặc biến thể Gmail của email này) đã được đăng ký tài khoản trong hệ thống!' });
       }
     }
+
+    // Generate 6-digit OTP & verification link token (if not google verified)
+    const otpCode = isGoogleEmailVerified ? null : Math.floor(100000 + Math.random() * 900000).toString();
+    const verifyToken = isGoogleEmailVerified ? null : crypto.randomBytes(32).toString('hex');
+    const otpExpires = isGoogleEmailVerified ? null : Date.now() + 24 * 60 * 60 * 1000; // 24 hours validity
 
     // Add new artist (inactive pending approval)
     const hashedPassword = bcrypt.hashSync(password, 10);
@@ -1753,12 +1936,16 @@ function generateCaptchaSvg(text: string) {
       username: uLower,
       extension: eLower,
       email: emailLower,
+      normalizedEmail: normEmail,
       password: hashedPassword,
       verified: false,
       isPublic: false, // hidden from public pages until activated
       activated: false, // newly registered members are NOT activated
       createdAt: new Date().toISOString(),
-      emailVerified: false, // false by default
+      emailVerified: isGoogleEmailVerified === true, // true automatically if Google verified!
+      otpCode,
+      verifyToken,
+      otpExpires,
       dbConfig: "",
       memberPassword: ""
     };
@@ -1792,6 +1979,74 @@ function generateCaptchaSvg(text: string) {
     };
     await saveData(newArtist.username, defaultData);
 
+    if (isGoogleEmailVerified) {
+      res.setHeader('Set-Cookie', [
+        `adminToken_${newArtist.username}=${newArtist.password}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`,
+        `adminToken=${newArtist.password}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`
+      ]);
+
+      return res.json({
+        success: true,
+        requiresVerification: false,
+        emailVerified: true,
+        message: `Đăng ký bằng Google thành công! Email ${emailLower} đã được xác thực tự động. Tài khoản đang chờ Quản trị viên kích hoạt.`,
+        token: newArtist.password,
+        extension: newArtist.extension,
+        username: newArtist.username,
+        email: emailLower,
+        artist: newArtist
+      });
+    }
+
+    // Send Dual Verification Email (OTP + Activation Link) for normal register
+    const verifyLink = `https://${req.get('x-forwarded-host') || req.get('host') || 'chorus.vn'}/verify-email?token=${verifyToken}`;
+
+    const mailOptions = {
+      from: `"Chorus.vn" <${process.env.SMTP_FROM || 'no-reply@chorus.vn'}>`,
+      replyTo: `"Chorus Support" <${process.env.SMTP_REPLY_TO || 'hi@xtpro.vn'}>`,
+      to: emailLower,
+      subject: '🎯 Mã OTP & Link kích hoạt tài khoản - Chorus.vn',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background-color: #0b0b0f; color: #ffffff; border-radius: 16px; border: 1px solid #222;">
+          <div style="text-align: center; padding-bottom: 20px; border-bottom: 1px solid #222;">
+            <h1 style="color: #facc15; margin: 0; font-size: 26px; font-weight: 900; tracking: 2px;">CHORUS.VN</h1>
+            <p style="color: #999; font-size: 13px; margin-top: 6px;">Nơi những ca khúc bắt đầu</p>
+          </div>
+          
+          <div style="padding: 24px 0;">
+            <h2 style="color: #ffffff; font-size: 18px; margin-top: 0;">Xin chào <span style="color: #facc15;">${newArtist.artistName}</span>,</h2>
+            <p style="color: #ccc; line-height: 1.6; font-size: 14px;">Cảm ơn bạn đã đăng ký tài khoản nghệ sĩ trên Chorus.vn. Để hoàn tất xác thực email <b>${emailLower}</b>, bạn có thể thực hiện theo 1 trong 2 cách đơn giản sau:</p>
+            
+            <!-- CÁCH 1: MÃ OTP 6 CHỮ SỐ -->
+            <div style="background: #18181b; border: 1px solid rgba(250, 204, 21, 0.4); border-radius: 12px; padding: 20px; text-align: center; margin: 24px 0;">
+              <p style="color: #facc15; font-weight: bold; font-size: 13px; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px;">CÁCH 1: Nhập Mã OTP 6 Chữ Số Trực Tiếp</p>
+              <div style="font-size: 38px; font-weight: 900; letter-spacing: 12px; color: #ffffff; background: #09090b; padding: 14px 20px; border-radius: 10px; display: inline-block; border: 1px solid #333;">${otpCode}</div>
+              <p style="color: #888; font-size: 12px; margin-top: 12px; margin-bottom: 0;">Sao chép và nhập 6 chữ số này vào ô xác thực trên trang đăng ký.</p>
+            </div>
+
+            <!-- CÁCH 2: LINK KÍCH HOẠT -->
+            <div style="text-align: center; margin: 30px 0;">
+              <p style="color: #aaa; font-size: 14px; margin-bottom: 14px;">CÁCH 2: Nhấp Trực Tiếp Vào Nút Bên Dưới</p>
+              <a href="${verifyLink}" target="_blank" style="background: linear-gradient(135deg, #e11d48, #be123c); color: #ffffff; text-decoration: none; padding: 14px 32px; font-weight: bold; font-size: 15px; border-radius: 30px; display: inline-block; box-shadow: 0 4px 15px rgba(225,29,72,0.4);">
+                KÍCH HOẠT TÀI KHOẢN NGAY
+              </a>
+            </div>
+
+            <p style="color: #666; font-size: 12px; line-height: 1.5; margin-top: 30px; border-top: 1px solid #222; padding-top: 15px;">
+              Mã OTP và đường dẫn kích hoạt này có hiệu lực trong 24 giờ.<br/>
+              Nếu bạn không thực hiện đăng ký tài khoản này, vui lòng bỏ qua email này.
+            </p>
+          </div>
+        </div>
+      `
+    };
+
+    mailTransporter.sendMail(mailOptions).then((info) => {
+      console.log(`[Brevo SMTP Success] Verification email sent to ${mailOptions.to}, MessageID: ${info.messageId}, Response: ${info.response}`);
+    }).catch(err => {
+      console.error(`[Brevo SMTP Error] Failed to send verification email to ${mailOptions.to}:`, err.message || err);
+    });
+
     res.setHeader('Set-Cookie', [
       `adminToken_${newArtist.username}=${newArtist.password}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`,
       `adminToken=${newArtist.password}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`
@@ -1799,11 +2054,195 @@ function generateCaptchaSvg(text: string) {
 
     res.json({
       success: true,
-      message: 'Đăng ký thành viên thành công! Tài khoản đang chờ Ban quản trị duyệt kích hoạt.',
+      requiresVerification: true,
+      message: `Đăng ký thành công! Mã OTP 6 số và link kích hoạt đã được gửi tới email ${emailLower}.`,
       token: newArtist.password,
       extension: newArtist.extension,
       username: newArtist.username,
+      email: emailLower,
       artist: newArtist
+    });
+  });
+
+  // Verify Email via 6-digit OTP
+  app.post('/api/public/verify-otp', async (req, res) => {
+    const { email, otpCode } = req.body;
+    if (!email || !otpCode) {
+      return res.status(400).json({ error: 'Vui lòng nhập đầy đủ email và mã OTP 6 số!' });
+    }
+
+    const normEmail = normalizeEmail(email);
+    const artist = artists.find(a => a.email && normalizeEmail(a.email) === normEmail);
+
+    if (!artist) {
+      return res.status(404).json({ error: 'Tài khoản với email này không tồn tại!' });
+    }
+
+    if (artist.emailVerified) {
+      return res.json({ success: true, message: 'Email của bạn đã được xác thực thành công trước đó rồi!' });
+    }
+
+    if (String(artist.otpCode || '').trim() !== String(otpCode || '').trim()) {
+      return res.status(400).json({ error: 'Mã OTP 6 số không chính xác, vui lòng kiểm tra lại!' });
+    }
+
+    if (artist.otpExpires && Date.now() > artist.otpExpires) {
+      return res.status(400).json({ error: 'Mã OTP đã hết hạn (quá 24 giờ), vui lòng bấm nút gửi lại mã mới!' });
+    }
+
+    artist.emailVerified = true;
+    artist.otpCode = null;
+    artist.verifyToken = null;
+
+    await saveArtists(artists);
+
+    return res.json({
+      success: true,
+      artistName: artist.artistName || artist.username,
+      message: `Kích hoạt tài khoản nghệ sĩ ${artist.artistName || artist.username} thành công!`
+    });
+  });
+
+  // Verify Email via Link Token
+  app.post('/api/public/verify-token', async (req, res) => {
+    const { token } = req.body;
+    if (!token) {
+      return res.status(400).json({ error: 'Mã xác thực không hợp lệ!' });
+    }
+
+    const artist = artists.find(a => a.verifyToken === token);
+    if (!artist) {
+      return res.status(400).json({ error: 'Đường dẫn kích hoạt không tồn tại hoặc đã được sử dụng!' });
+    }
+
+    artist.emailVerified = true;
+    artist.otpCode = null;
+    artist.verifyToken = null;
+
+    await saveArtists(artists);
+
+    return res.json({
+      success: true,
+      artistName: artist.artistName || artist.username,
+      message: `Kích hoạt tài khoản nghệ sĩ ${artist.artistName || artist.username} thành công!`
+    });
+  });
+
+  // Resend verification OTP & Link
+  app.post('/api/public/resend-verification', async (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Vui lòng cung cấp email!' });
+
+    const normEmail = normalizeEmail(email);
+    const artist = artists.find(a => a.email && normalizeEmail(a.email) === normEmail);
+
+    if (!artist) {
+      return res.status(404).json({ error: 'Tài khoản không tồn tại!' });
+    }
+
+    if (artist.emailVerified) {
+      return res.json({
+        success: true,
+        emailVerified: true,
+        artist: {
+          artistName: artist.artistName || artist.username,
+          username: artist.username,
+          extension: artist.extension,
+          email: artist.email,
+          activated: artist.activated !== false
+        },
+        message: 'Email này đã được xác thực thành công trước đó rồi!'
+      });
+    }
+
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const verifyToken = crypto.randomBytes(32).toString('hex');
+    const otpExpires = Date.now() + 24 * 60 * 60 * 1000;
+
+    artist.otpCode = otpCode;
+    artist.verifyToken = verifyToken;
+    artist.otpExpires = otpExpires;
+
+    await saveArtists(artists);
+
+    const verifyLink = `https://${req.get('x-forwarded-host') || req.get('host') || 'chorus.vn'}/verify-email?token=${verifyToken}`;
+
+    const mailOptions = {
+      from: `"Chorus.vn" <${process.env.SMTP_FROM || 'no-reply@chorus.vn'}>`,
+      replyTo: `"Chorus Support" <${process.env.SMTP_REPLY_TO || 'hi@xtpro.vn'}>`,
+      to: artist.email,
+      subject: '🎯 Mã OTP & Link kích hoạt tài khoản - Chorus.vn',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background-color: #0b0b0f; color: #ffffff; border-radius: 16px; border: 1px solid #222;">
+          <div style="text-align: center; padding-bottom: 20px; border-bottom: 1px solid #222;">
+            <h1 style="color: #facc15; margin: 0; font-size: 26px; font-weight: 900; tracking: 2px;">CHORUS.VN</h1>
+            <p style="color: #999; font-size: 13px; margin-top: 6px;">Nơi những ca khúc bắt đầu</p>
+          </div>
+          
+          <div style="padding: 24px 0;">
+            <h2 style="color: #ffffff; font-size: 18px; margin-top: 0;">Xin chào <span style="color: #facc15;">${artist.artistName}</span>,</h2>
+            <p style="color: #ccc; line-height: 1.6; font-size: 14px;">Đây là mã OTP & link xác thực mới cho hòm thư <b>${artist.email}</b>:</p>
+            
+            <!-- CÁCH 1: MÃ OTP 6 CHỮ SỐ -->
+            <div style="background: #18181b; border: 1px solid rgba(250, 204, 21, 0.4); border-radius: 12px; padding: 20px; text-align: center; margin: 24px 0;">
+              <p style="color: #facc15; font-weight: bold; font-size: 13px; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px;">CÁCH 1: Nhập Mã OTP 6 Chữ Số Trực Tiếp</p>
+              <div style="font-size: 38px; font-weight: 900; letter-spacing: 12px; color: #ffffff; background: #09090b; padding: 14px 20px; border-radius: 10px; display: inline-block; border: 1px solid #333;">${otpCode}</div>
+              <p style="color: #888; font-size: 12px; margin-top: 12px; margin-bottom: 0;">Sao chép và nhập 6 chữ số này vào ô xác thực trên trang đăng ký.</p>
+            </div>
+
+            <!-- CÁCH 2: LINK KÍCH HOẠT -->
+            <div style="text-align: center; margin: 30px 0;">
+              <p style="color: #aaa; font-size: 14px; margin-bottom: 14px;">CÁCH 2: Nhấp Trực Tiếp Vào Nút Bên Dưới</p>
+              <a href="${verifyLink}" target="_blank" style="background: linear-gradient(135deg, #e11d48, #be123c); color: #ffffff; text-decoration: none; padding: 14px 32px; font-weight: bold; font-size: 15px; border-radius: 30px; display: inline-block; box-shadow: 0 4px 15px rgba(225,29,72,0.4);">
+                KÍCH HOẠT TÀI KHOẢN NGAY
+              </a>
+            </div>
+
+            <p style="color: #666; font-size: 12px; line-height: 1.5; margin-top: 30px; border-top: 1px solid #222; padding-top: 15px;">
+              Mã OTP và đường dẫn kích hoạt này có hiệu lực trong 24 giờ.<br/>
+              Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này.
+            </p>
+          </div>
+        </div>
+      `
+    };
+
+    mailTransporter.sendMail(mailOptions).then((info) => {
+      console.log(`[Brevo SMTP Success] Verification email sent to ${mailOptions.to}, MessageID: ${info.messageId}, Response: ${info.response}`);
+    }).catch(err => {
+      console.error(`[Brevo SMTP Error] Failed to send verification email to ${mailOptions.to}:`, err.message || err);
+    });
+
+    return res.json({
+      success: true,
+      message: `Đã gửi lại mã OTP & link xác thực tới email ${artist.email}!`
+    });
+  });
+
+  // Check registration status by email
+  app.post('/api/public/check-email-status', async (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Vui lòng cung cấp email!' });
+
+    const normEmail = normalizeEmail(email);
+    const artist = artists.find(a => a.email && normalizeEmail(a.email) === normEmail);
+
+    if (!artist) {
+      return res.status(404).json({ error: 'Không tìm thấy tài khoản với email này!' });
+    }
+
+    return res.json({
+      success: true,
+      exists: true,
+      emailVerified: artist.emailVerified === true,
+      activated: artist.activated !== false,
+      artist: {
+        artistName: artist.artistName || artist.username,
+        username: artist.username,
+        extension: artist.extension,
+        email: artist.email,
+        activated: artist.activated !== false
+      }
     });
   });
 
@@ -2445,6 +2884,48 @@ ${JSON.stringify(geminiInput, null, 2)}`;
   });
 
   
+  // Public Pricing API
+  app.get('/api/public/pricing', (req, res) => {
+    res.json(pricingSettings);
+  });
+
+  // ACP Pricing APIs
+  app.get('/api/acp/pricing', (req, res) => {
+    if (!isRequestMasterAdmin(req)) return res.status(401).json({ error: 'Unauthorized' });
+    res.json(pricingSettings);
+  });
+
+  app.post('/api/acp/pricing', express.json(), async (req, res) => {
+    if (!isRequestMasterAdmin(req)) return res.status(401).json({ error: 'Unauthorized' });
+    const { free, pro, vip } = req.body;
+    if (free) pricingSettings.free = { ...pricingSettings.free, ...free };
+    if (pro) pricingSettings.pro = { ...pricingSettings.pro, ...pro };
+    if (vip) pricingSettings.vip = { ...pricingSettings.vip, ...vip };
+    await savePricingSettings();
+    res.json({ success: true, pricing: pricingSettings });
+  });
+
+  // Public Features Matrix API
+  app.get('/api/public/features', (req, res) => {
+    res.json(rolesMatrix);
+  });
+
+  // ACP Roles Matrix APIs
+  app.get('/api/acp/roles-matrix', (req, res) => {
+    if (!isRequestMasterAdmin(req)) return res.status(401).json({ error: 'Unauthorized' });
+    res.json(rolesMatrix);
+  });
+
+  app.post('/api/acp/roles-matrix', express.json(), async (req, res) => {
+    if (!isRequestMasterAdmin(req)) return res.status(401).json({ error: 'Unauthorized' });
+    if (Array.isArray(req.body)) {
+      rolesMatrix = req.body;
+      await saveRolesMatrix();
+      return res.json({ success: true, rolesMatrix });
+    }
+    res.status(400).json({ error: 'Invalid data format' });
+  });
+
   app.get('/api/acp/vouchers', async (req, res) => {
     if (!isRequestMasterAdmin(req)) return res.status(401).json({ error: 'Unauthorized' });
     res.json(vouchers);
@@ -2452,7 +2933,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
 
   app.post('/api/acp/vouchers/create', express.json(), async (req, res) => {
     if (!isRequestMasterAdmin(req)) return res.status(401).json({ error: 'Unauthorized' });
-    const { code, increaseSongs, increaseTemplates, vipMonths } = req.body;
+    const { code, increaseSongs, increaseTemplates, vipMonths, discountPercent } = req.body;
     if (!code) return res.status(400).json({ error: 'Code is required' });
     if (vouchers.some(v => v.code === code)) return res.status(400).json({ error: 'Code already exists' });
     const v = {
@@ -2461,6 +2942,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       increaseSongs: Number(increaseSongs) || 0,
       increaseTemplates: Number(increaseTemplates) || 0,
       vipMonths: Number(vipMonths) || 0,
+      discountPercent: Number(discountPercent) || 0,
       usedBy: [],
       createdAt: new Date().toISOString()
     };
@@ -2535,8 +3017,13 @@ ${JSON.stringify(geminiInput, null, 2)}`;
         const releasedCount = nonDeletedDemos.filter(demo => demo.isReleased === true || demo.isReleased === 'true').length;
         const demoCount = nonDeletedDemos.filter(demo => demo.isReleased !== true && demo.isReleased !== 'true').length;
         
+        const resolvedBio = aWithoutPassword.artistBio || d?.artistBio || d?.aboutMe?.bio || d?.bio || '';
+        const resolvedAvatar = aWithoutPassword.avatarUrl || d?.avatarUrl || d?.aboutMe?.avatarUrl || d?.avatar_url || d?.slideshowImages?.[0] || '';
+
         enrichedArtists.push({
           ...aWithoutPassword,
+          artistBio: resolvedBio,
+          avatarUrl: resolvedAvatar,
           homeCoverUrl: d?.config?.homeCoverUrl || d?.homeCoverUrl || '',
           releasedCount,
           demoCount
@@ -2627,7 +3114,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const { originalUsername, artistName, extension, password, verified, dbConfig, isPublic, approveNameChange, rejectNameChange, approveUsernameChange, rejectUsernameChange, approveExtensionChange, rejectExtensionChange, hasExternalWebsite, externalWebsiteUrl, email, activated, emailVerified, defaultLanguage, artistBio, isSpecial, roleId, maxSongs, extraUsernames } = req.body;
+    const { originalUsername, artistName, extension, password, verified, dbConfig, isPublic, approveNameChange, rejectNameChange, approveUsernameChange, rejectUsernameChange, approveExtensionChange, rejectExtensionChange, hasExternalWebsite, externalWebsiteUrl, email, activated, emailVerified, defaultLanguage, artistBio, avatarUrl, isSpecial, roleId, maxSongs, extraUsernames } = req.body;
     const artistIdx = artists.findIndex(a => a.username === originalUsername);
     if (artistIdx === -1) {
       return res.status(404).json({ error: 'Không tìm thấy nghệ sĩ!' });
@@ -2695,14 +3182,65 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       artist.hasExternalWebsite = hasExternalWebsite !== undefined ? !!hasExternalWebsite : artist.hasExternalWebsite;
       artist.externalWebsiteUrl = externalWebsiteUrl !== undefined ? externalWebsiteUrl : artist.externalWebsiteUrl;
       artist.email = email !== undefined ? email : artist.email;
+      let welcomeEmailTriggered = false;
       if (activated !== undefined) {
         const isNowActivated = !!activated;
-        if (isNowActivated && !artist.activated) {
+        if (isNowActivated && artist.activated === false) {
           artist.activatedAt = new Date().toISOString();
+          welcomeEmailTriggered = true;
         }
         artist.activated = isNowActivated;
       } else {
         artist.activated = (artist.activated !== false);
+      }
+
+      if (welcomeEmailTriggered && artist.email) {
+        const siteDomain = req.get('x-forwarded-host') || req.get('host') || 'chorus.vn';
+        const rawFavicon = (landingConfig as any).faviconUrl || (landingConfig as any).siteFavicon || '';
+        let faviconHtml = '';
+        if (rawFavicon) {
+          const fullFavicon = rawFavicon.startsWith('http') ? rawFavicon : `https://${siteDomain}${rawFavicon.startsWith('/') ? '' : '/'}${rawFavicon}`;
+          faviconHtml = `<img src="${fullFavicon}" alt="Favicon" style="width: 48px; height: 48px; border-radius: 12px; margin-bottom: 10px;" />`;
+        } else {
+          faviconHtml = `<div style="font-size: 36px; margin-bottom: 8px;">🎵</div>`;
+        }
+
+        const welcomeMailOptions = {
+          from: `"Chorus.vn" <${process.env.SMTP_FROM || 'no-reply@chorus.vn'}>`,
+          replyTo: `"Chorus Support" <${process.env.SMTP_REPLY_TO || 'hi@xtpro.vn'}>`,
+          to: artist.email,
+          subject: 'Chào mừng bạn đến với Chorus.vn',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 28px; background-color: #0b0b0f; color: #ffffff; border-radius: 20px; border: 1px solid #222;">
+              <div style="text-align: center; padding-bottom: 20px; border-bottom: 1px solid #222;">
+                ${faviconHtml}
+                <h1 style="color: #facc15; margin: 0; font-size: 24px; font-weight: 900; letter-spacing: 1px;">CHORUS.VN</h1>
+                <p style="color: #999; font-size: 13px; margin-top: 4px;">Chào mừng bạn đến với Chorus.vn</p>
+              </div>
+              
+              <div style="padding: 24px 0; font-size: 14px; line-height: 1.6; color: #d4d4d8;">
+                <h2 style="color: #ffffff; font-size: 18px; margin-top: 0;">Xin chào <span style="color: #facc15;">${artist.artistName || artist.username}</span>,</h2>
+                <p>Tài khoản của bạn đã được kích hoạt thành công, dưới đây là thông tin đăng nhập và quản trị kho nhạc. Hãy tạo nên những tác phẩm thật tâm đắc nhé.</p>
+                
+                <div style="background: #18181b; border: 1px solid #333; border-radius: 14px; padding: 20px; margin: 24px 0;">
+                  <p style="margin: 8px 0;"><b>Nghệ danh:</b> <span style="color: #ffffff; font-weight: bold;">${artist.artistName || artist.username}</span></p>
+                  <p style="margin: 8px 0;"><b>Website kho nhạc:</b> <a href="https://${artist.extension}.${siteDomain}" target="_blank" style="color: #60a5fa; font-weight: bold; text-decoration: underline;">https://${artist.extension}.${siteDomain}</a></p>
+                  <p style="margin: 8px 0;"><b>Trang Quản Trị (Admin):</b> <a href="https://${siteDomain}/admin" target="_blank" style="color: #60a5fa; font-weight: bold; text-decoration: underline;">https://${siteDomain}/admin</a> (hoặc <a href="https://${artist.extension}.${siteDomain}/admin" target="_blank" style="color: #60a5fa; font-weight: bold; text-decoration: underline;">${artist.extension}.${siteDomain}/admin</a>)</p>
+                  <p style="margin: 8px 0;"><b>Tên đăng nhập:</b> <span style="color: #facc15; font-weight: bold;">${artist.username}</span></p>
+                  <p style="margin: 8px 0;"><b>Email đăng nhập:</b> <span style="color: #60a5fa; font-weight: bold;">${artist.email}</span></p>
+                </div>
+
+                <p style="color: #a1a1aa; font-size: 13px;">Chúc bạn có những trải nghiệm tuyệt vời cùng Chorus.vn!</p>
+              </div>
+            </div>
+          `
+        };
+
+        mailTransporter.sendMail(welcomeMailOptions).then((info) => {
+          console.log(`[Brevo SMTP Welcome Success] Sent activation email to ${artist.email}, MessageID: ${info.messageId}`);
+        }).catch(err => {
+          console.error(`[Brevo SMTP Welcome Error] Failed to send activation email to ${artist.email}:`, err.message || err);
+        });
       }
       artist.emailVerified = emailVerified !== undefined ? !!emailVerified : artist.emailVerified;
       artist.defaultLanguage = defaultLanguage !== undefined ? defaultLanguage : (artist.defaultLanguage || 'vi');
@@ -2740,12 +3278,23 @@ ${JSON.stringify(geminiInput, null, 2)}`;
         artist.extraUsernames = parsedExtra;
       }
       
+      if (artistBio !== undefined) {
+        artist.artistBio = artistBio;
+      }
+      if (avatarUrl !== undefined) {
+        artist.avatarUrl = avatarUrl;
+      }
+
       const data = await loadData(artist.username);
       data.artistName = artist.artistName;
       data.adminPassword = artist.password;
       data.defaultLanguage = artist.defaultLanguage;
       if (artistBio !== undefined) {
         data.artistBio = artistBio;
+      }
+      if (avatarUrl !== undefined) {
+        data.avatarUrl = avatarUrl;
+        if (data.aboutMe) data.aboutMe.avatarUrl = avatarUrl;
       }
       await saveData(artist.username, data);
     }
@@ -3124,6 +3673,99 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     }
   });
 
+  function decodeJwtPayload(token: string) {
+    try {
+      const parts = token.split('.');
+      if (parts.length < 2) return null;
+      const base64Url = parts[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = Buffer.from(base64, 'base64').toString('utf8');
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  app.post('/api/auth/google', express.json(), async (req: any, res) => {
+    try {
+      const { credential, email, name, picture, sub } = req.body || {};
+      let googleEmail = '';
+      let googleName = '';
+      let googlePicture = '';
+      let googleSub = '';
+
+      if (credential) {
+        const payload = decodeJwtPayload(credential);
+        if (!payload || !payload.email) {
+          return res.status(400).json({ error: 'Mã xác thực Google không hợp lệ hoặc đã hết hạn.' });
+        }
+        googleEmail = String(payload.email).toLowerCase().trim();
+        googleName = payload.name || payload.given_name || googleEmail.split('@')[0];
+        googlePicture = payload.picture || '';
+        googleSub = payload.sub || '';
+      } else if (email) {
+        googleEmail = String(email).toLowerCase().trim();
+        googleName = name || googleEmail.split('@')[0];
+        googlePicture = picture || '';
+        googleSub = sub || '';
+      } else {
+        return res.status(400).json({ error: 'Thiếu thông tin xác thực Google.' });
+      }
+
+      const existingArtist = artists.find(a => 
+        (a.email && a.email.toLowerCase().trim() === googleEmail) ||
+        (a.username && a.username.toLowerCase().trim() === googleEmail) ||
+        (a.googleSub && a.googleSub === googleSub)
+      );
+
+      if (existingArtist) {
+        if (!existingArtist.googleSub) {
+          existingArtist.googleSub = googleSub;
+          await saveArtists(artists);
+        }
+
+        const data = await loadData(existingArtist.username);
+        const avatarUrl = data.aboutMe?.avatarUrl || data.homeCoverUrl || googlePicture;
+
+        res.setHeader('Set-Cookie', [
+          `adminToken_${existingArtist.username}=${existingArtist.password}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`,
+          `adminToken=${existingArtist.password}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`
+        ]);
+
+        return res.json({
+          success: true,
+          isArtist: true,
+          token: existingArtist.password,
+          adminToken: existingArtist.password,
+          artistExtension: existingArtist.extension,
+          artistName: existingArtist.name || existingArtist.artistName || existingArtist.username || existingArtist.extension,
+          username: existingArtist.username,
+          user: {
+            email: googleEmail,
+            name: googleName,
+            picture: avatarUrl,
+            sub: googleSub
+          }
+        });
+      }
+
+      return res.json({
+        success: true,
+        isArtist: false,
+        token: `google_user_${googleSub}`,
+        user: {
+          email: googleEmail,
+          name: googleName,
+          picture: googlePicture,
+          sub: googleSub
+        }
+      });
+    } catch (err: any) {
+      console.error('Error in Google Auth Endpoint:', err);
+      res.status(500).json({ error: 'Lỗi xử lý xác thực Google trên máy chủ.' });
+    }
+  });
+
   // Dynamic Multi-Artist Admin/Member authentication endpoints
   app.post('/api/admin/login', async (req: any, res) => {
     const { username, password } = req.body;
@@ -3149,7 +3791,16 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       ]);
       res.json({ success: true, token: artist.password, extension: artist.extension, username: artist.username, artist, avatarUrl });
     } else {
-      res.status(401).json({ error: 'Username hoặc mật khẩu không chính xác!' });
+      const loginStr = (username || '').toLowerCase().trim();
+      const isEmail = loginStr.includes('@');
+      if (isEmail && !artist) {
+        res.status(401).json({ 
+          error: `Email ${username} chưa được đăng ký tài khoản nghệ sĩ.`,
+          notFoundEmail: username
+        });
+      } else {
+        res.status(401).json({ error: 'Username hoặc mật khẩu không chính xác!' });
+      }
     }
   });
 
@@ -3208,7 +3859,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     }
 
     const data = await loadData((req as any).artist?.username);
-    const hashedNewPassword = require("bcrypt").hashSync(newPassword, 10);
+    const hashedNewPassword = bcrypt.hashSync(newPassword, 10);
     data.adminPassword = hashedNewPassword;
     await saveData(data);
     artist.password = hashedNewPassword;
@@ -3800,7 +4451,17 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       }
     }
 
-    data.artistBio = req.body.artistBio ?? data.artistBio;
+    if (req.body.artistBio !== undefined) {
+      data.artistBio = req.body.artistBio;
+    }
+
+    if (req.body.aboutMe !== undefined) {
+      data.aboutMe = { ...(data.aboutMe || {}), ...req.body.aboutMe };
+      if (data.aboutMe.avatarUrl) {
+        data.avatarUrl = data.aboutMe.avatarUrl;
+        if (!data.homeCoverUrl) data.homeCoverUrl = data.aboutMe.avatarUrl;
+      }
+    }
     
     if (req.body.homeCoverUrl !== undefined && req.body.homeCoverUrl !== data.homeCoverUrl) {
       const oldUrl = data.homeCoverUrl;
@@ -3820,8 +4481,6 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       if (oldUrl) await deleteFileByUrl(oldUrl);
     }
 
-    
-    data.aboutMe = req.body.aboutMe ?? data.aboutMe;
     data.biography = req.body.biography ?? data.biography;
     data.menus = req.body.menus ?? data.menus;
 
@@ -3876,6 +4535,10 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     }
     if (req.body.slideshowImages) data.slideshowImages = req.body.slideshowImages;
     if (req.body.layoutSections !== undefined) data.layoutSections = req.body.layoutSections;
+    if (req.body.hiddenSections !== undefined) data.hiddenSections = req.body.hiddenSections;
+    if (req.body.includeDemoInRandomSong !== undefined) {
+      data.includeDemoInRandomSong = req.body.includeDemoInRandomSong === true || req.body.includeDemoInRandomSong === 'true';
+    }
     if (req.body.adminTheme !== undefined) {
       data.adminTheme = req.body.adminTheme;
       const artist = req.artist;
@@ -4008,83 +4671,87 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     }
   });
 
+  function fetchTextNative(targetUrl: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      try {
+        const lib = targetUrl.startsWith('https') ? require('https') : require('http');
+        const req = lib.get(targetUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7'
+          }
+        }, (res: any) => {
+          if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+            return resolve(fetchTextNative(res.headers.location));
+          }
+          let body = '';
+          res.on('data', (chunk: any) => body += chunk);
+          res.on('end', () => resolve(body));
+        });
+        req.on('error', (err: any) => reject(err));
+        req.end();
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
   app.get('/api/youtube-playlist', async (req, res) => {
     try {
       const plId = req.query.plId as string;
       const chId = req.query.chId as string;
       
-      let fetchUrl = '';
-      if (plId) {
-        fetchUrl = `https://www.youtube.com/playlist?list=${plId}`;
-      } else if (chId) {
-        fetchUrl = `https://www.youtube.com/channel/${chId}/videos`;
-      }
+      if (!plId && !chId) return res.json([]);
       
-      if (!fetchUrl) return res.json([]);
-      
-      const response = await fetch(fetchUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept-Language': 'en-US,en;q=0.9'
-        }
-      });
-      if (!response.ok) return res.json([]);
-      const text = await response.text();
-      const match = text.match(/var ytInitialData = (\{.*?\});<\/script>/);
-
-      let videos: any[] = [];
-      if (match) {
-        const data = JSON.parse(match[1]);
-        JSON.stringify(data, (key, value) => {
-          if (key === 'playlistVideoRenderer' && value.videoId) {
-            videos.push({
-              title: value.title?.runs?.[0]?.text || 'Unknown',
-              videoId: value.videoId,
-              youtubeUrl: `https://www.youtube.com/watch?v=${value.videoId}`
-            });
-          }
-          if (key === 'gridVideoRenderer' && value.videoId) {
-            videos.push({
-              title: value.title?.runs?.[0]?.text || 'Unknown',
-              videoId: value.videoId,
-              youtubeUrl: `https://www.youtube.com/watch?v=${value.videoId}`
-            });
-          }
-          if (key === 'richItemRenderer' && value.content?.videoRenderer?.videoId) {
-             videos.push({
-               title: value.content.videoRenderer.title?.runs?.[0]?.text || 'Unknown',
-               videoId: value.content.videoRenderer.videoId,
-               youtubeUrl: `https://www.youtube.com/watch?v=${value.content.videoRenderer.videoId}`
-             })
-          }
-          return value;
-        });
-      }
-
-      // Deduplicate
-      const unique = [];
+      const unique: any[] = [];
       const ids = new Set();
-      for (const v of videos) {
-        if (!ids.has(v.videoId)) {
-          ids.add(v.videoId);
-          unique.push(v);
+
+      // Primary: Fetch YouTube official RSS feed
+      try {
+        const rssUrl = plId 
+          ? `https://www.youtube.com/feeds/videos.xml?playlist_id=${plId}`
+          : `https://www.youtube.com/feeds/videos.xml?channel_id=${chId}`;
+        const rssText = await fetchTextNative(rssUrl);
+        if (rssText) {
+          const entries = rssText.split('<entry>').slice(1);
+          entries.forEach(entry => {
+            const titleMatch = entry.match(/<title>(.*?)<\/title>/);
+            const idMatch = entry.match(/<yt:videoId>(.*?)<\/yt:videoId>/);
+            if (idMatch && idMatch[1] && !ids.has(idMatch[1])) {
+              ids.add(idMatch[1]);
+              unique.push({
+                title: titleMatch ? titleMatch[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'").replace(/&quot;/g, '"') : 'Unknown',
+                videoId: idMatch[1],
+                youtubeUrl: `https://www.youtube.com/watch?v=${idMatch[1]}`
+              });
+            }
+          });
         }
-      }
-      
-      // Fallback to RSS if scraping failed
-      if (unique.length === 0 && plId) {
-        const rssRes = await fetch(`https://www.youtube.com/feeds/videos.xml?playlist_id=${plId}`);
-        const rssText = await rssRes.text();
-        const entries = rssText.split('<entry>').slice(1);
-        unique.push(...entries.map(entry => {
-          const titleMatch = entry.match(/<title>(.*?)<\/title>/);
-          const idMatch = entry.match(/<yt:videoId>(.*?)<\/yt:videoId>/);
-          return {
-            title: titleMatch ? titleMatch[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>') : 'Unknown',
-            videoId: idMatch ? idMatch[1] : '',
-            youtubeUrl: idMatch ? `https://www.youtube.com/watch?v=${idMatch[1]}` : ''
-          };
-        }).filter(v => v.videoId));
+      } catch (e) {}
+
+      // Fallback: Web Scraping if RSS returns empty
+      if (unique.length === 0) {
+        let fetchUrl = plId ? `https://www.youtube.com/playlist?list=${plId}` : `https://www.youtube.com/channel/${chId}/videos`;
+        try {
+          const text = await fetchTextNative(fetchUrl);
+          if (text) {
+            const match = text.match(/var ytInitialData = (\{.*?\});<\/script>/);
+            if (match) {
+              const data = JSON.parse(match[1]);
+              JSON.stringify(data, (key, value) => {
+                if ((key === 'playlistVideoRenderer' || key === 'gridVideoRenderer') && value.videoId && !ids.has(value.videoId)) {
+                  ids.add(value.videoId);
+                  unique.push({
+                    title: value.title?.runs?.[0]?.text || value.title?.simpleText || 'Unknown',
+                    videoId: value.videoId,
+                    youtubeUrl: `https://www.youtube.com/watch?v=${value.videoId}`
+                  });
+                }
+                return value;
+              });
+            }
+          }
+        } catch (e) {}
       }
 
       res.json(unique);
@@ -5143,8 +5810,12 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     let isAuthorized = false;
     
     // Check demo password
-    const expectedPassword = demo.linkType === 'indirect' ? demo.password : (demo.isReleased ? null : (demo.password || data.globalPassword));
-    if (expectedPassword && expectedPassword === req.body.password) {
+    const rawExpectedPassword = demo.linkType === 'indirect' ? demo.password : (demo.isReleased ? demo.password : (demo.password || data.globalPassword));
+    const expectedPassword = (rawExpectedPassword && String(rawExpectedPassword).trim().length > 0) ? String(rawExpectedPassword).trim() : null;
+
+    if (!expectedPassword) {
+       isAuthorized = true;
+    } else if (expectedPassword === String(req.body.password || '').trim()) {
        isAuthorized = true;
     }
     
@@ -5159,7 +5830,7 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
        }
     }
 
-    if (!expectedPassword || isAuthorized) {
+    if (isAuthorized) {
       if (!demo.coverUrl) {
           const imagesToUse = (data.slideshowImages && data.slideshowImages.length > 0)
               ? data.slideshowImages
@@ -5312,9 +5983,13 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         templateConfigs: data.templateConfigs || []
       };
 
-      const expectedPassword = demo.linkType === 'indirect' ? demo.password : (demo.isReleased ? null : (demo.password || data.globalPassword));
       const isUserAdmin = isRequestAdmin(req);
       const isUserMember = isRequestMember(req);
+      const isReleased = demo.isReleased === true || demo.isReleased === 'true';
+      const rawExpectedPassword = demo.linkType === 'indirect' ? demo.password : (isReleased ? demo.password : (demo.password || data.globalPassword));
+      const expectedPassword = (rawExpectedPassword && String(rawExpectedPassword).trim().length > 0) ? String(rawExpectedPassword).trim() : null;
+      const requiresAuth = !!expectedPassword;
+
       const fromPlaylist = req.query.fromPlaylist === 'true';
       const providedSecret = req.query.secret as string | undefined;
       let isValidSecret = !!(demo.secretKey && providedSecret && demo.secretKey === providedSecret);
@@ -5329,8 +6004,8 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
          }
       }
 
-      // If it requires password, only return basic metadata without audio/lyrics
-      if (expectedPassword && expectedPassword !== req.query.pwd && !isValidSecret && !isUserAdmin && !isUserMember) {
+      // If it requires password, only return basic metadata without audio/lyrics for public guests
+      if (requiresAuth && (req.query.pwd === undefined || String(req.query.pwd).trim() !== expectedPassword) && !isValidSecret && !isUserAdmin && !isUserMember) {
           return res.json({ 
               id: demo.id, 
               title: demo.title,
@@ -5899,6 +6574,8 @@ ${JSON.stringify(geminiInput, null, 2)}`;
   let vite: any;
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
+    const viteModule = await import('vite');
+    createViteServer = viteModule.createServer;
     vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "custom",
@@ -5945,8 +6622,23 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       const cleanPath = url.split('?')[0];
       const segments = cleanPath.split('/').filter(Boolean);
       const firstSegment = segments[0];
-      const reserved = ['admin', 'acp', 'mem', 'demo', 'song', 'playlist', 'api', 'uploads'];
-      const hasArtistPath = firstSegment && !reserved.includes(firstSegment) && artists.some(a => a.extension === firstSegment || a.username === firstSegment);
+      const reserved = ['admin', 'acp', 'master', 'mem', 'demo', 'song', 'playlist', 'api', 'uploads', 'verify-email', 'help'];
+
+      if (!isSubdomain && !isCustomDomain && firstSegment && !reserved.includes(firstSegment.toLowerCase())) {
+        const artistExists = artists.some(a => {
+          if (a.extension.toLowerCase() === firstSegment.toLowerCase() || a.username.toLowerCase() === firstSegment.toLowerCase()) return true;
+          if (a.extraUsernames) {
+            const extras = a.extraUsernames.split(',').map((u: string) => u.trim().toLowerCase()).filter(Boolean);
+            if (extras.includes(firstSegment.toLowerCase())) return true;
+          }
+          return false;
+        });
+        if (!artistExists) {
+          return res.redirect(302, '/');
+        }
+      }
+
+      const hasArtistPath = firstSegment && !reserved.includes(firstSegment.toLowerCase()) && artists.some(a => a.extension.toLowerCase() === firstSegment.toLowerCase() || a.username.toLowerCase() === firstSegment.toLowerCase());
 
       const isMainLandingPage = !isSubdomain && !isCustomDomain && !hasArtistPath;
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, EyeOff, Music, BadgeCheck, Lock, Globe, ArrowRight, Sparkles, Disc3, CheckCircle2, ListMusic, X, AlertCircle, Mail, ChevronLeft, ChevronRight, UserPlus, RefreshCw, Search, LogOut, UserCircle, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -750,7 +750,11 @@ const PasswordInput = (props: any) => {
   );
 };
 
-export default function ChorusVNLanding() {
+interface ChorusVNLandingProps {
+  initialAction?: 'register' | 'login';
+}
+
+export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps = {}) {
   const [artists, setArtists] = useState<LandingArtist[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
@@ -767,7 +771,7 @@ export default function ChorusVNLanding() {
   const [loginError, setLoginError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  useEffect(() => {
+  const checkSession = useCallback(() => {
     const activeExt = localStorage.getItem('activeAdminExtension');
     const token = activeExt ? localStorage.getItem(`adminToken_${activeExt}`) : localStorage.getItem('adminToken');
     if (token) {
@@ -792,13 +796,43 @@ export default function ChorusVNLanding() {
             const token = localStorage.getItem('adminToken') || localStorage.getItem(`adminToken_${data.artist.extension}`);
             if (token) (window as any).syncLoginSession(token, data.artist.extension, data.artist.artistName || data.artist.username, avatar, true);
           }
+
+          // If URL contains action=register or action=login while logged in, clean URL & close modal
+          const urlParams = new URLSearchParams(window.location.search);
+          const action = urlParams.get('action');
+          if (action === 'register' || action === 'login') {
+            setShowRegisterModal(false);
+            setShowLoginModal(false);
+            const cleanUrl = window.location.pathname + window.location.search.replace(/([?&])action=(register|login)&?/, '$1').replace(/[?&]$/, '');
+            window.history.replaceState({}, document.title, cleanUrl || '/');
+          }
         } else {
           setLoggedInArtist(null);
+          if (typeof (window as any).clearAllSessions === 'function') {
+            (window as any).clearAllSessions();
+          } else {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('activeAdminExtension');
+            localStorage.removeItem('activeAdminName');
+            localStorage.removeItem('activeAdminAvatar');
+            localStorage.removeItem('activeAdminActivated');
+            window.dispatchEvent(new Event('admin-session-change'));
+          }
         }
       })
       .catch(() => {});
+    } else {
+      setLoggedInArtist(null);
     }
   }, []);
+
+  useEffect(() => {
+    checkSession();
+    window.addEventListener('admin-session-change', checkSession);
+    return () => {
+      window.removeEventListener('admin-session-change', checkSession);
+    };
+  }, [checkSession]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -877,8 +911,148 @@ export default function ChorusVNLanding() {
   const [regError, setRegError] = useState('');
   const [regSuccess, setRegSuccess] = useState('');
   const [regSubmitting, setRegSubmitting] = useState(false);
+  const [isGoogleEmailVerified, setIsGoogleEmailVerified] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const registerModalBodyRef = useRef<HTMLDivElement>(null);
   const captchaRequestIdRef = useRef<number>(0);
+
+  const handleGoogleSignIn = () => {
+    const googleClientId = "578858946574-opa9vfj5t2tmb9sr5jregbur9qa4tdac.apps.googleusercontent.com";
+    setRegError('');
+    setLoginError('');
+    setGoogleLoading(true);
+
+    const processGoogleData = async (payload: { credential?: string; email?: string; name?: string; picture?: string; sub?: string }) => {
+      try {
+        const res = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.isArtist && (data.adminToken || data.token)) {
+            const token = data.adminToken || data.token;
+            const extension = data.artistExtension || data.username;
+            const avatar = data.user?.picture || '';
+            if ((window as any).syncLoginSession) {
+              (window as any).syncLoginSession(
+                token,
+                extension,
+                data.artistName || data.username || extension,
+                avatar,
+                true
+              );
+            } else {
+              localStorage.setItem('adminToken', token);
+              localStorage.setItem(`adminToken_${extension}`, token);
+              localStorage.setItem('activeAdminExtension', extension);
+              localStorage.setItem('activeAdminName', data.artistName || data.username || extension);
+              localStorage.setItem('activeAdminAvatar', avatar);
+            }
+            setLoggedInArtist(data.artist);
+            window.dispatchEvent(new Event('admin-session-change'));
+            setShowRegisterModal(false);
+            setShowLoginModal(false);
+            window.location.href = `/${extension}`;
+            return;
+          } else {
+            const email = data.user?.email || payload.email || '';
+            const name = data.user?.name || payload.name || '';
+            if (email) {
+              setRegEmail(email);
+              setIsGoogleEmailVerified(true);
+              if (name) {
+                setRegArtistName(name);
+                const slug = removeAccents(name);
+                setRegUsername(slug.replace(/[^a-z0-9_]/g, ''));
+                setRegExtension(slug.replace(/[^a-z0-9_-]/g, ''));
+              }
+              setShowLoginModal(false);
+              setShowRegisterModal(true);
+            }
+          }
+        } else {
+          const data = await res.json();
+          setRegError(data.error || 'Lỗi xác thực Google');
+          setLoginError(data.error || 'Lỗi xác thực Google');
+        }
+      } catch (e: any) {
+        setRegError('Lỗi kết nối máy chủ!');
+        setLoginError('Lỗi kết nối máy chủ!');
+      } finally {
+        setGoogleLoading(false);
+      }
+    };
+
+    if ((window as any).google?.accounts?.oauth2) {
+      try {
+        const client = (window as any).google.accounts.oauth2.initTokenClient({
+          client_id: googleClientId,
+          scope: 'email profile openid',
+          callback: async (tokenResponse: any) => {
+            if (tokenResponse && tokenResponse.access_token) {
+              try {
+                const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                  headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+                });
+                const googleUser = await userInfoRes.json();
+                if (googleUser && googleUser.email) {
+                  await processGoogleData({
+                    email: googleUser.email,
+                    name: googleUser.name,
+                    picture: googleUser.picture,
+                    sub: googleUser.sub
+                  });
+                } else {
+                  setGoogleLoading(false);
+                }
+              } catch (e) {
+                setGoogleLoading(false);
+              }
+            } else {
+              setGoogleLoading(false);
+            }
+          },
+          error_callback: (err: any) => {
+            console.error('Google OAuth popup error:', err);
+            setGoogleLoading(false);
+          }
+        });
+        client.requestAccessToken();
+        return;
+      } catch (e) {
+        console.error('OAuth2 init error, falling back to One Tap:', e);
+      }
+    }
+
+    if ((window as any).google?.accounts?.id) {
+      try {
+        (window as any).google.accounts.id.initialize({
+          client_id: googleClientId,
+          callback: async (response: any) => {
+            if (response?.credential) {
+              await processGoogleData({ credential: response.credential });
+            } else {
+              setGoogleLoading(false);
+            }
+          }
+        });
+        (window as any).google.accounts.id.prompt((notification: any) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            setGoogleLoading(false);
+          }
+        });
+      } catch (e: any) {
+        setRegError(e?.message || 'Lỗi khởi tạo Google Auth');
+        setGoogleLoading(false);
+      }
+    } else {
+      setRegError('Đang nạp thư viện Google, vui lòng thử lại sau vài giây!');
+      setGoogleLoading(false);
+    }
+  };
 
   const fetchCaptcha = async () => {
     const reqId = ++captchaRequestIdRef.current;
@@ -894,13 +1068,42 @@ export default function ChorusVNLanding() {
     }
   };
 
+  // Auto-open modals based on URL query params (?action=register or ?action=login) or initialAction prop
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = initialAction || urlParams.get('action');
+    const activeExt = localStorage.getItem('activeAdminExtension');
+    const token = activeExt ? localStorage.getItem(`adminToken_${activeExt}`) : localStorage.getItem('adminToken');
+
+    if (action === 'register') {
+      if (token || loggedInArtist) {
+        setShowRegisterModal(false);
+        const cleanUrl = window.location.pathname + window.location.search.replace(/([?&])action=register&?/, '$1').replace(/[?&]$/, '');
+        window.history.replaceState({}, document.title, cleanUrl || '/');
+        return;
+      }
+      const emailParam = urlParams.get('email');
+      const isGoogleParam = urlParams.get('googleVerified') === 'true';
+      if (emailParam) setRegEmail(emailParam);
+      if (isGoogleParam) setIsGoogleEmailVerified(true);
+      setShowRegisterModal(true);
+    } else if (action === 'login') {
+      if (token || loggedInArtist) {
+        setShowLoginModal(false);
+        const cleanUrl = window.location.pathname + window.location.search.replace(/([?&])action=login&?/, '$1').replace(/[?&]$/, '');
+        window.history.replaceState({}, document.title, cleanUrl || '/');
+        return;
+      }
+      setShowLoginModal(true);
+    }
+  }, [initialAction, loggedInArtist]);
+
   useEffect(() => {
     if (showRegisterModal) {
       fetchCaptcha();
       setRegArtistName('');
       setRegUsername('');
       setRegExtension('');
-      setRegEmail('');
       setRegPassword('');
       setCaptchaAnswer('');
       setRegError('');
@@ -1618,13 +1821,33 @@ export default function ChorusVNLanding() {
           )}
           {loggedInArtist ? (
             (loggedInArtist as any).activated !== false && (
-              <div className="mt-4 flex items-center justify-center">
+              <div className="mt-4 flex items-center justify-center gap-3">
                 <div className="flex items-center bg-white rounded-full p-1 border border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
                   <a href={`/${loggedInArtist.extension}/admin`} className="px-4 py-2 text-sm font-bold text-neutral-800 hover:text-indigo-600 transition-colors flex items-center gap-2">
                     <Settings className="w-4 h-4" />
                     {lang === 'vi' ? 'Vào Bảng Điều Khiển' : 'Go to Dashboard'}
                   </a>
                 </div>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (typeof (window as any).clearAllSessions === 'function') {
+                      await (window as any).clearAllSessions();
+                    } else {
+                      localStorage.removeItem('adminToken');
+                      localStorage.removeItem('activeAdminExtension');
+                      localStorage.removeItem('activeAdminName');
+                      localStorage.removeItem('activeAdminAvatar');
+                      localStorage.removeItem('activeAdminActivated');
+                      window.dispatchEvent(new Event('admin-session-change'));
+                    }
+                    setLoggedInArtist(null);
+                  }}
+                  className="px-4 py-2 text-sm font-bold text-red-600 hover:text-red-700 bg-white hover:bg-red-50 rounded-full border border-red-200 shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                  {lang === 'vi' ? 'Đăng xuất' : 'Logout'}
+                </button>
               </div>
             )
           ) : (
@@ -2192,23 +2415,58 @@ export default function ChorusVNLanding() {
                   </p>
                 </div>
 
+                {!regSuccess && (
+                  <div>
+                    <button
+                      type="button"
+                      onClick={handleGoogleSignIn}
+                      disabled={regSubmitting || googleLoading}
+                      className="w-full bg-white hover:bg-neutral-50 text-neutral-800 font-bold py-3 px-4 rounded-xl border border-neutral-200 shadow-sm flex items-center justify-center gap-3 transition-all cursor-pointer hover:border-neutral-400 active:scale-[0.98] text-xs"
+                    >
+                      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                      </svg>
+                      <span>{googleLoading ? 'Đang kết nối Google...' : 'Đăng ký nhanh bằng Gmail'}</span>
+                    </button>
+
+                    <div className="my-3.5 flex items-center gap-3">
+                      <div className="h-px bg-neutral-200 flex-1"></div>
+                      <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-wider">
+                        HOẶC NHẬP THÔNG TIN
+                      </span>
+                      <div className="h-px bg-neutral-200 flex-1"></div>
+                    </div>
+                  </div>
+                )}
+
                 {regSuccess ? (
                   <div className="space-y-6 text-center py-6">
                     <div className="w-16 h-16 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center mx-auto text-emerald-600 animate-bounce">
                       <CheckCircle2 className="w-8 h-8" />
                     </div>
-                    <div className="space-y-4 text-center bg-neutral-50 p-6 rounded-2xl border border-neutral-100">
-                      <h4 className="text-xl font-black text-neutral-900 text-center">Đăng ký thành công.</h4>
-                      <p className="text-neutral-600 text-sm leading-relaxed text-center">
-                        Trong thời gian chờ quản trị viên kích hoạt tài khoản, bạn có thể khám phá các tính năng của chorus.vn nhé.
+                    <div className="space-y-2 text-center bg-neutral-50 p-6 rounded-2xl border border-neutral-100">
+                      <h4 className="text-lg font-black text-neutral-900">{t('registerSuccessTitle')}</h4>
+                      <p className="text-xs text-neutral-600 font-sans max-w-xs mx-auto">
+                        {t('registerSuccessDesc1').replace('{username}', regUsername)}
+                      </p>
+                      <p className="text-xs text-neutral-400 font-sans max-w-xs mx-auto">
+                        {t('registerSuccessDesc2').replace('{extension}', regExtension)}
                       </p>
                     </div>
-                    <button
-                      onClick={() => setShowRegisterModal(false)}
-                      className="w-full bg-black hover:bg-neutral-800 text-white font-extrabold py-3.5 px-6 rounded-xl text-xs transition-all cursor-pointer shadow-sm"
-                    >
-                      Khám Phá Ngay
-                    </button>
+                    <div className="pt-2">
+                      <button
+                        onClick={() => {
+                          setShowRegisterModal(false);
+                          setRegSuccess(false);
+                        }}
+                        className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-bold py-3.5 px-6 rounded-xl transition-all cursor-pointer text-xs"
+                      >
+                        {t('closeWindow')}
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <form
@@ -2216,17 +2474,9 @@ export default function ChorusVNLanding() {
                       e.preventDefault();
                       setRegError('');
                       setRegSubmitting(true);
-                      // Scroll to top immediately to show submitting state / keep focus on feedback area
                       registerModalBodyRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
                       
                       try {
-                        console.log('[Registration] Sending register payload:', {
-                          artistName: regArtistName,
-                          username: regUsername,
-                          extension: regExtension,
-                          email: regEmail
-                        });
-
                         const res = await fetch('/api/public/register', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
@@ -2237,17 +2487,14 @@ export default function ChorusVNLanding() {
                             email: regEmail,
                             password: regPassword,
                             captchaAnswer,
-                            captchaToken
+                            captchaToken,
+                            isGoogleEmailVerified
                           })
                         });
                         const data = await res.json();
-                        console.log('[Registration] Received response:', data);
 
                         if (res.ok) {
                           setRegSuccess(data.message || 'Đăng ký thành công!');
-                          console.log('%c[Registration Success] Approve this user in /acp control panel', 'color: green; font-weight: bold;');
-                          
-                          // Auto-login!
                           if (data.token && data.extension) {
                             const avatar = data.artist?.aboutMe?.avatarUrl || data.artist?.homeCoverUrl || '';
                             if ((window as any).syncLoginSession) {
@@ -2256,7 +2503,7 @@ export default function ChorusVNLanding() {
                                 data.extension,
                                 data.artist?.artistName || data.artist?.username || data.extension,
                                 avatar,
-                                false // newly registered is not activated yet
+                                false
                               );
                             } else {
                               localStorage.setItem('adminToken', data.token);
@@ -2271,15 +2518,13 @@ export default function ChorusVNLanding() {
                           }
                         } else {
                           setRegError(data.error || 'Có lỗi xảy ra, vui lòng thử lại!');
-                          fetchCaptcha(); // reload captcha on error
+                          fetchCaptcha();
                         }
                       } catch (err) {
-                        console.error('[Registration] Network error:', err);
                         setRegError('Lỗi kết nối máy chủ!');
                         fetchCaptcha();
                       } finally {
                         setRegSubmitting(false);
-                        // Ensure it stays at top to display success or error
                         setTimeout(() => {
                           registerModalBodyRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
                         }, 50);
@@ -2363,25 +2608,44 @@ export default function ChorusVNLanding() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block">
-                        {t('emailLabel')}
-                      </label>
-                      <input
-                        type="email"
-                        required
-                        disabled={regSubmitting}
-                        value={regEmail}
-                        onChange={(e) => setRegEmail(e.target.value)}
-                        placeholder="artist@gmail.com"
-                        className="w-full bg-neutral-50 border border-neutral-200/80 rounded-xl px-4 py-3 text-neutral-800 text-xs font-medium focus:outline-none focus:border-neutral-400 focus:bg-white transition-all font-sans"
-                      />
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block">
+                          {t('emailLabel')}
+                        </label>
+                        {isGoogleEmailVerified && (
+                          <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> Đồng bộ từ Gmail
+                          </span>
+                        )}
+                      </div>
+                      <div className="relative flex items-center">
+                        {isGoogleEmailVerified && (
+                          <div className="absolute left-3.5 flex items-center justify-center pointer-events-none z-10">
+                            <svg className="w-4 h-4" viewBox="0 0 24 24">
+                              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                            </svg>
+                          </div>
+                        )}
+                        <input
+                          type="email"
+                          required
+                          disabled={regSubmitting || isGoogleEmailVerified}
+                          value={regEmail}
+                          onChange={(e) => setRegEmail(e.target.value)}
+                          placeholder="artist@gmail.com"
+                          className={`w-full border rounded-xl ${isGoogleEmailVerified ? 'pl-10 pr-4' : 'px-4'} py-3 text-xs font-medium focus:outline-none transition-all font-sans ${isGoogleEmailVerified ? 'bg-emerald-50/60 border-emerald-300 text-emerald-950 font-bold' : 'bg-neutral-50 border-neutral-200/80 text-neutral-800 focus:border-neutral-400 focus:bg-white'}`}
+                        />
+                      </div>
                     </div>
 
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block">
                         {t('passwordLabel')}
                       </label>
-                                            <PasswordInput
+                      <PasswordInput
                         required
                         disabled={regSubmitting}
                         value={regPassword}
@@ -2391,44 +2655,46 @@ export default function ChorusVNLanding() {
                       />
                     </div>
 
-                    {/* Captcha Block */}
-                    <div className="space-y-1.5 bg-neutral-50 border border-neutral-200/60 p-4 rounded-2xl">
-                      <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block mb-1">
-                        {t('captchaLabel')}
-                      </label>
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="rounded-xl overflow-hidden border border-neutral-200 shrink-0 bg-neutral-900 select-none cursor-pointer flex items-center justify-center text-[10px] text-neutral-400 font-mono"
-                          style={{ width: '130px', height: '45px' }}
-                          onClick={fetchCaptcha}
-                          title={t('captchaClickTooltip')}
-                        >
-                          {captchaSvg ? (
-                            <div dangerouslySetInnerHTML={{ __html: captchaSvg }} className="w-full h-full" />
-                          ) : (
-                            <span className="animate-pulse">{t('loading')}</span>
-                          )}
+                    {/* Captcha Block (Skip if Google Verified) */}
+                    {!isGoogleEmailVerified && (
+                      <div className="space-y-1.5 bg-neutral-50 border border-neutral-200/60 p-4 rounded-2xl">
+                        <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block mb-1">
+                          {t('captchaLabel')}
+                        </label>
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="rounded-xl overflow-hidden border border-neutral-200 shrink-0 bg-neutral-900 select-none cursor-pointer flex items-center justify-center text-[10px] text-neutral-400 font-mono"
+                            style={{ width: '130px', height: '45px' }}
+                            onClick={fetchCaptcha}
+                            title={t('captchaClickTooltip')}
+                          >
+                            {captchaSvg ? (
+                              <div dangerouslySetInnerHTML={{ __html: captchaSvg }} className="w-full h-full" />
+                            ) : (
+                              <span className="animate-pulse">{t('loading')}</span>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={fetchCaptcha}
+                            disabled={regSubmitting}
+                            className="p-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 rounded-xl transition-colors cursor-pointer flex items-center justify-center"
+                            title={t('captchaReloadTooltip')}
+                          >
+                            <RefreshCw className="w-4 h-4" />
+                          </button>
+                          <input
+                            type="text"
+                            required
+                            disabled={regSubmitting}
+                            value={captchaAnswer}
+                            onChange={(e) => setCaptchaAnswer(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+                            placeholder={t('captchaPlaceholder')}
+                            className="w-full bg-white border border-neutral-200/80 rounded-xl px-4 py-3 text-neutral-850 text-xs font-black tracking-widest uppercase focus:outline-none focus:border-neutral-400 transition-all font-sans"
+                          />
                         </div>
-                        <button
-                          type="button"
-                          onClick={fetchCaptcha}
-                          disabled={regSubmitting}
-                          className="p-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 rounded-xl transition-colors cursor-pointer flex items-center justify-center"
-                          title={t('captchaReloadTooltip')}
-                        >
-                          <RefreshCw className="w-4 h-4" />
-                        </button>
-                        <input
-                          type="text"
-                          required
-                          disabled={regSubmitting}
-                          value={captchaAnswer}
-                          onChange={(e) => setCaptchaAnswer(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
-                          placeholder={t('captchaPlaceholder')}
-                          className="w-full bg-white border border-neutral-200/80 rounded-xl px-4 py-3 text-neutral-850 text-xs font-black tracking-widest uppercase focus:outline-none focus:border-neutral-400 transition-all font-sans"
-                        />
                       </div>
-                    </div>
+                    )}
 
                     {regError && (
                       <div className="p-3.5 rounded-xl bg-red-50 text-red-600 border border-red-100 text-xs font-semibold animate-pulse">
@@ -2529,6 +2795,29 @@ export default function ChorusVNLanding() {
                     {!isLoggingIn && <ArrowRight className="w-4 h-4" />}
                   </button>
                 </form>
+
+                <div className="my-4 flex items-center gap-3">
+                  <div className="h-px bg-neutral-200 flex-1"></div>
+                  <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
+                    HOẶC
+                  </span>
+                  <div className="h-px bg-neutral-200 flex-1"></div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  disabled={isLoggingIn || googleLoading}
+                  className="w-full bg-white hover:bg-neutral-50 text-neutral-800 font-bold py-3.5 px-4 rounded-xl border border-neutral-300 shadow-sm flex items-center justify-center gap-3 transition-all cursor-pointer hover:border-neutral-400 active:scale-[0.98] text-xs"
+                >
+                  <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                  </svg>
+                  <span>{googleLoading ? 'Đang kết nối Google...' : 'Đồng bộ / Đăng nhập bằng Gmail'}</span>
+                </button>
               </div>
             </motion.div>
           </div>

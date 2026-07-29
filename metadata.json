@@ -1,8 +1,0 @@
-{
-  "name": "sắp xong tiểu sử, chuẩn bị cấu hình db: Chorus.vn",
-  "description": "Website quản lý và phát hành demo nhạc dành cho nhạc sĩ.",
-  "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
-}

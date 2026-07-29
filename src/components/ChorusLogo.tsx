@@ -1,7 +1,15 @@
 import React from 'react';
 import { motion } from 'motion/react';
+import { BBBLogo } from './BBBLogo';
+import { getPlatformDomain } from '../utils/platform';
 
-export const ChorusLogo = ({ className = "w-10 h-10" }: { className?: string }) => {
+export const ChorusLogo = ({ className = "w-10 h-10", forceType }: { className?: string; forceType?: 'chorus' | 'bbb' }) => {
+  const isBBB = forceType === 'bbb' || (forceType !== 'chorus' && getPlatformDomain() === 'bbb.bz');
+
+  if (isBBB) {
+    return <BBBLogo className={className} />;
+  }
+
   return (
     <svg 
       className={`select-none pointer-events-none transition-all duration-300 ${className}`}

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChorusLogo } from './ChorusLogo';
-import { Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X, LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home, Upload, MessageSquare, Send, AlertTriangle, Disc3, Bell, ChevronLeft, Mail, Palette, LayoutTemplate, GripVertical, Type } from 'lucide-react';
+import { Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X, LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home, Upload, MessageSquare, Send, AlertTriangle, Disc3, Bell, ChevronLeft, Mail, Palette, LayoutTemplate, GripVertical, Type, Eye, EyeOff, DollarSign, ChevronUp, ChevronDown } from 'lucide-react';
+import { getPlatformDomain, getPlatformBrandName, getArtistSubdomainUrl } from '../utils/platform';
 
 
 interface Artist {
@@ -22,6 +23,8 @@ interface Artist {
   artistBio?: string;
   isSpecial?: boolean;
   extraUsernames?: string;
+  roleId?: string;
+  maxSongs?: number | string;
 }
 
 const DEFAULT_TEMPLATE_NAMES: Record<string, string> = {
@@ -46,6 +49,8 @@ const DEFAULT_TEMPLATE_NAMES: Record<string, string> = {
 };
 
 export default function ACPControlPanel() {
+  const showAlert = (window as any).showAlert || (async (msg: string) => window.alert(msg));
+
   const [token, setToken] = useState<string | null>(localStorage.getItem('masterToken'));
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -53,8 +58,24 @@ export default function ACPControlPanel() {
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState('');
   const [landingConfig, setLandingConfig] = useState<any>({});
+  const [rolesMatrix, setRolesMatrix] = useState<any[]>([]);
+  const [matrixSaving, setMatrixSaving] = useState(false);
+  const [matrixMsg, setMatrixMsg] = useState<{ type: string; text: string }>({ type: '', text: '' });
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
 
-  // ACP Navigation / Tab system
+  useEffect(() => {
+    if (token) {
+      fetch('/api/acp/roles-matrix', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) setRolesMatrix(data);
+        })
+        .catch(() => {});
+    }
+  }, [token]);
+
   const [actionConfirm, setActionConfirm] = useState<{
     isOpen: boolean;
     title: string;
@@ -84,7 +105,8 @@ export default function ACPControlPanel() {
       });
     });
   };
-  const [activeTab, setActiveTab] = useState<'artists' | 'landing' | 'tickets' | 'templates' | 'faq' | 'keywords' | 'content' | 'roles' | 'vouchers' | 'admin_theme'>('artists');
+
+  const [activeTab, setActiveTab] = useState<'artists' | 'landing' | 'tickets' | 'templates' | 'faq' | 'keywords' | 'content' | 'roles' | 'vouchers' | 'pricing' | 'admin_theme'>('artists');
   const [showComposeModal, setShowComposeModal] = useState(false);
   const [artistCurrentPage, setArtistCurrentPage] = useState(0);
   const [artistPageSize, setArtistPageSize] = useState<number>(20); // 20, 50, 100
@@ -113,6 +135,28 @@ export default function ACPControlPanel() {
   const [chatText, setChatText] = useState('');
   const [isHandlingTicketAction, setIsHandlingTicketAction] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Pricing state
+  const [pricingSettings, setPricingSettings] = useState<any>({
+    free: { monthlyOriginalPrice: 0, monthlySalePrice: 0, yearlyOriginalPrice: 0, yearlySalePrice: 0, features: [] },
+    pro: { monthlyOriginalPrice: 150000, monthlySalePrice: 99000, yearlyOriginalPrice: 1800000, yearlySalePrice: 890000, features: [] },
+    vip: { monthlyOriginalPrice: 350000, monthlySalePrice: 249000, yearlyOriginalPrice: 4200000, yearlySalePrice: 1990000, features: [] }
+  });
+  const [pricingSaving, setPricingSaving] = useState(false);
+  const [pricingMsg, setPricingMsg] = useState<{ type: 'success' | 'error' | ''; text: string }>({ type: '', text: '' });
+
+  useEffect(() => {
+    if (token && activeTab === 'pricing') {
+      fetch('/api/acp/pricing', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data && !data.error) setPricingSettings(data);
+      })
+      .catch(() => {});
+    }
+  }, [token, activeTab]);
 
   useEffect(() => {
     if (chatEndRef.current) {
@@ -144,6 +188,7 @@ export default function ACPControlPanel() {
   const [landingHeroSubtitle, setLandingHeroSubtitle] = useState('');
   const [landingHeroDesc, setLandingHeroDesc] = useState('');
   const [landingFooterText, setLandingFooterText] = useState('');
+  const [showArtistsSection, setShowArtistsSection] = useState<boolean>(true);
   const [systemIp, setSystemIp] = useState('');
   const [adminUsername, setAdminUsername] = useState('acxuantai');
   const [adminPassword, setAdminPassword] = useState('MatKhauDay123');
@@ -230,6 +275,11 @@ export default function ACPControlPanel() {
   const [artistRoleId, setArtistRoleId] = useState('');
   const [artistMaxSongs, setArtistMaxSongs] = useState<number | ''>('');
   const [artistExtraUsernames, setArtistExtraUsernames] = useState('');
+
+  // Password Visibility Toggle States
+  const [showLoginPass, setShowLoginPass] = useState(false);
+  const [showAdminPass, setShowAdminPass] = useState(false);
+  const [showModalPass, setShowModalPass] = useState(false);
 
   const uploadWithProgress = (file: File, setProgress: (p: number) => void): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -365,6 +415,7 @@ export default function ACPControlPanel() {
         setLandingHeroSubtitle(data.heroSubtitle || 'Nơi những ca khúc khởi đầu.');
         setLandingHeroDesc(data.heroDescription || '');
         setLandingFooterText(data.footerText || '');
+        setShowArtistsSection(data.showArtistsSection !== false);
         setSystemIp(data.systemIp || '');
         setAdminUsername(data.adminUsername || 'acxuantai');
         setAdminPassword(data.adminPassword || 'MatKhauDay123');
@@ -620,10 +671,13 @@ export default function ACPControlPanel() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem('masterToken');
+    try {
+      await fetch('/api/acp/logout', { method: 'POST', credentials: 'include' });
+    } catch (e) {}
     setToken(null);
-    fetch('/api/acp/logout', { method: 'POST' }).catch(() => {});
+    window.location.href = '/master';
   };
 
   const handleCreateArtist = async (e: React.FormEvent) => {
@@ -1002,6 +1056,7 @@ export default function ACPControlPanel() {
           menuAboutVi,
           menuBioVi,
           globalLayoutSections,
+          showArtistsSection,
           cloudSyncEnabled,
           defaultAdminTheme,
           demoSongInfo: { title: demoSongTitle, artist: demoSongArtist, lyrics: demoSongLyrics },
@@ -1398,13 +1453,23 @@ export default function ACPControlPanel() {
 
             <div>
               <label className="block text-xs text-neutral-400 font-bold mb-1.5 uppercase tracking-wider">Password</label>
-              <input 
-                type="password" 
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-              />
+              <div className="relative">
+                <input 
+                  type={showLoginPass ? "text" : "password"} 
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 pr-11 rounded-xl focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                />
+                <button 
+                  type="button"
+                  onClick={() => setShowLoginPass(!showLoginPass)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white p-1 transition-colors"
+                  title={showLoginPass ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                >
+                  {showLoginPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             {loginErr && (
@@ -1554,6 +1619,17 @@ export default function ACPControlPanel() {
             >
               <Lock className="w-4.5 h-4.5" />
               <span>Voucher</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('pricing')}
+              className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+                activeTab === 'pricing'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <DollarSign className="w-4.5 h-4.5" />
+              <span>Bảng Giá & Gói Cước</span>
             </button>
         </div>
       </aside>
@@ -1787,44 +1863,102 @@ export default function ACPControlPanel() {
                           </td>
                           
                           <td className="p-4">
-                            <div className="flex items-center gap-2">
-                              {artist.activated !== false ? (
-                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)] ml-2" title="Hoạt Động"></div>
+                            <div className="flex flex-col gap-2">
+                              {/* 2-Tier Status Badge */}
+                              {artist.activated === false ? (
+                                artist.emailVerified === true ? (
+                                  <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center gap-1.5 w-fit shadow-xs" title="Tài khoản đang bị khóa nhưng đã xác thực OTP email thành công - Sẵn sàng duyệt">
+                                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                                    🔒 Khóa • ✉️ Đã Xác Thực
+                                  </span>
+                                ) : (
+                                  <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center gap-1.5 w-fit shadow-xs" title="Tài khoản đang bị khóa và chưa nhập OTP xác thực email">
+                                    <span className="w-2 h-2 rounded-full bg-rose-500" />
+                                    🔒 Khóa • ⚠️ Chưa Xác Thực
+                                  </span>
+                                )
                               ) : (
-                                <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse ml-2" title="Chờ Duyệt"></div>
+                                artist.verified === true ? (
+                                  <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-sky-500/15 text-sky-400 border border-sky-500/30 flex items-center gap-1.5 w-fit shadow-xs" title="Tài khoản đang hoạt động và ĐÃ ĐƯỢC XÁC MINH chính chủ (Có Tích Xanh)">
+                                    <span className="w-2 h-2 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.8)]" />
+                                    🟢 Hoạt Động • 🔷 Đã Xác Minh ✓
+                                  </span>
+                                ) : (
+                                  <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 w-fit shadow-xs" title="Tài khoản đang hoạt động nhưng CHƯA XÁC MINH chính chủ (Chưa có Tích Xanh)">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                                    🟢 Hoạt Động • 👤 Chưa Xác Minh
+                                  </span>
+                                )
                               )}
-                              <button
-                                onClick={async () => {
-                                  try {
-                                    const nextActivatedStatus = artist.activated === false ? true : false;
-                                    const res = await fetch('/api/acp/artists/update', {
-                                      method: 'POST',
-                                      headers: {
-                                        'Content-Type': 'application/json',
-                                        'Authorization': `Bearer ${token}`
-                                      },
-                                      body: JSON.stringify({
-                                        originalUsername: artist.username,
-                                        activated: nextActivatedStatus
-                                      })
-                                    });
-                                    if (res.ok) {
-                                      fetchArtists();
-                                    } else {
-                                      alert("Lỗi khi thay đổi trạng thái kích hoạt!");
+
+                              {/* Status Action Buttons */}
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      const nextActivatedStatus = artist.activated === false ? true : false;
+                                      const res = await fetch('/api/acp/artists/update', {
+                                        method: 'POST',
+                                        headers: {
+                                          'Content-Type': 'application/json',
+                                          'Authorization': `Bearer ${token}`
+                                        },
+                                        body: JSON.stringify({
+                                          originalUsername: artist.username,
+                                          activated: nextActivatedStatus
+                                        })
+                                      });
+                                      if (res.ok) {
+                                        fetchArtists();
+                                      } else {
+                                        alert("Lỗi khi thay đổi trạng thái kích hoạt!");
+                                      }
+                                    } catch (e) {
+                                      alert("Lỗi kết nối mạng!");
                                     }
-                                  } catch (e) {
-                                    alert("Lỗi kết nối mạng!");
-                                  }
-                                }}
-                                className={`text-[10px] px-2 py-0.5 rounded-lg font-bold transition-all cursor-pointer border ${
-                                  artist.activated !== false
-                                    ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border-white/5'
-                                    : 'bg-purple-600 hover:bg-purple-500 text-white border-purple-500/50'
-                                }`}
-                              >
-                                {artist.activated !== false ? 'Khóa' : 'Kích hoạt'}
-                              </button>
+                                  }}
+                                  className={`text-[10px] px-2 py-0.5 rounded-lg font-bold transition-all cursor-pointer border ${
+                                    artist.activated !== false
+                                      ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border-white/5'
+                                      : 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500/50 shadow-sm'
+                                  }`}
+                                >
+                                  {artist.activated !== false ? 'Khóa' : 'Kích Hoạt'}
+                                </button>
+
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      const res = await fetch('/api/acp/artists/update', {
+                                        method: 'POST',
+                                        headers: {
+                                          'Content-Type': 'application/json',
+                                          'Authorization': `Bearer ${token}`
+                                        },
+                                        body: JSON.stringify({
+                                          originalUsername: artist.username,
+                                          verified: !artist.verified
+                                        })
+                                      });
+                                      if (res.ok) {
+                                        fetchArtists();
+                                      } else {
+                                        alert("Lỗi khi thay đổi trạng thái Tích Xanh!");
+                                      }
+                                    } catch (e) {
+                                      alert("Lỗi kết nối mạng!");
+                                    }
+                                  }}
+                                  className={`text-[10px] px-2 py-0.5 rounded-lg font-bold transition-all cursor-pointer border ${
+                                    artist.verified === true
+                                      ? 'bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border-sky-500/40'
+                                      : 'bg-neutral-800 hover:bg-neutral-700 text-neutral-400 border-white/5'
+                                  }`}
+                                  title="Bật/Tắt Tích Xanh chính chủ cho nghệ sĩ"
+                                >
+                                  {artist.verified === true ? 'Bỏ Tích Xanh' : '+ Tích Xanh'}
+                                </button>
+                              </div>
                             </div>
                           </td>
                           <td className="p-4">
@@ -1922,7 +2056,7 @@ export default function ACPControlPanel() {
               <div className="mb-6">
                 <h2 className="text-xl font-black flex items-center gap-2">
                   <Layout className="w-5.5 h-5.5 text-purple-400" />
-                  <span>Cấu hình giao diện & mô tả Chorus.vn</span>
+                  <span>Cấu hình giao diện & mô tả {getPlatformBrandName()}</span>
                 </h2>
                 <p className="text-neutral-400 text-xs mt-1">
                   Điều chỉnh tiêu đề, slogan, phần mô tả chính và chữ chân trang xuất hiện trên trang chủ.
@@ -1966,6 +2100,26 @@ export default function ACPControlPanel() {
               </div>
 
               <form onSubmit={handleSaveLandingConfig} className="space-y-6">
+                {/* Global Toggle: Hiển thị mục danh sách Kho Nhạc Nghệ Sĩ trên trang chủ */}
+                <div className="bg-purple-950/40 border border-purple-500/30 rounded-2xl p-5 flex items-center justify-between shadow-lg">
+                  <div>
+                    <h3 className="font-extrabold text-white text-sm flex items-center gap-2">
+                      <Eye className="w-4 h-4 text-purple-400" />
+                      Hiển thị Mục Kho Nhạc Cá Nhân Các Nghệ Sĩ Trên Trang Chủ
+                    </h3>
+                    <p className="text-xs text-neutral-400 mt-1 leading-relaxed">
+                      Bật: Trang chủ sẽ hiện mục Kho Nhạc Cá Nhân Các Nghệ Sĩ.<br />
+                      <span className="text-amber-400 font-semibold">Tắt: Nút này sẽ ẨN HOÀN TOÀN mục này (bao gồm cả tiêu đề & danh sách) khỏi Trang Chủ.</span>
+                    </p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={showArtistsSection}
+                    onChange={(e) => setShowArtistsSection(e.target.checked)}
+                    className="w-6 h-6 accent-purple-500 rounded cursor-pointer shrink-0 ml-4"
+                  />
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400 mb-1.5">
@@ -2088,12 +2242,22 @@ export default function ACPControlPanel() {
                       <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-400 mb-1.5">
                         Mật khẩu
                       </label>
-                      <input 
-                        type="password" 
-                        value={adminPassword}
-                        onChange={(e) => setAdminPassword(e.target.value)}
-                        className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-rose-500 focus:outline-none"
-                      />
+                      <div className="relative">
+                        <input 
+                          type={showAdminPass ? "text" : "password"} 
+                          value={adminPassword}
+                          onChange={(e) => setAdminPassword(e.target.value)}
+                          className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 pr-11 rounded-xl focus:border-rose-500 focus:outline-none"
+                        />
+                        <button 
+                          type="button"
+                          onClick={() => setShowAdminPass(!showAdminPass)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white p-1 transition-colors"
+                          title={showAdminPass ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                        >
+                          {showAdminPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
                     </div>
                   </div>
                   <p className="text-rose-300/70 text-[11px] mt-1.5 leading-relaxed bg-rose-500/10 p-2 rounded-lg">
@@ -2913,40 +3077,88 @@ export default function ACPControlPanel() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Liquid Glass */}
-                  <div className="bg-neutral-800/40 p-4 rounded-xl border border-white/5 flex items-center justify-between">
-                    <div>
-                      <div className="text-xs font-bold text-neutral-200">Giao diện: Liquid Glass</div>
-                      <div className="text-[10px] text-neutral-400">Giao diện kính mờ mặc định</div>
-                    </div>
-                    <label className="flex items-center gap-2 cursor-pointer bg-black/30 px-3 py-1.5 rounded-lg border border-white/5 hover:border-white/10 select-none">
-                      <input 
-                        type="checkbox" 
-                        checked={!!adminThemesVip['liquid-glass']}
-                        onChange={(e) => setAdminThemesVip({...adminThemesVip, 'liquid-glass': e.target.checked})}
-                        className="w-4 h-4 text-yellow-500 rounded focus:ring-yellow-500 bg-neutral-950 border-white/10 cursor-pointer"
-                      />
-                      <span className="text-xs text-yellow-500 font-extrabold tracking-wider">VIP</span>
-                    </label>
-                  </div>
+                <div className="grid grid-cols-1 gap-4">
+                  {[
+                    { id: 'liquid-glass', name: 'Giao diện: Liquid Glass', desc: 'Giao diện kính mờ mặc định (Thẻ đứng)', defaultPro: false, defaultVip: false },
+                    { id: 'gold', name: 'Giao diện: Gold Luxury', desc: 'Giao diện hoàng gia luxury (Thẻ đứng)', defaultPro: true, defaultVip: true },
+                    { id: 'musician', name: 'Giao diện: Dreamy Theme', desc: 'Giao diện mộng mơ nghệ sĩ (Thẻ ngang)', defaultPro: true, defaultVip: false },
+                    { id: 'musician2', name: 'Giao diện: Musician Theme (Vinyl 3D)', desc: 'Giao diện nhạc sĩ đĩa than 3D xoay nổi bật trên kệ gỗ', defaultPro: true, defaultVip: false },
+                  ].map((item) => {
+                    const currentVal = adminThemesVip[item.id];
+                    let isPro = item.defaultPro;
+                    let isVip = item.defaultVip;
 
-                  {/* Gold Theme */}
-                  <div className="bg-neutral-800/40 p-4 rounded-xl border border-white/5 flex items-center justify-between">
-                    <div>
-                      <div className="text-xs font-bold text-neutral-200">Giao diện: Gold</div>
-                      <div className="text-[10px] text-neutral-400">Giao diện hoàng gia luxury</div>
-                    </div>
-                    <label className="flex items-center gap-2 cursor-pointer bg-black/30 px-3 py-1.5 rounded-lg border border-white/5 hover:border-white/10 select-none">
-                      <input 
-                        type="checkbox" 
-                        checked={adminThemesVip['gold'] !== false}
-                        onChange={(e) => setAdminThemesVip({...adminThemesVip, 'gold': e.target.checked})}
-                        className="w-4 h-4 text-yellow-500 rounded focus:ring-yellow-500 bg-neutral-950 border-white/10 cursor-pointer"
-                      />
-                      <span className="text-xs text-yellow-500 font-extrabold tracking-wider">VIP</span>
-                    </label>
-                  </div>
+                    if (typeof currentVal === 'object' && currentVal !== null) {
+                      isVip = !!currentVal.isVip;
+                      isPro = isVip || !!currentVal.isPro;
+                    } else if (currentVal === true) {
+                      isPro = true;
+                      isVip = true;
+                    } else if (currentVal === false) {
+                      isPro = false;
+                      isVip = false;
+                    }
+
+                    const handleProChange = (checked: boolean) => {
+                      const nextPro = checked;
+                      const nextVip = nextPro ? isVip : false;
+                      setAdminThemesVip({
+                        ...adminThemesVip,
+                        [item.id]: { isPro: nextPro, isVip: nextVip }
+                      });
+                    };
+
+                    const handleVipChange = (checked: boolean) => {
+                      const nextVip = checked;
+                      const nextPro = nextVip ? true : isPro;
+                      setAdminThemesVip({
+                        ...adminThemesVip,
+                        [item.id]: { isPro: nextPro, isVip: nextVip }
+                      });
+                    };
+
+                    return (
+                      <div key={item.id} className="bg-neutral-800/60 p-4 sm:p-5 rounded-2xl border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs sm:text-sm font-bold text-neutral-100">{item.name}</span>
+                            {isVip ? (
+                              <span className="px-2 py-0.5 text-[9px] font-black bg-yellow-500 text-stone-950 rounded-full">VIP</span>
+                            ) : isPro ? (
+                              <span className="px-2 py-0.5 text-[9px] font-black bg-blue-500 text-white rounded-full">PRO</span>
+                            ) : (
+                              <span className="px-2 py-0.5 text-[9px] font-black bg-stone-700 text-stone-300 rounded-full">FREE</span>
+                            )}
+                          </div>
+                          <div className="text-[11px] text-neutral-400 mt-1">{item.desc}</div>
+                        </div>
+
+                        <div className="flex items-center gap-3 shrink-0">
+                          {/* Checkbox PRO */}
+                          <label className="flex items-center gap-2 cursor-pointer bg-black/40 px-3 py-1.5 rounded-lg border border-white/10 hover:border-white/20 select-none transition-colors">
+                            <input 
+                              type="checkbox" 
+                              checked={isPro}
+                              onChange={(e) => handleProChange(e.target.checked)}
+                              className="w-4 h-4 text-blue-500 rounded focus:ring-blue-500 bg-neutral-950 border-white/20 cursor-pointer"
+                            />
+                            <span className="text-xs text-blue-400 font-extrabold tracking-wider">PRO</span>
+                          </label>
+
+                          {/* Checkbox VIP */}
+                          <label className="flex items-center gap-2 cursor-pointer bg-black/40 px-3 py-1.5 rounded-lg border border-white/10 hover:border-white/20 select-none transition-colors">
+                            <input 
+                              type="checkbox" 
+                              checked={isVip}
+                              onChange={(e) => handleVipChange(e.target.checked)}
+                              className="w-4 h-4 text-yellow-500 rounded focus:ring-yellow-500 bg-neutral-950 border-white/20 cursor-pointer"
+                            />
+                            <span className="text-xs text-yellow-400 font-extrabold tracking-wider">VIP</span>
+                          </label>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
           </div>
@@ -3388,7 +3600,8 @@ export default function ACPControlPanel() {
                     code: (document.getElementById('new-voucher-code') as HTMLInputElement).value,
                     increaseSongs: (document.getElementById('new-voucher-songs') as HTMLInputElement).value,
                     increaseTemplates: (document.getElementById('new-voucher-templates') as HTMLInputElement).value,
-                    vipMonths: (document.getElementById('new-voucher-vip') as HTMLInputElement).value
+                    vipMonths: (document.getElementById('new-voucher-vip') as HTMLInputElement).value,
+                    discountPercent: (document.getElementById('new-voucher-discount') as HTMLInputElement).value
                   })
                 });
                 if (res.ok) {
@@ -3398,6 +3611,7 @@ export default function ACPControlPanel() {
                   (document.getElementById('new-voucher-songs') as HTMLInputElement).value = '0';
                   (document.getElementById('new-voucher-templates') as HTMLInputElement).value = '0';
                   (document.getElementById('new-voucher-vip') as HTMLInputElement).value = '0';
+                  (document.getElementById('new-voucher-discount') as HTMLInputElement).value = '0';
                 } else {
                   const data = await res.json();
                   alert(data.error || 'Lỗi');
@@ -3406,7 +3620,7 @@ export default function ACPControlPanel() {
                 alert('Lỗi');
               }
             }} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Mã Voucher *</label>
                   <input type="text" id="new-voucher-code" required placeholder="Nhập mã..." className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none" />
@@ -3423,8 +3637,12 @@ export default function ACPControlPanel() {
                   <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Tháng VIP</label>
                   <input type="number" id="new-voucher-vip" defaultValue="0" className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none" />
                 </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1.5">Giảm % Bill</label>
+                  <input type="number" id="new-voucher-discount" defaultValue="0" min="0" max="100" placeholder="VD: 10, 20..." className="w-full bg-black/40 text-white border border-emerald-500/40 px-4 py-3 rounded-xl focus:border-emerald-500 focus:outline-none" />
+                </div>
               </div>
-              <button type="submit" className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-6 rounded-xl">Thêm Voucher</button>
+              <button type="submit" className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-6 rounded-xl cursor-pointer">Thêm Voucher</button>
             </form>
 
             <div className="overflow-x-auto">
@@ -3432,7 +3650,7 @@ export default function ACPControlPanel() {
                 <thead>
                   <tr className="border-b border-white/5 bg-neutral-900/50">
                     <th className="p-4 text-xs text-neutral-400 uppercase font-bold">Mã Voucher</th>
-                    <th className="p-4 text-xs text-neutral-400 uppercase font-bold">Quyền lợi</th>
+                    <th className="p-4 text-xs text-neutral-400 uppercase font-bold">Quyền lợi / Ưu đãi</th>
                     <th className="p-4 text-xs text-neutral-400 uppercase font-bold">Số lần SD</th>
                     <th className="p-4 text-xs text-neutral-400 uppercase font-bold">Ngày tạo</th>
                     <th className="p-4 text-xs text-neutral-400 uppercase font-bold text-right pr-6">Hành động</th>
@@ -3443,9 +3661,11 @@ export default function ACPControlPanel() {
                     <tr key={`${v.id || ''}-${idx}`} className="border-b border-white/5">
                       <td className="p-4 text-sm font-mono text-purple-400">{v.code}</td>
                       <td className="p-4 text-sm text-neutral-300">
-                        {v.increaseSongs > 0 && <span className="block">+ {v.increaseSongs} bài</span>}
-                        {v.increaseTemplates > 0 && <span className="block">+ {v.increaseTemplates} giao diện</span>}
-                        {v.vipMonths > 0 && <span className="block">+ {v.vipMonths} tháng VIP</span>}
+                        {v.increaseSongs > 0 && <span className="block text-xs">+ {v.increaseSongs} bài</span>}
+                        {v.increaseTemplates > 0 && <span className="block text-xs">+ {v.increaseTemplates} giao diện</span>}
+                        {v.vipMonths > 0 && <span className="block text-xs">+ {v.vipMonths} tháng VIP</span>}
+                        {v.discountPercent > 0 && <span className="inline-block mt-1 px-2.5 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg text-xs font-bold">Giảm {v.discountPercent}% tổng bill</span>}
+                        {!v.increaseSongs && !v.increaseTemplates && !v.vipMonths && !v.discountPercent && <span className="text-neutral-500 text-xs">Mã thông thường</span>}
                       </td>
                       <td className="p-4 text-sm text-neutral-300">{v.usedBy?.length || 0} lần</td>
                       <td className="p-4 text-sm text-neutral-400">{new Date(v.createdAt).toLocaleDateString('vi-VN')}</td>
@@ -3472,6 +3692,163 @@ export default function ACPControlPanel() {
               </table>
             </div>
           </div>
+        ) : activeTab === 'pricing' ? (
+          <div className="bg-neutral-900/30 border border-white/5 rounded-3xl p-6 sm:p-8 backdrop-blur-md space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-5">
+              <div>
+                <h2 className="text-xl font-black flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-emerald-400" /> Cài Đặt Bảng Giá Cước (FREE - PRO - VIP)
+                </h2>
+                <p className="text-sm text-neutral-400 mt-1">Cấu hình giá niêm yết & giá khuyến mãi cho chu kỳ Hàng Tháng và Theo Năm</p>
+              </div>
+              <button
+                type="button"
+                disabled={pricingSaving}
+                onClick={async () => {
+                  setPricingSaving(true);
+                  setPricingMsg({ type: '', text: '' });
+                  try {
+                    const res = await fetch('/api/acp/pricing', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                      },
+                      body: JSON.stringify(pricingSettings)
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.success) {
+                      setPricingMsg({ type: 'success', text: 'Đã lưu cài đặt bảng giá thành công!' });
+                    } else {
+                      setPricingMsg({ type: 'error', text: data.error || 'Có lỗi xảy ra khi lưu bảng giá' });
+                    }
+                  } catch (e) {
+                    setPricingMsg({ type: 'error', text: 'Lỗi kết nối máy chủ' });
+                  } finally {
+                    setPricingSaving(false);
+                  }
+                }}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-6 rounded-xl flex items-center gap-2 cursor-pointer shadow-lg shadow-emerald-600/20 disabled:opacity-50 transition-all"
+              >
+                <Save className="w-4 h-4" /> {pricingSaving ? 'Đang lưu...' : 'Lưu Cài Đặt Bảng Giá'}
+              </button>
+            </div>
+
+            {pricingMsg.text && (
+              <div className={`p-4 rounded-xl text-xs font-bold ${pricingMsg.type === 'success' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}`}>
+                {pricingMsg.text}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {['free', 'pro', 'vip'].map((tierKey) => {
+                const tierData = pricingSettings[tierKey] || {};
+                const mOrig = Number(tierData.monthlyOriginalPrice || 0);
+                const mSale = Number(tierData.monthlySalePrice || 0);
+                const yOrig = Number(tierData.yearlyOriginalPrice || 0);
+                const ySale = Number(tierData.yearlySalePrice || 0);
+                const mAnn = mSale * 12;
+                const savingsPct = mAnn > 0 && ySale > 0 ? Math.max(0, Math.round((1 - ySale / mAnn) * 100)) : 0;
+
+                return (
+                  <div key={`acp-pricing-${tierKey}`} className="bg-black/40 border border-white/10 rounded-2xl p-6 space-y-5 relative overflow-hidden">
+                    <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                      <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider ${
+                        tierKey === 'vip' ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30' :
+                        tierKey === 'pro' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' :
+                        'bg-neutral-800 text-neutral-400 border border-neutral-700'
+                      }`}>
+                        GÓI {tierKey.toUpperCase()}
+                      </span>
+                      {savingsPct > 0 && (
+                        <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-black px-2.5 py-0.5 rounded-full">
+                          Tiết kiệm {savingsPct}% năm
+                        </span>
+                      )}
+                    </div>
+
+                    <h3 className="text-lg font-black uppercase tracking-wider text-white">
+                      {tierKey === 'free' ? 'Gói Miễn Phí' : tierKey === 'pro' ? 'Gói Pro' : 'Gói VIP'}
+                    </h3>
+
+                    {/* HÀNG THÁNG */}
+                    <div className="bg-neutral-900/60 p-4 rounded-xl border border-white/5 space-y-3">
+                      <h4 className="text-xs font-bold text-neutral-300 uppercase tracking-wider">Chu Kỳ Hàng Tháng (Monthly)</h4>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1">Giá Trước KM (đ)</label>
+                          <input
+                            type="number"
+                            value={tierData.monthlyOriginalPrice || 0}
+                            onChange={e => {
+                              const val = Number(e.target.value);
+                              setPricingSettings((prev: any) => ({
+                                ...prev,
+                                [tierKey]: { ...prev[tierKey], monthlyOriginalPrice: val }
+                              }));
+                            }}
+                            className="w-full bg-black/60 text-white border border-white/10 rounded-lg px-3 py-2 text-xs font-bold focus:border-emerald-500 focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-emerald-400 uppercase mb-1">Giá Khuyến Mãi (đ)</label>
+                          <input
+                            type="number"
+                            value={tierData.monthlySalePrice || 0}
+                            onChange={e => {
+                              const val = Number(e.target.value);
+                              setPricingSettings((prev: any) => ({
+                                ...prev,
+                                [tierKey]: { ...prev[tierKey], monthlySalePrice: val }
+                              }));
+                            }}
+                            className="w-full bg-black/60 text-emerald-300 border border-emerald-500/30 rounded-lg px-3 py-2 text-xs font-bold focus:border-emerald-500 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* THEO NĂM */}
+                    <div className="bg-neutral-900/60 p-4 rounded-xl border border-white/5 space-y-3">
+                      <h4 className="text-xs font-bold text-neutral-300 uppercase tracking-wider">Chu Kỳ Theo Năm (Yearly)</h4>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[10px] font-bold text-neutral-400 uppercase mb-1">Giá Trước KM (đ)</label>
+                          <input
+                            type="number"
+                            value={tierData.yearlyOriginalPrice || 0}
+                            onChange={e => {
+                              const val = Number(e.target.value);
+                              setPricingSettings((prev: any) => ({
+                                ...prev,
+                                [tierKey]: { ...prev[tierKey], yearlyOriginalPrice: val }
+                              }));
+                            }}
+                            className="w-full bg-black/60 text-white border border-white/10 rounded-lg px-3 py-2 text-xs font-bold focus:border-emerald-500 focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-emerald-400 uppercase mb-1">Giá Khuyến Mãi (đ)</label>
+                          <input
+                            type="number"
+                            value={tierData.yearlySalePrice || 0}
+                            onChange={e => {
+                              const val = Number(e.target.value);
+                              setPricingSettings((prev: any) => ({
+                                ...prev,
+                                [tierKey]: { ...prev[tierKey], yearlySalePrice: val }
+                              }));
+                            }}
+                            className="w-full bg-black/60 text-emerald-300 border border-emerald-500/30 rounded-lg px-3 py-2 text-xs font-bold focus:border-emerald-500 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         ) : activeTab === 'roles' ? (
 
           <div className="bg-neutral-900/30 border border-white/5 rounded-3xl p-6 sm:p-8 backdrop-blur-md space-y-6">
@@ -3479,253 +3856,255 @@ export default function ACPControlPanel() {
               <div>
                 <h2 className="text-xl font-black flex items-center gap-2">
                   <Shield className="w-5 h-5 text-purple-400" />
-                  Hệ thống Phân quyền & Vai trò (Roles)
+                  Phân Quyền Tính Năng Cho 3 Gói (Free - Pro - VIP)
                 </h2>
-                <p className="text-sm text-neutral-400 mt-1">Thiết lập các nhóm phân quyền giới hạn tính năng và số lượng bài hát upload cho thành viên.</p>
+                <p className="text-sm text-neutral-400 mt-1">Quản lý và tích chọn các tính năng được phép truy cập cho từng gói. Danh sách này sẽ tự động hiển thị trên Bảng Giá ở Trang Chủ.</p>
               </div>
-              <button
-                onClick={() => {
-                  setEditingRoleIdx(null);
-                  setRoleName('');
-                  setRolePrice('');
-                  setRoleMaxPosts(10);
-                  setRoleAccessControl(false);
-                  setRoleDemoPassword(false);
-                  setRoleSecretLink(false);
-                  setRoleCustomDomain(false);
-                  setRoleBio(false);
-                  setRoleAboutMe(false);
-                  setRoleUiEdit(false);
-                  setRoleExclusiveUi(false);
-                  setRoleDatabase(false);
-                  setRoleSubscriptionPricing(false);
-                  setRoleDefaultTheme('liquid-glass');
-                  setShowRoleModal(true);
-                }}
-                className="bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
-              >
-                <Plus className="w-4 h-4" /> Tạo gói phân quyền mới
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRolesMatrix(prev => [
+                      ...prev,
+                      { id: 'f_' + Date.now(), name: 'Tính năng mới', free: false, pro: true, vip: true, freeText: '', proText: '', vipText: '' }
+                    ]);
+                  }}
+                  className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 px-4 rounded-xl flex items-center gap-2 text-xs transition-all cursor-pointer shrink-0"
+                >
+                  <Plus className="w-4 h-4" /> Thêm Quyền / Tính Năng Mới
+                </button>
+
+                <button
+                  type="button"
+                  disabled={matrixSaving}
+                  onClick={async () => {
+                    setMatrixSaving(true);
+                    setMatrixMsg({ type: '', text: '' });
+                    try {
+                      const res = await fetch('/api/acp/roles-matrix', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify(rolesMatrix)
+                      });
+                      const data = await res.json();
+                      if (res.ok && data.success) {
+                        setMatrixMsg({ type: 'success', text: 'Đã lưu cài đặt phân quyền tính năng thành công!' });
+                      } else {
+                        setMatrixMsg({ type: 'error', text: data.error || 'Lỗi khi lưu' });
+                      }
+                    } catch(e) {
+                      setMatrixMsg({ type: 'error', text: 'Lỗi kết nối máy chủ' });
+                    } finally {
+                      setMatrixSaving(false);
+                    }
+                  }}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-5 rounded-xl flex items-center gap-2 text-xs cursor-pointer shadow-lg shadow-emerald-600/20 disabled:opacity-50 transition-all shrink-0"
+                >
+                  <Save className="w-4 h-4" /> {matrixSaving ? 'Đang lưu...' : 'Lưu Phân Quyền'}
+                </button>
+              </div>
             </div>
 
-            {roles.length === 0 ? (
-              <div className="bg-neutral-900/10 border border-dashed border-white/5 rounded-2xl p-12 text-center text-neutral-500 text-xs flex flex-col items-center justify-center gap-3">
-                <Shield className="w-10 h-10 text-neutral-600" />
-                <span>Chưa có gói phân quyền tùy chỉnh nào được thiết lập.</span>
-                <p className="max-w-md text-[11px] leading-relaxed">
-                  Tất cả thành viên mặc định sẽ hoạt động ở chế độ toàn quyền không giới hạn cho đến khi bạn tạo các gói phân quyền giới hạn ở đây và gắn cho họ.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {roles.map((r: any, idx: number) => (
-                  <div key={`l3522-idx-${idx}`} className="bg-neutral-900/40 border border-white/5 hover:border-white/10 rounded-2xl p-5 space-y-4 transition-all relative">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="text-base font-black text-white flex items-center gap-2">
-                          <Shield className="w-4 h-4 text-purple-400" /> {r.name}
-                        </h3>
-                        <p className="text-xs text-neutral-400 mt-1">
-                          Giới hạn tải nhạc: <strong className="text-purple-300">{r.maxPosts === -1 || r.maxPosts === 'unlimited' ? 'Không giới hạn' : `${r.maxPosts} bài`}</strong>
-                        </p>
-                        <p className="text-xs text-neutral-400 mt-0.5">
-                          Giá gói: <strong className="text-amber-400">{r.price || 'Miễn phí'}</strong>
-                        </p>
-                        <p className="text-xs text-neutral-400 mt-0.5">
-                          Giao diện mặc định: <strong className="text-teal-400 font-bold">{r.defaultTheme === 'gold' ? 'Gold' : 'Liquid Glass'}</strong>
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <button
-                          onClick={() => {
-                            setEditingRoleIdx(idx);
-                            setRoleName(r.name);
-                            setRolePrice(r.price || '');
-                            setRoleMaxPosts(r.maxPosts === -1 || r.maxPosts === 'unlimited' ? -1 : Number(r.maxPosts));
-                            setRoleAccessControl(!!r.accessControl);
-                            setRoleDemoPassword(!!r.demoPassword);
-                            setRoleSecretLink(!!r.secretLink);
-                            setRoleCustomDomain(!!r.customDomain);
-                            setRoleBio(!!r.bio);
-                            setRoleAboutMe(!!r.aboutMe);
-                            setRoleUiEdit(!!r.uiEdit);
-                            setRoleExclusiveUi(!!r.exclusiveUi);
-                            setRoleDatabase(!!r.database);
-                            setRoleSubscriptionPricing(!!r.subscriptionPricing);
-                            setRoleDefaultTheme(r.defaultTheme || 'liquid-glass');
-                            setShowRoleModal(true);
-                          }}
-                          className="p-1.5 bg-neutral-800/60 hover:bg-neutral-700/60 text-purple-400 hover:text-white rounded-lg transition-colors cursor-pointer"
-                          title="Sửa phân quyền"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            const newRoles = roles.filter((_, i) => i !== idx);
-                            handleSaveRoles(newRoles);
-                          }}
-                          className="p-1.5 bg-neutral-800/60 hover:bg-rose-950/60 text-neutral-500 hover:text-rose-400 rounded-lg transition-colors cursor-pointer"
-                          title="Xóa phân quyền"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="border-t border-white/5 pt-3.5 space-y-2">
-                      <div className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">Tính năng được mở khóa:</div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {r.accessControl && <span className="bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">Mật khẩu kho nhạc</span>}
-                        {r.demoPassword && <span className="bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">Mật khẩu demo</span>}
-                        {r.secretLink && <span className="bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">Link bí mật</span>}
-                        {r.customDomain && <span className="bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">Tên miền riêng</span>}
-                        {r.bio && <span className="bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">Bio/Tiểu sử</span>}
-                        {r.aboutMe && <span className="bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">About me/Giới thiệu</span>}
-                        {r.uiEdit && <span className="bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">Tùy biến giao diện</span>}
-                        {r.exclusiveUi && <span className="bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">Giao diện độc quyền</span>}
-                        {r.database && <span className="bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">Sao lưu DB</span>}
-                        {r.subscriptionPricing && <span className="bg-purple-500/10 border border-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">Bán nhạc/Hội viên</span>}
-                        {!r.accessControl && !r.demoPassword && !r.secretLink && !r.customDomain && !r.bio && !r.aboutMe && !r.uiEdit && !r.exclusiveUi && !r.database && !r.subscriptionPricing && (
-                          <span className="text-[10px] text-neutral-500 italic">Không có tính năng nâng cao nào</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+            {matrixMsg.text && (
+              <div className={`p-4 rounded-xl text-xs font-bold ${matrixMsg.type === 'success' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}`}>
+                {matrixMsg.text}
               </div>
             )}
 
-            {showRoleModal && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                <div className="bg-neutral-900 border border-white/5 rounded-[2rem] p-6 sm:p-8 max-w-lg w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
-                  <button
-                    onClick={() => setShowRoleModal(false)}
-                    className="absolute top-6 right-6 text-neutral-500 hover:text-white bg-white/5 p-1.5 rounded-lg cursor-pointer"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                  <h3 className="text-xl font-black text-white mb-6 flex items-center gap-2">
-                    <Shield className="w-5 h-5 text-purple-400" />
-                    {editingRoleIdx !== null ? 'Chỉnh sửa gói phân quyền' : 'Tạo gói phân quyền mới'}
-                  </h3>
-                  <form onSubmit={handleSaveRoleSubmit} className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Tên gói phân quyền *</label>
-                      <input
-                        type="text"
-                        required
-                        value={roleName}
-                        onChange={(e) => setRoleName(e.target.value)}
-                        className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-sm"
-                        placeholder="vd: Silver, Gold, Platinum..."
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Giá tiền (vd: Miễn phí, 99.000đ/tháng...)</label>
-                      <input
-                        type="text"
-                        value={rolePrice}
-                        onChange={(e) => setRolePrice(e.target.value)}
-                        className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-sm"
-                        placeholder="vd: 99.000đ/tháng hoặc Miễn phí..."
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Giới hạn số lượng tải nhạc</label>
-                      <select
-                        value={roleMaxPosts}
-                        onChange={(e) => setRoleMaxPosts(Number(e.target.value))}
-                        className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-sm"
-                      >
-                        <option value={10}>Tối đa 10 bài hát</option>
-                        <option value={20}>Tối đa 20 bài hát</option>
-                        <option value={50}>Tối đa 50 bài hát</option>
-                        <option value={100}>Tối đa 100 bài hát</option>
-                        <option value={-1}>Không giới hạn bài hát (-1)</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">Giao diện Bảng điều khiển Mặc định</label>
-                      <select
-                        value={roleDefaultTheme}
-                        onChange={(e) => setRoleDefaultTheme(e.target.value as 'liquid-glass' | 'gold')}
-                        className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none text-sm cursor-pointer"
-                      >
-                        <option value="liquid-glass">Liquid Glass (Mặc định)</option>
-                        <option value="gold">Gold (Hoàng gia / VIP)</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-3 pt-2">
-                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-0.5">Mở khóa tính năng nâng cao</label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-black/20 p-4 rounded-xl border border-white/5 text-xs">
-                        <label className="flex items-center gap-2.5 cursor-pointer text-neutral-300 hover:text-white select-none">
-                          <input type="checkbox" checked={roleAccessControl} onChange={(e) => setRoleAccessControl(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 bg-black/50 border-white/10" />
-                          <span>Mật khẩu kho nhạc</span>
-                        </label>
-                        <label className="flex items-center gap-2.5 cursor-pointer text-neutral-300 hover:text-white select-none">
-                          <input type="checkbox" checked={roleDemoPassword} onChange={(e) => setRoleDemoPassword(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 bg-black/50 border-white/10" />
-                          <span>Mật khẩu demo</span>
-                        </label>
-                        <label className="flex items-center gap-2.5 cursor-pointer text-neutral-300 hover:text-white select-none">
-                          <input type="checkbox" checked={roleSecretLink} onChange={(e) => setRoleSecretLink(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 bg-black/50 border-white/10" />
-                          <span>Đường link bí mật</span>
-                        </label>
-                        <label className="flex items-center gap-2.5 cursor-pointer text-neutral-300 hover:text-white select-none">
-                          <input type="checkbox" checked={roleCustomDomain} onChange={(e) => setRoleCustomDomain(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 bg-black/50 border-white/10" />
-                          <span>Hỗ trợ Tên miền riêng</span>
-                        </label>
-                        <label className="flex items-center gap-2.5 cursor-pointer text-neutral-300 hover:text-white select-none">
-                          <input type="checkbox" checked={roleBio} onChange={(e) => setRoleBio(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 bg-black/50 border-white/10" />
-                          <span>Tiểu sử/Bio phong phú</span>
-                        </label>
-                        <label className="flex items-center gap-2.5 cursor-pointer text-neutral-300 hover:text-white select-none">
-                          <input type="checkbox" checked={roleAboutMe} onChange={(e) => setRoleAboutMe(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 bg-black/50 border-white/10" />
-                          <span>Giới thiệu/About me</span>
-                        </label>
-                        <label className="flex items-center gap-2.5 cursor-pointer text-neutral-300 hover:text-white select-none">
-                          <input type="checkbox" checked={roleUiEdit} onChange={(e) => setRoleUiEdit(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 bg-black/50 border-white/10" />
-                          <span>Tùy biến Giao diện</span>
-                        </label>
-                        <label className="flex items-center gap-2.5 cursor-pointer text-neutral-300 hover:text-white select-none">
-                          <input type="checkbox" checked={roleExclusiveUi} onChange={(e) => setRoleExclusiveUi(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 bg-black/50 border-white/10" />
-                          <span>Giao diện Độc quyền</span>
-                        </label>
-                        <label className="flex items-center gap-2.5 cursor-pointer text-neutral-300 hover:text-white select-none">
-                          <input type="checkbox" checked={roleDatabase} onChange={(e) => setRoleDatabase(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 bg-black/50 border-white/10" />
-                          <span>Sao lưu DB cá nhân</span>
-                        </label>
-                        <label className="flex items-center gap-2.5 cursor-pointer text-neutral-300 hover:text-white select-none">
-                          <input type="checkbox" checked={roleSubscriptionPricing} onChange={(e) => setRoleSubscriptionPricing(e.target.checked)} className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 bg-black/50 border-white/10" />
-                          <span>Bán nhạc/Gói hội viên</span>
-                        </label>
+            <div className="space-y-4">
+              {rolesMatrix.map((item, idx) => (
+                <div
+                  key={item.id || `rm-${idx}`}
+                  draggable
+                  onDragStart={(e) => {
+                    setDraggedIdx(idx);
+                    e.dataTransfer.effectAllowed = 'move';
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (draggedIdx === null || draggedIdx === idx) return;
+                    setRolesMatrix(prev => {
+                      const next = [...prev];
+                      const [movedItem] = next.splice(draggedIdx, 1);
+                      next.splice(idx, 0, movedItem);
+                      return next;
+                    });
+                    setDraggedIdx(null);
+                  }}
+                  onDragEnd={() => setDraggedIdx(null)}
+                  className={`bg-black/40 border border-white/10 rounded-2xl p-4 sm:p-5 space-y-3 relative transition-all hover:border-purple-500/30 ${
+                    draggedIdx === idx ? 'opacity-40 border-purple-500 border-dashed scale-[0.99]' : ''
+                  }`}
+                >
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 shrink-0 cursor-grab active:cursor-grabbing text-neutral-500 hover:text-purple-300 transition-colors" title="Kéo thả để sắp xếp vị trí">
+                        <GripVertical className="w-4 h-4" />
+                        <span className="w-7 h-7 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-300 text-xs font-black flex items-center justify-center">
+                          {idx + 1}
+                        </span>
                       </div>
+                      <input
+                        type="text"
+                        value={item.name || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setRolesMatrix(prev => prev.map((x, i) => i === idx ? { ...x, name: val } : x));
+                        }}
+                        placeholder="Mô tả tính năng (vd: Trang tiểu sử Bio, Sao lưu 24/7...)"
+                        className="flex-1 bg-neutral-900 text-white border border-white/10 rounded-xl px-4 py-2.5 text-xs font-bold focus:border-purple-500 focus:outline-none"
+                      />
                     </div>
 
-                    <div className="flex gap-2 justify-end pt-2">
+                    <div className="flex items-center gap-6 shrink-0 bg-neutral-900/80 px-5 py-2.5 rounded-xl border border-white/10">
+                      <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-neutral-300 hover:text-white select-none">
+                        <input
+                          type="checkbox"
+                          checked={!!item.free}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setRolesMatrix(prev => prev.map((x, i) => i === idx ? { ...x, free: checked } : x));
+                          }}
+                          className="w-4 h-4 accent-purple-500 rounded cursor-pointer"
+                        />
+                        <span>Free</span>
+                      </label>
+
+                      <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-purple-300 hover:text-purple-200 select-none">
+                        <input
+                          type="checkbox"
+                          checked={!!item.pro}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setRolesMatrix(prev => prev.map((x, i) => i === idx ? { ...x, pro: checked } : x));
+                          }}
+                          className="w-4 h-4 accent-purple-500 rounded cursor-pointer"
+                        />
+                        <span>Pro</span>
+                      </label>
+
+                      <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-amber-300 hover:text-amber-200 select-none">
+                        <input
+                          type="checkbox"
+                          checked={!!item.vip}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setRolesMatrix(prev => prev.map((x, i) => i === idx ? { ...x, vip: checked } : x));
+                          }}
+                          className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+                        />
+                        <span>VIP</span>
+                      </label>
+                    </div>
+
+                    <div className="flex items-center gap-1 shrink-0 justify-end">
                       <button
                         type="button"
-                        onClick={() => setShowRoleModal(false)}
-                        className="bg-neutral-800 text-neutral-300 py-3 px-6 rounded-xl hover:bg-neutral-700 transition-all text-xs font-bold cursor-pointer"
+                        onClick={() => {
+                          if (idx === 0) return;
+                          setRolesMatrix(prev => {
+                            const next = [...prev];
+                            const temp = next[idx - 1];
+                            next[idx - 1] = next[idx];
+                            next[idx] = temp;
+                            return next;
+                          });
+                        }}
+                        disabled={idx === 0}
+                        className="p-2 text-neutral-400 hover:text-white disabled:opacity-30 cursor-pointer"
+                        title="Di chuyển lên"
                       >
-                        Hủy
+                        <ChevronUp className="w-4 h-4" />
                       </button>
+
                       <button
-                        type="submit"
-                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white py-3 px-6 rounded-xl transition-all text-xs font-bold cursor-pointer"
+                        type="button"
+                        onClick={() => {
+                          if (idx === rolesMatrix.length - 1) return;
+                          setRolesMatrix(prev => {
+                            const next = [...prev];
+                            const temp = next[idx + 1];
+                            next[idx + 1] = next[idx];
+                            next[idx] = temp;
+                            return next;
+                          });
+                        }}
+                        disabled={idx === rolesMatrix.length - 1}
+                        className="p-2 text-neutral-400 hover:text-white disabled:opacity-30 cursor-pointer"
+                        title="Di chuyển xuống"
                       >
-                        Lưu gói phân quyền
+                        <ChevronDown className="w-4 h-4" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirm(`Xóa tính năng "${item.name}" khỏi danh sách?`)) {
+                            setRolesMatrix(prev => prev.filter((_, i) => i !== idx));
+                          }
+                        }}
+                        className="p-2 text-rose-400 hover:text-rose-300 cursor-pointer"
+                        title="Xóa tính năng này"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
-                  </form>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 border-t border-white/5 pt-2 text-[11px]">
+                    <div>
+                      <span className="text-[10px] text-neutral-500 font-bold uppercase">Chữ riêng gói Free (tùy chọn)</span>
+                      <input
+                        type="text"
+                        value={item.freeText || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setRolesMatrix(prev => prev.map((x, i) => i === idx ? { ...x, freeText: val } : x));
+                        }}
+                        placeholder={`Mặc định: ${item.name || ''}`}
+                        className="w-full bg-neutral-950/60 text-neutral-300 border border-white/5 rounded-lg px-3 py-1.5 focus:border-purple-500 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-neutral-500 font-bold uppercase">Chữ riêng gói Pro (tùy chọn)</span>
+                      <input
+                        type="text"
+                        value={item.proText || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setRolesMatrix(prev => prev.map((x, i) => i === idx ? { ...x, proText: val } : x));
+                        }}
+                        placeholder={`Mặc định: ${item.name || ''}`}
+                        className="w-full bg-neutral-950/60 text-neutral-300 border border-white/5 rounded-lg px-3 py-1.5 focus:border-purple-500 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-neutral-500 font-bold uppercase">Chữ riêng gói VIP (tùy chọn)</span>
+                      <input
+                        type="text"
+                        value={item.vipText || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setRolesMatrix(prev => prev.map((x, i) => i === idx ? { ...x, vipText: val } : x));
+                        }}
+                        placeholder={`Mặc định: ${item.name || ''}`}
+                        className="w-full bg-neutral-950/60 text-neutral-300 border border-white/5 rounded-lg px-3 py-1.5 focus:border-purple-500 focus:outline-none"
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              ))}
+
+              {rolesMatrix.length === 0 && (
+                <div className="p-8 text-center text-neutral-500 bg-black/20 rounded-2xl border border-white/5">
+                  Chưa có tính năng nào. Bấm nút "Thêm Quyền / Tính Năng Mới" ở trên để khởi tạo.
+                </div>
+              )}
+            </div>
           </div>
         ) : null}
       </main>
@@ -3744,8 +4123,8 @@ export default function ACPControlPanel() {
                   const textToCopy = `Thông tin kho nhạc nghệ sĩ ${newArtistCreatedInfo.name}
 Nghệ danh: ${newArtistCreatedInfo.name}
 Username: ${newArtistCreatedInfo.username}
-Website: ${newArtistCreatedInfo.extension}.chorus.vn
-Admin: ${newArtistCreatedInfo.extension}.chorus.vn/admin
+Website: ${newArtistCreatedInfo.extension}.${getPlatformDomain()}
+Admin: ${newArtistCreatedInfo.extension}.${getPlatformDomain()}/admin
 Admin User: ${newArtistCreatedInfo.username}
 Admin Password: ${newArtistCreatedInfo.password}`;
                   navigator.clipboard.writeText(textToCopy);
@@ -3762,8 +4141,8 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                 <span className="text-white font-bold block mb-3 border-b border-white/10 pb-2">Thông tin kho nhạc nghệ sĩ {newArtistCreatedInfo.name}</span>
                 <p>Nghệ danh: <span className="text-white">{newArtistCreatedInfo.name}</span></p>
                 <p>Username: <span className="text-white">{newArtistCreatedInfo.username}</span></p>
-                <p>Website: <span className="text-emerald-400">{newArtistCreatedInfo.extension}.chorus.vn</span></p>
-                <p>Admin: <span className="text-emerald-400">{newArtistCreatedInfo.extension}.chorus.vn/admin</span></p>
+                <p>Website: <span className="text-emerald-400">{newArtistCreatedInfo.extension}.{getPlatformDomain()}</span></p>
+                <p>Admin: <span className="text-emerald-400">{newArtistCreatedInfo.extension}.{getPlatformDomain()}/admin</span></p>
                 <p>Admin User: <span className="text-white">{newArtistCreatedInfo.username}</span></p>
                 <p>Admin Password: <span className="text-white">{newArtistCreatedInfo.password}</span></p>
               </div>
@@ -3880,7 +4259,7 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                     placeholder="vd: tennghesi"
                   />
                   <p className="text-[10px] text-neutral-500 mt-1">
-                    Truy cập qua: <strong>chorus.vn/{"{phần_mở_rộng}"}</strong> HOẶC cấu hình DNS trỏ subdomain <strong>{"{phần_mở_rộng}"}.chorus.vn</strong> về IP máy chủ để dùng như trang độc lập.
+                    Truy cập qua: <strong>{getPlatformDomain()}/{"{phần_mở_rộng}"}</strong> HOẶC cấu hình DNS trỏ subdomain <strong>{"{phần_mở_rộng}"}.{getPlatformDomain()}</strong> về IP máy chủ để dùng như trang độc lập.
                   </p>
                 </div>
               </div>
@@ -3895,7 +4274,7 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                   placeholder="vd: tai, taicute"
                 />
                 <p className="text-[10px] text-neutral-500 mt-1">
-                  Cho phép thành viên sử dụng thêm nhiều username khác nhau (ví dụ: truy cập qua <strong>tai.chorus.vn</strong> cũng như <strong>acxuantai.chorus.vn</strong>). Phân tách các username bằng dấu phẩy.
+                  Cho phép thành viên sử dụng thêm nhiều username khác nhau (ví dụ: truy cập qua <strong>tai.{getPlatformDomain()}</strong> cũng như <strong>acxuantai.{getPlatformDomain()}</strong>). Phân tách các username bằng dấu phẩy.
                 </p>
               </div>
 
@@ -3904,14 +4283,24 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                   <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400">Mật khẩu *</label>
                   <button type="button" onClick={() => setArtistPassword(Math.random().toString(36).slice(-8))} className="text-[10px] text-purple-400 hover:text-purple-300 font-bold flex items-center gap-1 uppercase tracking-wider"><Sparkles className="w-3 h-3" /> Random</button>
                 </div>
-                <input 
-                  type="password" 
-                  required
-                  value={artistPassword}
-                  onChange={(e) => setArtistPassword(e.target.value)}
-                  className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
-                  placeholder="Mật khẩu"
-                />
+                <div className="relative">
+                  <input 
+                    type={showModalPass ? "text" : "password"} 
+                    required
+                    value={artistPassword}
+                    onChange={(e) => setArtistPassword(e.target.value)}
+                    className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 pr-11 rounded-xl focus:border-purple-500 focus:outline-none"
+                    placeholder="Mật khẩu"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowModalPass(!showModalPass)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white p-1 transition-colors"
+                    title={showModalPass ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                  >
+                    {showModalPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-1">
@@ -4113,7 +4502,7 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                     placeholder="vd: tennghesi"
                   />
                   <p className="text-[10px] text-neutral-500 mt-1">
-                    Truy cập qua: <strong>chorus.vn/{"{phần_mở_rộng}"}</strong> HOẶC cấu hình DNS trỏ subdomain <strong>{"{phần_mở_rộng}"}.chorus.vn</strong> về IP máy chủ để dùng như trang độc lập.
+                    Truy cập qua: <strong>{getPlatformDomain()}/{"{phần_mở_rộng}"}</strong> HOẶC cấu hình DNS trỏ subdomain <strong>{"{phần_mở_rộng}"}.{getPlatformDomain()}</strong> về IP máy chủ để dùng như trang độc lập.
                   </p>
                 </div>
               </div>
@@ -4128,7 +4517,7 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                   placeholder="vd: tai, taicute"
                 />
                 <p className="text-[10px] text-neutral-500 mt-1">
-                  Cho phép thành viên sử dụng thêm nhiều username khác nhau (ví dụ: truy cập qua <strong>tai.chorus.vn</strong> cũng như <strong>acxuantai.chorus.vn</strong>). Phân tách các username bằng dấu phẩy.
+                  Cho phép thành viên sử dụng thêm nhiều username khác nhau (ví dụ: truy cập qua <strong>tai.{getPlatformDomain()}</strong> cũng như <strong>acxuantai.{getPlatformDomain()}</strong>). Phân tách các username bằng dấu phẩy.
                 </p>
               </div>
               
@@ -4137,13 +4526,23 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                   <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400">Mật khẩu mới (Để trống nếu giữ nguyên)</label>
                   <button type="button" onClick={() => setArtistPassword(Math.random().toString(36).slice(-8))} className="text-[10px] text-purple-400 hover:text-purple-300 font-bold flex items-center gap-1 uppercase tracking-wider"><Sparkles className="w-3 h-3" /> Random</button>
                 </div>
-                <input 
-                  type="password" 
-                  value={artistPassword}
-                  onChange={(e) => setArtistPassword(e.target.value)}
-                  className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 rounded-xl focus:border-purple-500 focus:outline-none"
-                  placeholder="Nhập mật khẩu mới..."
-                />
+                <div className="relative">
+                  <input 
+                    type={showModalPass ? "text" : "password"} 
+                    value={artistPassword}
+                    onChange={(e) => setArtistPassword(e.target.value)}
+                    className="w-full bg-black/40 text-white border border-white/10 px-4 py-3 pr-11 rounded-xl focus:border-purple-500 focus:outline-none"
+                    placeholder="Nhập mật khẩu mới..."
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowModalPass(!showModalPass)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white p-1 transition-colors"
+                    title={showModalPass ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                  >
+                    {showModalPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-1">

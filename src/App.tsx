@@ -2,13 +2,14 @@ import { createPortal } from "react-dom";
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
 import { ChorusLogo } from './components/ChorusLogo';
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { UserCircle, BookOpen, User, Settings, Play, Music, Lock, Unlock, ArrowLeft, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, List, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, RefreshCw, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, Palette, LayoutTemplate, Award, History, HelpCircle, Paintbrush } from 'lucide-react';
+import { UserCircle, BookOpen, User, Settings, Play, Music, Lock, Unlock, ArrowLeft, ArrowRight, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, List, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, RefreshCw, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, Palette, LayoutTemplate, Award, History, HelpCircle, Paintbrush, CheckCircle2, XCircle, ShieldCheck, LogIn } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { AppData, DemoSong, TemplateConfig, Achievement } from './types';
 import { motion, AnimatePresence } from 'motion/react';
 import { IndirectBioCard } from './components/IndirectBioCard';
 import { LoadingScreen } from './components/LoadingScreen';
 import { getYoutubeId } from './components/SmartYouTubePlayer';
+import RegisterModal from './components/RegisterModal';
 
 
 function Portal({ children }: { children: React.ReactNode }) {
@@ -230,6 +231,1163 @@ function BrandLogoColorExtractor({ logoUrl, defaultColor, children }: BrandLogoC
   return <>{children(brandColors)}</>;
 }
 
+let globalPreviewAudio: HTMLAudioElement | null = null;
+let globalActiveCardId: string | null = null;
+
+const stopGlobalPreviewAudio = () => {
+  if (globalPreviewAudio) {
+    try {
+      globalPreviewAudio.pause();
+      globalPreviewAudio.currentTime = 0;
+    } catch (e) {}
+    globalPreviewAudio = null;
+  }
+  globalActiveCardId = null;
+  window.dispatchEvent(new CustomEvent('crvn-stop-all-audio-previews', { detail: { currentId: null } }));
+};
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('mouseleave', stopGlobalPreviewAudio);
+  
+  // Pause all HTML5 audio elements when preview audio starts or stops
+  window.addEventListener('crvn-stop-all-audio-previews', () => {
+    const curPreview = globalPreviewAudio;
+    document.querySelectorAll('audio').forEach(a => {
+      if (a !== curPreview) {
+        try { a.pause(); } catch(e) {}
+      }
+    });
+  });
+  
+  // Autoplay unlocker listener to allow instant audio preview on first user interaction or mouse movement
+  const unlockAudioContext = () => {
+    try {
+      const a = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
+      a.volume = 0;
+      a.play().then(() => a.pause()).catch(() => {});
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContextClass) {
+        const ctx = new AudioContextClass();
+        if (ctx.state === 'suspended') {
+          ctx.resume().catch(() => {});
+        }
+      }
+    } catch (e) {}
+    ['pointerdown', 'click', 'keydown', 'mousemove', 'mouseover', 'pointermove', 'mouseenter', 'touchstart', 'touchmove', 'wheel', 'scroll'].forEach(evt => {
+      window.removeEventListener(evt, unlockAudioContext);
+    });
+  };
+  ['pointerdown', 'click', 'keydown', 'mousemove', 'mouseover', 'pointermove', 'mouseenter', 'touchstart', 'touchmove', 'wheel', 'scroll'].forEach(evt => {
+    window.addEventListener(evt, unlockAudioContext, { passive: true });
+  });
+}
+
+interface MusicianSongCardProps {
+  key?: React.Key;
+  demo: any;
+  idx: number;
+  activeListTab: string;
+  getArtistLink: (subPath?: string, customPath?: string) => string;
+  t: any;
+  data: any;
+  formatShareUrl: (url: string) => string;
+  copyToClipboard: (text: string) => Promise<boolean>;
+  setToast: (msg: string) => void;
+  setActiveBioSong: (demo: any) => void;
+}
+
+function renderArtistNameWithBlur(text: string | null | undefined) {
+  if (!text) return null;
+  const str = String(text);
+  const segments = str.split(/(\s*,\s*|\s*&\s*|\s+ft\.?\s+|\s+feat\.?\s+)/i);
+  return (
+    <>
+      {segments.map((seg, idx) => {
+        const isSecret = seg.toLowerCase().includes('secret') || seg.toLowerCase().includes('bí mật');
+        if (isSecret) {
+          return (
+            <span
+              key={idx}
+              className="select-none filter blur-[4px] bg-stone-300/50 dark:bg-white/10 px-1 py-0.5 rounded border border-stone-400/20 inline-block mx-0.5 cursor-help"
+              title="Nghệ sĩ bí mật"
+            >
+              {seg}
+            </span>
+          );
+        }
+        return <span key={idx}>{seg}</span>;
+      })}
+    </>
+  );
+}
+
+function ArtistNameMarquee({ text, className }: { text: string; className?: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLParagraphElement>(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const [translateX, setTranslateX] = useState(0);
+
+  useEffect(() => {
+    if (containerRef.current && textRef.current) {
+      const cWidth = containerRef.current.clientWidth;
+      const tWidth = textRef.current.scrollWidth;
+      if (tWidth > cWidth) {
+        setIsOverflowing(true);
+        setTranslateX(tWidth - cWidth);
+      } else {
+        setIsOverflowing(false);
+      }
+    }
+  }, [text]);
+
+  const animName = `artistMarqueeAnim_${Math.round(translateX)}`;
+
+  return (
+    <div ref={containerRef} className="w-full overflow-hidden select-none">
+      {isOverflowing && (
+        <style>{`
+          @keyframes ${animName} {
+            0%, 15% { transform: translateX(0px); }
+            85%, 100% { transform: translateX(-${translateX}px); }
+          }
+        `}</style>
+      )}
+      <p 
+        ref={textRef} 
+        className={`${className || ''} whitespace-nowrap ${isOverflowing ? 'inline-block' : 'truncate'}`}
+        style={isOverflowing ? {
+          animation: `${animName} ${Math.max(4, translateX / 22)}s ease-in-out infinite alternate`
+        } : undefined}
+      >
+        {renderArtistNameWithBlur(text)}
+      </p>
+    </div>
+  );
+}
+
+function SongTitleMarquee({ title, themeHoverClass }: { title: string; themeHoverClass: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLHeadingElement>(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const [scrollAmount, setScrollAmount] = useState(0);
+
+  useEffect(() => {
+    let animationFrameId: number;
+
+    const checkOverflow = () => {
+      animationFrameId = requestAnimationFrame(() => {
+        if (containerRef.current && textRef.current) {
+          const cWidth = containerRef.current.clientWidth;
+          const tWidth = textRef.current.scrollWidth;
+          if (tWidth > cWidth) {
+            setIsOverflowing(true);
+            setScrollAmount(tWidth - cWidth);
+          } else {
+            setIsOverflowing(false);
+            setScrollAmount(0);
+          }
+        }
+      });
+    };
+
+    checkOverflow();
+    const timeout1 = setTimeout(checkOverflow, 300);
+    const timeout2 = setTimeout(checkOverflow, 1000);
+
+    let textObserver: ResizeObserver | null = null;
+    let containerObserver: ResizeObserver | null = null;
+
+    if (textRef.current) {
+      textObserver = new ResizeObserver(checkOverflow);
+      textObserver.observe(textRef.current);
+    }
+    if (containerRef.current) {
+      containerObserver = new ResizeObserver(checkOverflow);
+      containerObserver.observe(containerRef.current);
+    }
+
+    return () => {
+      clearTimeout(timeout1);
+      clearTimeout(timeout2);
+      cancelAnimationFrame(animationFrameId);
+      if (textObserver) textObserver.disconnect();
+      if (containerObserver) containerObserver.disconnect();
+    };
+  }, [title]);
+
+  const animName = `songTitlePingPongAnim_${Math.round(scrollAmount)}`;
+
+  return (
+    <div ref={containerRef} className="w-full overflow-hidden relative">
+      {isOverflowing && (
+        <style>{`
+          @keyframes ${animName} {
+            0%, 20% { transform: translateX(0px); }
+            80%, 100% { transform: translateX(-${scrollAmount + 6}px); }
+          }
+        `}</style>
+      )}
+      <h3 
+        ref={textRef} 
+        className={`text-[13px] sm:text-[14.5px] font-extrabold text-stone-900 whitespace-nowrap transition-colors ${themeHoverClass} ${isOverflowing ? 'inline-block' : 'truncate'}`}
+        style={isOverflowing ? {
+          animation: `${animName} ${Math.max(4.5, scrollAmount / 18)}s ease-in-out infinite alternate`
+        } : undefined}
+        title={title}
+      >
+        {title}
+      </h3>
+    </div>
+  );
+}
+
+function MusicianSongCard({
+  demo,
+  idx,
+  activeListTab,
+  getArtistLink,
+  t,
+  data,
+  formatShareUrl,
+  copyToClipboard,
+  setToast,
+  setActiveBioSong
+}: MusicianSongCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+  const [mobilePopped, setMobilePopped] = useState(false);
+  const fadeIntervalRef = useRef<any>(null);
+  const timerTimeoutRef = useRef<any>(null);
+
+  const audioUrl = demo.audioUrl || demo.backupAudioUrl || demo.audio_url || '';
+
+  const isTouchMobile = typeof window !== 'undefined' && (
+    (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
+    window.innerWidth < 768
+  );
+
+  const themePresets = [
+    {
+      cardBg: 'bg-gradient-to-b from-white via-rose-50/95 to-pink-100/95',
+      strokeClass: 'stroke-pink-400 group-hover/card:stroke-pink-500',
+      dropShadow: 'drop-shadow-[0_15px_30px_rgba(244,63,94,0.32)] group-hover/card:drop-shadow-[0_22px_45px_rgba(244,63,94,0.5)]',
+      halo: 'bg-pink-400/80',
+      yearText: 'text-pink-700 font-black',
+      yearBorder: 'border-pink-300/90 bg-white/90 shadow-xs',
+      badgeBg: 'bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600 text-white shadow-[0_4px_14px_rgba(244,63,94,0.45)]',
+      arcRim: 'rgba(244, 63, 94, 0.85)',
+      hoverTitle: 'group-hover:text-rose-600'
+    },
+    {
+      cardBg: 'bg-gradient-to-b from-white via-purple-50/95 to-indigo-100/95',
+      strokeClass: 'stroke-purple-400 group-hover/card:stroke-purple-500',
+      dropShadow: 'drop-shadow-[0_15px_30px_rgba(147,51,234,0.32)] group-hover/card:drop-shadow-[0_22px_45px_rgba(147,51,234,0.5)]',
+      halo: 'bg-purple-400/80',
+      yearText: 'text-purple-800 font-black',
+      yearBorder: 'border-purple-300/90 bg-white/90 shadow-xs',
+      badgeBg: 'bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 text-white shadow-[0_4px_14px_rgba(147,51,234,0.45)]',
+      arcRim: 'rgba(147, 51, 234, 0.85)',
+      hoverTitle: 'group-hover:text-purple-700'
+    },
+    {
+      cardBg: 'bg-gradient-to-b from-white via-amber-50/95 to-orange-100/95',
+      strokeClass: 'stroke-amber-400 group-hover/card:stroke-amber-500',
+      dropShadow: 'drop-shadow-[0_15px_30px_rgba(245,158,11,0.32)] group-hover/card:drop-shadow-[0_22px_45px_rgba(245,158,11,0.5)]',
+      halo: 'bg-amber-400/80',
+      yearText: 'text-amber-800 font-black',
+      yearBorder: 'border-amber-300/90 bg-white/90 shadow-xs',
+      badgeBg: 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white shadow-[0_4px_14px_rgba(245,158,11,0.45)]',
+      arcRim: 'rgba(245, 158, 11, 0.85)',
+      hoverTitle: 'group-hover:text-amber-700'
+    },
+    {
+      cardBg: 'bg-gradient-to-b from-white via-sky-50/95 to-cyan-100/95',
+      strokeClass: 'stroke-sky-400 group-hover/card:stroke-sky-500',
+      dropShadow: 'drop-shadow-[0_15px_30px_rgba(14,165,233,0.32)] group-hover/card:drop-shadow-[0_22px_45px_rgba(14,165,233,0.5)]',
+      halo: 'bg-sky-400/80',
+      yearText: 'text-sky-800 font-black',
+      yearBorder: 'border-sky-300/90 bg-white/90 shadow-xs',
+      badgeBg: 'bg-gradient-to-r from-sky-500 via-blue-500 to-sky-600 text-white shadow-[0_4px_14px_rgba(14,165,233,0.45)]',
+      arcRim: 'rgba(14, 165, 233, 0.85)',
+      hoverTitle: 'group-hover:text-sky-700'
+    },
+    {
+      cardBg: 'bg-gradient-to-b from-white via-emerald-50/95 to-teal-100/95',
+      strokeClass: 'stroke-emerald-400 group-hover/card:stroke-emerald-500',
+      dropShadow: 'drop-shadow-[0_15px_30px_rgba(16,185,129,0.32)] group-hover/card:drop-shadow-[0_22px_45px_rgba(16,185,129,0.5)]',
+      halo: 'bg-emerald-400/80',
+      yearText: 'text-emerald-800 font-black',
+      yearBorder: 'border-emerald-300/90 bg-white/90 shadow-xs',
+      badgeBg: 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white shadow-[0_4px_14px_rgba(16,185,129,0.45)]',
+      arcRim: 'rgba(16, 185, 129, 0.85)',
+      hoverTitle: 'group-hover:text-emerald-700'
+    },
+    {
+      cardBg: 'bg-gradient-to-b from-white via-fuchsia-50/95 to-pink-100/95',
+      strokeClass: 'stroke-fuchsia-400 group-hover/card:stroke-fuchsia-500',
+      dropShadow: 'drop-shadow-[0_15px_30px_rgba(217,70,239,0.32)] group-hover/card:drop-shadow-[0_22px_45px_rgba(217,70,239,0.5)]',
+      halo: 'bg-fuchsia-400/80',
+      yearText: 'text-fuchsia-800 font-black',
+      yearBorder: 'border-fuchsia-300/90 bg-white/90 shadow-xs',
+      badgeBg: 'bg-gradient-to-r from-fuchsia-500 via-pink-500 to-fuchsia-600 text-white shadow-[0_4px_14px_rgba(217,70,239,0.45)]',
+      arcRim: 'rgba(217, 70, 239, 0.85)',
+      hoverTitle: 'group-hover:text-fuchsia-700'
+    }
+  ];
+
+  const theme = themePresets[idx % themePresets.length];
+
+  const isReleasedSong = activeListTab === 'released' || demo.isReleased === true || demo.isReleased === 'true' || demo.type === 'released' || !!(demo.linkYoutube || demo.linkSpotify || demo.linkApple || demo.linkZing || demo.linkYoutubeMusic);
+  const isDemoSong = !isReleasedSong;
+
+  const stopAudio = useCallback(() => {
+    if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+    if (timerTimeoutRef.current) clearTimeout(timerTimeoutRef.current);
+    fadeIntervalRef.current = null;
+    timerTimeoutRef.current = null;
+
+    if (globalActiveCardId === demo.id) {
+      stopGlobalPreviewAudio();
+    }
+    setIsPlaying(false);
+    setIsLoadingAudio(false);
+    setMobilePopped(false);
+    setIsHovered(false);
+  }, [demo.id]);
+
+  const startAudioPreview = useCallback(() => {
+    const isAuth = !!getAdminToken() || !!getMemberToken();
+    // Absolutely block preview for demo songs if user is not admin or member
+    if (isDemoSong && !isAuth) return;
+
+    if (!audioUrl) return;
+
+    setIsLoadingAudio(true);
+
+    // Stop any existing global audio immediately before playing new preview
+    stopGlobalPreviewAudio();
+
+    const audio = new Audio(audioUrl);
+    audio.preload = 'auto';
+    globalPreviewAudio = audio;
+    globalActiveCardId = demo.id;
+
+    // Dispatch event so all other card instances update their isPlaying state
+    window.dispatchEvent(new CustomEvent('crvn-stop-all-audio-previews', { detail: { currentId: demo.id } }));
+
+    audio.volume = 0;
+    const playSnippet = () => {
+      const duration = audio.duration || 180;
+      const startTime = duration > 55 ? 48 : (duration > 20 ? 10 : 0);
+      try { audio.currentTime = startTime; } catch (e) {}
+
+      audio.play().then(() => {
+        if (globalActiveCardId === demo.id) {
+          setIsLoadingAudio(false);
+          setIsPlaying(true);
+          let vol = 0;
+          const targetVol = 0.8;
+          const fadeIn = setInterval(() => {
+            if (vol < targetVol) {
+              vol += 0.08;
+              if (globalPreviewAudio === audio) audio.volume = Math.min(targetVol, vol);
+            } else {
+              if (globalPreviewAudio === audio) audio.volume = targetVol;
+              clearInterval(fadeIn);
+            }
+          }, 100);
+          fadeIntervalRef.current = fadeIn;
+
+          timerTimeoutRef.current = setTimeout(() => {
+            stopAudio();
+          }, 28000);
+        } else {
+          audio.pause();
+          setIsLoadingAudio(false);
+        }
+      }).catch(() => {
+        // Autoplay blocked by browser policy prior to first user gesture.
+        // Listen for first click/tap anywhere on page background to trigger preview audio immediately!
+        try {
+          const a = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
+          a.volume = 0;
+          a.play().then(() => a.pause()).catch(() => {});
+        } catch (e) {}
+
+        const playOnNextInteraction = () => {
+          if (globalActiveCardId === demo.id && audio) {
+            audio.play().then(() => {
+              if (globalActiveCardId === demo.id) {
+                setIsLoadingAudio(false);
+                setIsPlaying(true);
+                audio.volume = 0.8;
+              }
+            }).catch(() => {});
+          }
+          ['pointerdown', 'click', 'touchstart'].forEach(evt => {
+            window.removeEventListener(evt, playOnNextInteraction, true);
+          });
+        };
+        ['pointerdown', 'click', 'touchstart'].forEach(evt => {
+          window.addEventListener(evt, playOnNextInteraction, { capture: true, once: true });
+        });
+
+        setIsPlaying(false);
+        setIsLoadingAudio(false);
+      });
+    };
+
+    if (audio.readyState >= 1) {
+      playSnippet();
+    } else {
+      audio.onloadedmetadata = playSnippet;
+      audio.onerror = () => {
+        setIsLoadingAudio(false);
+        setIsPlaying(false);
+      };
+      audio.load();
+    }
+  }, [audioUrl, demo.id, stopAudio]);
+
+  const handleMouseEnter = () => {
+    if (isTouchMobile) return;
+    setIsHovered(true);
+    const isAuth = !!getAdminToken() || !!getMemberToken();
+    if (isDemoSong && !isAuth) return;
+    if (audioUrl) {
+      startAudioPreview();
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isTouchMobile) return;
+    setIsHovered(false);
+    stopAudio();
+  };
+
+  // Global listener to immediately sync playing state across cards
+  useEffect(() => {
+    const handleStopOthers = (e: any) => {
+      if (e.detail?.currentId !== demo.id) {
+        setIsPlaying(false);
+        setIsLoadingAudio(false);
+        setMobilePopped(false);
+      }
+    };
+    window.addEventListener('crvn-stop-all-audio-previews', handleStopOthers);
+    return () => {
+      window.removeEventListener('crvn-stop-all-audio-previews', handleStopOthers);
+    };
+  }, [demo.id]);
+
+  const coverUrl = demo.coverUrl || demo.image || data?.slideshowImages?.[0] || data?.avatarUrl || '';
+  const songYear = demo.releaseYear || demo.year || (demo.releaseDate ? new Date(demo.releaseDate).getFullYear() : '2024');
+
+  // Safely extract achievement string
+  const getAchievementText = (demoItem: any): string => {
+    if (typeof demoItem.achievement === 'string' && demoItem.achievement.trim()) return demoItem.achievement.trim();
+    if (typeof demoItem.award === 'string' && demoItem.award.trim()) return demoItem.award.trim();
+    if (typeof demoItem.stats === 'string' && demoItem.stats.trim()) return demoItem.stats.trim();
+    if (Array.isArray(demoItem.achievements) && demoItem.achievements.length > 0) {
+      const first = demoItem.achievements[0];
+      if (typeof first === 'string' && first.trim()) return first.trim();
+      if (first && typeof first === 'object') {
+        const type = (first.type || '').toLowerCase();
+        const val = first.value || '';
+        if (type === 'trending') return `TOP ${val} TRENDING`;
+        if (type === 'views' || type === 'view') return `> ${val} VIEWS`;
+        if (type === 'streams' || type === 'stream') return `> ${val} STREAMS`;
+        if (val) return `${val}`;
+      }
+    }
+    return '';
+  };
+
+  const achievementText = getAchievementText(demo);
+  const hasAchievementsArray = Array.isArray(demo.achievements) && demo.achievements.length > 0;
+
+  // Extract artist names for upper hemisphere of center label (max 3 lines, 1 artist per line)
+  const rawArtistStr = demo.singer || demo.author || data?.artistName || '';
+  const singersList = rawArtistStr
+    .split(/,|\bft\.?\b|\bfeat\.?\b|&|\+/i)
+    .map((s: string) => s.trim())
+    .filter(Boolean)
+    .slice(0, 3);
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (demo.linkType === 'indirect') {
+      e.preventDefault();
+      const indirectLinks = [
+        demo.linkSpotify, 
+        demo.linkApple, 
+        demo.linkZing, 
+        demo.linkYoutubeMusic, 
+        demo.linkYoutube
+      ].filter(l => !!l);
+      
+      if (indirectLinks.length === 1 && indirectLinks[0]) {
+        window.open(indirectLinks[0], '_blank');
+      } else {
+        setActiveBioSong(demo);
+      }
+    }
+  };
+
+  const targetLink = activeListTab === 'released' 
+    ? getArtistLink(`/playlist/released?song=${demo.slug || demo.id}`) 
+    : getArtistLink(`/song/${demo.slug || demo.id}`);
+
+  const isElevated = isHovered || isPlaying || isLoadingAudio || mobilePopped;
+
+  return (
+    <div 
+      className="relative w-full group pt-24 sm:pt-24 select-none"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onPointerLeave={handleMouseLeave}
+    >
+      {/* Halo Glow behind top of vinyl record */}
+      <div 
+        className={`absolute left-1/2 -translate-x-1/2 -top-1 sm:top-2 w-60 h-60 sm:w-56 sm:h-56 rounded-full blur-3xl pointer-events-none transition-all duration-700 opacity-70 group-hover:opacity-100 ${theme.halo}`} 
+      />
+
+      {/* Vinyl Record (BEHIND card sleeve - Clickable to pop up & preview) */}
+      <div 
+        className={`absolute left-1/2 -translate-x-1/2 -top-3.5 sm:top-1 w-[15.5rem] h-[15.5rem] sm:w-52 sm:h-52 pointer-events-auto cursor-pointer transition-all duration-500 ${isElevated ? 'z-20' : 'z-10'}`}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const isAuth = !!getAdminToken() || !!getMemberToken();
+          if (isDemoSong && !isAuth) return;
+          if (isPlaying || mobilePopped || globalActiveCardId === demo.id || isHovered) {
+            stopAudio();
+          } else {
+            stopGlobalPreviewAudio();
+            setMobilePopped(true);
+            startAudioPreview();
+          }
+        }}
+      >
+        {/* Floating Top-Left PREVIEW / LOADING Badge */}
+        {(isPlaying || isLoadingAudio) && (
+          <div className="absolute -top-6 -left-6 sm:-top-8 sm:-left-10 z-40 pointer-events-none">
+            <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${isLoadingAudio ? 'bg-amber-600 border-amber-200/90' : 'bg-rose-600 border-rose-200/90'} text-white text-[8px] sm:text-[9px] font-black tracking-widest uppercase shadow-xl border animate-pulse`}>
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+              {isLoadingAudio ? 'LOADING PREVIEW' : 'PREVIEW'}
+            </span>
+          </div>
+        )}
+
+        <div className={`w-full h-full rounded-full border-4 border-neutral-900/20 shadow-[0_20px_40px_rgba(0,0,0,0.4)] overflow-hidden relative transition-all duration-500 transform ${
+          isElevated ? 'scale-106 sm:scale-110 -translate-y-12 sm:-translate-y-14 shadow-[0_20px_45px_rgba(0,0,0,0.45)]' : 'scale-100'
+        }`}>
+          {/* Shiny Glass Arc Reflection Overlay */}
+          <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/35 via-transparent to-black/50 pointer-events-none z-20" />
+
+          {/* Rotating Vinyl Container */}
+          <div className={`w-full h-full relative ${isTouchMobile ? 'animate-[spin_10s_linear_infinite]' : (isElevated ? 'animate-[spin_6s_linear_infinite]' : '')}`}>
+            {/* Album Cover artwork as Vinyl disc face */}
+            {coverUrl ? (
+              <img 
+                src={coverUrl} 
+                className="w-full h-full object-cover rounded-full filter contrast-[1.05]" 
+                alt={demo.title} 
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div className="w-full h-full bg-neutral-900 rounded-full" />
+            )}
+
+            {/* Vinyl Grooves Conic Shine Overlay */}
+            <div 
+              className="absolute inset-0 rounded-full pointer-events-none opacity-50 mix-blend-overlay z-10"
+              style={{
+                background: 'conic-gradient(from 0deg, rgba(255,255,255,0.45) 0deg, rgba(0,0,0,0.85) 90deg, rgba(255,255,255,0.45) 180deg, rgba(0,0,0,0.85) 270deg, rgba(255,255,255,0.45) 360deg)'
+              }}
+            />
+            <div className="absolute inset-0 rounded-full border-[12px] sm:border-[14px] border-black/25 pointer-events-none z-10" />
+            <div className="absolute inset-2 rounded-full border-[1px] border-white/15 pointer-events-none z-10" />
+            <div className="absolute inset-6 rounded-full border-[1px] border-black/25 pointer-events-none z-10" />
+
+            {/* Center Translucent Label Badge */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 sm:w-16 sm:h-16 bg-white/90 sm:bg-white/95 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.4)] flex flex-col items-center justify-between py-1 px-0.5 text-center border-2 border-white z-20 overflow-hidden text-stone-950">
+              {/* Upper Hemisphere: Artists (max 3 lines) */}
+              <div className="flex flex-col items-center justify-center min-h-0 w-full flex-1 pt-0.5 px-0.5">
+                {singersList.length > 0 ? (
+                  singersList.map((sName: string, sIdx: number) => {
+                    const isSecret = sName.toLowerCase().includes("secret") || sName.toLowerCase().includes("bí mật");
+                    const len = sName.length;
+                    const fontClass = len > 14 ? 'text-[4px] sm:text-[5px] tracking-tighter' : len > 9 ? 'text-[4.5px] sm:text-[5.5px] tracking-tighter' : len > 7 ? 'text-[5.5px] sm:text-[6.5px] tracking-tight' : 'text-[6.5px] sm:text-[7.5px] tracking-normal';
+                    return (
+                      <span 
+                        key={sIdx} 
+                        className={`${fontClass} font-black uppercase text-stone-950 leading-[1.05] whitespace-nowrap overflow-hidden text-ellipsis w-full px-0.5 drop-shadow-[0_1px_2px_rgba(255,255,255,0.95)] ${isSecret ? 'filter blur-[3px] select-none inline-block' : ''}`}
+                        title={isSecret ? "Nghệ sĩ bí mật" : sName}
+                      >
+                        {sName}
+                      </span>
+                    );
+                  })
+                ) : (
+                  <span className="text-[6.5px] sm:text-[7.5px] font-black uppercase text-stone-950 tracking-tight leading-[1.05] whitespace-nowrap overflow-hidden text-ellipsis w-full px-0.5 drop-shadow-[0_1px_2px_rgba(255,255,255,0.95)]">
+                    ARTIST
+                  </span>
+                )}
+              </div>
+
+              {/* Spacer for dead-center spindle hole */}
+              <div className="h-3.5 sm:h-4 shrink-0" />
+
+              {/* Lower Hemisphere: Release Year */}
+              <div className="w-full shrink-0 pb-0.5">
+                <span className="text-[7px] sm:text-[8px] font-black text-stone-950 tracking-wider block leading-none drop-shadow-[0_1px_2px_rgba(255,255,255,0.9)]">
+                  {songYear}
+                </span>
+              </div>
+            </div>
+
+            {/* Realistic Center Spindle Hole */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border-[1.5px] border-stone-900 bg-transparent shadow-[inset_0_1px_3px_rgba(0,0,0,0.85),0_1px_2px_rgba(0,0,0,0.5)] z-30 pointer-events-none" />
+          </div>
+        </div>
+      </div>
+
+      {/* SVG ClipPath Definition for Concave Top Cutout Card Sleeve */}
+      <svg className="w-0 h-0 absolute pointer-events-none" aria-hidden="true">
+        <defs>
+          <clipPath id="card-concave-clip" clipPathUnits="objectBoundingBox">
+            <path d="M 0,0.18 C 0,0.06 0.03,0 0.08,0 L 0.12,0 C 0.24,0 0.30,0.18 0.5,0.18 C 0.70,0.18 0.76,0 0.88,0 L 0.92,0 C 0.97,0 1,0.06 1,0.18 L 1,0.82 C 1,0.94 0.97,1 0.92,1 L 0.08,1 C 0.03,1 0,0.94 0,0.82 Z" />
+          </clipPath>
+        </defs>
+      </svg>
+
+      {/* Outer Card Wrapper with Drop Shadow following the concave shape */}
+      <div className={`relative w-full z-20 transition-all duration-300 hover:-translate-y-2 group/card ${theme.dropShadow}`}>
+        <Link
+          to={targetLink}
+          onClick={handleClick}
+          className={`block w-full ${theme.cardBg} backdrop-blur-2xl transition-all duration-300 relative pt-8 sm:pt-9.5 pb-4.5 px-4 sm:px-5 overflow-hidden`}
+          style={{ clipPath: 'url(#card-concave-clip)', WebkitClipPath: 'url(#card-concave-clip)' }}
+        >
+          {/* SVG Curved Border Stroke following the exact concave path */}
+          <svg 
+            className="absolute inset-0 w-full h-full pointer-events-none z-30 overflow-visible" 
+            viewBox="0 0 1 1" 
+            preserveAspectRatio="none"
+          >
+            <path 
+              d="M 0,0.18 C 0,0.06 0.03,0 0.08,0 L 0.12,0 C 0.24,0 0.30,0.18 0.5,0.18 C 0.70,0.18 0.76,0 0.88,0 L 0.92,0 C 0.97,0 1,0.06 1,0.18 L 1,0.82 C 1,0.94 0.97,1 0.92,1 L 0.08,1 C 0.03,1 0,0.94 0,0.82 Z" 
+              fill="none" 
+              className={`${theme.strokeClass} transition-colors duration-300`} 
+              strokeWidth="3" 
+              vectorEffect="non-scaling-stroke" 
+            />
+          </svg>
+
+          {/* Light Gradient Sweeping Effect across card when playing */}
+          {isPlaying && (
+            <div className="absolute inset-0 pointer-events-none z-30 overflow-hidden">
+              <div className="w-full h-full bg-gradient-to-r from-transparent via-white/50 to-transparent animate-shimmer-sweep" />
+            </div>
+          )}
+          {/* Top Section: Single Unified Row for Achievement & Year Badges (Identical height for all cards) */}
+          <div className="flex items-center justify-between gap-1.5 w-full h-[32px] mt-1 mb-2 relative z-10">
+            {hasAchievementsArray ? (
+              <AchievementCycle achievements={demo.achievements} align="left" isLightBg={true} />
+            ) : achievementText ? (
+              <span className={`px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${theme.badgeBg} inline-flex items-center gap-1 shrink-0`}>
+                <Award className="w-3 h-3 stroke-[2.5]" />
+                {achievementText}
+              </span>
+            ) : <div />}
+
+            {/* Year Badge */}
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black shadow-xs border ${theme.yearBorder} ${theme.yearText} shrink-0 inline-flex items-center gap-0.5 ml-auto`}>
+              {songYear}
+            </span>
+          </div>
+
+          {/* Bottom Content Area */}
+          <div className="flex items-end justify-between gap-3 relative z-10 mt-1">
+            {/* Left Column: Title (Marquee) & Artist */}
+            <div className="flex-1 min-w-0 pr-1">
+              {/* Song Title with Immediate Marquee Effect for long titles */}
+              <SongTitleMarquee 
+                title={demo.title} 
+                themeHoverClass={theme.hoverTitle} 
+              />
+
+              {/* Artist Name with Ping-Pong Marquee when overflowing */}
+              <ArtistNameMarquee 
+                text={rawArtistStr} 
+                className="text-xs font-semibold text-stone-500 mt-1" 
+              />
+            </div>
+
+            {/* Right Column: Square Thumbnail Image */}
+            <div className="w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-2xl overflow-hidden border-2 border-white/90 shadow-md group-hover/card:scale-105 transition-transform duration-500">
+              {coverUrl ? (
+                <img 
+                  src={coverUrl} 
+                  className="w-full h-full object-cover" 
+                  alt={demo.title} 
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="w-full h-full bg-stone-200 flex items-center justify-center text-stone-400">
+                  <Music className="w-6 h-6" />
+                </div>
+              )}
+            </div>
+          </div>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function Musician2SongCard({
+  demo,
+  idx,
+  activeListTab,
+  getArtistLink,
+  t,
+  data,
+  formatShareUrl,
+  copyToClipboard,
+  setToast,
+  setActiveBioSong
+}: MusicianSongCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+  const [mobilePopped, setMobilePopped] = useState(false);
+  const fadeIntervalRef = useRef<any>(null);
+  const timerTimeoutRef = useRef<any>(null);
+
+  const audioUrl = demo.audioUrl || demo.backupAudioUrl || demo.audio_url || '';
+  const getSongCoverUrl = (songUrl?: string) => songUrl || data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
+
+  const isTouchMobile = typeof window !== 'undefined' && (
+    (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
+    window.innerWidth < 768
+  );
+
+  const themePresets = [
+    {
+      cardBg: 'bg-gradient-to-b from-white via-rose-50/95 to-pink-100/95',
+      strokeClass: 'stroke-pink-400 group-hover/card:stroke-pink-500',
+      dropShadow: 'drop-shadow-[0_15px_30px_rgba(244,63,94,0.35)] group-hover/card:drop-shadow-[0_22px_45px_rgba(244,63,94,0.5)]',
+      halo: 'bg-pink-400/80',
+      yearText: 'text-pink-700 font-black',
+      yearBorder: 'border-pink-300/90 bg-white/90 shadow-xs',
+      badgeBg: 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white shadow-[0_4px_14px_rgba(16,185,129,0.45)]',
+      hoverTitle: 'group-hover:text-rose-600'
+    },
+    {
+      cardBg: 'bg-gradient-to-b from-white via-purple-50/95 to-indigo-100/95',
+      strokeClass: 'stroke-purple-400 group-hover/card:stroke-purple-500',
+      dropShadow: 'drop-shadow-[0_15px_30px_rgba(147,51,234,0.35)] group-hover/card:drop-shadow-[0_22px_45px_rgba(147,51,234,0.5)]',
+      halo: 'bg-purple-400/80',
+      yearText: 'text-purple-800 font-black',
+      yearBorder: 'border-purple-300/90 bg-white/90 shadow-xs',
+      badgeBg: 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white shadow-[0_4px_14px_rgba(16,185,129,0.45)]',
+      hoverTitle: 'group-hover:text-purple-700'
+    },
+    {
+      cardBg: 'bg-gradient-to-b from-white via-amber-50/95 to-orange-100/95',
+      strokeClass: 'stroke-amber-400 group-hover/card:stroke-amber-500',
+      dropShadow: 'drop-shadow-[0_15px_30px_rgba(245,158,11,0.35)] group-hover/card:drop-shadow-[0_22px_45px_rgba(245,158,11,0.5)]',
+      halo: 'bg-amber-400/80',
+      yearText: 'text-amber-800 font-black',
+      yearBorder: 'border-amber-300/90 bg-white/90 shadow-xs',
+      badgeBg: 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white shadow-[0_4px_14px_rgba(16,185,129,0.45)]',
+      hoverTitle: 'group-hover:text-amber-700'
+    },
+    {
+      cardBg: 'bg-gradient-to-b from-white via-sky-50/95 to-cyan-100/95',
+      strokeClass: 'stroke-sky-400 group-hover/card:stroke-sky-500',
+      dropShadow: 'drop-shadow-[0_15px_30px_rgba(14,165,233,0.35)] group-hover/card:drop-shadow-[0_22px_45px_rgba(14,165,233,0.5)]',
+      halo: 'bg-sky-400/80',
+      yearText: 'text-sky-800 font-black',
+      yearBorder: 'border-sky-300/90 bg-white/90 shadow-xs',
+      badgeBg: 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white shadow-[0_4px_14px_rgba(16,185,129,0.45)]',
+      hoverTitle: 'group-hover:text-sky-700'
+    },
+    {
+      cardBg: 'bg-gradient-to-b from-white via-emerald-50/95 to-teal-100/95',
+      strokeClass: 'stroke-emerald-400 group-hover/card:stroke-emerald-500',
+      dropShadow: 'drop-shadow-[0_15px_30px_rgba(16,185,129,0.35)] group-hover/card:drop-shadow-[0_22px_45px_rgba(16,185,129,0.5)]',
+      halo: 'bg-emerald-400/80',
+      yearText: 'text-emerald-800 font-black',
+      yearBorder: 'border-emerald-300/90 bg-white/90 shadow-xs',
+      badgeBg: 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white shadow-[0_4px_14px_rgba(16,185,129,0.45)]',
+      hoverTitle: 'group-hover:text-emerald-700'
+    },
+    {
+      cardBg: 'bg-gradient-to-b from-white via-fuchsia-50/95 to-pink-100/95',
+      strokeClass: 'stroke-fuchsia-400 group-hover/card:stroke-fuchsia-500',
+      dropShadow: 'drop-shadow-[0_15px_30px_rgba(217,70,239,0.35)] group-hover/card:drop-shadow-[0_22px_45px_rgba(217,70,239,0.5)]',
+      halo: 'bg-fuchsia-400/80',
+      yearText: 'text-fuchsia-800 font-black',
+      yearBorder: 'border-fuchsia-300/90 bg-white/90 shadow-xs',
+      badgeBg: 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white shadow-[0_4px_14px_rgba(16,185,129,0.45)]',
+      hoverTitle: 'group-hover:text-fuchsia-700'
+    }
+  ];
+
+  const theme = themePresets[idx % themePresets.length];
+
+  const isReleasedSong = activeListTab === 'released' || demo.isReleased === true || demo.isReleased === 'true' || demo.type === 'released' || !!(demo.linkYoutube || demo.linkSpotify || demo.linkApple || demo.linkZing || demo.linkYoutubeMusic);
+  const isDemoSong = !isReleasedSong;
+
+  const stopAudio = useCallback(() => {
+    if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+    if (timerTimeoutRef.current) clearTimeout(timerTimeoutRef.current);
+    fadeIntervalRef.current = null;
+    timerTimeoutRef.current = null;
+
+    if (globalActiveCardId === demo.id) {
+      stopGlobalPreviewAudio();
+    }
+    setIsPlaying(false);
+    setIsLoadingAudio(false);
+    setMobilePopped(false);
+  }, [demo.id]);
+
+  const startAudioPreview = useCallback(() => {
+    const isAuth = !!getAdminToken() || !!getMemberToken();
+    if (isDemoSong && !isAuth) return;
+    if (!audioUrl) return;
+
+    stopGlobalPreviewAudio();
+    globalActiveCardId = demo.id;
+
+    const audio = new Audio(audioUrl);
+    globalPreviewAudio = audio;
+    audio.volume = 0;
+    setIsLoadingAudio(true);
+
+    const playSnippet = () => {
+      if (globalActiveCardId !== demo.id) return;
+      const duration = audio.duration || 180;
+      const startTime = duration > 55 ? 48 : (duration > 20 ? 10 : 0);
+      try { audio.currentTime = startTime; } catch (e) {}
+      audio.play().then(() => {
+        if (globalActiveCardId === demo.id) {
+          setIsLoadingAudio(false);
+          setIsPlaying(true);
+          const targetVol = 0.8;
+          let currentVol = 0;
+          const fadeIn = setInterval(() => {
+            currentVol += 0.1;
+            if (currentVol >= targetVol) {
+              if (globalPreviewAudio === audio) audio.volume = targetVol;
+              clearInterval(fadeIn);
+            } else {
+              if (globalPreviewAudio === audio) audio.volume = Math.min(targetVol, currentVol);
+            }
+          }, 60);
+          fadeIntervalRef.current = fadeIn;
+
+          timerTimeoutRef.current = setTimeout(() => {
+            stopAudio();
+          }, 28000);
+        } else {
+          audio.pause();
+          setIsLoadingAudio(false);
+        }
+      }).catch(() => {
+        setIsPlaying(false);
+        setIsLoadingAudio(false);
+      });
+    };
+
+    if (audio.readyState >= 1) {
+      playSnippet();
+    } else {
+      audio.onloadedmetadata = playSnippet;
+      audio.onerror = () => {
+        setIsLoadingAudio(false);
+        setIsPlaying(false);
+      };
+      audio.load();
+    }
+  }, [audioUrl, demo.id, isDemoSong, stopAudio]);
+
+  const handleMouseEnter = () => {
+    if (isTouchMobile) return;
+    setIsHovered(true);
+    const isAuth = !!getAdminToken() || !!getMemberToken();
+    if (isDemoSong && !isAuth) return;
+    if (audioUrl) {
+      startAudioPreview();
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isTouchMobile) return;
+    setIsHovered(false);
+    stopAudio();
+  };
+
+  useEffect(() => {
+    const handleStopOthers = (e: any) => {
+      if (e.detail?.currentId !== demo.id) {
+        setIsPlaying(false);
+        setIsLoadingAudio(false);
+        setMobilePopped(false);
+      }
+    };
+    window.addEventListener('crvn-stop-all-audio-previews', handleStopOthers);
+    return () => {
+      window.removeEventListener('crvn-stop-all-audio-previews', handleStopOthers);
+    };
+  }, [demo.id]);
+
+  let songYear = '2025';
+  if (demo.year) {
+    songYear = String(demo.year);
+  } else if (demo.releaseDate) {
+    songYear = String(demo.releaseDate).substring(0, 4);
+  } else if (demo.created_at) {
+    songYear = String(demo.created_at).substring(0, 4);
+  }
+
+  let rawArtistStr = demo.singers || demo.singer || demo.artist || data?.artistName || 'Nghệ Sĩ';
+  const singersList = String(rawArtistStr).split(/,\s*|\s+&\s+|\s+ft\.?\s+|\s+feat\.?\s+/i).filter(Boolean);
+
+  let coverUrl = getSongCoverUrl(demo.coverUrl) || getSongCoverUrl(demo.cover_url) || getSongCoverUrl(demo.image) || '';
+  if (!coverUrl && data?.slideshowImages && data.slideshowImages.length > 0) {
+    const hash = Array.from(String(demo.id || demo.title || 'song')).reduce((sum: number, char: any) => sum + char.charCodeAt(0), 0);
+    coverUrl = data.slideshowImages[hash % data.slideshowImages.length];
+  }
+
+  const targetLink = isReleasedSong 
+    ? getArtistLink(`/playlist/released?song=${demo.slug || demo.id}`)
+    : getArtistLink(`/song/${demo.slug || demo.id}`);
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (demo.linkType === 'indirect') {
+      e.preventDefault();
+      const indirectLinks = [
+        demo.linkSpotify, 
+        demo.linkApple, 
+        demo.linkZing, 
+        demo.linkYoutubeMusic, 
+        demo.linkYoutube, 
+        demo.linkSoundcloud, 
+        demo.linkTiktok
+      ].filter(Boolean);
+      
+      if (indirectLinks.length > 0) {
+        window.open(indirectLinks[0], '_blank');
+      } else {
+        setActiveBioSong(demo);
+      }
+    }
+  };
+
+  const isElevated = isHovered || isPlaying || isLoadingAudio || mobilePopped;
+
+  const hasSpotify = !!demo.linkSpotify;
+  const hasYoutube = !!demo.linkYoutube || !!demo.linkYoutubeMusic;
+
+  return (
+    <div 
+      className="relative w-full group pt-24 sm:pt-24 select-none"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onPointerLeave={handleMouseLeave}
+    >
+      {/* Wooden Shelf Glow */}
+      <div 
+        className={`absolute left-1/2 -translate-x-1/2 -top-1 sm:top-2 w-60 h-60 sm:w-56 sm:h-56 rounded-full blur-3xl pointer-events-none transition-all duration-700 opacity-70 group-hover:opacity-100 ${theme.halo}`} 
+      />
+
+      {/* Vinyl Disc sticking out from wooden shelf */}
+      <div 
+        className={`absolute left-1/2 -translate-x-1/2 -top-3.5 sm:top-1 w-[15.5rem] h-[15.5rem] sm:w-52 sm:h-52 pointer-events-auto cursor-pointer transition-all duration-500 ${isElevated ? 'z-20' : 'z-10'}`}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const isAuth = !!getAdminToken() || !!getMemberToken();
+          if (isDemoSong && !isAuth) return;
+          if (isPlaying || mobilePopped || globalActiveCardId === demo.id || isHovered) {
+            stopAudio();
+          } else {
+            stopGlobalPreviewAudio();
+            setMobilePopped(true);
+            startAudioPreview();
+          }
+        }}
+      >
+        {(isPlaying || isLoadingAudio) && (
+          <div className="absolute -top-6 -left-6 sm:-top-8 sm:-left-10 z-40 pointer-events-none">
+            <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${isLoadingAudio ? 'bg-amber-600 border-amber-200/90' : 'bg-rose-600 border-rose-200/90'} text-white text-[8px] sm:text-[9px] font-black tracking-widest uppercase shadow-xl border animate-pulse`}>
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+              {isLoadingAudio ? 'LOADING PREVIEW' : 'PREVIEW'}
+            </span>
+          </div>
+        )}
+
+        <div className={`w-full h-full rounded-full border-4 border-neutral-900/30 shadow-[0_20px_40px_rgba(0,0,0,0.6)] overflow-hidden relative transition-all duration-500 transform ${
+          isElevated ? 'scale-106 sm:scale-110 -translate-y-12 sm:-translate-y-14 shadow-[0_20px_45px_rgba(0,0,0,0.7)]' : 'scale-100'
+        }`}>
+          <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/35 via-transparent to-black/60 pointer-events-none z-20" />
+          <div className={`w-full h-full relative ${isTouchMobile ? 'animate-[spin_10s_linear_infinite]' : (isElevated ? 'animate-[spin_6s_linear_infinite]' : '')}`}>
+            {coverUrl ? (
+              <img src={coverUrl} className="w-full h-full object-cover rounded-full filter contrast-[1.05]" alt={demo.title} referrerPolicy="no-referrer" />
+            ) : (
+              <div className="w-full h-full bg-neutral-900 rounded-full" />
+            )}
+            <div 
+              className="absolute inset-0 rounded-full pointer-events-none opacity-50 mix-blend-overlay z-10"
+              style={{
+                background: 'conic-gradient(from 0deg, rgba(255,255,255,0.45) 0deg, rgba(0,0,0,0.85) 90deg, rgba(255,255,255,0.45) 180deg, rgba(0,0,0,0.85) 270deg, rgba(255,255,255,0.45) 360deg)'
+              }}
+            />
+            <div className="absolute inset-0 rounded-full border-[12px] sm:border-[14px] border-black/30 pointer-events-none z-10" />
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 sm:w-16 sm:h-16 bg-white/95 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.4)] flex flex-col items-center justify-between py-1 px-0.5 text-center border-2 border-white z-20 overflow-hidden text-stone-950">
+              <div className="flex flex-col items-center justify-center min-h-0 w-full flex-1 pt-0.5 px-0.5">
+                {singersList.length > 0 ? (
+                  singersList.map((sName: string, sIdx: number) => (
+                    <span key={sIdx} className="text-[5.5px] sm:text-[6.5px] font-black uppercase text-stone-950 leading-tight whitespace-nowrap overflow-hidden text-ellipsis w-full px-0.5">
+                      {sName}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-[6.5px] font-black uppercase text-stone-950">ARTIST</span>
+                )}
+              </div>
+              <div className="h-3.5 sm:h-4 shrink-0" />
+              <div className="w-full shrink-0 pb-0.5">
+                <span className="text-[7px] sm:text-[8px] font-black text-stone-950 tracking-wider block leading-none">
+                  {songYear}
+                </span>
+              </div>
+            </div>
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border-[1.5px] border-stone-900 bg-transparent shadow-[inset_0_1px_3px_rgba(0,0,0,0.85)] z-30 pointer-events-none" />
+          </div>
+        </div>
+      </div>
+
+      {/* SVG ClipPath Definition for Concave Top Cutout Card Sleeve */}
+      <svg className="w-0 h-0 absolute pointer-events-none" aria-hidden="true">
+        <defs>
+          <clipPath id="card-concave-clip-m2" clipPathUnits="objectBoundingBox">
+            <path d="M 0,0.18 C 0,0.06 0.03,0 0.08,0 L 0.12,0 C 0.24,0 0.30,0.18 0.5,0.18 C 0.70,0.18 0.76,0 0.88,0 L 0.92,0 C 0.97,0 1,0.06 1,0.18 L 1,0.82 C 1,0.94 0.97,1 0.92,1 L 0.08,1 C 0.03,1 0,0.94 0,0.82 Z" />
+          </clipPath>
+        </defs>
+      </svg>
+
+      {/* Outer Card Wrapper with Drop Shadow following the concave shape */}
+      <div className={`relative w-full z-20 transition-all duration-300 hover:-translate-y-2 group/card ${theme.dropShadow}`}>
+        <Link
+          to={targetLink}
+          onClick={handleClick}
+          className={`block w-full ${theme.cardBg} backdrop-blur-2xl transition-all duration-300 relative pt-8 sm:pt-9.5 pb-4.5 px-4 sm:px-5 overflow-hidden`}
+          style={{ clipPath: 'url(#card-concave-clip-m2)', WebkitClipPath: 'url(#card-concave-clip-m2)' }}
+        >
+          {/* SVG Curved Border Stroke following the exact concave path */}
+          <svg 
+            className="absolute inset-0 w-full h-full pointer-events-none z-30 overflow-visible" 
+            viewBox="0 0 1 1" 
+            preserveAspectRatio="none"
+          >
+            <path 
+              d="M 0,0.18 C 0,0.06 0.03,0 0.08,0 L 0.12,0 C 0.24,0 0.30,0.18 0.5,0.18 C 0.70,0.18 0.76,0 0.88,0 L 0.92,0 C 0.97,0 1,0.06 1,0.18 L 1,0.82 C 1,0.94 0.97,1 0.92,1 L 0.08,1 C 0.03,1 0,0.94 0,0.82 Z" 
+              fill="none" 
+              className={`${theme.strokeClass} transition-colors duration-300`} 
+              strokeWidth="3" 
+              vectorEffect="non-scaling-stroke" 
+            />
+          </svg>
+
+          {/* Light Gradient Sweeping Effect across card when playing */}
+          {isPlaying && (
+            <div className="absolute inset-0 pointer-events-none z-30 overflow-hidden">
+              <div className="w-full h-full bg-gradient-to-r from-transparent via-white/50 to-transparent animate-shimmer-sweep" />
+            </div>
+          )}
+
+          {/* Top Section: Badges & Year */}
+          <div className="flex items-center justify-between gap-1.5 w-full h-[32px] mt-1 mb-2 relative z-10">
+            <span className={`px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${isReleasedSong ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white shadow-md' : 'bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 text-white shadow-md'} inline-flex items-center gap-1 shrink-0`}>
+              {isReleasedSong ? 'RELEASED' : 'DEMO'}
+            </span>
+
+            {/* Year Badge */}
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black shadow-xs border ${theme.yearBorder} ${theme.yearText} shrink-0 inline-flex items-center gap-0.5 ml-auto`}>
+              {songYear}
+            </span>
+          </div>
+
+          {/* Bottom Content Area */}
+          <div className="flex items-end justify-between gap-3 relative z-10 mt-1">
+            {/* Left Column: Title & Artist */}
+            <div className="flex-1 min-w-0 pr-1">
+              <SongTitleMarquee 
+                title={demo.title} 
+                themeHoverClass={theme.hoverTitle} 
+              />
+              <ArtistNameMarquee 
+                text={rawArtistStr} 
+                className="text-xs font-semibold text-stone-500 mt-1" 
+              />
+            </div>
+
+            {/* Right Column: Square Thumbnail Image */}
+            <div className="w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-2xl overflow-hidden border-2 border-white/90 shadow-md group-hover/card:scale-105 transition-transform duration-500">
+              {coverUrl ? (
+                <img 
+                  src={coverUrl} 
+                  className="w-full h-full object-cover" 
+                  alt={demo.title} 
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="w-full h-full bg-stone-200 flex items-center justify-center text-stone-400">
+                  <Music className="w-6 h-6" />
+                </div>
+              )}
+            </div>
+          </div>
+        </Link>
+      </div>
+
+      {/* Realistic 3D Wooden Shelf Ledge Below Card */}
+      <div 
+        className="w-[140%] -ml-[20%] h-7 mt-[-4px] rounded-b-lg border-t-2 border-amber-400/70 shadow-[0_16px_32px_rgba(0,0,0,0.95),inset_0_1px_2px_rgba(255,255,255,0.2)] relative z-30 flex items-center justify-between px-4 overflow-hidden"
+      >
+        {/* Wood grain texture background for shelf */}
+        <div 
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `url('/wood-bg.jpg')`,
+            backgroundSize: '400px auto',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'repeat',
+            filter: 'brightness(0.55) contrast(1.3) saturate(1.1)',
+          }}
+        />
+        {/* Gradient overlay for 3D depth on shelf */}
+        <div className="absolute inset-0 z-[1] bg-gradient-to-b from-white/15 via-transparent to-black/50" />
+        {/* Brass screw left */}
+        <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-amber-200 via-amber-500 to-amber-950 shadow-md border border-amber-300/80 flex items-center justify-center relative z-[2]">
+          <div className="w-1 h-0.5 bg-amber-950/80 rotate-45" />
+        </div>
+        <div className="h-[2px] flex-1 mx-4 bg-gradient-to-r from-transparent via-amber-400/25 to-transparent relative z-[2]" />
+        {/* Brass screw right */}
+        <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-amber-200 via-amber-500 to-amber-950 shadow-md border border-amber-300/80 flex items-center justify-center relative z-[2]">
+          <div className="w-1 h-0.5 bg-amber-950/80 -rotate-45" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 function MarqueeText({ children, className }: { children: React.ReactNode, className?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -285,7 +1443,7 @@ function MarqueeText({ children, className }: { children: React.ReactNode, class
   }, [children]);
 
   return (
-    <div ref={containerRef} className={`w-full overflow-hidden flex items-center ${className?.includes('justify-center') || className?.includes('text-center') ? 'justify-center' : 'justify-start'} ${className || ''}`}>
+    <div ref={containerRef} className={`w-full overflow-hidden flex items-center ${(!isOverflowing && (className?.includes('justify-center') || className?.includes('text-center'))) ? 'justify-center' : 'justify-start'} ${className || ''}`}>
       {isOverflowing ? (
         <motion.div
           className="whitespace-nowrap inline-flex items-center shrink-0 w-max pr-8"
@@ -321,26 +1479,27 @@ function formatText(text: string | null | undefined, disableLinks = false, isGol
         if (!trimmedPart) return null;
 
         if (trimmedPart.startsWith('(') && trimmedPart.endsWith(')')) {
-          // Parenthesized block: smaller font, elegant styling to prevent awkward wrapping
-          let badgeStyle = '';
-          if (effectiveBgMode === 'light') {
-            badgeStyle = 'font-black text-amber-950 bg-amber-500/25 border border-amber-600/40 drop-shadow-sm';
-          } else if (effectiveBgMode === 'red') {
-            badgeStyle = 'font-black text-white bg-black/40 border border-white/50 drop-shadow-md';
-          } else if (isGold) {
-            badgeStyle = 'font-black text-amber-100 bg-amber-950/45 border border-amber-400/40 drop-shadow-sm';
-          } else {
-            badgeStyle = 'font-bold text-rose-200 bg-rose-500/25 border border-rose-400/35 drop-shadow-md';
-          }
+          const innerContent = trimmedPart.slice(1, -1).trim();
+          // Skip badge formatting for short single/double character parenthesized text like (s), (S), (1)
+          if (innerContent.length > 2) {
+            let badgeStyle = '';
+            if (effectiveBgMode === 'light' || isGold) {
+              badgeStyle = 'font-bold text-[#5C3E14] bg-[#F5E6B8] border border-[#D4AF37]/60 shadow-2xs';
+            } else if (effectiveBgMode === 'red') {
+              badgeStyle = 'font-bold text-white bg-black/50 border border-white/60 shadow-xs';
+            } else {
+              badgeStyle = 'font-bold text-amber-100 bg-neutral-900/80 border border-amber-400/40 shadow-xs';
+            }
 
-          return (
-            <span 
-              key={`ft-p-${prefix}-${textClean}-${idx}`} 
-              className={`inline-block text-[9.5px] sm:text-[10.5px] mt-1 mb-0.5 leading-normal tracking-wide whitespace-normal break-words px-2 py-0.5 rounded-full ${badgeStyle}`}
-            >
-              {trimmedPart}
-            </span>
-          );
+            return (
+              <span 
+                key={`ft-p-${prefix}-${textClean}-${idx}`} 
+                className={`inline-block text-[8.5px] sm:text-[9.5px] max-w-full truncate align-middle my-0.5 leading-tight tracking-normal px-2 py-0.5 rounded-full ${badgeStyle}`}
+              >
+                {trimmedPart}
+              </span>
+            );
+          }
         }
         
         // Normal text segment
@@ -1476,6 +2635,10 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Có lỗi xảy ra khi tạo playlist.": "Có lỗi xảy ra khi tạo playlist.",
     "Có lỗi xảy ra khi kết nối máy chủ.": "Có lỗi xảy ra khi kết nối máy chủ.",
     "Hiển thị demo trong bài hát ngẫu nhiên ?": "Hiển thị demo trong bài hát ngẫu nhiên ?",
+    "Đang Bật - Bao gồm cả các bài Đề mô chưa phát hành": "Đang Bật - Bao gồm cả các bài Đề mô chưa phát hành",
+    "Đang Tắt - Chỉ hiển thị các bài đã Ra Rồi (Phát hành chính thức)": "Đang Tắt - Chỉ hiển thị các bài đã Ra Rồi (Phát hành chính thức)",
+    "Phần giới thiệu bản thân, hình ảnh nghệ sĩ và thông tin nổi bật.": "Phần giới thiệu bản thân, hình ảnh nghệ sĩ và thông tin nổi bật.",
+    "Phần tiểu sử âm nhạc, hành trình nghệ thuật và các cột mốc sự nghiệp.": "Phần tiểu sử âm nhạc, hành trình nghệ thuật và các cột mốc sự nghiệp.",
     "Mặc định: Bật - Bao gồm cả bài Đề mô": "Mặc định: Bật - Bao gồm cả bài Đề mô",
     "Tắt - Chỉ hiển thị bài đã Ra rồi": "Tắt - Chỉ hiển thị bài đã Ra rồi",
     "Gói Thành Viên": "Gói Thành Viên",
@@ -2017,6 +3180,10 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Có lỗi xảy ra khi tạo playlist.": "An error occurred while creating the playlist.",
     "Có lỗi xảy ra khi kết nối máy chủ.": "An error occurred while connecting to the server.",
     "Hiển thị demo trong bài hát ngẫu nhiên ?": "Include demos in random songs?",
+    "Đang Bật - Bao gồm cả các bài Đề mô chưa phát hành": "ON - Including unreleased demo tracks",
+    "Đang Tắt - Chỉ hiển thị các bài đã Ra Rồi (Phát hành chính thức)": "OFF - Only showing officially released tracks",
+    "Phần giới thiệu bản thân, hình ảnh nghệ sĩ và thông tin nổi bật.": "Self-introduction section, artist photos, and highlights.",
+    "Phần tiểu sử âm nhạc, hành trình nghệ thuật và các cột mốc sự nghiệp.": "Music biography section, artistic journey, and career milestones.",
     "Mặc định: Bật - Bao gồm cả bài Đề mô": "Default: On - Includes Demo tracks",
     "Tắt - Chỉ hiển thị bài đã Ra rồi": "Off - Released songs only",
     "Gói Thành Viên": "Membership Plan",
@@ -2558,6 +3725,10 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Có lỗi xảy ra khi tạo playlist.": "재생목록을 만드는 동안 오류가 발생했습니다.",
     "Có lỗi xảy ra khi kết nối máy chủ.": "서버에 연결하는 동안 오류가 발생했습니다.",
     "Hiển thị demo trong bài hát ngẫu nhiên ?": "랜덤 곡에 데모곡 포함?",
+    "Đang Bật - Bao gồm cả các bài Đề mô chưa phát hành": "켜짐 - 미발매 데모 곡 포함",
+    "Đang Tắt - Chỉ hiển thị các bài đã Ra Rồi (Phát hành chính thức)": "꺼짐 - 정식 발매 곡만 표시",
+    "Phần giới thiệu bản thân, hình ảnh nghệ sĩ và thông tin nổi bật.": "아티스트 소개, 사진 및 주요 정보 섹션입니다.",
+    "Phần tiểu sử âm nhạc, hành trình nghệ thuật và các cột mốc sự nghiệp.": "음악 여정 및 주요 경력 이력 섹션입니다.",
     "Mặc định: Bật - Bao gồm cả bài Đề mô": "기본값: 켜짐 - 데모 곡 포함",
     "Tắt - Chỉ hiển thị bài đã Ra rồi": "꺼짐 - 정식 발매곡만 표시",
     "Gói Thành Viên": "멤버십 플랜",
@@ -3099,6 +4270,10 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Có lỗi xảy ra khi tạo playlist.": "プレイリストの作成中にエラーが発生しました。",
     "Có lỗi xảy ra khi kết nối máy chủ.": "サーバーへの接続中にエラーが発生しました。",
     "Hiển thị demo trong bài hát ngẫu nhiên ?": "ランダム再生にデモ曲を含める？",
+    "Đang Bật - Bao gồm cả các bài Đề mô chưa phát hành": "ON - 未リリースデモ曲を含む",
+    "Đang Tắt - Chỉ hiển thị các bài đã Ra Rồi (Phát hành chính thức)": "OFF - 公式リリース曲のみ表示",
+    "Phần giới thiệu bản thân, hình ảnh nghệ sĩ và thông tin nổi bật.": "アーティストの自己紹介、写真、ハイライト情報セクション。",
+    "Phần tiểu sử âm nhạc, hành trình nghệ thuật và các cột mốc sự nghiệp.": "音楽的経歴、芸術的歩み、キャリアの節目セクション。",
     "Mặc định: Bật - Bao gồm cả bài Đề mô": "デフォルト: ON - デモ曲を含む",
     "Tắt - Chỉ hiển thị bài đã Ra rồi": "OFF - リリース曲のみ表示",
     "Gói Thành Viên": "メンバーシッププラン",
@@ -3641,6 +4816,10 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Có lỗi xảy ra khi kết nối máy chủ.": "เกิดข้อผิดพลาดขณะเชื่อมต่อกับเซิร์वर",
     "Tất cả bài hát đều đã ở trong playlist nàyแล้ว.": "เพลงทั้งหมดอยู่ในเพลย์ลิสต์นี้แล้ว",
     "Hiển thị demo trong bài hát ngẫu nhiên ?": "รวมเพลงเดโมในเพลงสุ่ม?",
+    "Đang Bật - Bao gồm cả các bài Đề mô chưa phát hành": "เปิด - รวมเพลงเดโมที่ยังไม่ได้ปล่อย",
+    "Đang Tắt - Chỉ hiển thị các bài đã Ra Rồi (Phát hành chính thức)": "ปิด - แสดงเฉพาะเพลงที่ปล่อยอย่างเป็นทางการ",
+    "Phần giới thiệu bản thân, hình ảnh nghệ sĩ và thông tin nổi bật.": "ส่วนแนะนำตัว รูปภาพศิลปิน และข้อมูลที่น่าสนใจ",
+    "Phần tiểu sử âm nhạc, hành trình nghệ thuật và các cột mốc sự nghiệp.": "ส่วนประวัติศาสตร์ดนตรี เส้นทางศิลปะ และเหตุการณ์สำคัญในอาชีพ",
     "Mặc định: Bật - Bao gồm cả bài Đề mô": "ค่าเริ่มต้น: เปิด - รวมเพลงเดโม",
     "Tắt - Chỉ hiển thị bài đã Ra rồi": "ปิด - แสดงเฉพาะเพลงที่ปล่อยแล้ว",
     "Gói Thành Viên": "แพ็กเกจสมาชิก",
@@ -4179,6 +5358,10 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Có lỗi xảy ra khi tạo playlist.": "创建播放列表时出错。",
     "Có lỗi xảy ra khi kết nối máy chủ.": "连接到服务器时出错。",
     "Hiển thị demo trong bài hát ngẫu nhiên ?": "在随机歌曲中显示 Demo？",
+    "Đang Bật - Bao gồm cả các bài Đề mô chưa phát hành": "已开启 - 包含未发行的 Demo 歌曲",
+    "Đang Tắt - Chỉ hiển thị các bài đã Ra Rồi (Phát hành chính thức)": "已关闭 - 仅显示已正式发行的歌曲",
+    "Phần giới thiệu bản thân, hình ảnh nghệ sĩ và thông tin nổi bật.": "艺人自我介绍、照片及亮点信息展示区域。",
+    "Phần tiểu sử âm nhạc, hành trình nghệ thuật và các cột mốc sự nghiệp.": "音乐履历、艺术历程及事业里程碑展示区域。",
     "Mặc định: Bật - Bao gồm cả bài Đề mô": "默认：开启 - 包含 Demo 歌曲",
     "Tắt - Chỉ hiển thị bài đã Ra rồi": "关闭 - 仅显示已发行歌曲",
     "Gói Thành Viên": "会员套餐",
@@ -4284,16 +5467,17 @@ const getArtistExtensionFromUrl = (customPath?: string) => {
   if (segments.length > 0) {
     const firstSegment = segments[0].toLowerCase();
     
-    // If we are on /admin/tennghesi or /mem/tennghesi
-    if ((firstSegment === 'admin' || firstSegment === 'mem') && segments.length > 1) {
-      return segments[1];
-    }
-    
-    const reserved = ['admin', 'acp', 'mem', 'demo', 'song', 'playlist'];
+    const reserved = ['admin', 'acp', 'master', 'mem', 'demo', 'song', 'playlist', 'verify-email', 'help', 'register', 'login'];
     if (!reserved.includes(firstSegment)) {
       return segments[0];
     }
   }
+
+  const activeAdminExt = (typeof localStorage !== 'undefined' ? ((window as any).__originalGetItem__ ? (window as any).__originalGetItem__.call(localStorage, 'activeAdminExtension') : localStorage.getItem('activeAdminExtension')) : null) || getGlobalCookie('activeAdminExtension');
+  if (activeAdminExt) {
+    return activeAdminExt;
+  }
+
   return '';
 };
 
@@ -4310,23 +5494,25 @@ const isArtistContext = () => {
   return false;
 };
 
-const getAdminLink = (subPath: string = '', customPath?: string) => {
-  const isSubdomain = isArtistContext();
-  if (isSubdomain) {
-    return `/admin${subPath}`;
+const getAdminLink = (subPath: string = '', _customPath?: string) => {
+  let clean = subPath;
+  if (clean.startsWith('#')) {
+    clean = clean.substring(1);
   }
-  const ext = getArtistExtensionFromUrl(customPath);
-  return ext ? `/${ext}/admin${subPath}` : `/acp${subPath}`;
+  const normalizedPath = clean ? (clean.startsWith('/') ? clean : `/${clean}`) : '';
+  return `/admin${normalizedPath}`;
 };
 
 const getArtistLink = (subPath: string = '', customPath?: string) => {
-  const isSubdomain = isArtistContext();
-  const normalizedPath = subPath.startsWith('/') ? subPath : `/${subPath}`;
-  if (isSubdomain) {
-    return normalizedPath;
+  const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
+  const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
+  const ext = getArtistExtensionFromUrl(customPath) || (window as any).__ACTIVE_ARTIST_EXTENSION__ || '';
+  const normalizedPath = subPath ? (subPath.startsWith('/') ? subPath : `/${subPath}`) : '';
+
+  if (ext && !isLocal && (host === 'chorus.vn' || host.endsWith('.chorus.vn'))) {
+    return `https://${ext}.chorus.vn${normalizedPath}`;
   }
-  const ext = getArtistExtensionFromUrl(customPath);
-  return ext ? `/${ext}${normalizedPath}` : normalizedPath;
+  return normalizedPath || '/';
 };
 
 const getAdminTokenKey = (customPath?: string) => getArtistExtensionFromUrl(customPath) ? `adminToken_${getArtistExtensionFromUrl(customPath)}` : 'adminToken';
@@ -4354,19 +5540,30 @@ const removeGlobalCookie = (name: string) => {
 const getArtistAdminRedirect = (targetExt: string, toPage = 'admin') => {
   const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
   const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
-  const isDefaultPlatform = host === 'chorus.vn' || host.endsWith('.run.app') || host.endsWith('.aistudio.google') || host.endsWith('.gitpod.io');
 
-  const currentExt = (window as any).__ACTIVE_ARTIST_EXTENSION__ || '';
-  if (currentExt === targetExt && !host.endsWith('.chorus.vn')) {
-     return `/${toPage}`; // If already on custom domain or root domain of the artist, use relative paths
+  if (toPage === 'admin' || toPage.startsWith('admin/')) {
+    const sub = toPage.replace(/^admin\/?/, '');
+    const adminPath = sub ? `/admin/${sub}` : '/admin';
+    if (isLocal) {
+      return `http://localhost:${window.location.port}${adminPath}`;
+    }
+    return `https://chorus.vn${adminPath}`;
   }
 
-  if (!isLocal && (!isDefaultPlatform || host.endsWith('.chorus.vn'))) {
-     return `https://${targetExt}.chorus.vn/${toPage}`;
-  } else if (isLocal && host.endsWith('.localhost')) {
-     return `${window.location.protocol}//${targetExt}.localhost:${window.location.port}/${toPage}`;
+  if (toPage === 'help' || toPage.startsWith('help/')) {
+    if (isLocal) {
+      return `http://localhost:${window.location.port}/help`;
+    }
+    return `https://chorus.vn/help`;
   }
-  return `/${targetExt}/${toPage}`;
+
+  // Public artist page link -> ALWAYS use subdomain!
+  const pagePath = toPage ? (toPage.startsWith('/') ? toPage : `/${toPage}`) : '';
+  if (!isLocal) {
+    return `https://${targetExt}.chorus.vn${pagePath}`;
+  } else {
+    return `http://${targetExt}.localhost:${window.location.port}${pagePath}`;
+  }
 };
 
 const getActiveAdminSession = () => {
@@ -4537,14 +5734,17 @@ try {
 // Patch localStorage to separate session credentials per artist, while bypassing global synced keys
 const originalGetItem = localStorage.getItem;
 localStorage.getItem = function(key) {
-  const ext = getArtistExtensionFromUrl();
-  const isGlobalKey = key === 'masterToken' || 
+  const isGlobalKey = !key || key === 'masterToken' || 
                       key.includes('adminToken') || 
                       key.includes('activeAdmin') || 
                       key.includes('memberToken') ||
                       key === 'preferredLang' ||
                       key === 'manualLangSelected';
-  if (ext && !isGlobalKey) {
+  if (isGlobalKey) {
+    return originalGetItem.call(this, key);
+  }
+  const ext = getArtistExtensionFromUrl();
+  if (ext) {
     return originalGetItem.call(this, `${ext}_${key}`);
   }
   return originalGetItem.call(this, key);
@@ -4552,19 +5752,23 @@ localStorage.getItem = function(key) {
 
 const originalSetItem = localStorage.setItem;
 localStorage.setItem = function(key, value) {
-  const ext = getArtistExtensionFromUrl();
-  const isGlobalKey = key === 'masterToken' || 
+  const isGlobalKey = !key || key === 'masterToken' || 
                       key.includes('adminToken') || 
                       key.includes('activeAdmin') || 
                       key.includes('memberToken') ||
                       key === 'preferredLang' ||
                       key === 'manualLangSelected';
                       
-  if (key.includes('adminToken') || key.includes('activeAdmin')) {
+  if (key && (key.includes('adminToken') || key.includes('activeAdmin'))) {
     setGlobalCookie(key, value);
   }
 
-  if (ext && !isGlobalKey) {
+  if (isGlobalKey) {
+    return originalSetItem.call(this, key, value);
+  }
+
+  const ext = getArtistExtensionFromUrl();
+  if (ext) {
     if (key.includes('adminToken') || key.includes('activeAdmin')) {
       setGlobalCookie(`${ext}_${key}`, value);
     }
@@ -4575,19 +5779,23 @@ localStorage.setItem = function(key, value) {
 
 const originalRemoveItem = localStorage.removeItem;
 localStorage.removeItem = function(key) {
-  const ext = getArtistExtensionFromUrl();
-  const isGlobalKey = key === 'masterToken' || 
+  const isGlobalKey = !key || key === 'masterToken' || 
                       key.includes('adminToken') || 
                       key.includes('activeAdmin') || 
                       key.includes('memberToken') ||
                       key === 'preferredLang' ||
                       key === 'manualLangSelected';
                       
-  if (key.includes('adminToken') || key.includes('activeAdmin')) {
+  if (key && (key.includes('adminToken') || key.includes('activeAdmin'))) {
     removeGlobalCookie(key);
   }
 
-  if (ext && !isGlobalKey) {
+  if (isGlobalKey) {
+    return originalRemoveItem.call(this, key);
+  }
+
+  const ext = getArtistExtensionFromUrl();
+  if (ext) {
     if (key.includes('adminToken') || key.includes('activeAdmin')) {
       removeGlobalCookie(`${ext}_${key}`);
     }
@@ -4766,16 +5974,33 @@ function AdminLogin() {
   const [usr, setUsr] = useState('');
   const [pwd, setPwd] = useState('');
   const [err, setErr] = useState('');
+  const [unregisteredEmail, setUnregisteredEmail] = useState('');
+  const [isGoogleVerifiedState, setIsGoogleVerifiedState] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [sysFavicon, setSysFavicon] = useState<string>('');
 
   useEffect(() => {
-    const isSubdomain = isArtistContext();
-    if (!isSubdomain && window.location.pathname === '/admin') {
-      window.location.href = '/';
-    }
+    fetch('/api/public/landing-config')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.faviconUrl) {
+          setSysFavicon(data.faviconUrl);
+        }
+      })
+      .catch(() => {});
   }, []);
+
+  const handleOpenRegisterModal = (emailToUse?: string, isGoogle?: boolean) => {
+    const emailParam = emailToUse ? `&email=${encodeURIComponent(emailToUse)}` : '';
+    const googleParam = isGoogle ? '&googleVerified=true' : '';
+    window.location.href = `/?action=register${emailParam}${googleParam}`;
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErr('');
+    setUnregisteredEmail('');
+    setLoading(true);
     try {
       const res = await fetch('/api/admin/login', {
         method: 'POST',
@@ -4797,6 +6022,7 @@ function AdminLogin() {
           } else {
             setAdminToken(data.token || pwd, `/${data.extension}`);
             localStorage.setItem('activeAdminExtension', data.extension);
+            setGlobalCookie('activeAdminExtension', data.extension);
             localStorage.setItem('activeAdminName', data.artistName || data.username || data.extension);
             localStorage.setItem('activeAdminActivated', data.artist && data.artist.activated !== false ? 'true' : 'false');
             localStorage.setItem('activeAdminAvatar', avatar);
@@ -4804,55 +6030,241 @@ function AdminLogin() {
         } else {
           setAdminToken(data.token || pwd);
         }
-        const isSubdomain = isArtistContext();
-        if (isSubdomain) {
-          window.location.href = getAdminLink();
-        } else {
-          const extPath = data.extension ? `/${data.extension}` : '';
-          window.location.href = `${extPath}/admin`;
-        }
+        window.location.href = getAdminLink();
       } else {
         const data = await res.json();
+        if (data.notFoundEmail) {
+          setUnregisteredEmail(data.notFoundEmail);
+          setIsGoogleVerifiedState(false);
+        }
         setErr(data.error || 'Sai tên đăng nhập hoặc mật khẩu!');
       }
     } catch (err) {
       setErr('Lỗi kết nối máy chủ!');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = () => {
+    const googleClientId = "578858946574-opa9vfj5t2tmb9sr5jregbur9qa4tdac.apps.googleusercontent.com";
+    setErr('');
+    setUnregisteredEmail('');
+    setLoading(true);
+    if ((window as any).google?.accounts?.id) {
+      try {
+        (window as any).google.accounts.id.initialize({
+          client_id: googleClientId,
+          callback: async (response: any) => {
+            if (response?.credential) {
+              try {
+                const res = await fetch('/api/auth/google', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ credential: response.credential })
+                });
+
+                if (res.ok) {
+                  const data = await res.json();
+                  if (data.isArtist && (data.adminToken || data.token)) {
+                    const token = data.adminToken || data.token;
+                    const extension = data.artistExtension || data.username;
+                    const avatar = data.user?.picture || '';
+                    if ((window as any).syncLoginSession) {
+                      (window as any).syncLoginSession(
+                        token,
+                        extension,
+                        data.artistName || data.username || extension,
+                        avatar,
+                        true
+                      );
+                    } else {
+                      setAdminToken(token, `/${extension}`);
+                      localStorage.setItem('activeAdminExtension', extension);
+                      setGlobalCookie('activeAdminExtension', extension);
+                      localStorage.setItem('activeAdminName', data.artistName || data.username || extension);
+                      localStorage.setItem('activeAdminAvatar', avatar);
+                    }
+                    window.location.href = getAdminLink();
+                    return;
+                  } else {
+                    const email = data.user?.email || '';
+                    if (email) {
+                      setUnregisteredEmail(email);
+                      setIsGoogleVerifiedState(true);
+                    }
+                    setErr(`Email ${email} chưa được đăng ký tài khoản nghệ sĩ.`);
+                  }
+                } else {
+                  const data = await res.json();
+                  setErr(data.error || 'Lỗi xác thực Google');
+                }
+              } catch (e: any) {
+                setErr('Lỗi kết nối máy chủ!');
+              } finally {
+                setLoading(false);
+              }
+            } else {
+              setLoading(false);
+            }
+          }
+        });
+        (window as any).google.accounts.id.prompt((notification: any) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            setLoading(false);
+          }
+        });
+      } catch (e: any) {
+        setErr(e?.message || 'Lỗi khởi tạo Google Auth');
+        setLoading(false);
+      }
+    } else {
+      setErr('Đang nạp thư viện Google, vui lòng thử lại sau vài giây!');
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-stone-100 flex items-center justify-center p-4 text-stone-900 font-sans">
-      <div className="bg-white p-8 rounded-3xl shadow-xl max-w-sm w-full border border-stone-200">
-        <h2 className="text-2xl font-black mb-2 text-center text-stone-800">{t("Admin Login")}</h2>
-        <p className="text-stone-500 mb-6 text-center text-sm">{t("Vui lòng nhập thông tin đăng nhập quản trị")}</p>
+    <div className="min-h-screen bg-neutral-100/90 text-neutral-900 flex items-center justify-center p-4 relative overflow-hidden font-sans">
+      {/* Dynamic Background Blur Effects */}
+      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div className="w-full max-w-md bg-white border border-neutral-200 p-6 md:p-8 rounded-3xl shadow-2xl relative z-10">
+        {/* Header Branding */}
+        <div className="flex flex-col items-center mb-6 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 p-1 mb-3 flex items-center justify-center overflow-hidden border border-amber-200/80 shadow-sm">
+            {sysFavicon ? (
+              <img src={sysFavicon} alt="Favicon" className="w-full h-full object-cover rounded-[14px]" />
+            ) : (
+              <div className="w-full h-full bg-amber-500 rounded-[14px] flex items-center justify-center text-white">
+                <ShieldCheck className="w-8 h-8" />
+              </div>
+            )}
+          </div>
+          <h2 className="text-2xl font-black text-neutral-900 tracking-tight">{t("Đăng Nhập Nghệ Sĩ")}</h2>
+          <p className="text-neutral-500 text-xs mt-1 font-medium">{t("Chorus.vn • Hệ thống quản lý kho nhạc nghệ sĩ")}</p>
+        </div>
+
+        {/* Form */}
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-1">{t("Username")}</label>
-            <input 
-              type="text" 
-              required
-              value={usr}
-              onChange={(e) => setUsr(e.target.value)}
-              className="w-full border border-stone-300 px-4 py-3 rounded-xl focus:border-stone-900 focus:outline-none"
-            />
+            <label className="block text-[11px] font-black text-neutral-500 uppercase tracking-wider mb-1.5">
+              {t("TÊN ĐĂNG NHẬP HOẶC EMAIL")}
+            </label>
+            <div className="relative">
+              <input 
+                type="text" 
+                required
+                value={usr}
+                onChange={(e) => {
+                  setUsr(e.target.value);
+                  setUnregisteredEmail('');
+                }}
+                placeholder="Nhập tên đăng nhập hoặc email..."
+                className="w-full bg-neutral-50 border border-neutral-200 text-neutral-900 placeholder-neutral-400 px-4 py-3 rounded-xl text-sm focus:border-stone-900 focus:bg-white focus:outline-none transition-all font-medium"
+              />
+            </div>
           </div>
           
           <div>
-            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-1">{t("Password")}</label>
+            <label className="block text-[11px] font-black text-neutral-500 uppercase tracking-wider mb-1.5">
+              {t("MẬT KHẨU")}
+            </label>
             <PasswordInput 
               required
               autoFocus
               value={pwd}
               onChange={(e: any) => setPwd(e.target.value)}
-              className="w-full border border-stone-300 px-4 py-3 rounded-xl pr-12 focus:border-stone-900 focus:outline-none"
+              placeholder="Nhập mật khẩu..."
+              className="w-full bg-neutral-50 border border-neutral-200 text-neutral-900 placeholder-neutral-400 px-4 py-3 rounded-xl text-sm focus:border-stone-900 focus:bg-white focus:outline-none transition-all font-medium pr-12"
             />
           </div>
 
-          {err && <p className="text-red-500 text-sm font-bold text-center">{err}</p>}
-          <button type="submit" className="w-full bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] font-bold py-3 rounded-xl hover:bg-stone-800 transition-colors">
-            {t("Đăng nhập")}
+          {unregisteredEmail ? (
+            <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-rose-700 text-xs font-semibold space-y-2.5">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                <span>Email <b>{unregisteredEmail}</b> chưa được đăng ký tài khoản nghệ sĩ.</span>
+              </div>
+              <div className="pt-2 border-t border-rose-200/80 flex items-center justify-between">
+                <span className="text-[11px] text-rose-700 font-medium">Bạn có muốn đăng ký không?</span>
+                <button
+                  type="button"
+                  onClick={() => handleOpenRegisterModal(unregisteredEmail, isGoogleVerifiedState)}
+                  className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-xl text-xs transition-all shadow-sm cursor-pointer flex items-center gap-1"
+                >
+                  Đăng ký ngay →
+                </button>
+              </div>
+            </div>
+          ) : err ? (
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-xs font-bold text-center flex items-center justify-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{err}</span>
+            </div>
+          ) : null}
+
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full bg-black hover:bg-neutral-800 text-white font-extrabold text-xs py-4 px-6 rounded-xl shadow-sm uppercase tracking-wider transition-all duration-300 active:scale-[0.98] disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 mt-4"
+          >
+            {loading ? (
+              <span className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            ) : (
+              <>
+                <span>{t("ĐĂNG NHẬP")}</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </button>
         </form>
+
+        <div className="my-5 flex items-center gap-3">
+          <div className="h-px bg-neutral-200 flex-1"></div>
+          <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
+            HOẶC
+          </span>
+          <div className="h-px bg-neutral-200 flex-1"></div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleGoogleSignIn}
+          disabled={loading}
+          className="w-full bg-white hover:bg-neutral-50 text-neutral-800 font-bold py-3.5 px-4 rounded-xl border border-neutral-300 shadow-sm flex items-center justify-center gap-3 transition-all cursor-pointer hover:border-neutral-400 active:scale-[0.98] text-xs"
+        >
+          <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+          </svg>
+          <span>Đồng bộ / Đăng nhập với Gmail</span>
+        </button>
+
+        {/* Register Option Button */}
+        <div className="text-center mt-5 text-xs text-neutral-600 font-medium">
+          Bạn chưa có tài khoản ?{' '}
+          <button 
+            type="button" 
+            onClick={() => handleOpenRegisterModal('', false)} 
+            className="font-extrabold text-amber-600 hover:text-amber-700 underline cursor-pointer"
+          >
+            Đăng ký ngay
+          </button>
+        </div>
+
+        {/* Quick Links */}
+        <div className="mt-6 pt-5 border-t border-neutral-200 flex items-center justify-between text-xs font-bold">
+          <a href="/" className="text-neutral-500 hover:text-black transition-colors flex items-center gap-1">
+            ← Trang chủ Chorus.vn
+          </a>
+          <a href="/help" className="text-neutral-500 hover:text-black transition-colors">
+            Cần trợ giúp?
+          </a>
+        </div>
       </div>
     </div>
   );
@@ -4990,50 +6402,22 @@ function MemberLogin() {
 
 function RequireAdmin({ children }: { children: React.ReactNode }) {
   const location = useLocation();
-  const ext = getArtistExtensionFromUrl(location.pathname);
-  const isSubdomain = isArtistContext();
-  const activeExt = localStorage.getItem('activeAdminExtension');
+  const activeExt = localStorage.getItem('activeAdminExtension') || getGlobalCookie('activeAdminExtension') || '';
   
-  if (!ext && !isSubdomain) {
-     if (activeExt) {
-       window.location.href = `/${activeExt}/admin`;
-     } else {
-       window.location.href = '/';
-     }
-     return null;
+  let token = getAdminToken();
+  if (!token && activeExt) {
+    token = localStorage.getItem(`adminToken_${activeExt}`);
   }
-  
-  let token = getAdminToken(location.pathname);
   if (!token) {
-    // If no token for current extension, but they are logged in as another artist, redirect or sync!
-    let activeToken = activeExt ? localStorage.getItem(`adminToken_${activeExt}`) : null;
-    if (!activeToken) {
-      activeToken = localStorage.getItem('adminToken');
-    }
-    if (!activeToken) {
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('adminToken')) {
-          const val = localStorage.getItem(key);
-          if (val) {
-            activeToken = val;
-            break;
-          }
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('adminToken')) {
+        const val = localStorage.getItem(key);
+        if (val) {
+          token = val;
+          break;
         }
       }
-    }
-
-    if (activeToken && activeExt && activeExt === ext) {
-      setAdminToken(activeToken, `/${ext}`);
-      token = activeToken;
-    } else if (activeExt && activeToken && activeExt !== ext) {
-      const activeActivated = localStorage.getItem('activeAdminActivated') !== 'false';
-      if (!activeActivated) {
-        window.location.href = `/${activeExt}/help`;
-      } else {
-        window.location.href = `/${activeExt}/admin`;
-      }
-      return null;
     }
   }
 
@@ -5041,14 +6425,13 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
     return <AdminLogin />;
   }
 
-  // Verification and active session check
   const [isValidated, setIsValidated] = useState<boolean | null>(null);
 
   useEffect(() => {
     fetch('/api/admin/check', {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'x-artist-extension': ext || ''
+        'x-artist-extension': activeExt
       }
     })
     .then(res => res.json())
@@ -5058,11 +6441,7 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
           localStorage.setItem('activeAdminActivated', data.artist.activated !== false ? 'true' : 'false');
           if (data.artist.extension) {
             localStorage.setItem('activeAdminExtension', data.artist.extension);
-            // AUTO-REDIRECT IF EXTENSION IN URL DOES NOT MATCH LOGGED IN ARTIST EXTENSION!
-            if (data.artist.extension !== ext) {
-              window.location.href = `/${data.artist.extension}/admin`;
-              return;
-            }
+            setGlobalCookie('activeAdminExtension', data.artist.extension);
           }
           localStorage.setItem('activeAdminName', data.artist.artistName || data.artist.username || data.artist.extension);
           const avatar = data.avatarUrl || '';
@@ -5072,21 +6451,25 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
           }
         }
         if (data.artist && data.artist.activated === false) {
-          // If unactivated, redirect to help page immediately
-          window.location.href = ext ? `/${ext}/help` : '/help';
+          window.location.href = getArtistAdminRedirect(data.artist.extension || activeExt, 'help');
         } else {
           setIsValidated(true);
         }
       } else {
         removeAdminToken();
-        window.location.reload();
+        localStorage.removeItem('activeAdminExtension');
+        removeGlobalCookie('activeAdminExtension');
+        setIsValidated(false);
       }
     })
     .catch(() => {
-      // Allow access on network error to avoid blocking the user
       setIsValidated(true);
     });
-  }, [token, ext]);
+  }, [token, activeExt]);
+
+  if (isValidated === false) {
+    return <AdminLogin />;
+  }
 
   if (isValidated === null) {
     return <LoadingScreen text="Đang kiểm tra quyền truy cập..." />;
@@ -5095,44 +6478,160 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function VerifyEmailPage() {
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token') || '';
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [message, setMessage] = useState('');
+  const [artistName, setArtistName] = useState('');
+
+  useEffect(() => {
+    if (!token) {
+      setStatus('error');
+      setMessage('Đường dẫn kích hoạt không hợp lệ!');
+      return;
+    }
+    fetch('/api/public/verify-token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setStatus('success');
+          setMessage(data.message || 'Xác thực Email thành công!');
+          if (data.artistName) setArtistName(data.artistName);
+        } else {
+          setStatus('error');
+          setMessage(data.error || 'Xác thực Email thất bại!');
+        }
+      })
+      .catch(() => {
+        setStatus('error');
+        setMessage('Lỗi kết nối máy chủ!');
+      });
+  }, [token]);
+
+  return (
+    <div className="min-h-screen bg-[#07070a] text-white flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-stone-900/90 border border-amber-500/30 rounded-3xl p-8 text-center shadow-2xl backdrop-blur-xl">
+        {status === 'loading' && (
+          <div className="py-8 space-y-4">
+            <div className="w-12 h-12 border-4 border-amber-400/30 border-t-amber-400 rounded-full animate-spin mx-auto" />
+            <p className="text-stone-300 font-medium">Đang xác thực email của bạn...</p>
+          </div>
+        )}
+
+        {status === 'success' && (
+          <div className="py-4 space-y-5">
+            <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center mx-auto text-3xl font-black">
+              ✓
+            </div>
+            <h2 className="text-xl font-black text-amber-400">
+              Kích hoạt tài khoản nghệ sĩ {artistName || 'mới'} thành công!
+            </h2>
+            <p className="text-stone-300 text-sm">Email của bạn đã được xác thực thành công trong hệ thống.</p>
+            <div className="pt-4">
+              <a
+                href="/"
+                className="inline-block w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black rounded-xl transition-all shadow-lg shadow-amber-500/20"
+              >
+                Xây Dựng Kho Nhạc Của Bạn Ngay
+              </a>
+            </div>
+          </div>
+        )}
+
+        {status === 'error' && (
+          <div className="py-4 space-y-5">
+            <div className="w-16 h-16 bg-rose-500/20 text-rose-400 border border-rose-500/40 rounded-full flex items-center justify-center mx-auto text-3xl font-black">
+              ✕
+            </div>
+            <h2 className="text-xl font-bold text-rose-400">Xác Thực Thất Bại</h2>
+            <p className="text-stone-300 text-sm">{message}</p>
+            <div className="pt-4">
+              <a
+                href="/"
+                className="inline-block w-full py-3 bg-stone-800 hover:bg-stone-700 text-white font-bold rounded-xl transition-all"
+              >
+                Về Trang Chủ
+              </a>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function AnimatedRoutes() {
   const location = useLocation();
   const isSubdomain = isArtistContext();
 
   useEffect(() => {
+    const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
+    const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
     const currentExt = getArtistExtensionFromUrl(location.pathname);
     const { activeExt, activeToken, activeActivated } = getActiveAdminSession();
 
-    // 1. Check if logged in as admin of another artist and visiting their admin or help page
-    const isAdminPage = location.pathname.includes('/admin');
-    const isHelpPage = location.pathname.includes('/help');
+    const RESERVED_EXTS = [
+      'admin', 'master', 'acp', 'verify-email', 'help', 'api', 'assets', 'static', 
+      'favicon.ico', 'robots.txt', 'sitemap.xml', 'mem', 'demo', 'song', 'playlist'
+    ];
 
-    if (activeExt && activeToken && activeExt !== currentExt) {
-      if (isAdminPage || isHelpPage) {
-        if (!activeActivated) {
-          window.location.href = getArtistAdminRedirect(activeExt, 'help');
-        } else {
-          window.location.href = getArtistAdminRedirect(activeExt, 'admin');
-        }
+    const isAdminPage = location.pathname.endsWith('/admin') || location.pathname.includes('/admin/');
+    const isHelpPage = location.pathname.endsWith('/help') || location.pathname.includes('/help/');
+    const isMasterPage = location.pathname === '/master' || location.pathname === '/acp';
+    const isVerifyEmailPage = location.pathname === '/verify-email';
+
+    // RULE 1 & 2: If accessing /admin on a subdomain (e.g. acxuantai.chorus.vn/admin) or path (/acxuantai/admin), redirect to chorus.vn/admin
+    if (isAdminPage && !isLocal) {
+      if (host !== 'chorus.vn' || (currentExt && location.pathname.startsWith(`/${currentExt}/admin`))) {
+        const subPath = location.pathname.substring(location.pathname.indexOf('/admin'));
+        window.location.href = `https://chorus.vn${subPath}${location.search}`;
         return;
       }
     }
 
-    // 2. Load and verify inactive status for the current artist's page
-    if (currentExt) {
-      fetch('/api/data').then(res => res.json()).then(data => {
-        if (data && data.error === 'inactive') {
-          // If the page is inactive, and this is the owner:
+    // Verify status and handle subdomain redirect for active artist page
+    if (currentExt && !RESERVED_EXTS.includes(currentExt.toLowerCase()) && !isAdminPage && !isHelpPage && !isMasterPage && !isVerifyEmailPage) {
+      fetch('/api/data', {
+        headers: { 'x-artist-extension': currentExt }
+      }).then(res => res.json()).then(data => {
+        if (!data || data.error === 'Artist not found' || data.notFound) {
+          if (window.location.pathname !== '/') {
+            window.location.href = window.location.origin + '/';
+          }
+          return;
+        }
+        if (data.error === 'inactive') {
           if (activeExt && activeExt === currentExt) {
-            if (window.location.pathname !== `/${currentExt}/help`) {
-              window.location.href = `/${currentExt}/help`;
+            if (!isHelpPage) {
+              window.location.href = getArtistAdminRedirect(activeExt, 'help');
             }
           } else {
-            // If this is another artist or visitor, redirect to home page!
-            window.location.href = '/';
+            if (window.location.pathname !== '/') {
+              window.location.href = window.location.origin + '/';
+            }
+          }
+          return;
+        }
+
+        // If artist IS valid and accessing path-based artist URL on chorus.vn (e.g., chorus.vn/xxxx/song/abc), redirect to xxxx.chorus.vn/song/abc
+        if (!isLocal && (host === 'chorus.vn' || host === 'www.chorus.vn')) {
+          const parts = location.pathname.split('/').filter(Boolean);
+          const firstSegment = parts[0];
+          if (firstSegment && !RESERVED_EXTS.includes(firstSegment.toLowerCase())) {
+            const restOfPath = '/' + parts.slice(1).join('/');
+            window.location.href = `https://${firstSegment}.chorus.vn${restOfPath}${location.search}`;
           }
         }
-      }).catch(() => {});
+      }).catch(() => {
+        if (window.location.pathname !== '/') {
+          window.location.href = window.location.origin + '/';
+        }
+      });
     }
   }, [location.pathname]);
 
@@ -5142,17 +6641,20 @@ function AnimatedRoutes() {
       <Routes location={location} key={location.pathname}>
         {/* Core Root Routes */}
         <Route path="/" element={isSubdomain ? <Home /> : <ChorusVNLanding />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
                         <Route path="/help" element={<HelpPage DemoPlayer={DemoPlayer} />} />
         <Route path="/:artistExtension/help" element={<HelpPage DemoPlayer={DemoPlayer} />} />
         <Route path="/acp" element={<ACPControlPanel />} />
+        <Route path="/master" element={<ACPControlPanel />} />
         <Route path="/mem" element={<MemberLogin />} />
         <Route path="/demo/:id" element={<DemoPlayer />} />
         <Route path="/song/:id" element={<DemoPlayer />} />
         <Route path="/playlist/:id" element={<PlaylistPlayer />} />
-        <Route path="/admin" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
         <Route path="/admin/new" element={<RequireAdmin><AdminCreateDemo /></RequireAdmin>} />
         <Route path="/admin/edit/:id" element={<RequireAdmin><AdminEditDemo /></RequireAdmin>} />
         <Route path="/admin/playlist/:id" element={<RequireAdmin><AdminPlaylistEdit /></RequireAdmin>} />
+        <Route path="/admin/*" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
+        <Route path="/admin" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
 
         {/* Dynamic Artist Prefix Routes */}
         <Route path="/:artistExtension" element={<Home />} />
@@ -5160,10 +6662,8 @@ function AnimatedRoutes() {
         <Route path="/:artistExtension/demo/:id" element={<DemoPlayer />} />
         <Route path="/:artistExtension/song/:id" element={<DemoPlayer />} />
         <Route path="/:artistExtension/playlist/:id" element={<PlaylistPlayer />} />
+        <Route path="/:artistExtension/admin/*" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
         <Route path="/:artistExtension/admin" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
-        <Route path="/:artistExtension/admin/new" element={<RequireAdmin><AdminCreateDemo /></RequireAdmin>} />
-        <Route path="/:artistExtension/admin/edit/:id" element={<RequireAdmin><AdminEditDemo /></RequireAdmin>} />
-        <Route path="/:artistExtension/admin/playlist/:id" element={<RequireAdmin><AdminPlaylistEdit /></RequireAdmin>} />
       </Routes>
     </AnimatePresence>
   );
@@ -5316,7 +6816,7 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
   if (!activeExt || !activeName || !activeToken) return null;
 
   // Do not show on acp control panel or admin pages or help guide
-  if (location.pathname === '/acp' || location.pathname.includes('/admin') || location.pathname.includes('/help')) return null;
+  if (location.pathname === '/acp' || location.pathname === '/master' || location.pathname.includes('/admin') || location.pathname.includes('/help')) return null;
 
   const isMusicPlayerPage = location.pathname.includes('/demo/') || location.pathname.includes('/song/') || location.pathname.includes('/playlist/');
   const shouldHideOnMobilePlayer = isMobile && isMusicPlayerPage;
@@ -5406,7 +6906,18 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
                           : 'hover:bg-white/10 text-stone-200 cursor-pointer'
                       }`}
                     >
-                      <span>Liquid Glass</span>
+                      <span className="flex items-center gap-1.5">
+                        Liquid Glass
+                        {(() => {
+                          const cfg = artistData?.landingConfig?.adminThemesVip?.['liquid-glass'];
+                          let isPro = false; let isVip = false;
+                          if (typeof cfg === 'object' && cfg !== null) { isVip = !!cfg.isVip; isPro = isVip || !!cfg.isPro; }
+                          else if (cfg === true) { isPro = true; isVip = true; }
+                          if (isVip) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-yellow-500 text-stone-950 rounded-full">VIP</span>;
+                          if (isPro) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-blue-500 text-white rounded-full">PRO</span>;
+                          return null;
+                        })()}
+                      </span>
                       {(artistData?.adminTheme || 'liquid-glass') === 'liquid-glass' && <Check className="w-3.5 h-3.5 text-teal-400" />}
                     </button>
                     
@@ -5429,10 +6940,89 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
                           : 'hover:bg-white/10 text-stone-200 cursor-pointer'
                       }`}
                     >
-                      <span className="flex items-center gap-1">
+                      <span className="flex items-center gap-1.5">
                         Gold Luxury <Sparkles className="w-3 h-3 text-yellow-400" />
+                        {(() => {
+                          const cfg = artistData?.landingConfig?.adminThemesVip?.['gold'];
+                          let isPro = true; let isVip = true;
+                          if (typeof cfg === 'object' && cfg !== null) { isVip = !!cfg.isVip; isPro = isVip || !!cfg.isPro; }
+                          else if (cfg === false) { isPro = false; isVip = false; }
+                          if (isVip) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-yellow-500 text-stone-950 rounded-full">VIP</span>;
+                          if (isPro) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-blue-500 text-white rounded-full">PRO</span>;
+                          return null;
+                        })()}
                       </span>
                       {artistData?.adminTheme === 'gold' && <Check className="w-3.5 h-3.5 text-yellow-400" />}
+                    </button>
+
+                    <button
+                      disabled={artistData?.adminTheme === 'musician'}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const current = artistData?.adminTheme || 'liquid-glass';
+                        if (!originalTheme) setOriginalTheme(current);
+                        if (typeof (window as any).previewTheme === 'function') {
+                          (window as any).previewTheme('musician');
+                        }
+                        if (setArtistData) {
+                          setArtistData((p: any) => p ? { ...p, adminTheme: 'musician' } : p);
+                        }
+                      }}
+                      className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs font-bold transition-all ${
+                        artistData?.adminTheme === 'musician'
+                          ? 'opacity-50 cursor-not-allowed text-stone-500 bg-black/10'
+                          : 'hover:bg-white/10 text-stone-200 cursor-pointer'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        Dreamy <Music className="w-3 h-3 text-amber-400" />
+                        {(() => {
+                          const cfg = artistData?.landingConfig?.adminThemesVip?.['musician'];
+                          let isPro = true; let isVip = false;
+                          if (typeof cfg === 'object' && cfg !== null) { isVip = !!cfg.isVip; isPro = isVip || !!cfg.isPro; }
+                          else if (cfg === true) { isPro = true; isVip = true; }
+                          else if (cfg === false) { isPro = false; isVip = false; }
+                          if (isVip) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-yellow-500 text-stone-950 rounded-full">VIP</span>;
+                          if (isPro) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-blue-500 text-white rounded-full">PRO</span>;
+                          return null;
+                        })()}
+                      </span>
+                      {artistData?.adminTheme === 'musician' && <Check className="w-3.5 h-3.5 text-amber-400" />}
+                    </button>
+
+                    <button
+                      disabled={artistData?.adminTheme === 'musician2'}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const current = artistData?.adminTheme || 'liquid-glass';
+                        if (!originalTheme) setOriginalTheme(current);
+                        if (typeof (window as any).previewTheme === 'function') {
+                          (window as any).previewTheme('musician2');
+                        }
+                        if (setArtistData) {
+                          setArtistData((p: any) => p ? { ...p, adminTheme: 'musician2' } : p);
+                        }
+                      }}
+                      className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs font-bold transition-all ${
+                        artistData?.adminTheme === 'musician2'
+                          ? 'opacity-50 cursor-not-allowed text-stone-500 bg-black/10'
+                          : 'hover:bg-white/10 text-stone-200 cursor-pointer'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        Musician <Disc3 className="w-3 h-3 text-amber-500" />
+                        {(() => {
+                          const cfg = artistData?.landingConfig?.adminThemesVip?.['musician2'];
+                          let isPro = true; let isVip = false;
+                          if (typeof cfg === 'object' && cfg !== null) { isVip = !!cfg.isVip; isPro = isVip || !!cfg.isPro; }
+                          else if (cfg === true) { isPro = true; isVip = true; }
+                          else if (cfg === false) { isPro = false; isVip = false; }
+                          if (isVip) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-yellow-500 text-stone-950 rounded-full">VIP</span>;
+                          if (isPro) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-blue-500 text-white rounded-full">PRO</span>;
+                          return null;
+                        })()}
+                      </span>
+                      {artistData?.adminTheme === 'musician2' && <Check className="w-3.5 h-3.5 text-amber-500" />}
                     </button>
                   </motion.div>
                 )}
@@ -5555,7 +7145,7 @@ const AdminFloatingAddButton = () => {
                 animate={{ opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, x: 15, scale: 0.9, filter: 'blur(4px)' }}
                 transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }}
-                className="relative bg-stone-950/95 backdrop-blur-md border border-white/15 text-white text-xs font-black tracking-wider px-4 py-2.5 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.5),0_0_15px_rgba(168,85,247,0.15)] whitespace-nowrap pointer-events-none uppercase"
+                className="hidden md:block relative bg-stone-950/95 backdrop-blur-md border border-white/15 text-white text-xs font-black tracking-wider px-4 py-2.5 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.5),0_0_15px_rgba(168,85,247,0.15)] whitespace-nowrap pointer-events-none uppercase"
               >
                 {t("Đăng Bài Hát Mới")}
                 {/* Liquid-glass subtle glow gradient inside tooltip */}
@@ -5569,7 +7159,7 @@ const AdminFloatingAddButton = () => {
             to={getAdminLink('/new')}
           >
             <motion.div 
-              className="relative flex items-center justify-center w-16 h-16 rounded-full cursor-pointer group overflow-hidden border border-white/50 backdrop-blur-xl bg-purple-950/10 shadow-[inset_0_2px_4px_rgba(255,255,255,0.75),0_16px_40px_rgba(219,39,119,0.5),0_0_24px_rgba(168,85,247,0.35)]"
+              className="relative flex items-center justify-center w-16 h-16 rounded-full cursor-pointer group overflow-hidden border border-white/50 backdrop-blur-xl bg-purple-950/10 shadow-[inset_0_2px_4px_rgba(255,255,255,0.75),0_16px_40px_rgba(219,39,119,0.5),0_0_24px_rgba(168,85,247,0.35)] [clip-path:circle(50%_at_50%_50%)] [-webkit-mask-image:-webkit-radial-gradient(white,black)]"
               whileHover={{ scale: 1.1, rotate: 90 }}
               whileTap={{ scale: 0.9 }}
               animate={{
@@ -5588,13 +7178,13 @@ const AdminFloatingAddButton = () => {
               onMouseLeave={() => setShowTooltip(false)}
             >
               {/* Saturated and vivid liquid gradient rotating background */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600 via-fuchsia-600 via-pink-600 to-rose-500 opacity-100 animate-rotate-border -z-10" style={{ transform: 'scale(1.2)' }} />
+              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-indigo-600 via-fuchsia-600 via-pink-600 to-rose-500 opacity-100 animate-rotate-border" />
               
               {/* Breathing inner overlay for deep shifting colors */}
-              <div className="absolute inset-0 bg-gradient-to-bl from-pink-500 via-purple-600 to-indigo-700 opacity-60 mix-blend-overlay animate-[pulse_3s_ease-in-out_infinite] -z-10" />
+              <div className="absolute inset-0 rounded-full bg-gradient-to-bl from-pink-500 via-purple-600 to-indigo-700 opacity-60 mix-blend-overlay animate-[pulse_3s_ease-in-out_infinite]" />
 
               {/* Spheroid volumetric radial highlight */}
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.45)_0%,transparent_60%)] pointer-events-none mix-blend-overlay" />
+              <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.45)_0%,transparent_60%)] pointer-events-none mix-blend-overlay" />
 
               {/* Shiny glass glare top overlay */}
               <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/45 to-transparent rounded-t-full pointer-events-none" />
@@ -7025,8 +8615,8 @@ function AchievementBadge({ achievement, align = 'right', isLightBg = false }: {
           </div>
         </div>
         <div className={`flex flex-col gap-0 sm:gap-0.5 ${isLeft ? 'items-start' : 'items-end'} justify-center`}>
-           <div className="hidden sm:flex border border-red-500 bg-red-500/10 px-1.5 py-0.5 rounded-md items-center justify-center shadow-[0_0_4px_rgba(239,68,68,0.15)] animate-flicker-yt">
-             <span className="text-[7.5px] sm:text-[8px] font-black text-red-500 tracking-widest uppercase text-center block" style={{ marginRight: '-0.1em' }}>
+           <div className="flex border border-red-500 bg-red-500/10 px-1 sm:px-1.5 py-0.2 sm:py-0.5 rounded-md items-center justify-center shadow-[0_0_4px_rgba(239,68,68,0.15)] animate-flicker-yt">
+             <span className="text-[7px] min-[360px]:text-[7.5px] sm:text-[8px] font-black text-red-500 tracking-widest uppercase text-center block" style={{ marginRight: '-0.1em' }}>
                YOUTUBE</span>
            </div>
            <h4 className={`text-[6.5px] min-[360px]:text-[7.5px] sm:text-[10px] font-black text-white mt-0.5 flex flex-row items-center gap-0.5 ${isTop1Trending ? 'animate-yt-top1' : 'animate-slow-glow-yt'}`}>
@@ -7058,8 +8648,8 @@ function AchievementBadge({ achievement, align = 'right', isLightBg = false }: {
           </div>
         </div>
         <div className={`flex flex-col gap-0 sm:gap-0.5 ${isLeft ? 'items-start' : 'items-end'} justify-center`}>
-           <div className="hidden sm:flex border border-teal-400 bg-teal-400/10 px-1.5 py-0.5 rounded-md items-center justify-center shadow-[0_0_4px_rgba(20,184,166,0.15)] animate-flicker-tt">
-             <span className="text-[7.5px] sm:text-[8px] font-black text-teal-400 tracking-widest uppercase text-center block" style={{ marginRight: '-0.1em' }}>
+           <div className="flex border border-teal-400 bg-teal-400/10 px-1 sm:px-1.5 py-0.2 sm:py-0.5 rounded-md items-center justify-center shadow-[0_0_4px_rgba(20,184,166,0.15)] animate-flicker-tt">
+             <span className="text-[7px] min-[360px]:text-[7.5px] sm:text-[8px] font-black text-teal-400 tracking-widest uppercase text-center block" style={{ marginRight: '-0.1em' }}>
                TIKTOK</span>
            </div>
            <h4 className="text-[6.5px] min-[360px]:text-[7.5px] sm:text-[10px] font-black text-white mt-0.5 animate-slow-glow-tt flex flex-row items-center">
@@ -7083,8 +8673,8 @@ function AchievementBadge({ achievement, align = 'right', isLightBg = false }: {
           </div>
         </div>
         <div className={`flex flex-col gap-0 sm:gap-0.5 ${isLeft ? 'items-start' : 'items-end'} justify-center`}>
-           <div className="hidden sm:flex border border-[#1DB954] bg-[#1DB954]/10 px-1.5 py-0.5 rounded-md items-center justify-center shadow-[0_0_4px_rgba(29,185,84,0.15)] animate-flicker-sp">
-             <span className="text-[7.5px] sm:text-[8px] font-black text-[#1DB954] tracking-widest uppercase text-center block" style={{ marginRight: '-0.1em' }}>
+           <div className="flex border border-[#1DB954] bg-[#1DB954]/10 px-1 sm:px-1.5 py-0.2 sm:py-0.5 rounded-md items-center justify-center shadow-[0_0_4px_rgba(29,185,84,0.15)] animate-flicker-sp">
+             <span className="text-[7px] min-[360px]:text-[7.5px] sm:text-[8px] font-black text-[#1DB954] tracking-widest uppercase text-center block" style={{ marginRight: '-0.1em' }}>
                SPOTIFY</span>
            </div>
            <h4 className="text-[6.5px] min-[360px]:text-[7.5px] sm:text-[10px] font-black text-white mt-0.5 animate-slow-glow-sp flex flex-row items-center">
@@ -7108,8 +8698,8 @@ function AchievementBadge({ achievement, align = 'right', isLightBg = false }: {
           </div>
         </div>
         <div className={`flex flex-col gap-0 sm:gap-0.5 ${isLeft ? 'items-start' : 'items-end'} justify-center`}>
-           <div className="hidden sm:flex border border-[#a855f7] bg-[#a855f7]/10 px-1.5 py-0.5 rounded-md items-center justify-center shadow-[0_0_4px_rgba(168,85,247,0.15)] animate-flicker-zg">
-             <span className="text-[7.5px] sm:text-[8px] font-black text-[#bc56fd] tracking-widest uppercase text-center block" style={{ marginRight: '-0.1em' }}>
+           <div className="flex border border-[#a855f7] bg-[#a855f7]/10 px-1 sm:px-1.5 py-0.2 sm:py-0.5 rounded-md items-center justify-center shadow-[0_0_4px_rgba(168,85,247,0.15)] animate-flicker-zg">
+             <span className="text-[7px] min-[360px]:text-[7.5px] sm:text-[8px] font-black text-[#bc56fd] tracking-widest uppercase text-center block" style={{ marginRight: '-0.1em' }}>
                ZING MP3</span>
            </div>
            <h4 className="text-[7.5px] min-[360px]:text-[8.5px] sm:text-[10px] font-black text-white mt-0.5 animate-slow-glow-zg flex flex-row items-center">
@@ -7615,7 +9205,7 @@ function Home() {
   const [activeListTab, setActiveListTab] = useState<'demos'|'released'|'albums'>('released');
   const [hasInitializedTab, setHasInitializedTab] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(21);
   const [showArtist, setShowArtist] = useState(false);
   const [spotifyLoaded, setSpotifyLoaded] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -7643,8 +9233,50 @@ function Home() {
     }
   };
   const [isScrolled, setIsScrolled] = useState(false);
-  const isGoldTheme = data?.adminTheme === 'gold';
+  const isMusician1Theme = data?.adminTheme === 'musician';
+  const isMusician2Theme = data?.adminTheme === 'musician2';
+  const isMusicianTheme = isMusician1Theme || isMusician2Theme;
+  const isGoldTheme = (data?.adminTheme === 'gold' || data?.adminTheme === 'gold2') && !isMusicianTheme;
+  const isGold2Theme = (data?.adminTheme === 'gold' || data?.adminTheme === 'gold2') && !isMusicianTheme;
   const [currentAvatarSlideIndex, setCurrentAvatarSlideIndex] = useState(0);
+  const [wallLightboxImg, setWallLightboxImg] = useState<string | null>(null);
+
+  const avatarCutoutRef = useRef<HTMLDivElement>(null);
+  const [avatarRect, setAvatarRect] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+  const [windowScrollY, setWindowScrollY] = useState(0);
+
+  useEffect(() => {
+    if (!isMusicianTheme) return;
+
+    const handleScroll = () => {
+      setWindowScrollY(window.scrollY || window.pageYOffset || 0);
+    };
+
+    const measureCutout = () => {
+      if (avatarCutoutRef.current) {
+        const rect = avatarCutoutRef.current.getBoundingClientRect();
+        const currentScrollY = window.scrollY || window.pageYOffset || 0;
+        setAvatarRect({
+          top: rect.top + currentScrollY,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+        });
+      }
+    };
+
+    measureCutout();
+    const timer = setTimeout(measureCutout, 300);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', measureCutout);
+    window.addEventListener('orientationchange', measureCutout);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', measureCutout);
+      window.removeEventListener('orientationchange', measureCutout);
+    };
+  }, [isMusicianTheme, data]);
 
   const avatarSlideshowImages = useMemo(() => {
     if (!data) return [];
@@ -7866,13 +9498,15 @@ function Home() {
 
   useEffect(() => {
     fetch('/api/data').then(res => res.json()).then(data => {
-      if (data && data.error === 'inactive') {
+      if (!data || data.error === 'inactive' || data.error === 'Artist not found' || data.notFound) {
         const currentExt = getArtistExtensionFromUrl(window.location.pathname);
         const activeExt = localStorage.getItem('activeAdminExtension');
-        if (currentExt && activeExt && activeExt === currentExt) {
+        if (data && data.error === 'inactive' && currentExt && activeExt && activeExt === currentExt) {
           window.location.href = `/${currentExt}/help`;
         } else {
-          window.location.href = '/';
+          if (window.location.pathname !== '/') {
+            window.location.href = window.location.origin + '/';
+          }
         }
         return;
       }
@@ -8045,19 +9679,23 @@ function Home() {
 
           {/* Right Column: Title details and premium stats */}
           <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left">
-            <motion.span 
+            <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
               onAnimationComplete={() => setShowArtist(true)}
-              className="text-xs sm:text-sm font-black tracking-[0.2em] uppercase text-[#AA7C11] mb-3 inline-flex items-center gap-2"
+              className="text-xs sm:text-sm font-black tracking-[0.2em] uppercase text-[#AA7C11] mb-3 flex items-center justify-center md:justify-start gap-2 max-w-full overflow-hidden"
             >
-              <span className="relative flex h-2 w-2">
+              <span className="relative flex h-2 w-2 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D4AF37] opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#D4AF37]"></span>
               </span>
-              <AutoTranslate text={(!data.artistBio || ["Thiên đường demo của", "Thiên đường âm nhạc của"].includes(data.artistBio?.trim() || '')) ? `${t.dDesc || 'Thiên đường âm nhạc của'} ${data.artistName || ''}` : data.artistBio} />
-            </motion.span>
+              <div className="w-full max-w-[85vw] sm:max-w-xl overflow-hidden">
+                <MarqueeText className="font-black uppercase tracking-[0.2em] text-[#AA7C11] whitespace-nowrap text-xs sm:text-sm">
+                  <AutoTranslate text={(data.artistBio && data.artistBio.trim()) ? data.artistBio : `${t.dDesc || 'Thiên đường âm nhạc của'} ${data.artistName || ''}`} />
+                </MarqueeText>
+              </div>
+            </motion.div>
             
             <motion.h1 
               initial={{ opacity: 0, y: 15 }}
@@ -8067,6 +9705,286 @@ function Home() {
             >
               {data.artistName}
             </motion.h1>
+          </div>
+        </section>
+      );
+    }
+
+    if (isMusicianTheme) {
+      const artistAvatar = data?.avatarUrl || data?.aboutMe?.avatarUrl || effectiveCoverUrl || (data?.slideshowImages && data.slideshowImages.length > 0 ? data.slideshowImages[0] : '');
+      const hasAvatar = Boolean(artistAvatar);
+
+      return (
+        <section key="title-musician" className={`relative ${isFirst ? 'pt-20 sm:pt-24' : 'pt-8 sm:pt-12'} pb-6 px-4 sm:px-8 max-w-5xl mx-auto flex flex-col items-center justify-center text-center overflow-visible`}>
+          {/* Main Header Box */}
+          <div className={`relative z-10 w-full rounded-3xl sm:rounded-[2.5rem] overflow-hidden border-2 flex flex-col md:flex-row items-stretch justify-between h-auto md:h-[260px] max-h-[460px] md:max-h-[260px] ${
+            isMusician2Theme
+              ? 'border-amber-700/80 shadow-[0_16px_45px_rgba(0,0,0,0.85),inset_0_1px_2px_rgba(255,255,255,0.15)] bg-gradient-to-br from-[#2D160B] via-[#3B1E0F] to-[#241108]'
+              : 'border-rose-300/60 shadow-[0_12px_35px_rgba(244,63,94,0.15)] bg-gradient-to-br from-[#FCE7F3] via-[#FCE7F3] to-[#FBCFE8] md:bg-gradient-to-r md:from-[#FCE7F3] md:via-[#FCE7F3]/95 md:to-[#FCE7F3]/90'
+          }`}>
+            {/* Turntable decoration for Musician2 theme */}
+            {isMusician2Theme && (
+              <>
+                {/* Wood grain texture overlay on header */}
+                <div className="absolute inset-0 z-0 pointer-events-none rounded-3xl sm:rounded-[2.5rem] overflow-hidden" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '400px auto', backgroundRepeat: 'repeat', opacity: 0.12, filter: 'brightness(0.7) contrast(1.3)' }} />
+              <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-[1] opacity-20 sm:opacity-25 pointer-events-none hidden md:block">
+                <svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  {/* Turntable base */}
+                  <rect x="5" y="5" width="150" height="150" rx="12" fill="#1A0B05" stroke="#92400E" strokeWidth="1.5" opacity="0.6"/>
+                  {/* Platter ring */}
+                  <circle cx="72" cy="80" r="58" fill="#0D0604" stroke="#78350F" strokeWidth="1"/>
+                  <circle cx="72" cy="80" r="52" fill="none" stroke="#92400E" strokeWidth="0.5" opacity="0.4"/>
+                  {/* Spinning vinyl grooves */}
+                  <g className="animate-spin" style={{ transformOrigin: '72px 80px', animationDuration: '4s' }}>
+                    <circle cx="72" cy="80" r="48" fill="none" stroke="#D97706" strokeWidth="0.3" opacity="0.3"/>
+                    <circle cx="72" cy="80" r="42" fill="none" stroke="#D97706" strokeWidth="0.3" opacity="0.25"/>
+                    <circle cx="72" cy="80" r="36" fill="none" stroke="#D97706" strokeWidth="0.3" opacity="0.2"/>
+                    <circle cx="72" cy="80" r="30" fill="none" stroke="#D97706" strokeWidth="0.3" opacity="0.25"/>
+                    <circle cx="72" cy="80" r="24" fill="none" stroke="#D97706" strokeWidth="0.3" opacity="0.3"/>
+                    <circle cx="72" cy="80" r="18" fill="none" stroke="#D97706" strokeWidth="0.3" opacity="0.35"/>
+                    {/* Record label */}
+                    <circle cx="72" cy="80" r="12" fill="#92400E" opacity="0.5"/>
+                    <circle cx="72" cy="80" r="8" fill="#D97706" opacity="0.3"/>
+                    {/* Spindle */}
+                    <circle cx="72" cy="80" r="2.5" fill="#F59E0B" opacity="0.6"/>
+                    {/* Light reflection on vinyl */}
+                    <path d="M 40 55 Q 72 65 104 55" fill="none" stroke="#F59E0B" strokeWidth="0.5" opacity="0.15"/>
+                  </g>
+                  {/* Tonearm pivot */}
+                  <circle cx="138" cy="22" r="6" fill="#1A0B05" stroke="#92400E" strokeWidth="1" opacity="0.7"/>
+                  <circle cx="138" cy="22" r="2.5" fill="#D97706" opacity="0.5"/>
+                  {/* Tonearm */}
+                  <line x1="136" y1="24" x2="85" y2="58" stroke="#B45309" strokeWidth="1.8" strokeLinecap="round" opacity="0.6"/>
+                  <line x1="85" y1="58" x2="78" y2="65" stroke="#B45309" strokeWidth="1.2" strokeLinecap="round" opacity="0.6"/>
+                  {/* Cartridge/stylus */}
+                  <rect x="74" y="63" width="8" height="5" rx="1" fill="#92400E" opacity="0.5" transform="rotate(-35 78 65.5)"/>
+                  {/* Speed selector dots */}
+                  <circle cx="142" cy="140" r="3" fill="#78350F" opacity="0.4"/>
+                  <circle cx="152" cy="140" r="3" fill="#D97706" opacity="0.4"/>
+                </svg>
+              </div>
+              </>
+            )}
+            {/* Animated Avatar Box with Loop & Hover Effects on Mobile & PC (order-1) */}
+            <div 
+              className={`relative z-10 w-full md:w-[44%] lg:w-[40%] h-[230px] sm:h-[260px] md:h-full shrink-0 overflow-hidden order-1 md:order-1 group/avatar cursor-pointer select-none ${
+                isMusician2Theme ? 'bg-amber-950/40 border-b-2 md:border-b-0 md:border-r-2 border-amber-800/60' : 'bg-rose-100/50'
+              }`}
+            >
+              {hasAvatar ? (
+                <>
+                  {/* Continuous gentle breathing scale + image zoom & brightness boost on hover */}
+                  <motion.img 
+                    src={artistAvatar}
+                    alt={data.artistName || 'Avatar'}
+                    animate={{
+                      scale: [1, 1.05, 1],
+                    }}
+                    transition={{
+                      duration: 7,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                    className="w-full h-full object-cover object-top filter contrast-[1.02] group-hover/avatar:scale-115 group-hover/avatar:contrast-[1.08] group-hover/avatar:brightness-105 transition-all duration-700 ease-out"
+                    referrerPolicy="no-referrer"
+                  />
+
+                  {/* Loop 1: Soft ambient color pulse layer (Rose to Amber glow loop) */}
+                  <motion.div 
+                    animate={{
+                      opacity: [0.15, 0.45, 0.15],
+                    }}
+                    transition={{
+                      duration: 4.5,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                    className={`absolute inset-0 bg-gradient-to-tr ${
+                      isMusician2Theme ? 'from-amber-600/20 via-yellow-500/10 to-amber-900/30' : 'from-rose-500/20 via-pink-300/10 to-amber-300/20'
+                    } pointer-events-none z-10`}
+                  />
+
+                  {/* Loop 2: Glass shimmer sweep across avatar periodically */}
+                  <motion.div 
+                    animate={{ x: ['-100%', '200%'] }}
+                    transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut", repeatDelay: 2.5 }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent skew-x-12 z-20 pointer-events-none"
+                  />
+
+                  {/* Hover 1: Dark gradient Vignette overlay on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-rose-950/45 via-transparent to-transparent opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-500 z-20 pointer-events-none" />
+
+                  {/* Hover 2: Glowing border outline on hover */}
+                  <div className="absolute inset-0 border-2 border-transparent group-hover/avatar:border-rose-400/90 transition-all duration-500 z-30 pointer-events-none rounded-t-3xl sm:rounded-t-[2.5rem] md:rounded-l-[2.5rem] md:rounded-tr-none" />
+                </>
+              ) : (
+                <div className={`w-full h-full ${isMusician2Theme ? 'bg-gradient-to-r from-[#2D160B] to-[#3B1E0F]' : 'bg-gradient-to-r from-rose-200 to-[#FCE7F3]'}`} />
+              )}
+            </div>
+
+            {/* Bio Box: RIGHT side on PC (order-2), Bottom on mobile (order-2) */}
+            <div className={`relative z-10 md:z-20 w-full md:w-auto flex-1 flex flex-col items-center md:items-start justify-center text-center md:text-left py-6 sm:py-8 px-6 sm:px-10 min-w-0 overflow-hidden rounded-b-3xl sm:rounded-b-[2.5rem] md:rounded-none order-2 md:order-2 shadow-sm ${
+              isMusician2Theme 
+                ? 'bg-gradient-to-br from-[#2D160B]/90 via-[#3B1E0F]/90 to-[#241108]/90 md:bg-transparent border-t border-amber-800/60 md:border-t-0' 
+                : 'bg-gradient-to-br from-[#FCE7F3] via-[#FCE7F3] to-[#FBCFE8] md:bg-transparent border-t border-rose-200/60 md:border-t-0'
+            }`}>
+              {/* Subtitle / Description ABOVE Artist Name (1 line, ping-pong marquee only when text is long) */}
+              {(() => {
+                const bioTextStr = (data.artistBio && data.artistBio.trim()) ? data.artistBio : `${t.dDesc || 'Thiên đường âm nhạc của'} ${data.artistName || ''}`;
+                const isBioLong = bioTextStr.length > 28;
+                return (
+                  <div className="w-full max-w-full overflow-hidden mb-2 sm:mb-2.5">
+                    <motion.p 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.7 }}
+                      className={`text-base sm:text-lg md:text-xl font-bold tracking-wide font-serif leading-normal ${
+                        isMusician2Theme ? 'text-amber-200/90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]' : 'text-rose-900/80'
+                      } ${isBioLong ? 'whitespace-nowrap animate-marquee-pingpong' : 'whitespace-nowrap truncate'}`}
+                    >
+                      <AutoTranslate text={bioTextStr} />
+                    </motion.p>
+                  </div>
+                );
+              })()}
+
+              {/* Artist Name with White-bordered Verified Badge */}
+              <motion.h1 
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.1 }}
+                onAnimationComplete={() => setShowArtist(true)}
+                className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-none flex items-center justify-center md:justify-start gap-2.5 flex-wrap font-serif ${
+                  isMusician2Theme ? 'text-amber-100 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]' : 'text-stone-900 drop-shadow-xs'
+                }`}
+              >
+                <span>{data.artistName}</span>
+                <div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-1.5">
+                  <motion.div 
+                    animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }} 
+                    transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut", repeatDelay: 2 }} 
+                    className={`flex items-center justify-center backdrop-blur-md border-2 p-1 sm:p-1.5 rounded-full shadow-md transition-all duration-300 ${
+                      isMusician2Theme 
+                        ? 'bg-[#2A140A] border-amber-500/80 group-hover:bg-amber-900/50 shadow-[0_0_12px_rgba(245,158,11,0.5)]' 
+                        : 'bg-white/95 border-rose-300/80 group-hover:bg-rose-50'
+                    }`}
+                  >
+                    <BadgeCheck className={`w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 shrink-0 cursor-pointer ${
+                      isMusician2Theme ? 'text-amber-400 fill-amber-500/20' : 'text-rose-600 fill-rose-100'
+                    }`} />
+                  </motion.div>
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-stone-900 border border-stone-800 text-white text-[11px] font-sans font-medium tracking-normal normal-case leading-normal py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none z-50">
+                    Nghệ sĩ đã xác thực
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-stone-900" />
+                  </div>
+                </div>
+              </motion.h1>
+            </div>
+
+            {/* Studio Picture Frames Wall Showcase for Musician Theme */}
+            {isMusician2Theme && (() => {
+              const wallImages: string[] = [];
+              if (data?.slideshowImages && Array.isArray(data.slideshowImages) && data.slideshowImages.length > 0) {
+                data.slideshowImages.forEach((img: string) => {
+                  if (img && typeof img === 'string' && !wallImages.includes(img)) wallImages.push(img);
+                });
+              }
+              if (data?.homeCoverUrl && !wallImages.includes(data.homeCoverUrl)) wallImages.push(data.homeCoverUrl);
+              if (data?.avatarUrl && !wallImages.includes(data.avatarUrl)) wallImages.push(data.avatarUrl);
+              if (data?.aboutMe?.avatarUrl && !wallImages.includes(data.aboutMe.avatarUrl)) wallImages.push(data.aboutMe.avatarUrl);
+
+              if (wallImages.length < 6 && data?.demos && Array.isArray(data.demos)) {
+                data.demos.forEach((d: any) => {
+                  const c = d.coverUrl || d.cover_url || d.image;
+                  if (c && typeof c === 'string' && !wallImages.includes(c) && wallImages.length < 6) {
+                    wallImages.push(c);
+                  }
+                });
+              }
+
+              const fallbackPhotos = [
+                'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80',
+                'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=600&q=80',
+                'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80',
+                'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=600&q=80',
+                'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=600&q=80',
+                'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?auto=format&fit=crop&w=600&q=80',
+              ];
+
+              let fbIdx = 0;
+              while (wallImages.length < 6 && fbIdx < fallbackPhotos.length) {
+                if (!wallImages.includes(fallbackPhotos[fbIdx])) {
+                  wallImages.push(fallbackPhotos[fbIdx]);
+                }
+                fbIdx++;
+              }
+
+              return (
+                <div className="w-full mt-6 sm:mt-10 mb-2 relative z-20">
+                  {/* Studio Wall Header */}
+                  <div className="flex items-center justify-between gap-3 mb-5 px-1 sm:px-3">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-5 bg-amber-500 rounded-full shadow-[0_0_12px_rgba(245,158,11,0.8)]" />
+                      <h3 className="text-base sm:text-xl font-bold font-serif text-amber-100 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] flex items-center gap-2">
+                        {t("Khung Ảnh Kỷ Niệm Studio") || "Khung Ảnh Kỷ Niệm Studio"}
+                      </h3>
+                    </div>
+                    <span className="text-[11px] sm:text-xs text-amber-300/70 font-medium">
+                      {t("Bấm vào ảnh để xem khổ lớn") || "Bấm vào ảnh để xem khổ lớn"}
+                    </span>
+                  </div>
+
+                  {/* Hanging Picture Frame Rail & Rack */}
+                  <div className="relative pt-6 pb-2 px-1">
+                    {/* Top Brass Hanging Rail */}
+                    <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-950 via-[#482411] to-amber-950 rounded-full border-b border-amber-400/40 shadow-md z-10" />
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-5">
+                      {wallImages.map((imgUrl: string, idx: number) => {
+                        const tilts = ['-3.2deg', '2.8deg', '-2.5deg', '3.5deg', '-2.8deg', '2.2deg'];
+                        const tilt = tilts[idx % tilts.length];
+                        return (
+                          <motion.div
+                            key={`musician-gallery-wall-frame-${idx}`}
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: idx * 0.08 }}
+                            whileHover={{ scale: 1.07, rotate: 0, zIndex: 30 }}
+                            className="relative cursor-pointer group/wallcard"
+                            style={{ transform: `rotate(${tilt})` }}
+                            onClick={() => setWallLightboxImg(imgUrl)}
+                          >
+                            {/* Brass Wall Nail */}
+                            <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-3 sm:w-3.5 h-3 sm:h-3.5 rounded-full bg-gradient-to-br from-amber-100 via-amber-400 to-amber-900 border border-amber-200/90 shadow-md z-30 flex items-center justify-center">
+                              <div className="w-1 h-0.5 bg-amber-950/90 rotate-45" />
+                            </div>
+
+                            {/* Hanging Twine V-Shape */}
+                            <svg className="absolute -top-5 left-0 right-0 h-5 w-full overflow-visible pointer-events-none z-20">
+                              <line x1="50%" y1="3" x2="18%" y2="18" stroke="rgba(245,215,160,0.75)" strokeWidth="1.3" />
+                              <line x1="50%" y1="3" x2="82%" y2="18" stroke="rgba(245,215,160,0.75)" strokeWidth="1.3" />
+                            </svg>
+
+                            {/* Wooden Frame */}
+                            <div className="relative aspect-[4/5] rounded-lg p-1.5 sm:p-2 bg-[#FBF9F5] border-[5px] sm:border-[7px] border-[#3B1D0E] shadow-[0_12px_28px_rgba(0,0,0,0.85),inset_0_2px_4px_rgba(255,255,255,0.2)] group-hover/wallcard:border-[#522914] group-hover/wallcard:shadow-[0_20px_40px_rgba(0,0,0,0.95)] transition-all duration-300">
+                              <div className="w-full h-full rounded-xs overflow-hidden relative border border-stone-300/80 shadow-inner bg-stone-900">
+                                <img
+                                  src={imgUrl}
+                                  alt={`Khung ảnh ${idx + 1}`}
+                                  className="w-full h-full object-cover filter brightness-95 contrast-[1.05] group-hover/wallcard:brightness-100 group-hover/wallcard:scale-105 transition-all duration-500"
+                                  referrerPolicy="no-referrer"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/12 to-transparent pointer-events-none" />
+                              </div>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </section>
       );
@@ -8085,22 +10003,22 @@ function Home() {
                   onAnimationComplete={() => setShowArtist(true)}
                   className="text-xl sm:text-2xl text-white font-medium max-w-3xl mx-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] mb-6 sm:mb-8 md:mb-10"
                 >
-                  <AutoTranslate text={(!data.artistBio || ["Thiên đường demo của", "Thiên đường âm nhạc của"].includes(data.artistBio?.trim() || '')) ? t.dDesc : data.artistBio} />
+                  <AutoTranslate text={(data.artistBio && data.artistBio.trim()) ? data.artistBio : `${t.dDesc || 'Thiên đường âm nhạc của'} ${data.artistName || ''}`} />
                 </motion.p>
                 <motion.h1 
                   initial={{ opacity: 0, y: 15, filter: 'blur(4px)' }}
                   animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                   transition={{ duration: 1.2, ease: "easeOut" }}
-                  className="text-4xl sm:text-6xl md:text-[6rem] lg:text-[7rem] font-black mb-4 tracking-tighter text-white drop-shadow-lg leading-[1.15] text-center max-w-full mt-3 sm:mt-4"
+                  className="text-4xl sm:text-6xl md:text-[6rem] lg:text-[7rem] font-black mb-4 tracking-tighter text-white drop-shadow-lg leading-[1.35] text-center max-w-full mt-3 sm:mt-4 pt-2 overflow-visible"
                 >
                   {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
                     if (index === array.length - 1) {
                       return (
-                        <span key={`l7529-idx-${index}`} className="whitespace-nowrap"><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
-                            <motion.div animate={{ rotateY: [0, 360], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", repeatDelay: 3 }} className="flex items-center justify-center">
+                        <span key={`l7529-idx-${index}`} className="whitespace-nowrap"><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black py-1 inline-block overflow-visible" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] py-1 inline-block overflow-visible"}>{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
+                            <motion.div animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.15, 1] }} transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut", repeatDelay: 2 }} className="flex items-center justify-center">
                               <BadgeCheck className={`w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 ${isGoldTheme ? 'text-amber-400 fill-amber-400/20' : 'text-blue-500 fill-blue-500/20'} shrink-0 cursor-pointer`} />
                             </motion.div>
-                            <div className="absolute bottom-full mb-2 hidden group-hover:block bg-neutral-900 border border-white/10 text-white text-[11px] sm:text-xs font-bold py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none z-50 tracking-normal normal-case leading-none">
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-neutral-900 border border-white/10 text-white text-[11px] sm:text-xs font-sans font-medium py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none z-50 tracking-normal normal-case leading-normal">
                               Nghệ sĩ đã xác thực
                               <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-neutral-900" />
                             </div>
@@ -8108,7 +10026,7 @@ function Home() {
                         </span>
                       );
                     }
-                    return <React.Fragment key={`l7541-idx-${index}`}><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span>{' '}</React.Fragment>;
+                    return <React.Fragment key={`l7541-idx-${index}`}><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black py-1 inline-block overflow-visible" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] py-1 inline-block overflow-visible"}>{word}</span>{' '}</React.Fragment>;
                   })}
                 </motion.h1>
               </div>
@@ -8121,22 +10039,22 @@ function Home() {
                   onAnimationComplete={() => setShowArtist(true)}
                   className="text-lg sm:text-xl text-white font-medium mb-6 sm:mb-8 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
                 >
-                  <AutoTranslate text={(!data.artistBio || ["Thiên đường demo của", "Thiên đường âm nhạc của"].includes(data.artistBio?.trim() || '')) ? t.dDesc : data.artistBio} />
+                  <AutoTranslate text={(data.artistBio && data.artistBio.trim()) ? data.artistBio : `${t.dDesc || 'Thiên đường âm nhạc của'} ${data.artistName || ''}`} />
                 </motion.p>
                 <motion.h1 
                   initial={{ opacity: 0, y: 15, filter: 'blur(4px)' }}
                   animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                   transition={{ duration: 1.2, ease: "easeOut" }}
-                  className="text-3xl sm:text-5xl md:text-6xl font-black mb-0 tracking-tight leading-[1.15] text-center max-w-full mt-2 sm:mt-3"
+                  className="text-3xl sm:text-5xl md:text-6xl font-black mb-0 tracking-tight leading-[1.35] text-center max-w-full mt-2 sm:mt-3 pt-2 overflow-visible"
                 >
                   {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
                     if (index === array.length - 1) {
                       return (
-                        <span key={`l7565-idx-${index}`} className="whitespace-nowrap"><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
-                            <motion.div animate={{ rotateY: [0, 360], scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", repeatDelay: 3 }} className="flex items-center justify-center">
+                        <span key={`l7565-idx-${index}`} className="whitespace-nowrap"><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black py-1 inline-block overflow-visible" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] py-1 inline-block overflow-visible"}>{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
+                            <motion.div animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.15, 1] }} transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut", repeatDelay: 2 }} className="flex items-center justify-center">
                               <BadgeCheck className={`w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 ${isGoldTheme ? 'text-amber-400 fill-amber-400/20' : 'text-blue-500 fill-blue-500/20'} shrink-0 cursor-pointer`} />
                             </motion.div>
-                            <div className="absolute bottom-full mb-2 hidden group-hover:block bg-neutral-900 border border-white/10 text-white text-[11px] sm:text-xs font-bold py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none z-50 tracking-normal normal-case leading-none">
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-neutral-900 border border-white/10 text-white text-[11px] sm:text-xs font-sans font-medium py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none z-50 tracking-normal normal-case leading-normal">
                               Nghệ sĩ đã xác thực
                               <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-neutral-900" />
                             </div>
@@ -8144,7 +10062,7 @@ function Home() {
                         </span>
                       );
                     }
-                    return <React.Fragment key={`l7577-idx-${index}`}><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span>{' '}</React.Fragment>;
+                    return <React.Fragment key={`l7577-idx-${index}`}><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black py-1 inline-block overflow-visible" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] py-1 inline-block overflow-visible"}>{word}</span>{' '}</React.Fragment>;
                   })}
                 </motion.h1>
               </div>
@@ -8160,8 +10078,8 @@ function Home() {
     return (
       <section key="random-song-sec" className={`w-full max-w-2xl sm:max-w-3xl mx-auto px-6 sm:px-12 ${isFirst ? 'pt-24 sm:pt-28' : 'pt-4 sm:pt-6'} pb-6`}>
         <div className="w-full relative overflow-visible">
-          <div className={`font-bold text-xs uppercase tracking-widest mb-2.5 flex items-center gap-1.5 justify-center select-none ${isGoldTheme ? 'text-stone-500' : 'text-stone-300'}`}>
-            <Sparkles className={`w-4 h-4 ${isGoldTheme ? 'text-[#AA7C11]' : 'text-amber-400'} animate-pulse`} />
+          <div className={`font-bold text-xs uppercase tracking-widest mb-2.5 flex items-center gap-1.5 justify-center select-none ${isMusician2Theme ? 'text-amber-100 font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]' : (isGoldTheme || isMusicianTheme) ? 'text-stone-800 font-extrabold' : 'text-stone-300'}`}>
+            <Sparkles className={`w-4 h-4 ${isMusician2Theme ? 'text-amber-400' : isMusicianTheme ? 'text-rose-600' : isGoldTheme ? 'text-[#AA7C11]' : 'text-amber-400'} animate-pulse`} />
             <span>{t("Bài Hát Ngẫu Nhiên") || "Bài Hát Ngẫu Nhiên"}</span>
           </div>
           <div className="w-full relative overflow-visible">
@@ -8284,10 +10202,187 @@ function Home() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className={`min-h-screen flex flex-col ${isGoldTheme ? 'bg-gradient-to-b from-[#F9F5EA] via-[#FCF9F2] to-[#FAF5E6] text-[#2C1E03] selection:bg-amber-500 selection:text-stone-950' : 'bg-neutral-950 text-white selection:bg-rose-500 selection:text-white'} font-sans relative z-0 bg-notebook-dark`}
+      className={`min-h-screen flex flex-col ${
+        isMusician2Theme
+          ? 'bg-[#1C0E07] text-stone-100 selection:bg-amber-600 selection:text-white font-sans'
+          : isMusician1Theme 
+            ? 'bg-gradient-to-br from-[#FFF5F7] via-[#F8F2FC] via-[#FAF5FF] to-[#FFF7ED] text-stone-900 selection:bg-rose-400 selection:text-white font-sans' 
+            : isGoldTheme 
+              ? 'bg-gradient-to-b from-[#F9F5EA] via-[#FCF9F2] to-[#FAF5E6] text-[#2C1E03] selection:bg-amber-500 selection:text-stone-950 font-sans' 
+              : 'bg-neutral-950 text-white selection:bg-rose-500 selection:text-white font-sans bg-notebook-dark'
+      } relative z-0`}
     >
-      <SocialCarousel data={data} pushDown={pushDown} isGoldTheme={isGoldTheme} />
-      {isGoldTheme ? (
+      <SocialCarousel data={data} pushDown={pushDown} isGoldTheme={isGoldTheme} isMusicianTheme={isMusicianTheme} />
+      
+      {isMusician2Theme ? (
+        <>
+          {/* Realistic Wood Grain Background with 3D Cabinet Overlays */}
+          <div className="absolute inset-0 z-[-2] pointer-events-none select-none overflow-hidden bg-[#180A04]">
+            {/* Layer 1: Real Wood Grain Texture Image */}
+            <div 
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `url('/wood-bg.jpg')`,
+                backgroundSize: '600px auto',
+                backgroundRepeat: 'repeat',
+                filter: 'brightness(0.45) contrast(1.15) saturate(1.2)',
+              }}
+            />
+
+            {/* Layer 2: Subtle warm color overlay to unify tone */}
+            <div 
+              className="absolute inset-0 opacity-40"
+              style={{
+                background: 'linear-gradient(180deg, rgba(45,22,11,0.7) 0%, rgba(24,10,4,0.3) 50%, rgba(45,22,11,0.7) 100%)',
+                mixBlendMode: 'multiply'
+              }}
+            />
+          </div>
+
+          {/* Fixed Ambient Studio Lighting & Brass Trim Overlay */}
+          <div className="fixed inset-0 z-[-1] pointer-events-none select-none">
+            {/* Top & Bottom Vintage Brass Accent Trim */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-950 via-amber-400 to-amber-950 border-b border-amber-300/40 shadow-md z-20" />
+            <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-950 via-amber-400 to-amber-950 border-t border-amber-300/40 shadow-md z-20" />
+
+            {/* Warm Vignette Overlay for focus & readability */}
+            <div className="absolute inset-0 shadow-[inset_0_0_140px_rgba(0,0,0,0.92)] pointer-events-none z-10" />
+
+            {/* Display Cabinet Overhead Warm Golden Spotlight Glow */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-[650px] bg-[radial-gradient(ellipse_at_top,rgba(245,158,11,0.22),transparent_70%)] blur-2xl pointer-events-none" />
+          </div>
+
+          {/* Wall Hanging Picture Frames for Musician Theme */}
+          {(() => {
+            const wallImages: string[] = [];
+            if (data?.slideshowImages && Array.isArray(data.slideshowImages) && data.slideshowImages.length > 0) {
+              data.slideshowImages.forEach((img: string) => {
+                if (img && typeof img === 'string' && !wallImages.includes(img)) wallImages.push(img);
+              });
+            }
+            if (data?.homeCoverUrl && !wallImages.includes(data.homeCoverUrl)) wallImages.push(data.homeCoverUrl);
+            if (data?.avatarUrl && !wallImages.includes(data.avatarUrl)) wallImages.push(data.avatarUrl);
+            if (data?.aboutMe?.avatarUrl && !wallImages.includes(data.aboutMe.avatarUrl)) wallImages.push(data.aboutMe.avatarUrl);
+
+            if (wallImages.length < 6 && data?.demos && Array.isArray(data.demos)) {
+              data.demos.forEach((d: any) => {
+                const c = d.coverUrl || d.cover_url || d.image;
+                if (c && typeof c === 'string' && !wallImages.includes(c) && wallImages.length < 6) {
+                  wallImages.push(c);
+                }
+              });
+            }
+
+            // Fallback high-res music & studio aesthetic photos if fewer than 4 images exist
+            const fallbackPhotos = [
+              'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80',
+              'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=600&q=80',
+              'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80',
+              'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=600&q=80',
+              'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=600&q=80',
+              'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?auto=format&fit=crop&w=600&q=80',
+            ];
+
+            let fbIdx = 0;
+            while (wallImages.length < 4 && fbIdx < fallbackPhotos.length) {
+              if (!wallImages.includes(fallbackPhotos[fbIdx])) {
+                wallImages.push(fallbackPhotos[fbIdx]);
+              }
+              fbIdx++;
+            }
+
+            const framePresets = [
+              { top: '160px', left: '0.8%', right: 'auto', width: 'w-[120px] sm:w-[170px] lg:w-[205px] xl:w-[230px]', height: 'h-[140px] sm:h-[195px] lg:h-[240px] xl:h-[265px]', rotate: '-3.5deg', borderColor: 'border-[#3B1D0E]', bgMat: 'bg-[#FBF9F5]' },
+              { top: '380px', left: 'auto', right: '0.8%', width: 'w-[130px] sm:w-[185px] lg:w-[225px] xl:w-[250px]', height: 'h-[105px] sm:h-[150px] lg:h-[180px] xl:h-[200px]', rotate: '3.2deg', borderColor: 'border-[#482411]', bgMat: 'bg-[#FDFCF9]' },
+              { top: '750px', left: '0.6%', right: 'auto', width: 'w-[120px] sm:w-[175px] lg:w-[210px] xl:w-[235px]', height: 'h-[120px] sm:h-[175px] lg:h-[210px] xl:h-[235px]', rotate: '2.5deg', borderColor: 'border-[#2A1308]', bgMat: 'bg-[#F5F2EB]' },
+              { top: '1100px', left: 'auto', right: '0.6%', width: 'w-[115px] sm:w-[170px] lg:w-[200px] xl:w-[220px]', height: 'h-[140px] sm:h-[200px] lg:h-[240px] xl:h-[260px]', rotate: '-2.8deg', borderColor: 'border-[#3B1D0E]', bgMat: 'bg-[#FBF9F5]' },
+              { top: '1500px', left: '0.8%', right: 'auto', width: 'w-[130px] sm:w-[190px] lg:w-[230px] xl:w-[255px]', height: 'h-[110px] sm:h-[155px] lg:h-[185px] xl:h-[205px]', rotate: '-3deg', borderColor: 'border-[#482411]', bgMat: 'bg-[#FDFCF9]' },
+              { top: '1880px', left: 'auto', right: '0.8%', width: 'w-[120px] sm:w-[175px] lg:w-[210px] xl:w-[235px]', height: 'h-[120px] sm:h-[175px] lg:h-[210px] xl:h-[235px]', rotate: '3.5deg', borderColor: 'border-[#2A1308]', bgMat: 'bg-[#F5F2EB]' },
+            ];
+
+            return (
+              <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
+                {wallImages.map((imgUrl: string, idx: number) => {
+                  const preset = framePresets[idx % framePresets.length];
+                  return (
+                    <div
+                      key={`musician-wall-frame-${idx}`}
+                      className="absolute pointer-events-auto group/wallframe transition-all duration-500 hover:scale-105 hover:rotate-0 z-[1] hover:z-30 opacity-80 sm:opacity-95 hover:opacity-100 cursor-pointer"
+                      style={{
+                        top: preset.top,
+                        left: preset.left,
+                        right: preset.right,
+                        transform: `rotate(${preset.rotate})`,
+                      }}
+                      onClick={() => setWallLightboxImg(imgUrl)}
+                      title={t("Bấm để xem ảnh khổ lớn") || "Bấm để xem ảnh khổ lớn"}
+                    >
+                      {/* Wall Brass Nail */}
+                      <div className="absolute -top-4.5 sm:-top-5 left-1/2 -translate-x-1/2 w-3 sm:w-3.5 h-3 sm:h-3.5 rounded-full bg-gradient-to-br from-amber-100 via-amber-400 to-amber-900 border border-amber-200/90 shadow-md z-20 flex items-center justify-center">
+                        <div className="w-1 h-0.5 bg-amber-950/90 rotate-45" />
+                      </div>
+
+                      {/* Hanging String V-Shape */}
+                      <svg className="absolute -top-4.5 sm:-top-5 left-0 right-0 h-4.5 sm:h-5 w-full overflow-visible pointer-events-none z-10">
+                        <line x1="50%" y1="4" x2="15%" y2="18" stroke="rgba(245,215,160,0.65)" strokeWidth="1.2" />
+                        <line x1="50%" y1="4" x2="85%" y2="18" stroke="rgba(245,215,160,0.65)" strokeWidth="1.2" />
+                      </svg>
+
+                      {/* Outer Wooden Picture Frame */}
+                      <div className={`relative ${preset.width} ${preset.height} rounded-md p-1.5 sm:p-2 lg:p-2.5 shadow-[0_16px_35px_rgba(0,0,0,0.9),inset_0_2px_4px_rgba(255,255,255,0.2)] border-[6px] sm:border-[8px] lg:border-[10px] ${preset.borderColor} ${preset.bgMat} transition-all duration-300 group-hover/wallframe:shadow-[0_24px_50px_rgba(0,0,0,0.95)]`}>
+                        {/* Inner Picture Mat Border */}
+                        <div className="w-full h-full rounded-[2px] border border-stone-300/70 shadow-inner overflow-hidden relative">
+                          <img 
+                            src={imgUrl} 
+                            alt={`Khung ảnh treo tường ${idx + 1}`} 
+                            className="w-full h-full object-cover filter brightness-[0.93] contrast-[1.07] group-hover/wallframe:brightness-100 group-hover/wallframe:scale-105 transition-all duration-700" 
+                            referrerPolicy="no-referrer"
+                          />
+                          {/* Subtle glass reflection highlight */}
+                          <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/12 to-white/0 pointer-events-none" />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </>
+      ) : isMusician1Theme ? (
+        <div className="absolute inset-0 z-[-2] overflow-hidden pointer-events-none select-none">
+          {/* Background Slideshow for Musician Theme (Low Opacity, Crisp - No Blur) */}
+          {data?.slideshowImages && data.slideshowImages.length > 0 && (
+            <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+              {data.slideshowImages.map((src: string, idx: number) => {
+                const isActive = idx === (currentSlide % data.slideshowImages.length);
+                return (
+                  <div
+                    key={`musician-bg-slide-${idx}`}
+                    className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${isActive ? 'opacity-25 z-10' : 'opacity-0 z-0'}`}
+                    style={{ 
+                      backgroundImage: `url(${src})`, 
+                      backgroundPosition: 'center 20%',
+                      maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.15) 100%)', 
+                      WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.15) 100%)' 
+                    }}
+                  />
+                );
+              })}
+            </div>
+          )}
+          <div className="absolute top-[-10%] left-[-10%] w-[55%] aspect-square bg-pink-300/35 rounded-full blur-[140px]" />
+          <div className="absolute top-[25%] right-[-10%] w-[45%] aspect-square bg-purple-300/30 rounded-full blur-[130px]" />
+          <div className="absolute bottom-[10%] left-[20%] w-[50%] aspect-square bg-amber-200/40 rounded-full blur-[140px]" />
+          {/* Subtle Tactile SVG Grain & Dots Texture Overlay */}
+          <div 
+            className="absolute inset-0 opacity-[0.045] mix-blend-multiply pointer-events-none"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1.5'/%3E%3Ccircle cx='23' cy='23' r='1.5'/%3E%3C/g%3E%3C/svg%3E")`
+            }}
+          />
+        </div>
+      ) : isGoldTheme ? (
         <div className="absolute inset-0 z-[-2] overflow-hidden pointer-events-none select-none">
           <div className="absolute inset-0 bg-gradient-to-b from-[#F9F5EA] via-[#FCF9F2] to-[#FAF5E6]"></div>
           <div className="absolute top-[-10%] left-[-10%] w-[50%] aspect-square bg-[#E8DCC4] opacity-30 rounded-full blur-[120px]" />
@@ -8434,7 +10529,7 @@ function Home() {
 
       {/* Top Navbar */}
       <div className="absolute top-0 left-0 right-0 z-50 pt-6 sm:pt-8">
-        {hasNavbar && <PublicNavbar menus={finalMenus} activeTab={activeMenuTab} setActiveTab={setActiveMenuTab} t={t} isGoldTheme={isGoldTheme} />}
+        {hasNavbar && <PublicNavbar menus={finalMenus} activeTab={activeMenuTab} setActiveTab={setActiveMenuTab} t={t} isGoldTheme={isGoldTheme} isMusicianTheme={isMusicianTheme} isMusician2Theme={isMusician2Theme} />}
       </div>
 
       {isVault && (() => {
@@ -8486,8 +10581,8 @@ function Home() {
               <section id="music-tabs-section" className={`scroll-mt-24 w-full max-w-5xl mx-auto px-6 sm:px-12 pb-10 ${firstVisibleSection === 'vault' ? 'pt-24 sm:pt-28' : ''}`}>
           {/* Header Row with compact Search Box */}
           <div className="flex items-center justify-between mb-4">
-            <div className={`${isHomeSearchExpanded ? 'hidden sm:flex' : 'flex'} text-base sm:text-lg font-bold tracking-tight ${isGoldTheme ? 'text-amber-950 font-black' : 'text-white/95'} items-center gap-2 shrink-0`}>
-              <span className={`w-1.5 h-4 ${isGoldTheme ? 'bg-amber-600 shadow-[0_0_10px_rgba(212,175,55,0.6)]' : 'bg-emerald-500'} rounded-full`} />
+            <div className={`${isHomeSearchExpanded ? 'hidden sm:flex' : 'flex'} text-base sm:text-lg font-bold tracking-tight ${isMusician2Theme ? 'text-amber-100 font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]' : isMusician1Theme ? 'text-stone-950 font-black' : isGoldTheme ? 'text-stone-950 font-black' : 'text-white/95'} items-center gap-2 shrink-0`}>
+              <span className={`w-1.5 h-4 ${isMusician2Theme ? 'bg-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.8)]' : isMusician1Theme ? 'bg-rose-500 shadow-sm' : isGoldTheme ? 'bg-amber-600 shadow-[0_0_10px_rgba(212,175,55,0.6)]' : 'bg-emerald-500'} rounded-full`} />
               <span>{t.mVault || "Kho Nhạc"}</span>
             </div>
 
@@ -8507,7 +10602,7 @@ function Home() {
                       value={searchQuery}
                       onChange={handleSearchChange}
                       placeholder={t.searchSong || "Tìm kiếm bài hát..."}
-                      className={`w-full ${isGoldTheme ? 'bg-[#FAF5E6] border-[#D4AF37]/45 text-[#1A1303] focus:ring-amber-500 placeholder:text-stone-400' : 'bg-neutral-900/60 border border-white/10 text-white focus:ring-emerald-500 placeholder:text-stone-500'} border rounded-xl py-2 text-xs focus:outline-none focus:ring-1 font-medium ${searchQuery ? 'pl-3' : 'pl-9'} ${searchQuery ? 'pr-3 sm:pr-8' : 'pr-3'}`}
+                      className={`w-full ${isMusician2Theme ? 'bg-stone-900/90 border-amber-800/80 text-amber-100 focus:ring-amber-500 placeholder:text-amber-300/50 shadow-md' : (isGoldTheme || isMusician1Theme) ? 'bg-white/90 border-purple-200 text-stone-900 focus:ring-rose-400 placeholder:text-stone-400 shadow-xs' : 'bg-neutral-900/60 border border-white/10 text-white focus:ring-emerald-500 placeholder:text-stone-500'} border rounded-xl py-2 text-xs focus:outline-none focus:ring-1 font-medium ${searchQuery ? 'pl-3' : 'pl-9'} ${searchQuery ? 'pr-3 sm:pr-8' : 'pr-3'}`}
                       autoFocus
                     />
                     {!searchQuery && (
@@ -8521,7 +10616,7 @@ function Home() {
                         onClick={() => {
                           setSearchQuery('');
                         }}
-                        className={`absolute right-3 ${isGoldTheme ? 'text-stone-500 hover:text-stone-900' : 'text-stone-400 hover:text-white'} sm:block hidden`}
+                        className={`absolute right-3 ${(isGoldTheme || isMusicianTheme) ? 'text-stone-500 hover:text-stone-900' : 'text-stone-400 hover:text-white'} sm:block hidden`}
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -8541,8 +10636,8 @@ function Home() {
                 }}
                 className={`p-2 rounded-xl transition-all ${
                   isHomeSearchExpanded 
-                    ? (isGoldTheme ? 'text-stone-500 hover:text-stone-900 ml-2 sm:block hidden' : 'text-stone-400 hover:text-white ml-2 sm:block hidden')
-                    : (isGoldTheme ? 'bg-[#FAF5E6] border border-[#D4AF37]/35 text-stone-600 hover:text-stone-900' : 'bg-neutral-900/50 border border-white/5 hover:bg-neutral-800/80 text-stone-400 hover:text-white')
+                    ? ((isGoldTheme || isMusicianTheme) ? 'text-stone-500 hover:text-stone-900 ml-2 sm:block hidden' : 'text-stone-400 hover:text-white ml-2 sm:block hidden')
+                    : ((isGoldTheme || isMusicianTheme) ? 'bg-white/90 border border-purple-200 text-stone-700 hover:text-stone-900 shadow-xs' : 'bg-neutral-900/50 border border-white/5 hover:bg-neutral-800/80 text-stone-400 hover:text-white')
                 }`}
                 title={isHomeSearchExpanded ? (t.closeSearch || "Đóng tìm kiếm") : (t.searchTitle || "Tìm kiếm bài hát")}
               >
@@ -8551,62 +10646,100 @@ function Home() {
             </div>
           </div>
 
-          <div className={`relative flex items-center gap-1 sm:gap-2 mb-6 ${isGoldTheme ? 'bg-[#FAF5E6] border-[#D4AF37]/30 shadow-xs' : 'bg-neutral-900/50 border border-white/5'} p-1 sm:p-1.5 rounded-xl sm:rounded-2xl w-full flex-nowrap overflow-x-auto custom-scrollbar`}>
+          <div className={`relative flex items-center gap-2 mb-6 ${
+            isMusician2Theme 
+              ? 'bg-gradient-to-r from-[#2A150A] via-[#3D2011] to-[#2A150A] border-2 border-amber-800/80 shadow-[0_12px_35px_rgba(0,0,0,0.85),inset_0_1px_2px_rgba(255,255,255,0.15)] rounded-2xl sm:rounded-full p-1.5' 
+              : isMusician1Theme 
+                ? 'bg-white/60 border-2 border-purple-200/80 shadow-[0_8px_30px_rgba(244,63,94,0.15)] rounded-full p-1.5' 
+                : isGoldTheme 
+                  ? 'bg-[#FAF5E6]/90 border border-[#D4AF37]/35 shadow-md rounded-full p-1.5' 
+                  : 'bg-black/50 border border-white/10 shadow-2xl backdrop-blur-2xl p-1.5 rounded-2xl'
+          } w-full sm:w-auto max-w-fit mx-auto sm:mx-0 flex-nowrap overflow-x-auto custom-scrollbar z-10`}>
              <button 
-               onClick={() => setActiveListTab('released')} 
-               className={`relative flex items-center justify-center flex-1 sm:flex-none gap-1 sm:gap-2 px-2 sm:px-4 md:px-6 py-2 md:py-3 rounded-lg sm:rounded-xl text-[11px] sm:text-base md:text-xl font-bold tracking-tight transition-all duration-300 ${
+               onClick={() => { setActiveListTab('released'); setCurrentPage(1); }} 
+               className={`relative flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2 sm:py-2.5 ${
+                 (isMusicianTheme || isGoldTheme) ? 'rounded-full' : 'rounded-xl'
+               } text-xs sm:text-base font-bold tracking-tight transition-colors duration-300 ${
                  activeListTab === 'released' 
-                   ? (isGoldTheme ? 'text-[#1A1303] font-black' : 'text-white') 
-                   : (isGoldTheme ? 'text-[#8C6B1B] hover:text-[#4A380D]' : 'text-white/60 hover:text-white')
+                   ? (isMusician2Theme ? 'text-stone-950 font-black' : isMusician1Theme ? 'text-amber-950 font-black' : isGoldTheme ? 'text-[#1A1303] font-black' : 'text-white font-black') 
+                   : (isMusician2Theme ? 'text-amber-200/80 hover:text-amber-100' : isMusician1Theme ? 'text-stone-600 hover:text-amber-900' : isGoldTheme ? 'text-[#1A1303]/70 hover:text-[#1A1303]' : 'text-stone-300 hover:text-white')
                }`}
              >
                 {activeListTab === 'released' && (
-                  <motion.div
-                    layoutId="activeTabBg"
-                    className={`absolute inset-0 ${isGoldTheme ? 'bg-gradient-to-r from-yellow-200 via-amber-300 to-yellow-200 border border-[#D4AF37]/45 shadow-[0_4px_12px_rgba(212,175,55,0.25)]' : 'bg-emerald-500/20 border border-emerald-500/20 shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)]'} rounded-lg sm:rounded-xl`}
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  <motion.div 
+                    layoutId="music-active-tab-glow" 
+                    className={`absolute inset-0 ${
+                      isMusician2Theme
+                        ? 'rounded-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 border border-amber-200 shadow-[0_4px_20px_rgba(245,158,11,0.6)]'
+                        : isMusician1Theme 
+                          ? 'rounded-full bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-200 border-2 border-amber-300 shadow-[0_4px_20px_rgba(245,158,11,0.4)]' 
+                          : isGoldTheme
+                            ? 'rounded-full bg-gradient-to-r from-[#D4AF37]/40 via-[#FCF6BA]/60 to-[#D4AF37]/40 border border-[#D4AF37] shadow-md'
+                            : 'rounded-xl bg-[#143325]/90 border border-emerald-500/60 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                    } z-0`}
+                    transition={{ type: "spring", stiffness: 450, damping: 32 }}
                   />
                 )}
-                <Music className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 relative z-10 ${activeListTab === 'released' ? (isGoldTheme ? 'text-[#AA7C11]' : 'text-emerald-400') : 'text-neutral-400'}`} />
+                <Music className={`w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10 ${activeListTab === 'released' ? (isMusician2Theme ? 'text-amber-950' : isMusician1Theme ? 'text-amber-700' : isGoldTheme ? 'text-[#1A1303]' : 'text-emerald-400') : (isMusician2Theme ? 'text-amber-300/70' : 'text-stone-400')}`} />
                 <span className="whitespace-nowrap relative z-10">{data?.tab1Name?.trim() || t('lReleased') || "Ra Rồi"}</span>
              </button>
              
              <button 
-               onClick={() => setActiveListTab('demos')} 
-               className={`relative flex items-center justify-center flex-1 sm:flex-none gap-1 sm:gap-2 px-2 sm:px-4 md:px-6 py-2 md:py-3 rounded-lg sm:rounded-xl text-[11px] sm:text-base md:text-xl font-bold tracking-tight transition-all duration-300 ${
+               onClick={() => { setActiveListTab('demos'); setCurrentPage(1); }} 
+               className={`relative flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2 sm:py-2.5 ${
+                 (isMusicianTheme || isGoldTheme) ? 'rounded-full' : 'rounded-xl'
+               } text-xs sm:text-base font-bold tracking-tight transition-colors duration-300 ${
                  activeListTab === 'demos' 
-                   ? (isGoldTheme ? 'text-[#1A1303] font-black' : 'text-white') 
-                   : (isGoldTheme ? 'text-[#8C6B1B] hover:text-[#4A380D]' : 'text-white/60 hover:text-white')
+                   ? (isMusician2Theme ? 'text-stone-950 font-black' : isMusician1Theme ? 'text-rose-950 font-black' : isGoldTheme ? 'text-[#1A1303] font-black' : 'text-white font-black') 
+                   : (isMusician2Theme ? 'text-amber-200/80 hover:text-amber-100' : isMusician1Theme ? 'text-stone-600 hover:text-rose-900' : isGoldTheme ? 'text-[#1A1303]/70 hover:text-[#1A1303]' : 'text-stone-300 hover:text-white')
                }`}
              >
                 {activeListTab === 'demos' && (
-                  <motion.div
-                    layoutId="activeTabBg"
-                    className={`absolute inset-0 ${isGoldTheme ? 'bg-gradient-to-r from-yellow-200 via-amber-300 to-yellow-200 border border-[#D4AF37]/45 shadow-[0_4px_12px_rgba(212,175,55,0.25)]' : 'bg-rose-500/20 border border-rose-500/20 shadow-[0_0_20px_-5px_rgba(244,63,94,0.3)]'} rounded-lg sm:rounded-xl`}
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  <motion.div 
+                    layoutId="music-active-tab-glow" 
+                    className={`absolute inset-0 ${
+                      isMusician2Theme
+                        ? 'rounded-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 border border-amber-200 shadow-[0_4px_20px_rgba(245,158,11,0.6)]'
+                        : isMusician1Theme 
+                          ? 'rounded-full bg-gradient-to-r from-pink-200 via-rose-100 to-pink-200 border-2 border-rose-300 shadow-[0_4px_20px_rgba(244,63,94,0.4)]' 
+                          : isGoldTheme
+                            ? 'rounded-full bg-gradient-to-r from-[#D4AF37]/40 via-[#FCF6BA]/60 to-[#D4AF37]/40 border border-[#D4AF37] shadow-md'
+                            : 'rounded-xl bg-[#39151e]/90 border border-rose-500/60 shadow-[0_0_15px_rgba(244,63,94,0.3)]'
+                    } z-0`}
+                    transition={{ type: "spring", stiffness: 450, damping: 32 }}
                   />
                 )}
-                <Disc3 className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 relative z-10 ${activeListTab === 'demos' ? (isGoldTheme ? 'text-[#AA7C11]' : 'text-rose-400') : 'text-neutral-400'}`} />
+                <Disc3 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10 ${activeListTab === 'demos' ? (isMusician2Theme ? 'text-amber-950' : isMusician1Theme ? 'text-rose-700' : isGoldTheme ? 'text-[#1A1303]' : 'text-rose-400') : (isMusician2Theme ? 'text-amber-300/70' : 'text-stone-400')}`} />
                 <span className="whitespace-nowrap relative z-10">{data?.tab2Name?.trim() || t('lDemos') || "Đề Mô"}</span>
              </button>
              
              {data?.playlists && data.playlists.length > 0 && (
                <button 
-                 onClick={() => setActiveListTab('albums')} 
-                 className={`relative flex items-center justify-center flex-1 sm:flex-none gap-1 sm:gap-2 px-2 sm:px-4 md:px-6 py-2 md:py-3 rounded-lg sm:rounded-xl text-[11px] sm:text-base md:text-xl font-bold tracking-tight transition-all duration-300 ${
+                 onClick={() => { setActiveListTab('albums'); setCurrentPage(1); }} 
+                 className={`relative flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2 sm:py-2.5 ${
+                   (isMusicianTheme || isGoldTheme) ? 'rounded-full' : 'rounded-xl'
+                 } text-xs sm:text-base font-bold tracking-tight transition-colors duration-300 ${
                    activeListTab === 'albums' 
-                     ? (isGoldTheme ? 'text-[#1A1303] font-black' : 'text-white') 
-                     : (isGoldTheme ? 'text-[#8C6B1B] hover:text-[#4A380D]' : 'text-white/60 hover:text-white')
+                     ? (isMusician2Theme ? 'text-stone-950 font-black' : isMusician1Theme ? 'text-purple-950 font-black' : isGoldTheme ? 'text-[#1A1303] font-black' : 'text-white font-black') 
+                     : (isMusician2Theme ? 'text-amber-200/80 hover:text-amber-100' : isMusician1Theme ? 'text-stone-600 hover:text-purple-900' : isGoldTheme ? 'text-[#1A1303]/70 hover:text-[#1A1303]' : 'text-stone-300 hover:text-white')
                  }`}
                >
                   {activeListTab === 'albums' && (
-                    <motion.div
-                      layoutId="activeTabBg"
-                      className={`absolute inset-0 ${isGoldTheme ? 'bg-gradient-to-r from-yellow-200 via-amber-300 to-yellow-200 border border-[#D4AF37]/45 shadow-[0_4px_12px_rgba(212,175,55,0.25)]' : 'bg-purple-500/20 border border-purple-500/20 rounded-lg sm:rounded-xl shadow-[0_0_20px_-5px_rgba(168,85,247,0.3)]'} rounded-lg sm:rounded-xl`}
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    <motion.div 
+                      layoutId="music-active-tab-glow" 
+                      className={`absolute inset-0 ${
+                        isMusician2Theme
+                          ? 'rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 border border-amber-200 shadow-[0_4px_20px_rgba(245,158,11,0.6)]'
+                          : isMusician1Theme 
+                            ? 'rounded-full bg-gradient-to-r from-purple-200 via-indigo-100 to-purple-200 border-2 border-purple-300 shadow-[0_4px_20px_rgba(168,85,247,0.4)]' 
+                            : isGoldTheme
+                              ? 'rounded-full bg-gradient-to-r from-[#D4AF37]/40 via-[#FCF6BA]/60 to-[#D4AF37]/40 border border-[#D4AF37] shadow-md'
+                              : 'rounded-xl bg-[#281539]/90 border border-purple-500/60 shadow-[0_0_15px_rgba(168,85,247,0.3)]'
+                      } z-0`}
+                      transition={{ type: "spring", stiffness: 450, damping: 32 }}
                     />
                   )}
-                  <ListMusic className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 relative z-10 ${activeListTab === 'albums' ? (isGoldTheme ? 'text-[#AA7C11]' : 'text-purple-400') : 'text-neutral-400'}`} />
+                  <ListMusic className={`w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10 ${activeListTab === 'albums' ? (isMusician2Theme ? 'text-amber-950' : isMusician1Theme ? 'text-purple-700' : isGoldTheme ? 'text-[#1A1303]' : 'text-purple-400') : (isMusician2Theme ? 'text-amber-300/70' : 'text-stone-400')}`} />
                   <span className="whitespace-nowrap relative z-10">{data?.tab3Name || t('Tab 3 (Album/EP)') || "Album/EP"}</span>
                </button>
              )}
@@ -8659,7 +10792,8 @@ function Home() {
               : 'hover:border-purple-500/50';
 
             return (
-              <AnimatePresence>
+              <div className="w-full min-h-[550px] sm:min-h-[700px] transition-all duration-300">
+                <AnimatePresence>
                 {totalItems === 0 ? (
                   <motion.div
                     key="empty-state"
@@ -8693,7 +10827,7 @@ function Home() {
                     initial="hidden"
                     animate="show"
                     exit="exit"
-                    className={isGoldTheme && !isMobile && activeListTab !== 'albums' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" : "grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[1400px] mx-auto"}
+                    className={activeListTab === 'albums' ? "grid grid-cols-1 gap-3.5 sm:gap-4 max-w-3xl mx-auto w-full" : isMusicianTheme ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-20 sm:gap-y-24 gap-x-6 sm:gap-x-8 max-w-[1400px] mx-auto pt-14 sm:pt-16" : isGold2Theme ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" : (isGoldTheme && !isMobile) ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" : "grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[1400px] mx-auto"}
                   >
                     {activeListTab === 'albums' ? (
                       paginatedItems.map((playlist: any, idx: number) => {
@@ -8714,62 +10848,122 @@ function Home() {
                               show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
                             }}
                           >
-                            <Link to={getArtistLink(`/playlist/${playlist.id}`)} className={`group relative border rounded-2xl p-3 sm:p-4 transition-all duration-300 overflow-hidden flex items-center gap-3 sm:gap-4 w-full ${
-                              isGoldTheme 
-                                ? 'bg-white/95 border-[#D4AF37]/35 hover:border-[#D4AF37] hover:shadow-[0_12px_45px_rgba(212,175,55,0.18)]' 
-                                : 'bg-neutral-900/50 border-white/5 hover:border-purple-500/50 hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.3)]'
-                            }`}>
-                              <div className={`absolute inset-0 bg-gradient-to-br transition-all duration-500 ${
-                                isGoldTheme 
-                                  ? 'from-amber-400/0 to-amber-400/0 group-hover:from-amber-400/5' 
-                                  : 'from-purple-500/0 to-purple-500/0 group-hover:from-purple-500/10'
-                              }`}></div>
-                              <div className={`w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl overflow-hidden relative z-10 border transition-colors ${
-                                isGoldTheme 
-                                  ? 'border-[#D4AF37]/25 group-hover:border-[#D4AF37]/50' 
-                                  : 'border-white/10 group-hover:border-purple-500/30'
-                              }`}>
-                                {coverUrl ? (
-                                   <img src={coverUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={playlist.title} />
-                                ) : (
-                                   <div className={`w-full h-full ${isGoldTheme ? 'bg-[#FAF5E6] text-stone-400 group-hover:text-[#AA7C11]' : 'bg-neutral-800 text-neutral-600 group-hover:text-purple-500'} flex items-center justify-center transition-colors`}>
-                                     <ListMusic className="w-6 h-6 sm:w-8 sm:h-8" />
-                                   </div>
-                                )}
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                  <div className={`w-8 h-8 rounded-full ${isGoldTheme ? 'bg-[#AA7C11]' : 'bg-purple-500'} flex items-center justify-center scale-75 group-hover:scale-100 transition-transform shadow-lg`}>
-                                    <Play className="w-3 h-3 text-white ml-0.5" fill="currentColor" />
+                            {(() => {
+                              const discCount = Math.min(3, songsInPlaylist.length);
+                              const discOffsets = [
+                                { rest: 'translate-x-3', hover: 'group-hover:translate-x-7 sm:group-hover:translate-x-9', z: 'z-10' },
+                                { rest: 'translate-x-6', hover: 'group-hover:translate-x-14 sm:group-hover:translate-x-18', z: 'z-0' },
+                                { rest: 'translate-x-9', hover: 'group-hover:translate-x-20 sm:group-hover:translate-x-26', z: '-z-10' }
+                              ];
+
+                              return (
+                                <Link 
+                                  to={getArtistLink(`/playlist/${playlist.id}`)} 
+                                  className={`group relative border rounded-3xl p-3 sm:p-5 transition-all duration-500 overflow-hidden flex flex-row items-center gap-4 sm:gap-6 w-full ${
+                                    isMusicianTheme 
+                                      ? 'bg-gradient-to-br from-pink-50/95 via-rose-50/85 to-white/95 border-pink-300/80 hover:border-pink-500 shadow-[0_12px_35px_rgba(244,63,94,0.15)] hover:shadow-[0_20px_50px_rgba(244,63,94,0.3)]' 
+                                      : isGoldTheme
+                                      ? 'bg-[#FAF5E6] border-[#D4AF37]/35 hover:border-[#D4AF37] hover:shadow-[0_12px_45px_rgba(212,175,55,0.18)]' 
+                                      : 'bg-neutral-900/50 border-white/5 hover:border-purple-500/50 hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.3)]'
+                                  }`}
+                                >
+                                  {/* Left Container: Square Album Sleeve + Vinyl Discs Sticking Out */}
+                                  <div className="relative w-28 h-28 sm:w-36 sm:h-36 shrink-0 flex items-center justify-start select-none">
+                                    {/* Vinyl Discs Sticking Out to the Right */}
+                                    {Array.from({ length: discCount }).map((_, dIdx) => {
+                                      const offset = discOffsets[dIdx % discOffsets.length];
+                                      const targetSong = songsInPlaylist[dIdx];
+                                      const discCoverUrl = (targetSong && getSongCoverUrl(targetSong.coverUrl)) || coverUrl;
+
+                                      return (
+                                        <div 
+                                          key={`disc-${dIdx}`}
+                                          className={`absolute left-2 top-1/2 -translate-y-1/2 w-24 h-24 sm:w-32 sm:h-32 rounded-full border-2 border-neutral-900/40 shadow-xl overflow-hidden pointer-events-none transition-transform duration-700 ease-out ${offset.rest} ${offset.hover} ${offset.z}`}
+                                        >
+                                          {/* Spinning Vinyl Record on Hover */}
+                                          <div className="w-full h-full relative group-hover:animate-[spin_4s_linear_infinite]">
+                                            {/* Vinyl Disc Background & Distinct Song Cover Art */}
+                                            {discCoverUrl ? (
+                                              <img src={discCoverUrl} className="w-full h-full object-cover rounded-full filter brightness-90" alt="" referrerPolicy="no-referrer" />
+                                            ) : (
+                                              <div className="w-full h-full bg-neutral-900 rounded-full" />
+                                            )}
+                                            {/* Grooves & Conic Shine */}
+                                            <div 
+                                              className="absolute inset-0 rounded-full pointer-events-none opacity-50 mix-blend-overlay"
+                                              style={{ background: 'conic-gradient(from 0deg, rgba(255,255,255,0.4) 0deg, rgba(0,0,0,0.85) 90deg, rgba(255,255,255,0.4) 180deg, rgba(0,0,0,0.85) 270deg, rgba(255,255,255,0.4) 360deg)' }}
+                                            />
+                                            <div className="absolute inset-0 rounded-full border-[8px] sm:border-[10px] border-black/25 pointer-events-none" />
+                                            
+                                            {/* Center Label Badge */}
+                                            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 rounded-full shadow-md border border-white flex items-center justify-center text-[6px] font-black text-stone-900 uppercase tracking-tighter">
+                                              CD
+                                            </div>
+                                            {/* Transparent Cutout Hole */}
+                                            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full border border-stone-800 bg-transparent shadow-[inset_0_1px_2px_rgba(0,0,0,0.8)]" />
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+
+                                    {/* Square Album Cover Sleeve */}
+                                    <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden relative z-20 shadow-[0_8px_25px_rgba(0,0,0,0.3)] border-2 border-white/90 group-hover:scale-[1.02] transition-transform duration-500 bg-stone-900 shrink-0">
+                                      {coverUrl ? (
+                                        <img src={coverUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={playlist.title} referrerPolicy="no-referrer" />
+                                      ) : (
+                                        <div className="w-full h-full bg-neutral-800 text-neutral-400 flex items-center justify-center">
+                                          <ListMusic className="w-8 h-8" />
+                                        </div>
+                                      )}
+                                      <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <div className={`w-10 h-10 rounded-full ${isMusicianTheme ? 'bg-rose-500' : isGoldTheme ? 'bg-[#AA7C11]' : 'bg-purple-500'} flex items-center justify-center scale-80 group-hover:scale-100 transition-transform shadow-lg`}>
+                                          <Play className="w-4 h-4 text-white ml-0.5" fill="currentColor" />
+                                        </div>
+                                      </div>
+                                    </div>
                                   </div>
-                                </div>
-                              </div>
-                              <div className="flex-1 min-w-0 relative z-10 pr-22">
-                                <h3 className={`text-base sm:text-lg font-bold transition-colors truncate ${
-                                  isGoldTheme ? 'text-[#1A1303] group-hover:text-[#AA7C11]' : 'group-hover:text-purple-400 text-white'
-                                }`}>
-                                  {playlist.title}
-                                </h3>
-                                <p className={`text-xs sm:text-sm mt-1 ${isGoldTheme ? 'text-stone-500 font-semibold' : 'text-neutral-400'}`}>{songsInPlaylist.length} bài hát</p>
-                              </div>
-                              <button
-                                onClick={async (e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  let url = window.location.origin + getArtistLink(`/playlist/${playlist.id}`);
-                                  url = formatShareUrl(url);
-                                  await copyToClipboard(url);
-                                  setToast('Đã copy link playlist!');
-                                  setTimeout(() => setToast(''), 3000);
-                                }}
-                                className={`absolute bottom-3 right-3 z-20 ${
-                                  isGoldTheme 
-                                    ? 'bg-[#FAF5E6] border border-[#D4AF37]/35 text-[#AA7C11] hover:text-[#1A1303]' 
-                                    : 'bg-black/40 border border-white/10 text-white/80 hover:text-white'
-                                } p-2 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-95 group-hover:scale-100 active:scale-90`}
-                                title="Chia sẻ playlist"
-                              >
-                                <Share2 className="w-3.5 h-3.5 stroke-[1.5]" />
-                              </button>
-                            </Link>
+
+                                  {/* Right Container: Album Details */}
+                                  <div className="flex-1 min-w-0 relative z-20 pr-6 sm:pr-8 pl-4 sm:pl-8">
+                                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black tracking-widest uppercase mb-1.5 bg-rose-500/10 text-rose-600 border border-rose-200/80">
+                                      <Disc3 className="w-3 h-3 text-rose-500 animate-spin-slow" />
+                                      ALBUM / EP
+                                    </div>
+                                    <h3 className={`text-lg sm:text-xl font-black transition-colors line-clamp-2 leading-snug break-words ${
+                                      isMusicianTheme ? 'text-stone-900 group-hover:text-rose-600' : isGoldTheme ? 'text-[#1A1303] group-hover:text-[#AA7C11]' : 'group-hover:text-purple-400 text-white'
+                                    }`}>
+                                      {playlist.title}
+                                    </h3>
+                                    <p className={`text-xs sm:text-sm mt-1.5 font-bold ${isMusicianTheme ? 'text-stone-600' : isGoldTheme ? 'text-stone-500' : 'text-neutral-400'}`}>
+                                      {songsInPlaylist.length} bài hát
+                                    </p>
+                                  </div>
+
+                                  {/* Share Button */}
+                                  <button
+                                    onClick={async (e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      let url = window.location.origin + getArtistLink(`/playlist/${playlist.id}`);
+                                      url = formatShareUrl(url);
+                                      await copyToClipboard(url);
+                                      setToast('Đã copy link playlist!');
+                                      setTimeout(() => setToast(''), 3000);
+                                    }}
+                                    className={`absolute bottom-3 right-3 z-20 ${
+                                      isMusicianTheme
+                                        ? 'bg-white border border-rose-200 text-rose-600 hover:bg-rose-50'
+                                        : isGoldTheme 
+                                        ? 'bg-[#FAF5E6] border border-[#D4AF37]/35 text-[#AA7C11] hover:text-[#1A1303]' 
+                                        : 'bg-black/40 border border-white/10 text-white/80 hover:text-white'
+                                    } p-2 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-95 group-hover:scale-100 active:scale-90`}
+                                    title="Chia sẻ playlist"
+                                  >
+                                    <Share2 className="w-3.5 h-3.5 stroke-[1.5]" />
+                                  </button>
+                                </Link>
+                              );
+                            })()}
                           </motion.div>
                         );
                       })
@@ -8782,13 +10976,46 @@ function Home() {
                         >
                           {(activeBrandColors) => (
                             <motion.div
-                              className="relative overflow-visible w-full h-full"
-                              variants={{
-                                hidden: {  opacity: 0, y: 15 },
-                                show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
+                              key={`musician-motion-${activeListTab}-${demo.id || idx}`}
+                              initial={{ opacity: 0, y: 14 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              transition={{ 
+                                duration: 0.2, 
+                                delay: Math.min(idx, 3) * 0.02, 
+                                ease: "easeOut" 
                               }}
+                              className="relative overflow-visible w-full h-full"
                             >
-                              {isGoldTheme && !isMobile ? (
+                              {isMusician2Theme ? (
+                                <Musician2SongCard 
+                                  key={`musician2-card-${demo.id || idx}`}
+                                  demo={demo} 
+                                  idx={idx} 
+                                  activeListTab={activeListTab} 
+                                  getArtistLink={getArtistLink} 
+                                  t={t} 
+                                  data={data}
+                                  formatShareUrl={formatShareUrl}
+                                  copyToClipboard={copyToClipboard}
+                                  setToast={setToast}
+                                  setActiveBioSong={setActiveBioSong}
+                                />
+                              ) : isMusician1Theme ? (
+                                <MusicianSongCard 
+                                  key={`musician-card-${demo.id || idx}`}
+                                  demo={demo} 
+                                  idx={idx} 
+                                  activeListTab={activeListTab} 
+                                  getArtistLink={getArtistLink} 
+                                  t={t} 
+                                  data={data}
+                                  formatShareUrl={formatShareUrl}
+                                  copyToClipboard={copyToClipboard}
+                                  setToast={setToast}
+                                  setActiveBioSong={setActiveBioSong}
+                                />
+                              ) : (isGold2Theme || (isGoldTheme && !isMobile)) ? (
                                 <Link 
                                   to={activeListTab === 'released' ? getArtistLink(`/playlist/released?song=${demo.slug || demo.id}`) : getArtistLink(`/song/${demo.slug || demo.id}`)} 
                                   onClick={(e) => {
@@ -8809,7 +11036,7 @@ function Home() {
                                       }
                                     }
                                   }}
-                                  className={`group relative overflow-hidden rounded-[24px] p-4 transition-all duration-300 flex flex-col items-stretch text-center h-full w-full ${
+                                  className={`group relative overflow-hidden rounded-[24px] p-2.5 sm:p-3 transition-all duration-300 flex flex-col items-stretch text-center h-full w-full ${
                                     demo.achievements && demo.achievements.length > 0
                                       ? 'border-[3px] border-[#D4AF37] shadow-[0_12px_32px_rgba(170,124,17,0.25)] hover:shadow-[0_16px_40px_rgba(170,124,17,0.4)] hover:scale-[1.02] bg-gradient-to-tr from-[#BF953F] via-[#FCF6BA] via-45% to-[#B38728] via-70% to-[#FBF5B7]'
                                       : 'border-2 border-[#D4AF37]/35 hover:border-[#D4AF37] shadow-[0_12px_45px_rgba(212,175,55,0.06)] hover:shadow-[0_16px_45px_rgba(212,175,55,0.16)] hover:scale-[1.015] bg-[#FAF5E6]'
@@ -8937,7 +11164,7 @@ function Home() {
                                   </div>
 
                                   {/* 2. Song Title */}
-                                   <div className="mt-4 min-h-[48px] flex items-center justify-center text-center px-1 z-10 w-full relative">
+                                   <div className="mt-2.5 sm:mt-3 min-h-[44px] flex items-center justify-center text-center px-1 z-10 w-full relative">
                                      <AnimatePresence mode="wait">
                                        {demo.isBrand && showBrandState && demo.brandName ? (
                                          <motion.h3 
@@ -8968,7 +11195,7 @@ function Home() {
                                    </div>
 
                                    {/* 3. Artist/Singer */}
-                                   <div className="mb-4 mt-1 z-10 w-full px-2 min-h-[20px] relative">
+                                   <div className="mb-2 sm:mb-2.5 mt-0.5 z-10 w-full px-2 min-h-[18px] relative">
                                      <AnimatePresence mode="wait">
                                        {demo.isBrand && showBrandState ? (
                                          <motion.div
@@ -9048,7 +11275,7 @@ function Home() {
                                       }
                                     }
                                   }}
-                                  className={`group relative rounded-2xl p-3 sm:p-4 transition-all duration-500 flex items-center gap-3 w-full ${
+                                  className={`group relative rounded-2xl p-1.5 sm:p-4 transition-all duration-500 flex items-center gap-2 sm:gap-3 w-full ${
                                     demo.isBrand 
                                       ? 'hover:border-white/10' 
                                       : isGoldTheme
@@ -9111,7 +11338,7 @@ function Home() {
                                       )}
                                     </div>
                                   )}
-                                  <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 relative z-10 select-none">
+                                  <div className="w-20 h-20 sm:w-20 sm:h-20 shrink-0 relative z-10 select-none">
                                     <div className={`w-full h-full rounded-xl overflow-hidden relative border ${isGoldTheme ? 'border-[#D4AF37]/35 group-hover:border-[#D4AF37]' : 'border-white/10 group-hover:border-rose-500/30'} transition-colors`}>
                                       <AnimatePresence mode="wait">
                                         {demo.isBrand && showBrandState && demo.brandLogoUrl ? (
@@ -9193,7 +11420,7 @@ const activeAchievements = hasAchievements;
                                               >
                                                 <h3 className={`font-bold transition-colors ${
   activeAchievements
-     ? `text-[10px] sm:text-[13px] ${demo.isBrand ? 'text-white group-hover:text-amber-400' : (isGoldTheme ? 'text-white group-hover:text-[#D4AF37]' : 'text-white group-hover:text-amber-400')} leading-tight whitespace-normal break-words line-clamp-2`
+     ? `text-[11px] sm:text-[13px] ${demo.isBrand ? 'text-white group-hover:text-amber-400' : (isGoldTheme ? 'text-white group-hover:text-[#D4AF37]' : 'text-white group-hover:text-amber-400')} leading-tight whitespace-normal break-words line-clamp-2`
      : `${titleLength > 35 ? 'text-xs sm:text-base' : 'text-sm sm:text-lg'} ${demo.isBrand ? 'text-white group-hover:text-amber-400' : (isGoldTheme ? 'text-[#1A1303] group-hover:text-black' : 'group-hover:text-rose-400')} leading-tight whitespace-normal break-words line-clamp-2`
 }`} title={demo.title}>
   <span className="relative inline overflow-visible">
@@ -9214,7 +11441,7 @@ const activeAchievements = hasAchievements;
                                           </AnimatePresence>
                                         </div>
                                         {activeAchievements && (
-                                          <div className="relative z-10 shrink-0 w-[80px] sm:w-[150px] pr-1.5 sm:pr-3">
+                                          <div className="relative z-10 shrink-0 w-[125px] sm:w-[150px] pr-1 sm:pr-3">
                                              <AchievementCycle achievements={demo.achievements} />
                                           </div>
                                         )}
@@ -9299,8 +11526,8 @@ const activeAchievements = hasAchievements;
                 )}
 
                 {totalItems > 0 && (
-                  <div className={`col-span-full flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t ${isGoldTheme ? 'border-[#D4AF37]/35' : 'border-white/10'}`}>
-                    <div className={`flex items-center gap-2 text-xs sm:text-sm ${isGoldTheme ? 'text-[#1A1303] font-semibold' : 'text-neutral-300'}`}>
+                  <div className={`col-span-full flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t ${isMusician2Theme ? 'border-amber-800/60' : isMusicianTheme ? 'border-purple-200/80' : isGoldTheme ? 'border-[#D4AF37]/35' : 'border-white/10'}`}>
+                    <div className={`flex items-center gap-2 text-xs sm:text-sm ${isMusician2Theme ? 'text-amber-100/90 font-serif font-bold drop-shadow-xs' : isMusicianTheme ? 'text-stone-900 font-extrabold' : isGoldTheme ? 'text-[#1A1303] font-semibold' : 'text-neutral-300'}`}>
                       <span>{t("Hiển thị")}</span>
                       <BeautifulSelect 
                         value={pageSize} 
@@ -9308,8 +11535,9 @@ const activeAchievements = hasAchievements;
                           setPageSize(val);
                           setCurrentPage(1);
                         }}
-                        options={[20, 50, 100]}
-                        isGoldTheme={isGoldTheme}
+                        options={[21, 50, 100]}
+                        isGoldTheme={isGoldTheme || isMusicianTheme}
+                        isMusician2Theme={isMusician2Theme}
                       />
                       <span>{t("bài / trang")} ({t("Tổng")}: {totalItems})</span>
                     </div>
@@ -9325,17 +11553,26 @@ const activeAchievements = hasAchievements;
                               window.scrollTo({ top: window.scrollY + el.getBoundingClientRect().top - 80, behavior: 'smooth' });
                             }
                           }}
-                          className={`px-3.5 py-2 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md ${
+                          className={`px-3.5 py-2 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md relative overflow-hidden ${
                             currentPage === 1 
-                              ? isGoldTheme 
-                                ? 'bg-neutral-100/50 border-neutral-200 text-neutral-300 cursor-not-allowed select-none' 
-                                : 'bg-white/[0.02] border-white/5 text-white/20 cursor-not-allowed select-none' 
-                              : isGoldTheme 
-                                ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
-                                : `bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 ${activeHoverBorderColor}`
+                              ? isMusician2Theme
+                                ? 'bg-[#1A0B05]/60 border-amber-950/60 text-amber-200/30 cursor-not-allowed select-none'
+                                : isMusicianTheme
+                                  ? 'bg-stone-200/60 border-stone-300/60 text-stone-400 cursor-not-allowed select-none'
+                                  : isGoldTheme
+                                    ? 'bg-neutral-100/50 border-neutral-200 text-neutral-300 cursor-not-allowed select-none' 
+                                    : 'bg-white/[0.02] border-white/5 text-white/20 cursor-not-allowed select-none' 
+                              : isMusician2Theme
+                                ? 'border-amber-800/80 text-amber-100 hover:border-amber-400 hover:text-amber-200 shadow-md font-bold'
+                                : isMusicianTheme
+                                  ? 'bg-white border-purple-200 text-stone-900 font-extrabold hover:bg-rose-50 hover:border-rose-300 shadow-xs'
+                                  : isGoldTheme 
+                                    ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
+                                    : `bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 ${activeHoverBorderColor}`
                           }`}
                         >
-                          {t("Trước")}
+                          {isMusician2Theme && currentPage !== 1 && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
+                          <span className="relative z-[2]">{t("Trước")}</span>
                         </button>
                         
                         {(() => {
@@ -9360,15 +11597,22 @@ const activeAchievements = hasAchievements;
                                     window.scrollTo({ top: window.scrollY + el.getBoundingClientRect().top - 80, behavior: 'smooth' });
                                   }
                                 }}
-                                className={`w-9 h-9 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md flex items-center justify-center ${
+                                className={`w-9 h-9 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md flex items-center justify-center relative overflow-hidden ${
                                   isCurrent 
-                                    ? activeColorClass 
-                                    : isGoldTheme 
-                                      ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
-                                      : `bg-white/5 border-white/10 text-white/70 hover:text-white hover:bg-white/15 ${activeHoverBorderColor}`
+                                    ? isMusician2Theme
+                                      ? 'bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-stone-950 font-black border-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.6)]'
+                                      : activeColorClass 
+                                    : isMusician2Theme
+                                      ? 'border-amber-800/80 text-amber-100 font-bold hover:border-amber-400 shadow-md'
+                                      : isMusicianTheme
+                                        ? 'bg-white border-purple-200 text-stone-900 font-extrabold hover:bg-rose-50 hover:border-rose-300 shadow-xs'
+                                        : isGoldTheme 
+                                          ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
+                                          : `bg-white/5 border-white/10 text-white/70 hover:text-white hover:bg-white/15 ${activeHoverBorderColor}`
                                 }`}
                               >
-                                {page}
+                                {isMusician2Theme && !isCurrent && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '200px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
+                                <span className="relative z-[2]">{page}</span>
                               </button>
                             );
                           });
@@ -9383,80 +11627,116 @@ const activeAchievements = hasAchievements;
                               window.scrollTo({ top: window.scrollY + el.getBoundingClientRect().top - 80, behavior: 'smooth' });
                             }
                           }}
-                          className={`px-3.5 py-2 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md ${
+                          className={`px-3.5 py-2 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md relative overflow-hidden ${
                             currentPage === totalPages 
-                              ? isGoldTheme 
-                                ? 'bg-neutral-100/50 border-neutral-200 text-neutral-300 cursor-not-allowed select-none' 
-                                : 'bg-white/[0.02] border-white/5 text-white/20 cursor-not-allowed select-none' 
-                              : isGoldTheme 
-                                ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
-                                : `bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 ${activeHoverBorderColor}`
+                              ? isMusician2Theme
+                                ? 'bg-[#1A0B05]/60 border-amber-950/60 text-amber-200/30 cursor-not-allowed select-none'
+                                : isMusicianTheme
+                                  ? 'bg-stone-200/60 border-stone-300/60 text-stone-400 cursor-not-allowed select-none'
+                                  : isGoldTheme
+                                    ? 'bg-neutral-100/50 border-neutral-200 text-neutral-300 cursor-not-allowed select-none' 
+                                    : 'bg-white/[0.02] border-white/5 text-white/20 cursor-not-allowed select-none' 
+                              : isMusician2Theme
+                                ? 'border-amber-800/80 text-amber-100 hover:border-amber-400 hover:text-amber-200 shadow-md font-bold'
+                                : isMusicianTheme
+                                  ? 'bg-white border-purple-200 text-stone-900 font-extrabold hover:bg-rose-50 hover:border-rose-300 shadow-xs'
+                                  : isGoldTheme 
+                                    ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
+                                    : `bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 ${activeHoverBorderColor}`
                           }`}
                         >
-                          {t("Sau")}
+                          {isMusician2Theme && currentPage !== totalPages && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
+                          <span className="relative z-[2]">{t("Sau")}</span>
                         </button>
                       </div>
                     )}
                   </div>
                 )}
               </AnimatePresence>
-            );
+            </div>
+          );
           })()}
         </section>
             </div>
 
-            {isSectionVisible('mv') && ytVideos.length > 0 && (
-              <div style={{ order: mvOrder }} className={`w-full max-w-5xl mx-auto px-6 sm:px-12 pb-32 ${firstVisibleSection === 'mv' ? 'pt-24 sm:pt-28' : ''}`}>
-                {(() => {
-          const mvTotalItems = ytVideos.length;
-          const mvTotalPages = Math.ceil(mvTotalItems / mvPageSize);
-          const mvStartIndex = (mvCurrentPage - 1) * mvPageSize;
-          const paginatedMVs = ytVideos.slice(mvStartIndex, mvStartIndex + mvPageSize);
-          
-          return (
-            <section id="mv-section" className="mt-12">
-              <div className={`flex items-center gap-3 mb-8 px-4 border-b pb-4 ${isGoldTheme ? 'border-[#D4AF37]/35' : 'border-white/10'}`}>
-                <Music className={`w-6 h-6 ${isGoldTheme ? 'text-[#AA7C11]' : 'text-emerald-500'}`} />
-                <h2 className={`text-2xl font-bold tracking-tight ${isGoldTheme ? 'text-[#1A1303]' : 'text-white'}`}>{t.rMv}</h2>
-              </div>
-              <motion.div 
-                key={`mv-page-${mvCurrentPage}`}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                className="space-y-4"
-              >
-                {paginatedMVs.map((song, idx) => (
-                  <button 
-                    onClick={() => setPlayingVideo(song.videoId)} key={`l8724-${song.videoId || ''}-${song.id || ''}-${idx}`} 
-                    className={`w-full text-left flex items-center gap-4 rounded-xl p-3 shadow-lg transition-all duration-300 group border ${
-                      isGoldTheme 
-                        ? 'bg-[#FAF5E6] border-[#D4AF37]/35 hover:bg-white hover:border-[#D4AF37] shadow-[0_4px_20px_rgba(212,175,55,0.06)]' 
-                        : 'bg-white/5 backdrop-blur-md border-white/10 hover:bg-white/10 hover:border-white/20 shadow-black/10'
-                    }`}
-                  >
-                    <div className={`w-24 h-16 rounded-lg overflow-hidden flex-shrink-0 relative border ${isGoldTheme ? 'border-[#D4AF37]/20' : 'border-white/5'}`}>
-                      <img src={`https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`} alt={song.title} className="w-full h-full object-cover opacity-85 group-hover:opacity-100 transition-all duration-300 group-hover:scale-105" />
-                      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center">
-                        <div className={`p-2 backdrop-blur-md border rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_4px_12px_rgba(0,0,0,0.3)] opacity-90 group-hover:opacity-100 scale-90 group-hover:scale-105 transition-all duration-300 flex items-center justify-center ${
-                          isGoldTheme ? 'bg-[#AA7C11]/20 border-[#D4AF37]' : 'bg-white/10 border-white/30'
-                        }`}>
-                          <Play className="w-4 h-4 text-white fill-white translate-x-0.5" />
-                        </div>
-                      </div>
+            {(() => {
+              const fallbackYtFromSongs = [
+                ...(data.releasedSongs || []),
+                ...(data.demos || [])
+              ].filter((s: any) => s.linkYoutube).map((s: any) => {
+                const match = String(s.linkYoutube).match(/(?:v=|\/embed\/|\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+                return {
+                  title: s.title,
+                  videoId: match ? match[1] : '',
+                  youtubeUrl: s.linkYoutube
+                };
+              }).filter((v: any) => v.videoId);
+
+              const effectiveMvs = (ytVideos && ytVideos.length > 0) ? ytVideos : fallbackYtFromSongs;
+
+              if (!isSectionVisible('mv') || effectiveMvs.length === 0) return null;
+
+              const mvTotalItems = effectiveMvs.length;
+              const mvTotalPages = Math.ceil(mvTotalItems / mvPageSize);
+              const mvStartIndex = (mvCurrentPage - 1) * mvPageSize;
+              const paginatedMVs = effectiveMvs.slice(mvStartIndex, mvStartIndex + mvPageSize);
+              
+              return (
+                <div style={{ order: mvOrder }} className={`w-full max-w-5xl mx-auto px-6 sm:px-12 pb-32 ${firstVisibleSection === 'mv' ? 'pt-24 sm:pt-28' : ''}`}>
+                  <section id="mv-section" className="mt-12">
+                    <div className={`flex items-center gap-3 mb-8 px-4 border-b pb-4 ${isMusician2Theme ? 'border-amber-800/60' : (isGoldTheme || isMusicianTheme) ? 'border-purple-200/80' : 'border-white/10'}`}>
+                      <Music className={`w-6 h-6 ${isMusician2Theme ? 'text-amber-400' : isMusicianTheme ? 'text-rose-500' : isGoldTheme ? 'text-[#AA7C11]' : 'text-emerald-500'}`} />
+                      <h2 className={`text-2xl font-bold tracking-tight ${isMusician2Theme ? 'text-amber-100 font-serif font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]' : (isGoldTheme || isMusicianTheme) ? 'text-stone-950 font-black' : 'text-white'}`}>{t.rMv}</h2>
                     </div>
-                    <h3 className={`text-base sm:text-lg font-bold pr-2 break-words transition-colors ${
-                      isGoldTheme ? 'text-[#1A1303] group-hover:text-[#AA7C11]' : 'text-white/90 group-hover:text-white'
-                    }`}>{song.title}</h3>
-                  </button>
-                ))}
-              </motion.div>
+                    <motion.div 
+                      key={`mv-page-${mvCurrentPage}`}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.25, ease: "easeOut" }}
+                      className="space-y-4"
+                    >
+                      {paginatedMVs.map((song: any, idx: number) => (
+                        <button 
+                          onClick={() => setPlayingVideo(song.videoId)} key={`l8724-${song.videoId || ''}-${song.id || ''}-${idx}`} 
+                          className={`w-full text-left flex items-center gap-4 rounded-2xl p-3.5 shadow-lg transition-all duration-300 group border relative overflow-hidden ${
+                            isMusician2Theme
+                              ? 'border-amber-800/80 hover:border-amber-500/90 shadow-[0_8px_25px_rgba(0,0,0,0.8)]'
+                              : isMusicianTheme
+                                ? 'bg-white/90 border-purple-200/80 hover:bg-white hover:border-rose-300 shadow-[0_4px_20px_rgba(244,63,94,0.08)]'
+                                : isGoldTheme 
+                                  ? 'bg-[#FAF5E6] border-[#D4AF37]/35 hover:bg-white hover:border-[#D4AF37] shadow-[0_4px_20px_rgba(212,175,55,0.06)]' 
+                                  : 'bg-white/5 backdrop-blur-md border-white/10 hover:bg-white/10 hover:border-white/20 shadow-black/10'
+                          }`}
+                        >
+                          {/* Wood grain texture for MV items */}
+                          {isMusician2Theme && (
+                            <>
+                              <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '500px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />
+                              <div className="absolute inset-0 z-[1] bg-gradient-to-r from-black/30 via-transparent to-black/30" />
+                            </>
+                          )}
+                          <div className={`w-24 h-16 rounded-xl overflow-hidden flex-shrink-0 relative z-[2] border ${isMusician2Theme ? 'border-amber-700/60' : isMusicianTheme ? 'border-purple-200' : isGoldTheme ? 'border-[#D4AF37]/20' : 'border-white/5'}`}>
+                            <img src={`https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`} alt={song.title} className="w-full h-full object-cover opacity-85 group-hover:opacity-100 transition-all duration-300 group-hover:scale-105" />
+                            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center">
+                              <div className={`p-2 backdrop-blur-md border rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_4px_12px_rgba(0,0,0,0.3)] opacity-90 group-hover:opacity-100 scale-90 group-hover:scale-105 transition-all duration-300 flex items-center justify-center ${
+                                isMusician2Theme ? 'bg-amber-600/90 border-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.6)]' : isMusicianTheme ? 'bg-rose-500/80 border-rose-300' : isGoldTheme ? 'bg-[#AA7C11]/20 border-[#D4AF37]' : 'bg-white/10 border-white/30'
+                              }`}>
+                                <Play className="w-4 h-4 text-white fill-white translate-x-0.5" />
+                              </div>
+                            </div>
+                          </div>
+                          <h3 className={`text-base sm:text-lg font-bold pr-2 break-words transition-colors relative z-[2] ${
+                            isMusician2Theme ? 'text-amber-100 group-hover:text-amber-300 font-serif font-extrabold' : isMusicianTheme ? 'text-stone-900 group-hover:text-rose-600 font-extrabold' : isGoldTheme ? 'text-[#1A1303] group-hover:text-[#AA7C11]' : 'text-white/90 group-hover:text-white'
+                          }`}>{song.title}</h3>
+                        </button>
+                      ))}
+                    </motion.div>
 
               {/* Pagination controls for MV */}
               {mvTotalItems > 0 && (
-                <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 mt-6 border-t ${isGoldTheme ? 'border-[#D4AF37]/35' : 'border-white/10'}`}>
-                  <div className={`flex items-center gap-2 text-xs sm:text-sm ${isGoldTheme ? 'text-[#1A1303] font-semibold' : 'text-neutral-300'}`}>
+                <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 mt-6 border-t ${isMusician2Theme ? 'border-amber-800/60' : isMusicianTheme ? 'border-purple-200/80' : isGoldTheme ? 'border-[#D4AF37]/35' : 'border-white/10'}`}>
+                  <div className={`flex items-center gap-2 text-xs sm:text-sm ${isMusician2Theme ? 'text-amber-100/90 font-serif font-bold drop-shadow-xs' : isMusicianTheme ? 'text-stone-900 font-extrabold' : isGoldTheme ? 'text-[#1A1303] font-semibold' : 'text-neutral-300'}`}>
                     <span>{t("Hiển thị")}</span>
                     <BeautifulSelect 
                       value={mvPageSize} 
@@ -9465,7 +11745,8 @@ const activeAchievements = hasAchievements;
                         setMvCurrentPage(1);
                       }}
                       options={[8, 20, 50]}
-                      isGoldTheme={isGoldTheme}
+                      isGoldTheme={isGoldTheme || isMusicianTheme}
+                      isMusician2Theme={isMusician2Theme}
                     />
                     <span>{t("bài / trang")} ({t("Tổng")}: {mvTotalItems})</span>
                   </div>
@@ -9481,17 +11762,26 @@ const activeAchievements = hasAchievements;
                             window.scrollTo({ top: window.scrollY + el.getBoundingClientRect().top - 80, behavior: 'smooth' });
                           }
                         }}
-                        className={`px-3.5 py-2 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md ${
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md relative overflow-hidden ${
                           mvCurrentPage === 1 
-                            ? isGoldTheme 
-                              ? 'bg-neutral-100/50 border-neutral-200 text-neutral-300 cursor-not-allowed select-none' 
-                              : 'bg-white/[0.02] border-white/5 text-white/20 cursor-not-allowed select-none' 
-                            : isGoldTheme 
-                              ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
-                              : 'bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 hover:border-emerald-500/50'
+                            ? isMusician2Theme
+                              ? 'bg-[#1A0B05]/60 border-amber-950/60 text-amber-200/30 cursor-not-allowed select-none'
+                              : isMusicianTheme 
+                                ? 'bg-stone-200/60 border-stone-300/60 text-stone-400 cursor-not-allowed select-none' 
+                                : isGoldTheme 
+                                  ? 'bg-neutral-100/50 border-neutral-200 text-neutral-300 cursor-not-allowed select-none' 
+                                  : 'bg-white/[0.02] border-white/5 text-white/20 cursor-not-allowed select-none' 
+                            : isMusician2Theme
+                              ? 'border-amber-800/80 text-amber-100 hover:border-amber-400 hover:text-amber-200 shadow-md font-bold'
+                              : isMusicianTheme 
+                                ? 'bg-white border-purple-200 text-stone-900 font-extrabold hover:bg-rose-50 hover:border-rose-300 shadow-xs' 
+                                : isGoldTheme 
+                                  ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
+                                  : 'bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 hover:border-emerald-500/50'
                         }`}
                       >
-                        {t("Trước")}
+                        {isMusician2Theme && mvCurrentPage !== 1 && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
+                        <span className="relative z-[2]">{t("Trước")}</span>
                       </button>
                       
                       {(() => {
@@ -9516,17 +11806,26 @@ const activeAchievements = hasAchievements;
                                   window.scrollTo({ top: window.scrollY + el.getBoundingClientRect().top - 80, behavior: 'smooth' });
                                 }
                               }}
-                              className={`w-9 h-9 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md flex items-center justify-center ${
+                              className={`w-9 h-9 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md flex items-center justify-center relative overflow-hidden ${
                                 isCurrent 
-                                  ? isGoldTheme 
-                                    ? 'bg-[#AA7C11] text-white shadow-[0_0_15px_rgba(170,124,17,0.45)] border-[#AA7C11]' 
-                                    : 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.45)] border-emerald-500' 
-                                  : isGoldTheme 
-                                    ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
-                                    : 'bg-white/5 border-white/10 text-white/70 hover:text-white hover:bg-white/15 hover:border-emerald-500/50'
+                                  ? isMusician2Theme
+                                    ? 'bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-stone-950 font-black border-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.6)]'
+                                    : isMusicianTheme 
+                                      ? 'bg-rose-500 text-white font-black shadow-md border-rose-400' 
+                                      : isGoldTheme 
+                                        ? 'bg-[#AA7C11] text-white shadow-[0_0_15px_rgba(170,124,17,0.45)] border-[#AA7C11]' 
+                                        : 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.45)] border-emerald-500' 
+                                  : isMusician2Theme
+                                    ? 'border-amber-800/80 text-amber-100 font-bold hover:border-amber-400 hover:text-amber-200 shadow-md'
+                                    : isMusicianTheme 
+                                      ? 'bg-white border-purple-200 text-stone-900 font-extrabold hover:bg-rose-50 hover:border-rose-300 shadow-xs' 
+                                      : isGoldTheme 
+                                        ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
+                                        : 'bg-white/5 border-white/10 text-white/70 hover:text-white hover:bg-white/15 hover:border-emerald-500/50'
                               }`}
                             >
-                              {page}
+                              {isMusician2Theme && !isCurrent && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '200px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
+                              <span className="relative z-[2]">{page}</span>
                             </button>
                           );
                         });
@@ -9541,35 +11840,43 @@ const activeAchievements = hasAchievements;
                             window.scrollTo({ top: window.scrollY + el.getBoundingClientRect().top - 80, behavior: 'smooth' });
                           }
                         }}
-                        className={`px-3.5 py-2 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md ${
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md relative overflow-hidden ${
                           mvCurrentPage === mvTotalPages 
-                            ? isGoldTheme 
-                              ? 'bg-neutral-100/50 border-neutral-200 text-neutral-300 cursor-not-allowed select-none' 
-                              : 'bg-white/[0.02] border-white/5 text-white/20 cursor-not-allowed select-none' 
-                            : isGoldTheme 
-                              ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
-                              : 'bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 hover:border-emerald-500/50'
+                            ? isMusician2Theme
+                              ? 'bg-[#1A0B05]/60 border-amber-950/60 text-amber-200/30 cursor-not-allowed select-none'
+                              : isMusicianTheme 
+                                ? 'bg-stone-200/60 border-stone-300/60 text-stone-400 cursor-not-allowed select-none' 
+                                : isGoldTheme 
+                                  ? 'bg-neutral-100/50 border-neutral-200 text-neutral-300 cursor-not-allowed select-none' 
+                                  : 'bg-white/[0.02] border-white/5 text-white/20 cursor-not-allowed select-none' 
+                            : isMusician2Theme
+                              ? 'border-amber-800/80 text-amber-100 hover:border-amber-400 hover:text-amber-200 shadow-md font-bold'
+                              : isMusicianTheme 
+                                ? 'bg-white border-purple-200 text-stone-900 font-extrabold hover:bg-rose-50 hover:border-rose-300 shadow-xs' 
+                                : isGoldTheme 
+                                  ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
+                                  : 'bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 hover:border-emerald-500/50'
                         }`}
                       >
-                        {t("Sau")}
+                        {isMusician2Theme && mvCurrentPage !== mvTotalPages && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
+                        <span className="relative z-[2]">{t("Sau")}</span>
                       </button>
                     </div>
                   )}
                 </div>
               )}
                     </section>
-                  );
-                })()}
-              </div>
-            )}
+                  </div>
+                );
+              })()}
           </main>
         );
       })()}
 
       {!isVault && (
         <main className="flex-1 w-full max-w-5xl mx-auto px-6 sm:px-12 pb-32 pt-24 sm:pt-28">
-          {isAbout && <PublicAboutView aboutMe={data.aboutMe} data={data} t={t} onGoToVault={() => setActiveMenuTab(data.menus?.find((m: any) => m.type === 'vault')?.id || 'm1')} isAdmin={!!getAdminToken()} artistExtension={getArtistExtensionFromUrl()} isGoldTheme={isGoldTheme} />}
-          {isBio && <PublicBioView biography={data.biography} t={t} isAdmin={!!getAdminToken()} artistExtension={getArtistExtensionFromUrl()} isGoldTheme={isGoldTheme} />}
+          {isAbout && <PublicAboutView aboutMe={data.aboutMe} data={data} t={t} onGoToVault={() => setActiveMenuTab(data.menus?.find((m: any) => m.type === 'vault')?.id || 'm1')} isAdmin={!!getAdminToken()} artistExtension={getArtistExtensionFromUrl()} isGoldTheme={isGoldTheme} isMusicianTheme={isMusicianTheme} />}
+          {isBio && <PublicBioView biography={data.biography} t={t} isAdmin={!!getAdminToken()} artistExtension={getArtistExtensionFromUrl()} isGoldTheme={isGoldTheme} isMusicianTheme={isMusicianTheme} />}
         </main>
       )}
 
@@ -9595,6 +11902,40 @@ const activeAchievements = hasAchievements;
             isStandalone={false}
             lang={lang}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Wall Photo Lightbox Modal */}
+      <AnimatePresence>
+        {wallLightboxImg && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-8 select-none"
+            onClick={() => setWallLightboxImg(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="relative max-w-4xl max-h-[85vh] p-2.5 sm:p-4 rounded-2xl bg-[#2D160B] border-4 border-amber-800/80 shadow-[0_25px_60px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col items-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setWallLightboxImg(null)}
+                className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 w-9 h-9 rounded-full bg-black/70 hover:bg-black text-amber-200 border border-amber-500/40 flex items-center justify-center transition-all cursor-pointer shadow-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <img
+                src={wallLightboxImg}
+                alt="Framed wall photo preview"
+                className="max-h-[75vh] w-auto object-contain rounded-xl border border-white/10 shadow-2xl"
+                referrerPolicy="no-referrer"
+              />
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </motion.div>
@@ -9684,6 +12025,7 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
   useEffect(() => {
     almostEndedTriggered.current = false;
     if (audioRef.current && !isPreview) {
+      stopGlobalPreviewAudio();
       const playPromise = audioRef.current.play();
       if (playPromise !== undefined) {
         playPromise.then(() => {
@@ -9706,6 +12048,7 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
+        stopGlobalPreviewAudio();
         const playPromise = audioRef.current.play();
         if (playPromise !== undefined) {
           playPromise.then(() => {
@@ -12499,9 +14842,11 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                     {/* Glossy vinyl light shine overlay */}
                     <div className="absolute inset-0 bg-gradient-to-tr from-black/25 via-transparent to-white/15 rounded-full z-[15] pointer-events-none"></div>
                     
-                    {/* Spindle hole & metallic center rim to keep visual charm */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-[#0c0c0c]/90 border border-stone-700 rounded-full z-20 shadow-lg flex items-center justify-center">
-                      <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full"></div>
+                    {/* Spindle hole & metallic center rim with dead-center 3D cut-out "thủng" effect */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-b from-stone-300 via-stone-700 to-stone-900 p-[1.5px] z-20 shadow-[0_2px_8px_rgba(0,0,0,0.8)] pointer-events-none flex items-center justify-center">
+                      <div className="w-full h-full rounded-full bg-[#080808] border border-stone-950 shadow-[inset_0_2px_4px_rgba(0,0,0,1)] flex items-center justify-center">
+                        <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-black shadow-[inset_0_1px_3px_rgba(0,0,0,1)] border border-stone-900/80" />
+                      </div>
                     </div>
                   </div>
                   {demo.releaseYear && (
@@ -13253,7 +15598,7 @@ const FollowIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-function SocialCarousel({ data, pushDown = false, isGoldTheme = false }: { data: AppData, pushDown?: boolean, isGoldTheme?: boolean }) {
+function SocialCarousel({ data, pushDown = false, isGoldTheme = false, isMusicianTheme = false }: { data: AppData, pushDown?: boolean, isGoldTheme?: boolean, isMusicianTheme?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentIconIdx, setCurrentIconIdx] = useState(-1);
 
@@ -13302,7 +15647,13 @@ function SocialCarousel({ data, pushDown = false, isGoldTheme = false }: { data:
     <div className={`fixed left-6 z-[105] flex flex-col items-center gap-3 transition-all duration-500 ease-in-out top-6 sm:top-8`}>
       <button 
         onClick={() => { setIsOpen(!isOpen); console.log('Clicked, new state:', !isOpen); }}
-        className={`relative flex items-center justify-center w-10 h-10 rounded-full ${isGoldTheme ? 'bg-[#1A1303] border-[#D4AF37]/50 text-[#D4AF37] shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:border-[#D4AF37] hover:text-amber-300 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)]' : 'bg-white/10 border-white/20 text-white hover:bg-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]'} backdrop-blur-md border hover:scale-110 shadow-md transition-all cursor-pointer`}
+        className={`relative flex items-center justify-center w-10 h-10 rounded-full ${
+          isMusicianTheme 
+            ? 'bg-white/95 border-2 border-rose-300 text-rose-600 shadow-[0_6px_20px_rgba(244,63,94,0.3)] hover:border-rose-400 hover:scale-110 hover:text-rose-700' 
+            : isGoldTheme 
+            ? 'bg-[#1A1303] border-[#D4AF37]/50 text-[#D4AF37] shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:border-[#D4AF37] hover:text-amber-300 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)]' 
+            : 'bg-white/10 border-white/20 text-white hover:bg-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]'
+        } backdrop-blur-md border hover:scale-110 shadow-md transition-all cursor-pointer`}
         title="Follow"
       >
         <AnimatePresence>
@@ -13363,7 +15714,13 @@ function SocialCarousel({ data, pushDown = false, isGoldTheme = false }: { data:
                     hidden: {  opacity: 0, y: -10, scale: 0.8 },
                     visible: { opacity: 1, y: 0, scale: 1 }
                   }}
-                  className={`flex items-center justify-center w-10 h-10 rounded-full backdrop-blur-md border hover:scale-110 shadow-lg transition-all ${isGoldTheme ? 'bg-[#1A1303] border-[#D4AF37]/40 text-[#D4AF37] ' + social.color.replace('hover:bg-', 'hover:text-white hover:bg-') : 'bg-black/40 border-white/10 text-white ' + social.color}`}
+                  className={`flex items-center justify-center w-10 h-10 rounded-full backdrop-blur-md border hover:scale-110 shadow-lg transition-all ${
+                    isMusicianTheme 
+                      ? 'bg-white/90 border-2 border-rose-200 text-rose-600 hover:bg-rose-500 hover:text-white shadow-md' 
+                      : isGoldTheme 
+                      ? 'bg-[#1A1303] border-[#D4AF37]/40 text-[#D4AF37] ' + social.color.replace('hover:bg-', 'hover:text-white hover:bg-') 
+                      : 'bg-black/40 border-white/10 text-white ' + social.color
+                  }`}
                 >
                   <IconComponent className="w-5 h-5" />
                 </motion.a>
@@ -14131,29 +16488,77 @@ function AdminDatabaseSettings({ artistUsername }: { artistUsername?: string }) 
   );
 }
 
+const getAdminTabAndSubtabFromPath = (pathname: string, search: string, hash: string) => {
+  const allSegments = pathname.split('/').filter(Boolean);
+  const adminIdx = allSegments.indexOf('admin');
+  const pathSegments = adminIdx !== -1 ? allSegments.slice(adminIdx + 1) : allSegments;
+  const searchParams = new URLSearchParams(search);
+
+  let tab = pathSegments[0] || searchParams.get('tab') || hash.replace('#', '') || '';
+  let sub = pathSegments[1] || searchParams.get('subtab') || '';
+
+  if (tab === 'playlists') {
+    return { tab: 'demos', subtab: 'playlists' };
+  }
+  if (['released', 'demos', 'drafts', 'trash', 'landing_pages', 'brands'].includes(tab)) {
+    return { tab: 'demos', subtab: tab };
+  }
+
+  const validTabs = ['demos', 'profile', 'about', 'bio', 'menus', 'socials', 'security', 'templates', 'database', 'reposts', 'tickets', 'layout', 'vouchers', 'admin_theme'];
+  const validSubtabs = ['released', 'demos', 'drafts', 'playlists', 'trash', 'landing_pages', 'brands'];
+
+  const finalTab = validTabs.includes(tab) ? tab : 'demos';
+  const finalSub = validSubtabs.includes(sub) ? sub : (searchParams.get('subtab') || 'released');
+
+  return { tab: finalTab, subtab: finalSub };
+};
+
 function AdminDashboard() {
   const { t } = useAdminTranslation();
   const location = useLocation();
   const [data, setData] = useState<AppData | null>(null);
+  const [dataError, setDataError] = useState<string | null>(null);
   const getSongCoverUrl = (songUrl?: string) => songUrl || data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState<'demos'|'playlists'|'profile'|'about'|'bio'|'menus'|'socials'|'security'|'templates'|'database'|'reposts'|'tickets'|'layout'|'vouchers'|'admin_theme'>(
-    (window.location.hash ? window.location.hash.replace('#', '') : 'demos') as any
-  );
-  const [demosSubTab, setDemosSubTab] = useState<'released' | 'demos' | 'drafts' | 'playlists' | 'trash' | 'landing_pages' | 'brands'>('released');
 
+  const initialUrlState = getAdminTabAndSubtabFromPath(window.location.pathname, window.location.search, window.location.hash);
+  const [activeTab, setActiveTab] = useState<'demos'|'playlists'|'profile'|'about'|'bio'|'menus'|'socials'|'security'|'templates'|'database'|'reposts'|'tickets'|'layout'|'vouchers'|'admin_theme'>(
+    initialUrlState.tab as any
+  );
+  const [demosSubTab, setDemosSubTab] = useState<'released' | 'demos' | 'drafts' | 'playlists' | 'trash' | 'landing_pages' | 'brands'>(
+    initialUrlState.subtab as any
+  );
+
+  // Sync state when location changes
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const subtabParam = searchParams.get('subtab');
-    if (subtabParam) {
-      if (['released', 'demos', 'drafts', 'playlists', 'trash', 'landing_pages', 'brands'].includes(subtabParam)) {
-        setDemosSubTab(subtabParam as any);
+    const { tab, subtab } = getAdminTabAndSubtabFromPath(location.pathname, location.search, location.hash);
+    if (tab !== activeTab) setActiveTab(tab as any);
+    if (subtab !== demosSubTab) setDemosSubTab(subtab as any);
+  }, [location.pathname, location.search, location.hash]);
+
+  // Push/Replace state on browser URL when activeTab or demosSubTab changes
+  useEffect(() => {
+    let targetPath = '/admin';
+    if (activeTab === 'demos') {
+      if (demosSubTab === 'playlists') {
+        targetPath = '/admin/playlists';
+      } else if (demosSubTab && demosSubTab !== 'released') {
+        targetPath = `/admin/${demosSubTab}`;
+      } else {
+        targetPath = '/admin';
       }
+    } else {
+      targetPath = `/admin/${activeTab}`;
     }
-  }, [location.search]);
+
+    if (window.location.pathname !== targetPath) {
+      window.history.replaceState(null, '', targetPath);
+    }
+  }, [activeTab, demosSubTab]);
   
   // Chorus Repost & Ticket States
   const [showMembershipModal, setShowMembershipModal] = useState(false);
+  const [membershipBillingCycle, setMembershipBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [isTranslatingAll, setIsTranslatingAll] = useState(false);
   const [otherSongs, setOtherSongs] = useState<any[]>([]);
@@ -14215,6 +16620,20 @@ function AdminDashboard() {
   const [externalSuccess, setExternalSuccess] = useState('');
   
   const [systemArtists, setSystemArtists] = useState<any[]>([]);
+  const [publicPricing, setPublicPricing] = useState<any>(null);
+  const [publicFeatures, setPublicFeatures] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('/api/public/pricing')
+      .then(res => res.json())
+      .then(data => { if (data && !data.error) setPublicPricing(data); })
+      .catch(() => {});
+
+    fetch('/api/public/features')
+      .then(res => res.json())
+      .then(data => { if (Array.isArray(data)) setPublicFeatures(data); })
+      .catch(() => {});
+  }, []);
   const [showBrandBrief, setShowBrandBrief] = useState(false);
   const [showBrandVideos, setShowBrandVideos] = useState(false);
   const [systemFavicon, setSystemFavicon] = useState<string>('');
@@ -14772,41 +17191,41 @@ function AdminDashboard() {
   }, [demosSubTab]);
 
   const loadData = () => {
+    setDataError(null);
     fetch('/api/admin/data', {
       headers: {
         'x-artist-extension': getArtistExtensionFromUrl(),
-
         'Authorization': `Bearer ${getAdminToken() || ''}`
       }
     })
       .then(res => {
-        if (res.status === 401) {
-          removeAdminToken();
-          window.location.href = getAdminLink();
-          throw new Error('Unauthorized');
+        if (!res.ok) {
+          if (res.status === 401 || res.status === 403) {
+            removeAdminToken();
+            window.location.href = getAdminLink();
+            throw new Error('Unauthorized');
+          }
+          throw new Error(`HTTP ${res.status}`);
         }
         return res.json();
       })
       .then(resData => {
-        setData(resData);
-        if (resData.customDomain) {
-          setCustomDomain(resData.customDomain);
-        }
-        if (resData.slideshowImages) {
-          setSlideshowImages(resData.slideshowImages);
-        }
-        if (resData.homeCoverUrl) setHomeCoverUrlPreview(resData.homeCoverUrl);
-        if (resData.faviconUrl) setFaviconUrlPreview(resData.faviconUrl);
-        if (resData.ogImageUrl) setOgImageUrlPreview(resData.ogImageUrl);
-        if (resData.memberPassword) {
-          setMemberPassInput(resData.memberPassword);
-        }
-        if (resData.email) {
-          setAdminEmail(resData.email);
+        if (resData && !resData.error) {
+          setData(resData);
+          if (resData.customDomain) setCustomDomain(resData.customDomain);
+          if (resData.slideshowImages) setSlideshowImages(resData.slideshowImages);
+          if (resData.homeCoverUrl) setHomeCoverUrlPreview(resData.homeCoverUrl);
+          if (resData.faviconUrl) setFaviconUrlPreview(resData.faviconUrl);
+          if (resData.ogImageUrl) setOgImageUrlPreview(resData.ogImageUrl);
+          if (resData.memberPassword) setMemberPassInput(resData.memberPassword);
+          if (resData.email) setAdminEmail(resData.email);
+        } else {
+          setDataError(resData?.error || t("Không thể tải thông tin quản trị!"));
         }
       })
       .catch(err => {
         console.error(t("Lỗi tải thông tin quản trị:"), err);
+        setDataError(err.message || t("Lỗi kết nối máy chủ!"));
       });
   };
 
@@ -14825,7 +17244,7 @@ function AdminDashboard() {
       const xhr = new XMLHttpRequest();
       xhr.open('POST', '/api/upload', true);
       xhr.setRequestHeader('Authorization', `Bearer ${getAdminToken() || ''}`);
-    xhr.setRequestHeader('x-artist-extension', getArtistExtensionFromUrl());
+      xhr.setRequestHeader('x-artist-extension', getArtistExtensionFromUrl());
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) {
           setProgress(Math.round((e.loaded / e.total) * 100));
@@ -14836,9 +17255,19 @@ function AdminDashboard() {
           setProgress(100);
           const res = JSON.parse(xhr.responseText);
           resolve(res.url);
-        } else reject(new Error('Upload failed'));
+        } else {
+          let msg = 'Tải ảnh lên thất bại!';
+          try {
+            const errRes = JSON.parse(xhr.responseText);
+            if (errRes.message || errRes.error) msg = errRes.message || errRes.error;
+          } catch(e) {}
+          if (xhr.status === 401) {
+            msg = 'Phiên đăng nhập Admin đã hết hạn (Lỗi 401 Unauthorized). Vui lòng đăng nhập lại!';
+          }
+          reject(new Error(msg));
+        }
       };
-      xhr.onerror = () => reject(new Error('Network error'));
+      xhr.onerror = () => reject(new Error('Lỗi kết nối mạng khi tải tệp lên!'));
       xhr.send(formData);
     });
   };
@@ -15166,6 +17595,32 @@ function AdminDashboard() {
     }
   };
 
+  if (dataError) {
+    return (
+      <div className="min-h-screen bg-stone-900 text-white flex flex-col items-center justify-center p-6 text-center">
+        <div className="bg-red-950/40 border border-red-500/30 p-8 rounded-2xl max-w-md w-full shadow-2xl backdrop-blur-md">
+          <div className="w-12 h-12 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center mx-auto mb-4 text-xl font-bold">!</div>
+          <h2 className="text-xl font-bold mb-2">{t("Không thể tải bảng quản trị")}</h2>
+          <p className="text-stone-400 text-sm mb-6">{dataError}</p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => loadData()}
+              className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-semibold rounded-xl text-sm transition-all shadow-lg cursor-pointer"
+            >
+              {t("Thử lại")}
+            </button>
+            <button
+              onClick={() => { removeAdminToken(); window.location.href = getAdminLink(); }}
+              className="px-5 py-2.5 bg-stone-800 hover:bg-stone-700 text-stone-300 font-semibold rounded-xl text-sm transition-all border border-stone-700 cursor-pointer"
+            >
+              {t("Đăng nhập lại")}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!data) return <LoadingScreen text={t("Đang tải AdminCP...")} />;
 
   const userRole = (data.roles || []).find((r: any) => String(r.id || r.name).toLowerCase() === String(data.roleId || '').toLowerCase());
@@ -15188,78 +17643,245 @@ function AdminDashboard() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white border border-stone-200 shadow-2xl rounded-3xl p-6 w-full max-w-2xl relative"
+              className="bg-white border border-stone-200 shadow-2xl rounded-3xl p-6 sm:p-8 w-full max-w-4xl relative max-h-[90vh] flex flex-col justify-between"
             >
               <button
                 onClick={() => setShowMembershipModal(false)}
-                className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-900 rounded-full hover:bg-stone-100 transition-colors cursor-pointer"
+                className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-900 rounded-full hover:bg-stone-100 transition-colors cursor-pointer z-10"
               >
                 <X className="w-5 h-5" />
               </button>
 
-              <h3 className="text-xl font-black text-stone-900 mb-2 flex items-center gap-2">
-                <Award className="w-6 h-6 text-amber-500" />
-                {t("So Sánh Gói Thành Viên")}
-              </h3>
-              <p className="text-xs text-stone-500 mb-6">{t("Xem và so sánh quyền lợi giữa các gói thành viên của bạn.")}</p>
+              <div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                  <div>
+                    <h3 className="text-xl font-black text-stone-900 mb-1 flex items-center gap-2">
+                      <Award className="w-6 h-6 text-amber-500" />
+                      {t("So Sánh Gói Thành Viên")}
+                    </h3>
+                    <p className="text-xs text-stone-500">{t("Xem và so sánh quyền lợi giữa các gói thành viên của bạn.")}</p>
+                  </div>
 
-              {/* Grid of plans */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto pr-1">
-                {((data as any)?.roles && (data as any).roles.length > 0 ? (data as any).roles : [
-                  { id: 'free', name: 'Gói Miễn Phí', price: '0', features: ['Quản lý bài hát cơ bản', 'Upload tối đa 5 bản nhạc demo', 'Chủ đề cơ bản'] },
-                  { id: 'pro', name: 'Gói Chuyên Nghiệp', price: '199.000', features: ['Không giới hạn số bài hát', 'Tự tùy biến chủ đề', 'Hỗ trợ nâng cao', 'Sử dụng tên miền riêng'] },
-                  { id: 'vip', name: 'Gói VIP', price: '500.000', features: ['Tất cả quyền lợi Pro', 'Hiệu ứng hiển thị đặc biệt', 'Hỗ trợ 1-1', 'Nhạc thương hiệu (Brand Music)'] }
-                ]).map((role: any, idx: number) => {
-                  const isActive = data?.roleId === role.id || data?.roleId === role.name;
-                  return (
-                    <div
-                      key={`l14457-${role.id || role.name || ''}-${idx}`}
-                      className={`border p-5 rounded-2xl flex flex-col justify-between transition-all relative ${
-                        isActive
-                          ? 'border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-600/25'
-                          : 'border-stone-200 bg-stone-50/50 hover:bg-stone-50'
+                  {/* Billing Cycle Switcher: Hàng Tháng / Theo Năm */}
+                  <div className="inline-flex items-center p-1.5 rounded-full border-2 border-neutral-300 bg-neutral-200/60 shadow-inner gap-1 shrink-0 self-start sm:self-auto">
+                    <button
+                      type="button"
+                      onClick={() => setMembershipBillingCycle('monthly')}
+                      className={`px-4 py-2 rounded-full text-xs font-black transition-all cursor-pointer ${
+                        membershipBillingCycle === 'monthly'
+                          ? 'bg-neutral-900 text-white shadow-md'
+                          : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-300/60'
                       }`}
                     >
-                      {isActive && (
-                        <span className="absolute -top-2.5 right-4 bg-indigo-600 text-white text-[9px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                          {t("Bạn đang ở gói này")}
-                        </span>
-                      )}
-                      
-                      <div>
-                        <h4 className="font-extrabold text-stone-900 text-base mb-1">{role.name}</h4>
-                        <div className="flex items-baseline gap-1 mb-4">
-                          <span className="text-xl font-black text-stone-900">
-                            {role.price ? `${parseInt(role.price).toLocaleString('vi-VN')} ₫` : '0 ₫'}
+                      {t('Hàng Tháng')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMembershipBillingCycle('yearly')}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-black transition-all cursor-pointer ${
+                        membershipBillingCycle === 'yearly'
+                          ? 'bg-neutral-900 text-white shadow-md'
+                          : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-300/60'
+                      }`}
+                    >
+                      <span>{t('Theo Năm')}</span>
+                      {(() => {
+                        const proM = Number(publicPricing?.pro?.monthlySalePrice || 99000);
+                        const proY = Number(publicPricing?.pro?.yearlySalePrice || 890000);
+                        const maxSavings = proM > 0 && proY > 0 ? Math.max(0, Math.round((1 - proY / (proM * 12)) * 100)) : 25;
+                        return (
+                          <span className="bg-amber-400 text-stone-950 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider animate-pulse">
+                            {t(`TIẾT KIỆM TỚI ${maxSavings}%`)}
                           </span>
-                          <span className="text-xs text-stone-500">/ tháng</span>
-                        </div>
-                        <button 
-                          type="button" 
-                          className={`w-full py-2.5 rounded-xl font-bold text-xs mb-4 transition-all ${isActive ? 'bg-indigo-600 text-white shadow-md cursor-default' : 'bg-stone-100 text-stone-700 hover:bg-stone-200 cursor-pointer'}`}
-                          onClick={() => {
-                             if (!isActive) {
-                                setToast(`Vui lòng nâng cấp gói tại trang chủ landing page!`);
-                                setTimeout(() => setToast(''), 3000);
-                             }
-                          }}
-                        >
-                          {isActive ? t('Đang Sử Dụng') : t('Nâng Cấp Ngay')}
-                        </button>
+                        );
+                      })()}
+                    </button>
+                  </div>
+                </div>
 
-                        {/* Features list */}
-                        <ul className={`space-y-2 text-xs ${role.id === 'vip' ? 'text-amber-900/80 font-medium' : 'text-stone-600'}`}>
-                          {(Array.isArray(role.features) ? role.features : (role.features || '').split('\n').filter(Boolean)).map((feat: string, idx: number) => (
-                            <li key={`l14494-idx-12-${idx}`} className="flex items-start gap-1.5">
-                              <Check className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${role.id === 'vip' ? 'text-amber-500' : 'text-emerald-500'}`} />
-                              <span>{feat}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                {/* Grid of plans dynamically synced with publicPricing and publicFeatures */}
+                {(() => {
+                  const getPriceInfo = (id: string) => {
+                    if (id === 'free') {
+                      return { sale: t('Miễn Phí'), orig: '', period: '', savings: 0 };
+                    }
+                    const tier = publicPricing?.[id] || {};
+                    const isYearly = membershipBillingCycle === 'yearly';
+                    const origVal = isYearly ? Number(tier.yearlyOriginalPrice || 0) : Number(tier.monthlyOriginalPrice || 0);
+                    const saleVal = isYearly ? Number(tier.yearlySalePrice || 0) : Number(tier.monthlySalePrice || 0);
+                    const mSale = Number(tier.monthlySalePrice || 0);
+                    const ySale = Number(tier.yearlySalePrice || 0);
+                    const savingsPct = (mSale * 12) > 0 && ySale > 0 ? Math.max(0, Math.round((1 - ySale / (mSale * 12)) * 100)) : 0;
+                    
+                    const fmt = (num: number) => num > 0 ? `${num.toLocaleString('vi-VN')}đ` : '';
+                    let defaultSale = id === 'pro' ? (isYearly ? '890.000đ' : '99.000đ') : (isYearly ? '1.990.000đ' : '249.000đ');
+
+                    return {
+                      sale: saleVal > 0 ? fmt(saleVal) : defaultSale,
+                      orig: origVal > saleVal ? fmt(origVal) : '',
+                      period: isYearly ? '/năm' : '/tháng',
+                      savings: isYearly ? savingsPct : 0
+                    };
+                  };
+
+                  const buildTierFeatures = (tierId: 'free' | 'pro' | 'vip', defaults: { text: string; active: boolean }[]) => {
+                    if (Array.isArray(publicFeatures) && publicFeatures.length > 0) {
+                      return publicFeatures.map(f => {
+                        const isCheck = tierId === 'free' ? !!f.free : tierId === 'pro' ? !!f.pro : !!f.vip;
+                        const customText = tierId === 'free' ? f.freeText : tierId === 'pro' ? f.proText : f.vipText;
+                        const text = (customText && customText.trim()) ? customText : f.name;
+                        return { text, active: isCheck };
+                      });
+                    }
+                    return defaults;
+                  };
+
+                  const membershipTiers = [
+                    {
+                      id: 'free',
+                      name: t('Gói Miễn Phí'),
+                      priceInfo: getPriceInfo('free'),
+                      cardBorder: 'border-stone-200 bg-stone-50/50',
+                      badgeStyle: 'bg-neutral-100 text-neutral-600 border border-neutral-200',
+                      badgeText: t('CƠ BẢN'),
+                      features: buildTierFeatures('free', [
+                        { text: 'Số Bài Hát Tối Đa: 5', active: true },
+                        { text: 'Giao Diện Kho Nhạc: 1', active: true },
+                        { text: 'Template Chủ Đề Tiêu Chuẩn', active: true },
+                        { text: 'Backup 24/7', active: true },
+                        { text: 'Trang tiểu sử (Bio)', active: false },
+                        { text: 'Mật khẩu bảo vệ Demo & Kho nhạc', active: false },
+                        { text: 'Tạo đường dẫn chia sẻ bí mật', active: false },
+                        { text: 'Tùy chỉnh tên miền riêng', active: false },
+                        { text: 'Template Độc Quyền', active: false },
+                        { text: 'Hỗ trợ ưu tiên 1:1', active: false },
+                      ])
+                    },
+                    {
+                      id: 'pro',
+                      name: t('Gói Pro'),
+                      priceInfo: getPriceInfo('pro'),
+                      cardBorder: 'border-purple-300 bg-purple-50/30',
+                      badgeStyle: 'bg-purple-600 text-white shadow-sm',
+                      badgeText: t('PHỔ BIẾN NHẤT'),
+                      features: buildTierFeatures('pro', [
+                        { text: 'Số Bài Hát Tối Đa: 50', active: true },
+                        { text: 'Giao Diện Kho Nhạc: Đầy đủ Pro', active: true },
+                        { text: 'Template Chủ Đề Tiêu Chuẩn', active: true },
+                        { text: 'Backup 24/7', active: true },
+                        { text: 'Trang tiểu sử (Bio)', active: true },
+                        { text: 'Mật khẩu bảo vệ Demo & Kho nhạc', active: true },
+                        { text: 'Tạo đường dẫn chia sẻ bí mật', active: true },
+                        { text: 'Tùy chỉnh tên miền riêng', active: false },
+                        { text: 'Template Độc Quyền', active: false },
+                        { text: 'Hỗ trợ ưu tiên 1:1', active: false },
+                      ])
+                    },
+                    {
+                      id: 'vip',
+                      name: t('Gói VIP'),
+                      priceInfo: getPriceInfo('vip'),
+                      cardBorder: 'border-amber-300 bg-amber-50/40',
+                      badgeStyle: 'bg-amber-100 text-amber-800 border border-amber-300 font-black',
+                      badgeText: t('ĐỘC QUYỀN VIP'),
+                      features: buildTierFeatures('vip', [
+                        { text: 'Số Bài Hát: KHÔNG GIỚI HẠN', active: true },
+                        { text: 'Giao Diện Kho Nhạc: Không giới hạn', active: true },
+                        { text: 'Template Chủ Đề (Bao gồm VIP)', active: true },
+                        { text: 'Backup 24/7', active: true },
+                        { text: 'Trang tiểu sử (Bio)', active: true },
+                        { text: 'Mật khẩu bảo vệ Demo & Kho nhạc', active: true },
+                        { text: 'Tạo đường dẫn chia sẻ bí mật', active: true },
+                        { text: 'Tùy chỉnh tên miền riêng', active: true },
+                        { text: 'Template Độc Quyền', active: true },
+                        { text: 'Hỗ trợ ưu tiên 1:1', active: true },
+                      ])
+                    }
+                  ];
+
+                  const currentRole = String((data as any)?.roleId || (data as any)?.role || '').toLowerCase();
+
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-h-[60vh] overflow-y-auto pr-1 pt-3">
+                      {membershipTiers.map((tier) => {
+                        const isActive = (tier.id === 'free' && (!currentRole || currentRole === 'free' || currentRole === 'miễn phí')) ||
+                                         (tier.id === 'pro' && (currentRole === 'pro' || currentRole === 'member')) ||
+                                         (tier.id === 'vip' && (currentRole === 'vip' || (data as any)?.isSpecial || (data as any)?.isMasterAdmin));
+                        return (
+                          <div
+                            key={tier.id}
+                            className={`border-2 p-5 rounded-3xl flex flex-col justify-between transition-all relative ${
+                              isActive
+                                ? 'border-emerald-500 bg-emerald-50/40 ring-2 ring-emerald-500/30 shadow-md'
+                                : tier.cardBorder
+                            }`}
+                          >
+                            {isActive && (
+                              <span className="absolute -top-3.5 right-4 bg-emerald-600 text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-md z-20">
+                                {t("Bạn đang ở gói này")}
+                              </span>
+                            )}
+                            
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <span className={`text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider ${tier.badgeStyle}`}>
+                                  {tier.badgeText}
+                                </span>
+                                {tier.priceInfo.savings > 0 && (
+                                  <span className="bg-amber-100 text-amber-800 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">
+                                    -{tier.priceInfo.savings}%
+                                  </span>
+                                )}
+                              </div>
+                              <h4 className="font-extrabold text-stone-900 text-lg mb-1">{tier.name}</h4>
+                              <div className="flex items-baseline gap-1.5 mb-4 flex-wrap">
+                                {tier.priceInfo.orig && (
+                                  <span className="text-sm font-bold text-stone-400 line-through">
+                                    {tier.priceInfo.orig}
+                                  </span>
+                                )}
+                                <span className="text-2xl font-black text-stone-900">
+                                  {tier.priceInfo.sale}
+                                </span>
+                                {tier.priceInfo.period && <span className="text-xs text-stone-500 font-bold">{tier.priceInfo.period}</span>}
+                              </div>
+                              <button 
+                                type="button" 
+                                className={`w-full py-2.5 rounded-xl font-bold text-xs mb-5 transition-all ${
+                                  isActive
+                                    ? 'bg-emerald-600 text-white shadow-md cursor-default'
+                                    : 'bg-stone-900 text-white hover:bg-stone-800 cursor-pointer shadow-sm'
+                                }`}
+                                onClick={() => {
+                                   if (!isActive) {
+                                      setToast(`Vui lòng đăng ký nâng cấp gói tại trang chủ!`);
+                                      setTimeout(() => setToast(''), 3000);
+                                   }
+                                }}
+                              >
+                                {isActive ? t('Đang Sử Dụng') : t('Nâng Cấp Ngay')}
+                              </button>
+
+                              {/* Features list dynamically from featuresMatrix */}
+                              <ul className="space-y-2 text-xs">
+                                {tier.features.map((feat, idx) => (
+                                  <li key={`feat-${tier.id}-${idx}`} className={`flex items-start gap-2 ${feat.active ? 'text-stone-800 font-medium' : 'text-stone-400 line-through opacity-60'}`}>
+                                    {feat.active ? (
+                                      <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500 mt-0.5" />
+                                    ) : (
+                                      <XCircle className="w-4 h-4 shrink-0 text-stone-300 mt-0.5" />
+                                    )}
+                                    <span>{feat.text}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   );
-                })}
+                })()}
               </div>
 
               <div className="border-t border-stone-200/60 mt-6 pt-4 flex justify-end">
@@ -15390,14 +18012,40 @@ function AdminDashboard() {
                 <HelpCircle className="w-4 h-4 stroke-[2]" />
               </Link>
             )}
-            <Link 
-              to={getArtistLink("/")} 
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 shadow-sm transition-all duration-300 animate-[fade-in_0.3s_ease-out]"
-              title={t("Trang chủ")}
-              id="admin-top-home-btn"
-            >
-              <HomeIcon className="w-4 h-4 stroke-[2]" />
-            </Link>
+            {(() => {
+              const artistExt = data?.artistExtension || data?.extension || data?.username || (typeof localStorage !== 'undefined' ? localStorage.getItem('activeAdminExtension') : null) || getGlobalCookie('activeAdminExtension') || getArtistExtensionFromUrl();
+              const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
+              const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
+              let targetUrl = '/';
+              if (artistExt && !isLocal && (host === 'chorus.vn' || host.endsWith('.chorus.vn'))) {
+                targetUrl = `https://${artistExt}.chorus.vn/`;
+              } else if (artistExt) {
+                targetUrl = `/${artistExt}`;
+              }
+              const isExternal = targetUrl.startsWith('http');
+              if (isExternal) {
+                return (
+                  <a 
+                    href={targetUrl} 
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 shadow-sm transition-all duration-300 animate-[fade-in_0.3s_ease-out]"
+                    title={t("Trang chủ nghệ sĩ")}
+                    id="admin-top-home-btn"
+                  >
+                    <HomeIcon className="w-4 h-4 stroke-[2]" />
+                  </a>
+                );
+              }
+              return (
+                <Link 
+                  to={targetUrl} 
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 shadow-sm transition-all duration-300 animate-[fade-in_0.3s_ease-out]"
+                  title={t("Trang chủ nghệ sĩ")}
+                  id="admin-top-home-btn"
+                >
+                  <HomeIcon className="w-4 h-4 stroke-[2]" />
+                </Link>
+              );
+            })()}
             <button 
               onClick={handleLogoutAdmin}
               className="w-10 h-10 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 shadow-sm transition-all duration-300 cursor-pointer animate-[fade-in_0.3s_ease-out]"
@@ -16953,15 +19601,27 @@ function AdminDashboard() {
                   <p className="text-xs text-stone-500 mt-1">{t("Tùy chọn giao diện hiển thị cho trang quản trị của bạn.")}</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Liquid Glass Card */}
                   <div 
                     onClick={() => {
-                      const isVip = !!data?.landingConfig?.adminThemesVip?.['liquid-glass'];
-                      const hasVipAccess = !!(String(data?.roleId || '').toLowerCase() === 'vip' || userRole?.exclusiveUi || data?.isSpecial || data?.isMasterAdmin);
-                      if (isVip && !hasVipAccess) {
-                        setThemeSelectError(t("đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.") || "đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.");
-                        return;
+                      const cfg = data?.landingConfig?.adminThemesVip?.['liquid-glass'];
+                      let isPro = false; let isVip = false;
+                      if (typeof cfg === 'object' && cfg !== null) { isVip = !!cfg.isVip; isPro = isVip || !!cfg.isPro; }
+                      else if (cfg === true) { isPro = true; isVip = true; }
+                      
+                      const userRoleId = String(data?.roleId || '').toLowerCase();
+                      const isMaster = !!(data?.isSpecial || data?.isMasterAdmin || userRole?.exclusiveUi);
+
+                      if (!isMaster) {
+                        if (isVip && userRoleId !== 'vip') {
+                          setThemeSelectError(t("đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.") || "đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.");
+                          return;
+                        }
+                        if (isPro && userRoleId !== 'pro' && userRoleId !== 'vip') {
+                          setThemeSelectError(t("đây là giao diện dành riêng cho thành viên PRO & VIP, nâng cấp gói để trải nghiệm.") || "đây là giao diện dành riêng cho thành viên PRO & VIP, nâng cấp gói để trải nghiệm.");
+                          return;
+                        }
                       }
                       setThemeSelectError(null);
                       handleCustomSave({ adminTheme: 'liquid-glass' });
@@ -16978,11 +19638,15 @@ function AdminDashboard() {
                         <span className="px-3 py-1 text-[10px] font-bold bg-stone-200 text-stone-700 rounded-full">
                           {t("Standard Theme")}
                         </span>
-                        {data?.landingConfig?.adminThemesVip?.['liquid-glass'] && (
-                          <span className="px-2 py-0.5 text-[9px] font-bold bg-yellow-500 text-stone-900 rounded-full flex items-center gap-1">
-                            VIP
-                          </span>
-                        )}
+                        {(() => {
+                          const cfg = data?.landingConfig?.adminThemesVip?.['liquid-glass'];
+                          let isPro = false; let isVip = false;
+                          if (typeof cfg === 'object' && cfg !== null) { isVip = !!cfg.isVip; isPro = isVip || !!cfg.isPro; }
+                          else if (cfg === true) { isPro = true; isVip = true; }
+                          if (isVip) return <span className="px-2 py-0.5 text-[9px] font-bold bg-yellow-500 text-stone-900 rounded-full flex items-center gap-1">VIP</span>;
+                          if (isPro) return <span className="px-2 py-0.5 text-[9px] font-bold bg-blue-500 text-white rounded-full flex items-center gap-1">PRO</span>;
+                          return null;
+                        })()}
                       </div>
                       <h3 className="text-lg font-bold text-stone-900 mb-1">Liquid Glass</h3>
                       <p className="text-xs text-stone-500 leading-relaxed">
@@ -17003,11 +19667,23 @@ function AdminDashboard() {
                   {/* Gold Card */}
                   <div 
                     onClick={() => {
-                      const isVip = data?.landingConfig?.adminThemesVip?.['gold'] !== false;
-                      const hasVipAccess = !!(String(data?.roleId || '').toLowerCase() === 'vip' || userRole?.exclusiveUi || data?.isSpecial || data?.isMasterAdmin);
-                      if (isVip && !hasVipAccess) {
-                        setThemeSelectError(t("đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.") || "đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.");
-                        return;
+                      const cfg = data?.landingConfig?.adminThemesVip?.['gold'];
+                      let isPro = true; let isVip = true;
+                      if (typeof cfg === 'object' && cfg !== null) { isVip = !!cfg.isVip; isPro = isVip || !!cfg.isPro; }
+                      else if (cfg === false) { isPro = false; isVip = false; }
+                      
+                      const userRoleId = String(data?.roleId || '').toLowerCase();
+                      const isMaster = !!(data?.isSpecial || data?.isMasterAdmin || userRole?.exclusiveUi);
+
+                      if (!isMaster) {
+                        if (isVip && userRoleId !== 'vip') {
+                          setThemeSelectError(t("đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.") || "đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.");
+                          return;
+                        }
+                        if (isPro && userRoleId !== 'pro' && userRoleId !== 'vip') {
+                          setThemeSelectError(t("đây là giao diện dành riêng cho thành viên PRO & VIP, nâng cấp gói để trải nghiệm.") || "đây là giao diện dành riêng cho thành viên PRO & VIP, nâng cấp gói để trải nghiệm.");
+                          return;
+                        }
                       }
                       setThemeSelectError(null);
                       handleCustomSave({ adminTheme: 'gold' });
@@ -17024,11 +19700,15 @@ function AdminDashboard() {
                         <span className="px-3 py-1 text-[10px] font-bold bg-yellow-100 text-yellow-850 rounded-full">
                           {t("Luxury Theme")}
                         </span>
-                        {data?.landingConfig?.adminThemesVip?.['gold'] !== false && (
-                          <span className="px-2 py-0.5 text-[9px] font-bold bg-yellow-500 text-stone-900 rounded-full flex items-center gap-1">
-                            VIP
-                          </span>
-                        )}
+                        {(() => {
+                          const cfg = data?.landingConfig?.adminThemesVip?.['gold'];
+                          let isPro = true; let isVip = true;
+                          if (typeof cfg === 'object' && cfg !== null) { isVip = !!cfg.isVip; isPro = isVip || !!cfg.isPro; }
+                          else if (cfg === false) { isPro = false; isVip = false; }
+                          if (isVip) return <span className="px-2 py-0.5 text-[9px] font-bold bg-yellow-500 text-stone-900 rounded-full flex items-center gap-1">VIP</span>;
+                          if (isPro) return <span className="px-2 py-0.5 text-[9px] font-bold bg-blue-500 text-white rounded-full flex items-center gap-1">PRO</span>;
+                          return null;
+                        })()}
                       </div>
                       <h3 className="text-lg font-bold text-stone-900 mb-1 flex items-center gap-1.5">
                         Gold <Sparkles className="w-4 h-4 text-yellow-500 animate-pulse" />
@@ -17044,6 +19724,138 @@ function AdminDashboard() {
                       </span>
                       {effectiveTheme === 'gold' && (
                         <Check className="w-5 h-5 text-yellow-600" />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Musician Card */}
+                  <div 
+                    onClick={() => {
+                      const cfg = data?.landingConfig?.adminThemesVip?.['musician'];
+                      let isPro = true; let isVip = false;
+                      if (typeof cfg === 'object' && cfg !== null) { isVip = !!cfg.isVip; isPro = isVip || !!cfg.isPro; }
+                      else if (cfg === true) { isPro = true; isVip = true; }
+                      else if (cfg === false) { isPro = false; isVip = false; }
+                      
+                      const userRoleId = String(data?.roleId || '').toLowerCase();
+                      const isMaster = !!(data?.isSpecial || data?.isMasterAdmin || userRole?.exclusiveUi);
+
+                      if (!isMaster) {
+                        if (isVip && userRoleId !== 'vip') {
+                          setThemeSelectError(t("đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.") || "đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.");
+                          return;
+                        }
+                        if (isPro && userRoleId !== 'pro' && userRoleId !== 'vip') {
+                          setThemeSelectError(t("đây là giao diện dành riêng cho thành viên PRO & VIP, nâng cấp gói để trải nghiệm.") || "đây là giao diện dành riêng cho thành viên PRO & VIP, nâng cấp gói để trải nghiệm.");
+                          return;
+                        }
+                      }
+                      setThemeSelectError(null);
+                      handleCustomSave({ adminTheme: 'musician' });
+                    }}
+                    className={`cursor-pointer rounded-3xl p-6 border-2 transition-all duration-300 flex flex-col justify-between relative overflow-hidden h-64 hover:shadow-md ${
+                      effectiveTheme === 'musician' 
+                        ? 'border-rose-500 bg-rose-50/10 ring-2 ring-rose-500/20' 
+                        : 'border-stone-200 bg-stone-50 hover:border-stone-400'
+                    }`}
+                  >
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/15 rounded-full blur-2xl pointer-events-none" />
+                    <div>
+                      <div className="flex justify-between items-start mb-4">
+                        <span className="px-3 py-1 text-[10px] font-bold bg-rose-100 text-rose-800 rounded-full">
+                          {t("Dreamy Theme")}
+                        </span>
+                        {(() => {
+                          const cfg = data?.landingConfig?.adminThemesVip?.['musician'];
+                          let isPro = true; let isVip = false;
+                          if (typeof cfg === 'object' && cfg !== null) { isVip = !!cfg.isVip; isPro = isVip || !!cfg.isPro; }
+                          else if (cfg === true) { isPro = true; isVip = true; }
+                          else if (cfg === false) { isPro = false; isVip = false; }
+                          if (isVip) return <span className="px-2 py-0.5 text-[9px] font-bold bg-yellow-500 text-stone-900 rounded-full flex items-center gap-1">VIP</span>;
+                          if (isPro) return <span className="px-2 py-0.5 text-[9px] font-bold bg-blue-500 text-white rounded-full flex items-center gap-1">PRO</span>;
+                          return null;
+                        })()}
+                      </div>
+                      <h3 className="text-lg font-bold text-stone-900 mb-1 flex items-center gap-1.5">
+                        Dreamy <Music className="w-4 h-4 text-rose-500" />
+                      </h3>
+                      <p className="text-xs text-stone-500 leading-relaxed">
+                        {t("Giao diện Mộng Mơ (Dreamy) quyến rũ với phong cách hiện đại, bố cục thẻ ngang thanh lịch và nổi bật.")}
+                      </p>
+                    </div>
+
+                    <div className="flex justify-between items-center border-t border-stone-200/60 pt-4 mt-4">
+                      <span className="text-xs text-stone-400 font-medium">
+                        {effectiveTheme === 'musician' ? t("Đang áp dụng") : t("Bấm để áp dụng")}
+                      </span>
+                      {effectiveTheme === 'musician' && (
+                        <Check className="w-5 h-5 text-rose-500" />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Musician v2 Card */}
+                  <div 
+                    onClick={() => {
+                      const cfg = data?.landingConfig?.adminThemesVip?.['musician2'];
+                      let isPro = true; let isVip = false;
+                      if (typeof cfg === 'object' && cfg !== null) { isVip = !!cfg.isVip; isPro = isVip || !!cfg.isPro; }
+                      else if (cfg === true) { isPro = true; isVip = true; }
+                      else if (cfg === false) { isPro = false; isVip = false; }
+                      
+                      const userRoleId = String(data?.roleId || '').toLowerCase();
+                      const isMaster = !!(data?.isSpecial || data?.isMasterAdmin || userRole?.exclusiveUi);
+
+                      if (!isMaster) {
+                        if (isVip && userRoleId !== 'vip') {
+                          setThemeSelectError(t("đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.") || "đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.");
+                          return;
+                        }
+                        if (isPro && userRoleId !== 'pro' && userRoleId !== 'vip') {
+                          setThemeSelectError(t("đây là giao diện dành riêng cho thành viên PRO & VIP, nâng cấp gói để trải nghiệm.") || "đây là giao diện dành riêng cho thành viên PRO & VIP, nâng cấp gói để trải nghiệm.");
+                          return;
+                        }
+                      }
+                      setThemeSelectError(null);
+                      handleCustomSave({ adminTheme: 'musician2' });
+                    }}
+                    className={`cursor-pointer rounded-3xl p-6 border-2 transition-all duration-300 flex flex-col justify-between relative overflow-hidden h-64 hover:shadow-md ${
+                      effectiveTheme === 'musician2' 
+                        ? 'border-amber-600 bg-amber-950/20 ring-2 ring-amber-600/30' 
+                        : 'border-stone-200 bg-stone-50 hover:border-stone-400'
+                    }`}
+                  >
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-amber-600/15 rounded-full blur-2xl pointer-events-none" />
+                    <div>
+                      <div className="flex justify-between items-start mb-4">
+                        <span className="px-3 py-1 text-[10px] font-bold bg-amber-100 text-amber-900 rounded-full">
+                          {t("Musician Theme")}
+                        </span>
+                        {(() => {
+                          const cfg = data?.landingConfig?.adminThemesVip?.['musician2'];
+                          let isPro = true; let isVip = false;
+                          if (typeof cfg === 'object' && cfg !== null) { isVip = !!cfg.isVip; isPro = isVip || !!cfg.isPro; }
+                          else if (cfg === true) { isPro = true; isVip = true; }
+                          else if (cfg === false) { isPro = false; isVip = false; }
+                          if (isVip) return <span className="px-2 py-0.5 text-[9px] font-bold bg-yellow-500 text-stone-900 rounded-full flex items-center gap-1">VIP</span>;
+                          if (isPro) return <span className="px-2 py-0.5 text-[9px] font-bold bg-blue-500 text-white rounded-full flex items-center gap-1">PRO</span>;
+                          return null;
+                        })()}
+                      </div>
+                      <h3 className="text-lg font-bold text-stone-900 mb-1 flex items-center gap-1.5">
+                        Musician <Disc3 className="w-4 h-4 text-amber-600" />
+                      </h3>
+                      <p className="text-xs text-stone-500 leading-relaxed">
+                        {t("Giao diện Nhạc Sĩ (Musician) với tủ đĩa gỗ cổ điển sang trọng, bài hát đặt trên kệ đĩa gỗ như một tủ sưu tầm âm nhạc chuyên nghiệp.")}
+                      </p>
+                    </div>
+
+                    <div className="flex justify-between items-center border-t border-stone-200/60 pt-4 mt-4">
+                      <span className="text-xs text-stone-400 font-medium">
+                        {effectiveTheme === 'musician2' ? t("Đang áp dụng") : t("Bấm để áp dụng")}
+                      </span>
+                      {effectiveTheme === 'musician2' && (
+                        <Check className="w-5 h-5 text-amber-600" />
                       )}
                     </div>
                   </div>
@@ -17117,8 +19929,8 @@ function AdminDashboard() {
               <form onSubmit={handleProfileSave} className="space-y-6">
 
                 <div>
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Giới thiệu ngắn")}</label>
-                  <input name="artistBio" defaultValue={data.artistBio} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Lời giới thiệu")}</label>
+                  <input name="artistBio" defaultValue={data.artistBio || data.description || ''} placeholder={`Thiên đường âm nhạc của ${data.artistName || 'Nghệ Sĩ'}`} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tên nghệ sĩ")}</label>
@@ -21907,7 +24719,16 @@ function AdminPlaylistEdit() {
 
 
 function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl, onPreviewAvatar }: any) {
-  const [aboutData, setAboutData] = useState(data.aboutMe || {});
+  const [aboutData, setAboutData] = useState(() => {
+    const initialAbout = data.aboutMe || {};
+    const resolvedAvatar = initialAbout.avatarUrl || data.avatarUrl || data.homeCoverUrl || '';
+    const resolvedIntro = initialAbout.intro || initialAbout.bio || initialAbout.bio1 || '';
+    return {
+      ...initialAbout,
+      avatarUrl: resolvedAvatar,
+      intro: resolvedIntro
+    };
+  });
   const [avatarProgress, setAvatarProgress] = useState(0);
   const [socials, setSocials] = useState({
     socialFacebook: data.socialFacebook || '',
@@ -22010,7 +24831,7 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl, on
             <input value={aboutData.role || ''} onChange={handleChange('role')} placeholder={t("Ca nhạc sĩ, producer...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900" />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Giới thiệu nghệ sĩ")}</label>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tự bạch")}</label>
             <textarea value={aboutData.intro || ''} onChange={handleChange('intro')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 min-h-[100px]" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -22601,7 +25422,7 @@ function AdminMenuEdit({ data, t, onSave }: any) {
 
 
 function AdminLayoutEdit({ data, t, onSave }: any) {
-  const defaultSections = ['title', 'random_song', 'vault', 'mv', 'spotify'];
+  const defaultSections = ['title', 'random_song', 'about', 'bio', 'vault', 'mv', 'spotify'];
   const rawSections = data.layoutSections && Array.isArray(data.layoutSections) ? data.layoutSections : defaultSections;
   const initialSections = Array.from(new Set(rawSections));
   if (!initialSections.includes('random_song')) {
@@ -22627,6 +25448,8 @@ function AdminLayoutEdit({ data, t, onSave }: any) {
   const getSectionName = (sec: string) => {
     if (sec === 'title') return t("Tiêu Đề (Tên & Giới thiệu ngắn)");
     if (sec === 'random_song') return t("Bài Hát Ngẫu Nhiên");
+    if (sec === 'about') return t("Về Tôi");
+    if (sec === 'bio') return t("Tiểu Sử");
     if (sec === 'spotify') return t("Spotify Playlist / Album");
     if (sec === 'vault') return t("Kho Nhạc (Danh sách Đề mô / Ra Rồi)");
     if (sec === 'mv') return t("MV Đã Phát Hành (YouTube Videos)");
@@ -22716,6 +25539,8 @@ function AdminLayoutEdit({ data, t, onSave }: any) {
                   <div className="text-xs text-stone-400 mt-0.5">
                     {sec === 'title' && t("Phần hiển thị tên nghệ sĩ, dấu tích xanh và lời giới thiệu ngắn.")}
                     {sec === 'random_song' && t("Hiển thị thẻ bài hát ngẫu nhiên xoay tua linh hoạt.")}
+                    {sec === 'about' && t("Phần giới thiệu bản thân, hình ảnh nghệ sĩ và thông tin nổi bật.")}
+                    {sec === 'bio' && t("Phần tiểu sử âm nhạc, hành trình nghệ thuật và các cột mốc sự nghiệp.")}
                     {sec === 'spotify' && t("Khung phát nhạc nhúng trực tiếp từ Spotify (nếu được cấu hình).")}
                     {sec === 'vault' && t("Phần danh sách bài hát chính chia theo tab Đề mô / Ra Rồi (Bắt buộc hiển thị).")}
                     {sec === 'mv' && t("Phần hiển thị các MV Youtube đã phát hành và trình phát video popup.")}
@@ -22728,21 +25553,32 @@ function AdminLayoutEdit({ data, t, onSave }: any) {
               </div>
 
               {sec === 'random_song' && (
-                <div className="mt-3 pt-3 border-t border-stone-200/70 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 pl-9 cursor-auto" onClick={(e) => e.stopPropagation()}>
-                  <label className="flex items-center gap-2.5 cursor-pointer select-none">
-                    <input 
-                      type="checkbox"
-                      checked={includeDemoInRandomSong}
-                      onChange={(e) => setIncludeDemoInRandomSong(e.target.checked)}
-                      className="w-4 h-4 rounded text-teal-600 border-stone-300 focus:ring-teal-500 cursor-pointer"
-                    />
-                    <span className="text-xs font-bold text-stone-800">
+                <div className="mt-3 pt-3 border-t border-stone-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pl-9 cursor-auto" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
                       {t("Hiển thị demo trong bài hát ngẫu nhiên ?")}
                     </span>
-                  </label>
-                  <span className="text-[11px] text-stone-400 font-medium">
-                    ({includeDemoInRandomSong ? t("Mặc định: Bật - Bao gồm cả bài Đề mô") : t("Tắt - Chỉ hiển thị bài đã Ra rồi")})
-                  </span>
+                    <span className="text-[11px] text-stone-400 font-medium mt-0.5">
+                      {includeDemoInRandomSong ? t("Đang Bật - Bao gồm cả các bài Đề mô chưa phát hành") : t("Đang Tắt - Chỉ hiển thị các bài đã Ra Rồi (Phát hành chính thức)")}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={includeDemoInRandomSong}
+                    onClick={() => setIncludeDemoInRandomSong(prev => !prev)}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                      includeDemoInRandomSong ? 'bg-teal-600' : 'bg-stone-300'
+                    }`}
+                  >
+                    <span className="sr-only">{t("Hiển thị demo trong bài hát ngẫu nhiên ?")}</span>
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        includeDemoInRandomSong ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
                 </div>
               )}
             </div>
@@ -22768,12 +25604,14 @@ function BeautifulSelect({
   value, 
   onChange, 
   options, 
-  isGoldTheme 
+  isGoldTheme,
+  isMusician2Theme
 }: { 
   value: number, 
   onChange: (val: number) => void, 
   options: number[], 
-  isGoldTheme: boolean 
+  isGoldTheme?: boolean,
+  isMusician2Theme?: boolean
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -22793,15 +25631,23 @@ function BeautifulSelect({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between gap-1.5 cursor-pointer backdrop-blur-md transition-all duration-300 focus:outline-none text-xs sm:text-sm shadow-md rounded-xl pl-3 pr-2 py-1.5 border min-w-[55px] font-bold ${
-          isGoldTheme 
-            ? 'bg-[#FAF5E6] border-[#D4AF37] text-[#1A1303] hover:bg-white hover:border-[#AA7C11] hover:shadow-lg' 
-            : 'bg-[#18181b]/95 border-white/20 text-white hover:bg-[#27272a]/95 hover:border-white/45'
+        className={`flex items-center justify-center gap-1.5 cursor-pointer backdrop-blur-md transition-all duration-300 focus:outline-none text-xs sm:text-sm shadow-md rounded-xl px-3 py-1.5 border min-w-[60px] font-bold relative overflow-hidden ${
+          isMusician2Theme
+            ? 'border-amber-600/80 text-amber-100 hover:border-amber-400'
+            : isGoldTheme 
+              ? 'bg-[#FAF5E6] border-[#D4AF37] text-[#1A1303] hover:bg-white hover:border-[#AA7C11] hover:shadow-lg' 
+              : 'bg-[#18181b]/95 border-white/20 text-white hover:bg-[#27272a]/95 hover:border-white/45'
         }`}
       >
-        <span>{value}</span>
+        {isMusician2Theme && (
+          <>
+            <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.4) contrast(1.2) saturate(1.1)' }} />
+            <div className="absolute inset-0 z-[1] bg-gradient-to-b from-white/10 to-black/20" />
+          </>
+        )}
+        <span className="relative z-[2] tabular-nums text-center">{value}</span>
         <svg 
-          className={`w-3 h-3 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${isGoldTheme ? 'text-[#AA7C11]' : 'text-neutral-400'}`} 
+          className={`w-3 h-3 transition-transform duration-200 relative z-[2] ${isOpen ? 'rotate-180' : ''} ${isMusician2Theme ? 'text-amber-400' : isGoldTheme ? 'text-[#AA7C11]' : 'text-neutral-400'}`} 
           viewBox="0 0 24 24" 
           fill="none" 
           stroke="currentColor" 
@@ -22816,10 +25662,13 @@ function BeautifulSelect({
       {isOpen && (
         <div 
           className={`absolute bottom-full left-0 mb-1.5 w-full min-w-[65px] rounded-xl shadow-2xl border backdrop-blur-lg overflow-hidden py-1 z-40 animate-in fade-in slide-in-from-bottom-2 duration-150 ${
-            isGoldTheme 
-              ? 'bg-[#FAF5E6]/95 border-[#D4AF37] shadow-[0_8px_30px_rgba(170,124,17,0.2)]' 
-              : 'bg-[#18181b]/95 border-white/10 shadow-black/80'
+            isMusician2Theme
+              ? 'border-amber-700/80 shadow-[0_8px_30px_rgba(0,0,0,0.9)]'
+              : isGoldTheme 
+                ? 'bg-[#FAF5E6]/95 border-[#D4AF37] shadow-[0_8px_30px_rgba(170,124,17,0.2)]' 
+                : 'bg-[#18181b]/95 border-white/10 shadow-black/80'
           }`}
+          style={isMusician2Theme ? { backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.4) contrast(1.2) saturate(1.1)' } : undefined}
         >
           {options.map((opt, optIdx) => (
             <button
@@ -22829,14 +25678,18 @@ function BeautifulSelect({
                 onChange(opt);
                 setIsOpen(false);
               }}
-              className={`w-full text-center px-3 py-1.5 text-xs sm:text-sm font-semibold transition-colors cursor-pointer ${
+              className={`w-full text-center px-3 py-1.5 text-xs sm:text-sm font-semibold transition-colors cursor-pointer tabular-nums ${
                 opt === value
-                  ? isGoldTheme
-                    ? 'bg-[#D4AF37]/20 text-[#1A1303] font-bold'
-                    : 'bg-white/15 text-white font-bold'
-                  : isGoldTheme
-                    ? 'text-stone-600 hover:bg-[#D4AF37]/10 hover:text-[#1A1303]'
-                    : 'text-neutral-400 hover:bg-white/5 hover:text-white'
+                  ? isMusician2Theme
+                    ? 'bg-amber-600/40 text-amber-200 font-bold'
+                    : isGoldTheme
+                      ? 'bg-[#D4AF37]/20 text-[#1A1303] font-bold'
+                      : 'bg-white/15 text-white font-bold'
+                  : isMusician2Theme
+                    ? 'text-amber-100/70 hover:bg-amber-800/40 hover:text-amber-100'
+                    : isGoldTheme
+                      ? 'text-stone-600 hover:bg-[#D4AF37]/10 hover:text-[#1A1303]'
+                      : 'text-neutral-400 hover:bg-white/5 hover:text-white'
               }`}
             >
               {opt}
@@ -22849,7 +25702,7 @@ function BeautifulSelect({
 }
 
 
-function PublicNavbar({ menus, activeTab, setActiveTab, t, isGoldTheme }: any) {
+function PublicNavbar({ menus, activeTab, setActiveTab, t, isGoldTheme, isMusicianTheme, isMusician2Theme }: any) {
   const { landingConfig } = useContext(LanguageContext);
   if (!menus || menus.length === 0) return null;
   const visibleMenus = menus.filter((m: any) => m.isVisible);
@@ -22863,7 +25716,7 @@ function PublicNavbar({ menus, activeTab, setActiveTab, t, isGoldTheme }: any) {
   };
 
   return (
-    <div className={`w-full max-w-5xl mx-auto px-6 sm:px-12 mb-12 flex items-center justify-center gap-6 sm:gap-10 border-b pb-4 ${isGoldTheme ? 'border-stone-200/60' : 'border-white/10'}`}>
+    <div className={`w-full max-w-5xl mx-auto px-6 sm:px-12 mb-12 flex items-center justify-center gap-6 sm:gap-10 border-b pb-4 ${isMusician2Theme ? 'border-amber-800/60' : isMusicianTheme ? 'border-purple-200/80' : isGoldTheme ? 'border-stone-200/60' : 'border-white/10'}`}>
       {visibleMenus.map((m: any, i: number) => (
         <button
           key={`l22034-${m.id || ''}-${i}`}
@@ -22876,13 +25729,13 @@ function PublicNavbar({ menus, activeTab, setActiveTab, t, isGoldTheme }: any) {
           }}
           className={`font-bold transition-all relative text-sm sm:text-base ${
             activeTab === m.id 
-              ? (isGoldTheme ? 'text-[#AA7C11] font-black scale-102' : 'text-white') 
-              : (isGoldTheme ? 'text-stone-500 hover:text-[#AA7C11]' : 'text-white/80 hover:text-white')
+              ? (isMusician2Theme ? 'text-amber-100 font-black scale-105 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]' : isMusicianTheme ? 'text-stone-950 font-black scale-102' : isGoldTheme ? 'text-[#AA7C11] font-black scale-102' : 'text-white') 
+              : (isMusician2Theme ? 'text-amber-200/80 hover:text-amber-100 font-bold' : isMusicianTheme ? 'text-stone-700 hover:text-stone-950 font-bold' : isGoldTheme ? 'text-stone-500 hover:text-[#AA7C11]' : 'text-white/80 hover:text-white')
           }`}
         >
           {t(getMenuTitle(m))}
           {activeTab === m.id && (
-            <motion.div layoutId="nav-indicator" className={`absolute -bottom-[17px] left-0 right-0 h-[2.5px] ${isGoldTheme ? 'bg-[#AA7C11]' : 'bg-emerald-500'}`} />
+            <motion.div layoutId="nav-indicator" className={`absolute -bottom-[17px] left-0 right-0 h-[2.5px] ${isMusician2Theme ? 'bg-gradient-to-r from-amber-500 via-amber-300 to-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.8)]' : isMusicianTheme ? 'bg-rose-500' : isGoldTheme ? 'bg-[#AA7C11]' : 'bg-emerald-500'}`} />
           )}
         </button>
       ))}
@@ -22890,15 +25743,21 @@ function PublicNavbar({ menus, activeTab, setActiveTab, t, isGoldTheme }: any) {
   );
 }
 
-function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtension, isGoldTheme }: any) {
+function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtension, isGoldTheme, isMusicianTheme }: any) {
   if (!aboutMe) return null;
   
   const avatar = aboutMe.avatarUrl || data?.homeCoverUrl;
   
   return (
-    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto ${isGoldTheme ? 'bg-gradient-to-br from-stone-900/95 via-amber-950/30 to-stone-900/95 border-amber-500/20 shadow-[0_8px_32px_0_rgba(251,191,36,0.15)]' : 'bg-white/10 border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]'} backdrop-blur-2xl border rounded-[2.5rem] p-6 sm:p-10 mt-4 sm:mt-8 mb-20 relative z-10 text-white max-w-6xl flex flex-col lg:flex-row gap-10 lg:gap-16 items-center lg:items-start`}>
+    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto ${
+      isMusicianTheme 
+        ? 'bg-white/90 border-2 border-purple-200/80 shadow-[0_20px_50px_rgba(244,63,94,0.14)] text-stone-950' 
+        : isGoldTheme 
+          ? 'bg-gradient-to-br from-stone-900/95 via-amber-950/30 to-stone-900/95 border-amber-500/20 shadow-[0_8px_32px_0_rgba(251,191,36,0.15)] text-white' 
+          : 'bg-white/10 border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] text-white'
+    } backdrop-blur-2xl border rounded-[2.5rem] p-6 sm:p-10 mt-4 sm:mt-8 mb-20 relative z-10 max-w-6xl flex flex-col lg:flex-row gap-10 lg:gap-16 items-center lg:items-start`}>
       {isAdmin && (
-        <a href={getAdminLink('#about')} className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white/70 hover:text-white z-20" title={t("Chỉnh sửa")}>
+        <a href={getAdminLink('about')} className={`absolute top-6 right-6 p-3 ${isMusicianTheme ? 'bg-stone-200/80 text-stone-700 hover:text-stone-950 hover:bg-stone-300' : 'bg-white/10 text-white/70 hover:text-white hover:bg-white/20'} rounded-full transition-colors z-20`} title={t("Chỉnh sửa")}>
           <Edit3 className="w-5 h-5 sm:w-6 sm:h-6" />
         </a>
       )}
@@ -22914,12 +25773,12 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
           <motion.div 
             animate={{ rotate: [0, 5, -5, 0], scale: [1, 1.02, 1] }}
             transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
-            className={`absolute inset-0 bg-gradient-to-tr ${isGoldTheme ? 'from-amber-600 via-yellow-500 to-amber-400' : 'from-blue-600 via-purple-500 to-emerald-400'} rounded-[2.5rem] translate-x-4 translate-y-4 sm:translate-x-5 sm:translate-y-5 -z-10 opacity-70 blur-md group-hover:blur-lg transition-all duration-700`}
+            className={`absolute inset-0 bg-gradient-to-tr ${isMusicianTheme ? 'from-rose-400 via-purple-400 to-amber-300' : isGoldTheme ? 'from-amber-600 via-yellow-500 to-amber-400' : 'from-blue-600 via-purple-500 to-emerald-400'} rounded-[2.5rem] translate-x-4 translate-y-4 sm:translate-x-5 sm:translate-y-5 -z-10 opacity-70 blur-md group-hover:blur-lg transition-all duration-700`}
           ></motion.div>
           <motion.div 
             animate={{ rotate: [0, -5, 5, 0], scale: [1, 1.02, 1] }}
             transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
-            className={`absolute inset-0 bg-gradient-to-br ${isGoldTheme ? 'from-yellow-600 via-amber-500 to-yellow-400' : 'from-rose-500 via-orange-400 to-amber-300'} rounded-[2.5rem] translate-x-3 translate-y-3 sm:translate-x-4 sm:translate-y-4 -z-10 opacity-60`}
+            className={`absolute inset-0 bg-gradient-to-br ${isMusicianTheme ? 'from-pink-400 via-rose-300 to-purple-300' : isGoldTheme ? 'from-yellow-600 via-amber-500 to-yellow-400' : 'from-rose-500 via-orange-400 to-amber-300'} rounded-[2.5rem] translate-x-3 translate-y-3 sm:translate-x-4 sm:translate-y-4 -z-10 opacity-60`}
           ></motion.div>
           <motion.div 
             animate={{ y: [0, -10, 0] }}
@@ -22933,24 +25792,24 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
       
       {/* Details */}
       <div className={`w-full ${avatar ? "lg:flex-1" : "max-w-3xl mx-auto"} flex flex-col justify-center space-y-1 sm:space-y-2 z-10 relative mt-6 lg:mt-0`}>
-        <span className={`${isGoldTheme ? 'text-amber-400 font-black' : 'text-[#06b6d4]'} font-bold text-sm sm:text-base mb-1 tracking-wide uppercase inline-block text-center lg:text-left`}>{aboutMe.role || 'Profile Card'}</span>
-        <h2 className="text-[clamp(1.5rem,3.5vw,2.25rem)] font-black text-white drop-shadow-md mb-4 sm:mb-6 leading-tight text-center lg:text-left break-words">
+        <span className={`${isMusicianTheme ? 'text-rose-600 font-extrabold' : isGoldTheme ? 'text-amber-400 font-black' : 'text-[#06b6d4]'} font-bold text-sm sm:text-base mb-1 tracking-wide uppercase inline-block text-center lg:text-left`}>{aboutMe.role || 'Profile Card'}</span>
+        <h2 className={`text-[clamp(1.5rem,3.5vw,2.25rem)] font-black ${isMusicianTheme ? 'text-stone-950' : 'text-white'} drop-shadow-md mb-4 sm:mb-6 leading-tight text-center lg:text-left break-words`}>
           {data?.artistName || t('Về Tôi') || 'Về Tôi'}
         </h2>
           
           {aboutMe.intro && (
-            <div className="mb-6 text-white/90 text-[clamp(0.875rem,3.5vw,1.25rem)] leading-relaxed whitespace-pre-line font-medium drop-shadow-sm">
+            <div className={`mb-6 ${isMusicianTheme ? 'text-stone-800 font-semibold' : 'text-white/90 font-medium'} text-[clamp(0.875rem,3.5vw,1.25rem)] leading-relaxed whitespace-pre-line drop-shadow-sm`}>
               {aboutMe.intro}
             </div>
           )}
           
           <div className="space-y-3 mb-6 text-lg">
-            {aboutMe.realName && <InfoField label={t("Tên Thật") || "Tên Thật"} value={aboutMe.realName} />}
-            {aboutMe.dob && <InfoField label={t("Ngày Sinh") || "Ngày Sinh"} value={aboutMe.dob} />}
-            {aboutMe.address && <InfoField label={t("Đến Từ") || "Đến Từ"} value={aboutMe.address} />}
-            {aboutMe.company && <InfoField label={t("Sinh Sống") || "Sinh Sống"} value={aboutMe.company} />}
-            {aboutMe.email && <InfoField label={t("Email") || "Email"} value={aboutMe.email} />}
-            {aboutMe.phone && <InfoField label={t("SĐT") || "SĐT"} value={aboutMe.phone} />}
+            {aboutMe.realName && <InfoField label={t("Tên Thật") || "Tên Thật"} value={aboutMe.realName} isMusicianTheme={isMusicianTheme} />}
+            {aboutMe.dob && <InfoField label={t("Ngày Sinh") || "Ngày Sinh"} value={aboutMe.dob} isMusicianTheme={isMusicianTheme} />}
+            {aboutMe.address && <InfoField label={t("Đến Từ") || "Đến Từ"} value={aboutMe.address} isMusicianTheme={isMusicianTheme} />}
+            {aboutMe.company && <InfoField label={t("Sinh Sống") || "Sinh Sống"} value={aboutMe.company} isMusicianTheme={isMusicianTheme} />}
+            {aboutMe.email && <InfoField label={t("Email") || "Email"} value={aboutMe.email} isMusicianTheme={isMusicianTheme} />}
+            {aboutMe.phone && <InfoField label={t("SĐT") || "SĐT"} value={aboutMe.phone} isMusicianTheme={isMusicianTheme} />}
           </div>
           
           <div className="flex flex-wrap items-center gap-4 mb-6">
@@ -22987,9 +25846,11 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
                 transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
                 onClick={onGoToVault} 
                 className={`bg-[length:200%_100%] font-bold py-3 px-10 rounded-full transition-all hover:scale-105 active:scale-95 text-lg cursor-pointer border ${
-                  isGoldTheme 
-                    ? 'bg-[linear-gradient(110deg,#f59e0b,45%,#fef08a,55%,#f59e0b)] text-stone-950 border-yellow-400/50 hover:shadow-[0_8px_20px_rgba(245,158,11,0.5)] font-black' 
-                    : 'bg-[linear-gradient(110deg,#4f46e5,45%,#818cf8,55%,#4f46e5)] text-white border-white/20 hover:shadow-[0_8px_20px_rgba(79,70,229,0.4)]'
+                  isMusicianTheme
+                    ? 'bg-rose-500 text-white border-rose-400 hover:shadow-[0_8px_20px_rgba(244,63,94,0.4)] font-black'
+                    : isGoldTheme 
+                      ? 'bg-[linear-gradient(110deg,#f59e0b,45%,#fef08a,55%,#f59e0b)] text-stone-950 border-yellow-400/50 hover:shadow-[0_8px_20px_rgba(245,158,11,0.5)] font-black' 
+                      : 'bg-[linear-gradient(110deg,#4f46e5,45%,#818cf8,55%,#4f46e5)] text-white border-white/20 hover:shadow-[0_8px_20px_rgba(79,70,229,0.4)]'
                 }`}
              >
                 {t("Kho Nhạc")}
@@ -23000,17 +25861,17 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
   );
 }
 
-function InfoField({ label, value }: { label: string, value: string }) {
+function InfoField({ label, value, isMusicianTheme }: { label: string, value: string, isMusicianTheme?: boolean }) {
   return (
-    <div className="flex items-center font-medium text-white/90 drop-shadow-sm text-[clamp(0.75rem,3.5vw,1.125rem)] w-full">
-      <span className="font-bold w-[35%] max-w-[160px] shrink-0 text-white whitespace-nowrap overflow-hidden text-ellipsis">{label}</span>
+    <div className={`flex items-center font-medium ${isMusicianTheme ? 'text-stone-950 font-bold' : 'text-white/90 drop-shadow-sm'} text-[clamp(0.75rem,3.5vw,1.125rem)] w-full`}>
+      <span className={`font-bold w-[35%] max-w-[160px] shrink-0 ${isMusicianTheme ? 'text-stone-700' : 'text-white'} whitespace-nowrap overflow-hidden text-ellipsis`}>{label}</span>
       <span className="mx-1 sm:mx-2 shrink-0">:</span>
-      <span className="text-white/80 flex-1 whitespace-nowrap overflow-hidden text-ellipsis">{value}</span>
+      <span className={`${isMusicianTheme ? 'text-stone-950 font-extrabold' : 'text-white/80'} flex-1 whitespace-nowrap overflow-hidden text-ellipsis`}>{value}</span>
     </div>
   );
 }
 
-function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme }: any) {
+function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme, isMusicianTheme }: any) {
   if (!biography) return null;
   
   const hasEdu = biography.education?.length > 0;
@@ -23019,15 +25880,21 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme }: 
   if (!hasEdu && !hasExp) return null;
   
   return (
-    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto mt-4 sm:mt-8 mb-20 relative z-10 px-4 sm:px-8 lg:px-12 ${isGoldTheme ? 'bg-gradient-to-br from-stone-900/95 via-amber-950/30 to-stone-900/95 border-amber-500/20 shadow-[0_8px_32px_0_rgba(251,191,36,0.15)]' : 'bg-white/10 border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]'} backdrop-blur-2xl border rounded-[2.5rem] py-12 text-white max-w-7xl ${hasEdu && hasExp ? 'grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16' : 'flex flex-col'}`}>
+    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto mt-4 sm:mt-8 mb-20 relative z-10 px-4 sm:px-8 lg:px-12 ${
+      isMusicianTheme 
+        ? 'bg-white/90 border-2 border-purple-200/80 shadow-[0_20px_50px_rgba(244,63,94,0.14)] text-stone-950' 
+        : isGoldTheme 
+          ? 'bg-gradient-to-br from-stone-900/95 via-amber-950/30 to-stone-900/95 border-amber-500/20 shadow-[0_8px_32px_0_rgba(251,191,36,0.15)] text-white' 
+          : 'bg-white/10 border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] text-white'
+    } backdrop-blur-2xl border rounded-[2.5rem] py-12 max-w-7xl ${hasEdu && hasExp ? 'grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16' : 'flex flex-col'}`}>
       {isAdmin && (
-        <a href={getAdminLink('#bio')} className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white/70 hover:text-white z-20" title={t("Chỉnh sửa")}>
+        <a href={getAdminLink('bio')} className={`absolute top-6 right-6 p-3 ${isMusicianTheme ? 'bg-stone-200/80 text-stone-700 hover:text-stone-950 hover:bg-stone-300' : 'bg-white/10 text-white/70 hover:text-white hover:bg-white/20'} rounded-full transition-colors z-20`} title={t("Chỉnh sửa")}>
           <Edit3 className="w-5 h-5 sm:w-6 sm:h-6" />
         </a>
       )}
       {hasEdu && (
         <div className="w-full">
-          <h2 className="text-2xl sm:text-3xl font-black text-white drop-shadow-md mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-4 sm:pl-6 lg:pl-8">
+          <h2 className={`text-2xl sm:text-3xl font-black ${isMusicianTheme ? 'text-stone-950' : 'text-white'} drop-shadow-md mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-4 sm:pl-6 lg:pl-8`}>
             {t('Học Vấn') || 'Học Vấn'}
           </h2>
           <div className="space-y-8 relative">
@@ -23036,10 +25903,10 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme }: 
               whileInView={{ height: '100%' }} 
               viewport={{ once: true }} 
               transition={{ duration: 1.5, ease: 'easeOut' }} 
-              className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${isGoldTheme ? 'bg-amber-500/30' : 'bg-white/20'} origin-top z-0`} 
+              className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${isMusicianTheme ? 'bg-purple-300' : isGoldTheme ? 'bg-amber-500/30' : 'bg-white/20'} origin-top z-0`} 
             />
             {biography.education.map((item: any, idx: number) => (
-              <TimelineItem key={`l22207-idx-19-${idx}`} item={item} isSplit={true} color="emerald" index={idx} />
+              <TimelineItem key={`l22207-idx-19-${idx}`} item={item} isSplit={true} color="emerald" index={idx} isMusicianTheme={isMusicianTheme} />
             ))}
           </div>
         </div>
@@ -23047,7 +25914,7 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme }: 
       
       {hasExp && (
         <div className="w-full">
-          <h2 className="text-2xl sm:text-3xl font-black text-white drop-shadow-md mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-4 sm:pl-6 lg:pl-8">
+          <h2 className={`text-2xl sm:text-3xl font-black ${isMusicianTheme ? 'text-stone-950' : 'text-white'} drop-shadow-md mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-4 sm:pl-6 lg:pl-8`}>
             {t('Kinh nghiệm') || 'Kinh nghiệm'}
           </h2>
           <div className="space-y-8 relative">
@@ -23056,10 +25923,10 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme }: 
               whileInView={{ height: '100%' }} 
               viewport={{ once: true }} 
               transition={{ duration: 1.5, ease: 'easeOut' }} 
-              className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${isGoldTheme ? 'bg-amber-500/30' : 'bg-white/20'} origin-top z-0`} 
+              className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${isMusicianTheme ? 'bg-purple-300' : isGoldTheme ? 'bg-amber-500/30' : 'bg-white/20'} origin-top z-0`} 
             />
             {biography.experience.map((item: any, idx: number) => (
-              <TimelineItem key={`l22227-idx-20-${idx}`} item={item} isSplit={true} color="blue" index={idx} />
+              <TimelineItem key={`l22227-idx-20-${idx}`} item={item} isSplit={true} color="blue" index={idx} isMusicianTheme={isMusicianTheme} />
             ))}
           </div>
         </div>
@@ -23068,7 +25935,7 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme }: 
   );
 }
 
-function TimelineItem({ item, isSplit = false, color = "emerald", index = 0 }: { item: any, isSplit?: boolean, color?: "emerald" | "blue", key?: number | string, index?: number }) {
+function TimelineItem({ item, isSplit = false, color = "emerald", index = 0, isMusicianTheme = false }: { item: any, isSplit?: boolean, color?: "emerald" | "blue", key?: number | string, index?: number, isMusicianTheme?: boolean }) {
   const isEmerald = color === "emerald";
   const [isImgOpen, setIsImgOpen] = useState(false);
   
@@ -23152,9 +26019,9 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0 }: {
           <div className={`${hasImages ? 'w-[85%] md:w-[85%] lg:w-[82%] md:pr-6' : 'w-full'} relative z-0`}>
             <div className={`flex flex-col mb-1 ${!isSplit && hasImages ? 'md:group-odd:items-end' : ''}`}>
               <div className="mb-2">
-                <span className={`text-xs sm:text-sm font-bold inline-block px-3 py-1.5 rounded-lg border transition-all duration-300 shadow-sm ${isEmerald ? 'text-[#34d399] border-[#34d399]/10 bg-[#34d399]/5 group-hover:border-[#34d399]/40 group-hover:bg-[#34d399]/15' : 'text-[#38bdf8] border-[#38bdf8]/10 bg-[#38bdf8]/5 group-hover:border-[#38bdf8]/40 group-hover:bg-[#38bdf8]/15'}`}>{item.time}</span>
+                <span className={`text-xs sm:text-sm font-bold inline-block px-3 py-1.5 rounded-lg border transition-all duration-300 shadow-sm ${isEmerald ? (isMusicianTheme ? 'text-emerald-700 border-emerald-300 bg-emerald-50' : 'text-[#34d399] border-[#34d399]/10 bg-[#34d399]/5 group-hover:border-[#34d399]/40 group-hover:bg-[#34d399]/15') : (isMusicianTheme ? 'text-sky-700 border-sky-300 bg-sky-50' : 'text-[#38bdf8] border-[#38bdf8]/10 bg-[#38bdf8]/5 group-hover:border-[#38bdf8]/40 group-hover:bg-[#38bdf8]/15')}`}>{item.time}</span>
               </div>
-              <h3 className="font-bold text-white drop-shadow-sm text-base sm:text-lg leading-snug">{item.title}</h3>
+              <h3 className={`font-black ${isMusicianTheme ? 'text-stone-950' : 'text-white'} drop-shadow-sm text-base sm:text-lg leading-snug`}>{item.title}</h3>
             </div>
             {/* Auto-detect bullet points/lists and render with proper indentation */}
             <div className="space-y-2 mt-2">
@@ -23166,8 +26033,8 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0 }: {
                   const content = bulletMatch[2];
                   const isNumber = /^\d+/.test(bullet);
                   return (
-                    <div key={`l22334-idx-21-${idx}`} className="flex items-start gap-2.5 pl-3 text-white/85 text-sm leading-relaxed">
-                      <span className={`text-amber-400 shrink-0 select-none ${isNumber ? 'font-bold text-xs mt-0.5' : 'text-base -mt-0.5'}`}>
+                    <div key={`l22334-idx-21-${idx}`} className={`flex items-start gap-2.5 pl-3 ${isMusicianTheme ? 'text-stone-800 font-medium' : 'text-white/85'} text-sm leading-relaxed`}>
+                      <span className={`text-rose-500 shrink-0 select-none ${isNumber ? 'font-bold text-xs mt-0.5' : 'text-base -mt-0.5'}`}>
                         {isNumber ? bullet : '•'}
                       </span>
                       <span className="flex-1">{content}</span>
@@ -23175,7 +26042,7 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0 }: {
                   );
                 }
                 return (
-                  <p key={`l22343-idx-22-${idx}`} className="text-white/80 text-sm leading-relaxed min-h-[1rem]">
+                  <p key={`l22343-idx-22-${idx}`} className={`${isMusicianTheme ? 'text-stone-800 font-medium' : 'text-white/80'} text-sm leading-relaxed min-h-[1rem]`}>
                     {line}
                   </p>
                 );

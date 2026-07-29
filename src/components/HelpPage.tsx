@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronRight, Settings, LogIn, FileText, Layout, Copy, Repeat, Lock, Link as LinkIcon, Save, Eye, Plus, ChevronLeft, Globe, Camera, X } from 'lucide-react';
+import { ChevronRight, Settings, LogIn, LogOut, FileText, Layout, Copy, Repeat, Lock, Link as LinkIcon, Save, Eye, Plus, ChevronLeft, Globe, Camera, X } from 'lucide-react';
 import { LanguageContext } from '../App';
+import { getPlatformDomain } from '../utils/platform';
 
 
 
@@ -27,6 +28,250 @@ const TEMPLATES = [
   { id: '18', name: 'Pháo hoa (Năm mới)' }
 ];
 
+function HelpEmailVerifySection({ initialEmail, onVerifiedSuccess }: { initialEmail?: string; onVerifiedSuccess?: (artist: any) => void }) {
+  const [verifyEmailInput, setVerifyEmailInput] = useState(initialEmail || '');
+  const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '']);
+  const [resendStatus, setResendStatus] = useState<{ type: 'success' | 'error' | ''; msg: string }>({ type: '', msg: '' });
+  const [verifyStatus, setVerifyStatus] = useState<{ type: 'success' | 'error' | ''; msg: string }>({ type: '', msg: '' });
+  const [isResending, setIsResending] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [timer, setTimer] = useState(0);
+
+  useEffect(() => {
+    if (initialEmail && !verifyEmailInput) {
+      setVerifyEmailInput(initialEmail);
+    }
+  }, [initialEmail]);
+
+  // Check persistent countdown timer from localStorage on mount & when email changes
+  useEffect(() => {
+    if (verifyEmailInput) {
+      const key = `otp_resend_expires_${verifyEmailInput.trim().toLowerCase()}`;
+      const expiresRaw = localStorage.getItem(key);
+      if (expiresRaw) {
+        const expires = parseInt(expiresRaw, 10);
+        const rem = Math.ceil((expires - Date.now()) / 1000);
+        if (rem > 0) {
+          setTimer(rem);
+        } else {
+          localStorage.removeItem(key);
+          setTimer(0);
+        }
+      }
+    }
+  }, [verifyEmailInput]);
+
+  useEffect(() => {
+    let interval: any;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer(prev => {
+          if (prev <= 1) {
+            if (verifyEmailInput) {
+              localStorage.removeItem(`otp_resend_expires_${verifyEmailInput.trim().toLowerCase()}`);
+            }
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timer, verifyEmailInput]);
+
+  // Auto check status if email is entered
+  const checkEmailStatus = async (emailToCheck: string) => {
+    if (!emailToCheck || !emailToCheck.includes('@')) return;
+    try {
+      const res = await fetch('/api/public/check-email-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailToCheck })
+      });
+      const data = await res.json();
+      if (data.success && data.artist) {
+        if (data.emailVerified && onVerifiedSuccess) {
+          onVerifiedSuccess(data.artist);
+        }
+      }
+    } catch (e) {}
+  };
+
+  const handleResend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!verifyEmailInput) return;
+    setResendStatus({ type: '', msg: '' });
+    setIsResending(true);
+    try {
+      const res = await fetch('/api/public/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: verifyEmailInput })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (data.emailVerified && data.artist) {
+          setResendStatus({ type: 'success', msg: data.message || 'Email này đã được xác thực thành công!' });
+          if (onVerifiedSuccess) onVerifiedSuccess(data.artist);
+        } else {
+          setResendStatus({ type: 'success', msg: data.message || 'Đã gửi lại mã OTP 6 số vào email của bạn!' });
+          const expireTime = Date.now() + 60000;
+          localStorage.setItem(`otp_resend_expires_${verifyEmailInput.trim().toLowerCase()}`, expireTime.toString());
+          setTimer(60);
+        }
+      } else {
+        setResendStatus({ type: 'error', msg: data.error || 'Có lỗi xảy ra khi gửi lại email!' });
+      }
+    } catch (err) {
+      setResendStatus({ type: 'error', msg: 'Lỗi kết nối máy chủ!' });
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = otpDigits.join('');
+    if (code.length !== 6 || !verifyEmailInput) return;
+    setVerifyStatus({ type: '', msg: '' });
+    setIsVerifying(true);
+    try {
+      const res = await fetch('/api/public/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: verifyEmailInput, otpCode: code })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setVerifyStatus({ type: 'success', msg: data.message || 'Xác thực Email thành công!' });
+        if (onVerifiedSuccess) {
+          onVerifiedSuccess({
+            artistName: data.artistName,
+            email: verifyEmailInput,
+            emailVerified: true
+          });
+        }
+      } else {
+        setVerifyStatus({ type: 'error', msg: data.error || 'Mã OTP không chính xác!' });
+      }
+    } catch (err) {
+      setVerifyStatus({ type: 'error', msg: 'Lỗi kết nối máy chủ!' });
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-neutral-200 mt-8 space-y-6">
+      <div className="flex items-center gap-3 border-b border-neutral-100 pb-4">
+        <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-xl">
+          ✉️
+        </div>
+        <div>
+          <h3 className="font-black text-neutral-900 text-base">Xác Thực Email & Gửi Lại Mã OTP</h3>
+          <p className="text-xs text-neutral-500">Trường hợp bạn thoát màn hình đăng ký hoặc chưa nhận được email xác thực</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Form 1: Gửi lại mã */}
+        <form onSubmit={handleResend} className="space-y-3 bg-neutral-50 p-5 rounded-xl border border-neutral-200/80 flex flex-col justify-between">
+          <div className="space-y-3">
+            <h4 className="font-bold text-xs text-neutral-700 uppercase tracking-wider text-center">Bước 1: Gửi Lại Mã OTP Về Email</h4>
+            <div>
+              <label className="text-[11px] font-bold text-neutral-500 block mb-1">Email đăng ký của bạn</label>
+              <input
+                type="email"
+                value={verifyEmailInput}
+                onChange={e => {
+                  setVerifyEmailInput(e.target.value);
+                }}
+                onBlur={e => checkEmailStatus(e.target.value)}
+                placeholder="Nhập email đăng ký..."
+                className="w-full bg-white border border-neutral-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
+                required
+              />
+            </div>
+
+            {resendStatus.msg && (
+              <div className={`p-3 rounded-xl text-xs font-bold ${resendStatus.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
+                {resendStatus.msg}
+              </div>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={isResending || timer > 0}
+            className="w-full py-2.5 bg-black hover:bg-neutral-800 text-white font-extrabold rounded-xl text-xs transition-all disabled:opacity-50 cursor-pointer mt-2"
+          >
+            {isResending ? 'Đang gửi...' : timer > 0 ? `Gửi Lại Mã OTP (${timer}s)` : 'Gửi Lại Mã OTP Mới'}
+          </button>
+        </form>
+
+        {/* Form 2: Nhập mã OTP 6 số */}
+        <form onSubmit={handleVerifyOtp} className="space-y-3 bg-neutral-50 p-5 rounded-xl border border-neutral-200/80 flex flex-col justify-between">
+          <div className="space-y-3">
+            <h4 className="font-bold text-xs text-neutral-700 uppercase tracking-wider text-center">Bước 2: Nhập 6 Chữ Số OTP Để Kích Hoạt</h4>
+            
+            <div className="flex items-center justify-center gap-1.5 sm:gap-2 py-1 w-full mx-auto text-center">
+              {otpDigits.map((digit, idx) => (
+                <input
+                  key={`help-otp-${idx}`}
+                  id={`help-otp-${idx}`}
+                  type="text"
+                  maxLength={1}
+                  value={digit}
+                  onChange={e => {
+                    const val = e.target.value;
+                    const newDigits = [...otpDigits];
+                    newDigits[idx] = val;
+                    setOtpDigits(newDigits);
+                    if (val && idx < 5) {
+                      const next = document.getElementById(`help-otp-${idx + 1}`);
+                      if (next) next.focus();
+                    }
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'Backspace' && !otpDigits[idx] && idx > 0) {
+                      const prev = document.getElementById(`help-otp-${idx - 1}`);
+                      if (prev) prev.focus();
+                    }
+                  }}
+                  onPaste={e => {
+                    e.preventDefault();
+                    const pasteData = e.clipboardData.getData('text').trim();
+                    if (/^\d{6}$/.test(pasteData)) {
+                      setOtpDigits(pasteData.split(''));
+                      const last = document.getElementById('help-otp-5');
+                      if (last) last.focus();
+                    }
+                  }}
+                  className="w-9 h-11 text-center text-lg font-black bg-white text-neutral-900 border border-neutral-300 rounded-lg focus:border-amber-500 focus:outline-none transition-all shadow-xs"
+                />
+              ))}
+            </div>
+
+            {verifyStatus.msg && (
+              <div className={`p-3 rounded-xl text-xs font-bold ${verifyStatus.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
+                {verifyStatus.msg}
+              </div>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={isVerifying || otpDigits.join('').length !== 6}
+            className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black rounded-xl text-xs transition-all disabled:opacity-50 cursor-pointer shadow-sm shadow-amber-500/20 mt-2"
+          >
+            {isVerifying ? 'Đang xác thực...' : 'Xác Nhận Kích Hoạt OTP'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
   const { lang, landingConfig } = useContext(LanguageContext);
   const location = useLocation();
@@ -41,8 +286,13 @@ export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
     return '';
   };
   const ext = getArtistExtensionFromUrl(location.pathname);
-  const tokenKey = ext ? `adminToken_${ext}` : 'adminToken';
-  const token = localStorage.getItem(tokenKey);
+  const token = localStorage.getItem('adminToken');
+
+  const getAvatarUrl = (url: string) => {
+    if (!url) return '';
+    if (url.startsWith('http') || url.startsWith('/') || url.startsWith('data:')) return url;
+    return `/uploads/${ext || 'common'}/${url}`;
+  };
 
   const [activeTab, setActiveTab] = useState(token ? 'account' : 'login');
   const [showTooltip, setShowTooltip] = useState(false);
@@ -77,6 +327,26 @@ export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
     if (!token) {
       setIsLoading(false);
       setActiveTab('login');
+      try {
+        const pendingRaw = localStorage.getItem('pendingRegistrationInfo');
+        if (pendingRaw) {
+          const pending = JSON.parse(pendingRaw);
+          if (pending && (pending.username || pending.email || pending.extension)) {
+            setArtistData({
+              artistName: pending.artistName || pending.username,
+              username: pending.username,
+              extension: pending.extension,
+              email: pending.email,
+              activated: false,
+              emailVerified: pending.emailVerified === true
+            });
+            if (pending.email) setEmail(pending.email);
+            if (pending.username) setUsername(pending.username);
+            if (pending.extension) setExtension(pending.extension);
+            if (pending.artistName) setArtistName(pending.artistName);
+          }
+        }
+      } catch (e) {}
       return;
     }
     
@@ -86,7 +356,8 @@ export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
     .then(res => res.json())
     .then(data => {
       if (data.isAdmin && data.artist) {
-        localStorage.setItem('activeAdminActivated', data.artist.activated !== false ? 'true' : 'false');
+        const isAct = data.artist.activated !== false;
+        localStorage.setItem('activeAdminActivated', isAct ? 'true' : 'false');
         if (data.artist.extension) {
           localStorage.setItem('activeAdminExtension', data.artist.extension);
         }
@@ -100,6 +371,9 @@ export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
         const checkAvatar = data.avatarUrl || '';
         setAvatarUrl(checkAvatar);
         localStorage.setItem('activeAdminAvatar', checkAvatar);
+        if (!isAct) {
+          setActiveTab('login');
+        }
       } else {
         // If token is invalid, just act as guest
         setActiveTab('login');
@@ -300,43 +574,67 @@ export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
   const isActivated = artistData ? (artistData.activated !== false) : (localStorage.getItem('activeAdminActivated') !== 'false');
   const backTarget = (ext && isActivated) ? `/${ext}` : '/';
 
+  const handleLogout = async () => {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('activeAdminExtension');
+    localStorage.removeItem('activeAdminName');
+    localStorage.removeItem('activeAdminAvatar');
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' });
+      await fetch('/api/member/logout', { method: 'POST' });
+    } catch (e) {}
+    window.location.href = backTarget;
+  };
+
   return (
     <div className="min-h-screen bg-neutral-50 font-sans flex flex-col md:flex-row">
       {/* Sidebar */}
-      <div className="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-neutral-200 p-6 shrink-0 md:h-screen md:sticky md:top-0 overflow-y-auto">
-        <Link to={backTarget} className="flex items-center gap-2 text-neutral-500 hover:text-black transition-colors mb-8 text-sm font-bold w-fit">
-          <ChevronLeft className="w-4 h-4" /> Quay lại
-        </Link>
-        <h2 className="text-xl font-black tracking-tight text-neutral-900 mb-6">Trợ Giúp</h2>
-        <div className="space-y-6">
-          {token && (
+      <div className="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-neutral-200 p-6 shrink-0 md:h-screen md:sticky md:top-0 overflow-y-auto flex flex-col justify-between">
+        <div>
+          <Link to={backTarget} className="flex items-center gap-2 text-neutral-500 hover:text-black transition-colors mb-8 text-sm font-bold w-fit">
+            <ChevronLeft className="w-4 h-4" /> Quay lại
+          </Link>
+          <h2 className="text-xl font-black tracking-tight text-neutral-900 mb-6">Trợ Giúp</h2>
+          <div className="space-y-6">
+            {token && (
+              <div>
+                <div className="text-[10px] font-black text-neutral-400 uppercase tracking-wider mb-2 px-3">Cài Đặt</div>
+                <button
+                  onClick={() => setActiveTab('account')}
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'account' ? 'bg-black text-white' : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'}`}
+                >
+                  <Settings className="w-4 h-4" /> Cài đặt tài khoản
+                </button>
+              </div>
+            )}
             <div>
-              <div className="text-[10px] font-black text-neutral-400 uppercase tracking-wider mb-2 px-3">Cài Đặt</div>
-              <button
-                onClick={() => setActiveTab('account')}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'account' ? 'bg-black text-white' : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'}`}
-              >
-                <Settings className="w-4 h-4" /> Cài đặt tài khoản
-              </button>
-            </div>
-          )}
-          <div>
-            <div className="text-[10px] font-black text-neutral-400 uppercase tracking-wider mb-2 px-3">Hướng dẫn</div>
-            <div className="space-y-1">
-              {menuItems.filter(m => m.category === 'Hướng dẫn').map((item, idx) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={`help-item-${item.id || ''}-${idx}`}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === item.id ? 'bg-black text-white' : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'}`}
-                  >
-                    <Icon className="w-4 h-4" /> {item.label}
-                  </button>
-                );
-              })}
+              <div className="text-[10px] font-black text-neutral-400 uppercase tracking-wider mb-2 px-3">Hướng dẫn</div>
+              <div className="space-y-1">
+                {menuItems.filter(m => m.category === 'Hướng dẫn').map((item, idx) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={`help-item-${item.id || ''}-${idx}`}
+                      onClick={() => setActiveTab(item.id)}
+                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === item.id ? 'bg-black text-white' : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'}`}
+                    >
+                      <Icon className="w-4 h-4" /> {item.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
+        </div>
+
+        <div className="pt-6 border-t border-neutral-200 mt-6">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-all cursor-pointer"
+          >
+            <LogOut className="w-4 h-4 text-rose-600" /> Đăng Xuất
+          </button>
         </div>
       </div>
 
@@ -354,7 +652,7 @@ export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
                   <div className="relative group shrink-0">
                     <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg bg-neutral-100 flex items-center justify-center">
                       {avatarUrl ? (
-                        <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                        <img src={getAvatarUrl(avatarUrl)} alt="Avatar" className="w-full h-full object-cover" />
                       ) : (
                         <span className="text-neutral-400 text-3xl font-black">{artistData?.artistName?.charAt(0) || artistData?.username?.charAt(0)}</span>
                       )}
@@ -425,7 +723,7 @@ export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
                           className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:bg-white transition-all font-medium"
                           required
                         />
-                        <div className="mt-2 text-[11px] text-neutral-500">Đang dùng: <span className="font-bold text-black">{artistData?.extension}.chorus.vn</span></div>
+                        <div className="mt-2 text-[11px] text-neutral-500">Đang dùng: <span className="font-bold text-black">{artistData?.extension}.{getPlatformDomain()}</span></div>
                       </div>
                       {profileError && <div className="text-red-600 text-xs font-bold">{profileError}</div>}
                       {profileSuccess && <div className="text-emerald-600 text-xs font-bold">{profileSuccess}</div>}
@@ -512,7 +810,8 @@ export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
                   <h3 className="text-amber-950 font-black text-lg">Thông tin đăng nhập & Quản lý</h3>
                   <button 
                     onClick={() => {
-                        const txt = `Nghệ danh: ${artistData?.artistName || artistData?.username}\nWebsite: ${artistData?.extension}.chorus.vn\nAdmin: ${artistData?.extension}.chorus.vn/admin\nĐăng nhập: ${artistData?.username} hoặc ${artistData?.email}`;
+                        const platDom = getPlatformDomain();
+                        const txt = `Nghệ danh: ${artistData?.artistName || artistData?.username}\nWebsite: ${artistData?.extension}.${platDom}\nAdmin: ${platDom}/admin\nĐăng nhập: ${artistData?.username} hoặc ${artistData?.email}`;
                         navigator.clipboard.writeText(txt);
                     }}
                     className="text-amber-700 hover:text-amber-900 transition-colors bg-white hover:bg-amber-100 p-2 rounded-lg border border-amber-200"
@@ -535,11 +834,11 @@ export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
                   </div>
                   <div className="flex items-start sm:items-center flex-col sm:flex-row gap-1 sm:gap-4 mt-6 mb-2">
                     <span className="w-32 text-stone-500 font-bold shrink-0">Website:</span>
-                    <a href={`https://${artistData?.extension}.chorus.vn`} target="_blank" rel="noreferrer" className="text-indigo-600 font-bold hover:text-indigo-800 hover:underline">{artistData?.extension}.chorus.vn</a>
+                    <a href={`https://${artistData?.extension}.${getPlatformDomain()}`} target="_blank" rel="noreferrer" className="text-indigo-600 font-bold hover:text-indigo-800 hover:underline">{artistData?.extension}.{getPlatformDomain()}</a>
                   </div>
                   <div className="flex items-start sm:items-center flex-col sm:flex-row gap-1 sm:gap-4">
                     <span className="w-32 text-stone-500 font-bold shrink-0">Trang Admin:</span>
-                    <a href={`https://${artistData?.extension}.chorus.vn/admin`} target="_blank" rel="noreferrer" className="text-indigo-600 font-bold hover:text-indigo-800 hover:underline">{artistData?.extension}.chorus.vn/admin</a>
+                    <a href={`https://${getPlatformDomain()}/admin`} target="_blank" rel="noreferrer" className="text-indigo-600 font-bold hover:text-indigo-800 hover:underline">{getPlatformDomain()}/admin</a>
                   </div>
                   <div className="flex items-start sm:items-center flex-col sm:flex-row gap-1 sm:gap-4">
                     <span className="w-32 text-stone-500 font-bold shrink-0">Đăng nhập bằng:</span>
@@ -555,6 +854,40 @@ export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
                   </div>
                 </div>
               </div>
+
+              {artistData?.emailVerified === true ? (
+                <div className="mt-6 p-5 rounded-2xl bg-emerald-50 text-emerald-900 border border-emerald-200/80 text-sm font-bold flex items-start sm:items-center gap-3 shadow-xs">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-black text-xl shrink-0 shadow-sm">✓</div>
+                  <div>
+                    <div className="font-black text-emerald-950 text-base">Email Của Bạn Đã Được Xác Thực Thành Công</div>
+                    <div className="text-xs text-emerald-700 font-medium mt-0.5">Tài khoản nghệ sĩ của bạn đã xác thực email thành công và đang chờ Quản trị viên kích hoạt. Ngay sau khi được kích hoạt, bạn có thể bắt đầu sử dụng tất cả tính năng của Chorus.vn.</div>
+                  </div>
+                </div>
+              ) : (
+                <HelpEmailVerifySection 
+                  initialEmail={artistData?.email || email} 
+                  onVerifiedSuccess={(art) => {
+                    setArtistData((prev: any) => ({
+                      ...(prev || {}),
+                      ...(art || {}),
+                      emailVerified: true
+                    }));
+                    if (art?.artistName) setArtistName(art.artistName);
+                    if (art?.username) setUsername(art.username);
+                    if (art?.extension) setExtension(art.extension);
+                    if (art?.email) setEmail(art.email);
+                    try {
+                      localStorage.setItem('pendingRegistrationInfo', JSON.stringify({
+                        artistName: art?.artistName || artistName,
+                        username: art?.username || username,
+                        extension: art?.extension || extension,
+                        email: art?.email || email,
+                        emailVerified: true
+                      }));
+                    } catch (e) {}
+                  }}
+                />
+              )}
             </motion.div>
           )}
 
