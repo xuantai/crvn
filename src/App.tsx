@@ -1424,16 +1424,16 @@ function MusicianSongCard({
             ease: "easeInOut" 
           }}
           style={{ zIndex: 8 }}
-          className="absolute -top-5.5 sm:-top-6.5 left-1/2 -translate-x-1/2 shrink-0 w-auto min-w-[140px] sm:min-w-[185px] md:min-w-[200px] max-w-[90%] sm:max-w-[240px] h-10 sm:h-12 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_4px_14px_rgba(0,0,0,0.65),0_0_10px_rgba(212,175,55,0.25)] flex items-center justify-center overflow-hidden pointer-events-none"
+          className="absolute -top-6 sm:-top-7 left-1/2 -translate-x-1/2 shrink-0 w-auto min-w-[130px] sm:min-w-[160px] max-w-[175px] sm:max-w-[195px] h-12 sm:h-[50px] px-3 sm:px-4 py-1 rounded-[18px] bg-gradient-to-b from-[#4A240E] via-[#351807] to-[#1F0C03] border-2 border-[#D4AF37]/85 shadow-[inset_0_2px_4px_rgba(255,220,130,0.25),0_6px_18px_rgba(0,0,0,0.85),0_0_12px_rgba(212,175,55,0.3)] flex items-center justify-center overflow-hidden pointer-events-none"
         >
           {/* Glowing radial background animation */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.25),transparent_70%)] animate-pulse pointer-events-none rounded-2xl" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(251,191,36,0.25),transparent_75%)] animate-pulse pointer-events-none rounded-[18px]" />
           
           {/* Light sweep animation */}
           <motion.div 
             animate={{ x: ['-100%', '200%'] }}
             transition={{ repeat: Infinity, duration: 4.5, ease: "linear" }}
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/20 to-transparent skew-x-12 pointer-events-none rounded-2xl overflow-hidden"
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-300/20 to-transparent skew-x-12 pointer-events-none rounded-[18px] overflow-hidden"
           />
           
           {/* Achievement cycle text & icon */}
@@ -9478,13 +9478,13 @@ function RandomSongCard({
                   repeat: Infinity,
                   ease: "easeInOut"
                 }}
-                className="w-auto min-w-[140px] sm:min-w-[185px] md:min-w-[200px] h-12 sm:h-14 relative overflow-hidden rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/45 flex items-center justify-center px-3 sm:px-4 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_4px_12px_rgba(0,0,0,0.35)] shrink-0"
+                className="w-auto min-w-[130px] sm:min-w-[165px] h-12 sm:h-[50px] relative overflow-hidden rounded-[18px] bg-gradient-to-b from-[#4A240E] via-[#351807] to-[#1F0C03] border-2 border-[#D4AF37]/85 flex items-center justify-center px-3 sm:px-4 shadow-[inset_0_2px_4px_rgba(255,220,130,0.25),0_6px_18px_rgba(0,0,0,0.85),0_0_12px_rgba(212,175,55,0.3)] shrink-0"
               >
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.25),transparent_70%)] animate-pulse" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(251,191,36,0.25),transparent_75%)] animate-pulse" />
                 <motion.div 
                   animate={{ x: ['-100%', '200%'] }}
                   transition={{ repeat: Infinity, duration: 4.5, ease: "linear" }}
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/15 to-transparent skew-x-12 pointer-events-none"
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-300/20 to-transparent skew-x-12 pointer-events-none rounded-[18px]"
                 />
                 <div className="relative z-10 w-full h-full flex items-center justify-center">
                   <AchievementCycle achievements={displaySong.achievements} align="left" isLightBg={false} prefix="rnd-badge" />
