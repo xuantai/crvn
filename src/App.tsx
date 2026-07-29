@@ -1411,6 +1411,38 @@ function MusicianSongCard({
         className={`absolute -inset-2.5 rounded-2xl bg-gradient-to-r from-amber-400/45 via-yellow-300/50 to-amber-400/45 blur-2xl pointer-events-none transition-all duration-400 ${isElevated ? 'opacity-100 scale-102' : 'opacity-0 scale-95'}`} 
       />
 
+      {/* ── FLOATING ACHIEVEMENT BADGE (Positioned at top of outer gap, zIndex 8: covered by vinyl/cover when hovered) ── */}
+      {hasAch && (
+        <motion.div 
+          animate={{ 
+            y: [0, -1.5, 0, 1.5, 0],
+            rotate: [0, -0.3, 0, 0.3, 0]
+          }}
+          transition={{ 
+            duration: 5.5, 
+            repeat: Infinity, 
+            ease: "easeInOut" 
+          }}
+          style={{ zIndex: 8 }}
+          className="absolute top-0.5 sm:top-1.5 left-1/2 -translate-x-1/2 shrink-0 w-auto min-w-[140px] sm:min-w-[185px] md:min-w-[200px] max-w-[90%] sm:max-w-[240px] h-10 sm:h-12 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_4px_14px_rgba(0,0,0,0.65),0_0_10px_rgba(212,175,55,0.25)] flex items-center justify-center overflow-hidden pointer-events-none"
+        >
+          {/* Glowing radial background animation */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.25),transparent_70%)] animate-pulse pointer-events-none rounded-2xl" />
+          
+          {/* Light sweep animation */}
+          <motion.div 
+            animate={{ x: ['-100%', '200%'] }}
+            transition={{ repeat: Infinity, duration: 4.5, ease: "linear" }}
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/20 to-transparent skew-x-12 pointer-events-none rounded-2xl overflow-hidden"
+          />
+          
+          {/* Achievement cycle text & icon */}
+          <div className="relative z-10 w-full h-full flex items-center justify-center">
+            <AchievementCycle achievements={activeAchievements} align="center" isLightBg={false} prefix="mus-badge" />
+          </div>
+        </motion.div>
+      )}
+
       {/* ── WOODEN CRATE CONTAINER (overflow-visible so cover rises above crate top with ZERO clipping) ── */}
       <div 
         className="relative w-full rounded-xl overflow-visible cursor-pointer"
@@ -1588,42 +1620,11 @@ function MusicianSongCard({
         {/* ── FRONT FACE PANEL (z-30: covers bottom half of crate & album cover, creating slot pocket) ── */}
         <div className="relative z-30 w-full rounded-b-xl overflow-visible shadow-2xl"
           style={{ borderTop: '3px solid rgba(120,65,15,0.8)' }}>
-          
-          {/* Floating Gold Achievement Badge (Centered & Floats higher over top seam) */}
-          {hasAch && (
-            <motion.div 
-              animate={{ 
-                y: [0, -1.5, 0, 1.5, 0],
-                rotate: [0, -0.3, 0, 0.3, 0]
-              }}
-              transition={{ 
-                duration: 5.5, 
-                repeat: Infinity, 
-                ease: "easeInOut" 
-              }}
-              className="absolute -top-9 sm:-top-11 left-1/2 -translate-x-1/2 z-40 shrink-0 w-auto min-w-[140px] sm:min-w-[185px] md:min-w-[200px] max-w-[90%] sm:max-w-[240px] h-11 sm:h-13 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_4px_14px_rgba(0,0,0,0.65),0_0_10px_rgba(212,175,55,0.25)] flex items-center justify-center overflow-hidden pointer-events-none"
-            >
-              {/* Glowing radial background animation */}
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.25),transparent_70%)] animate-pulse pointer-events-none rounded-2xl" />
-              
-              {/* Light sweep animation */}
-              <motion.div 
-                animate={{ x: ['-100%', '200%'] }}
-                transition={{ repeat: Infinity, duration: 4.5, ease: "linear" }}
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/20 to-transparent skew-x-12 pointer-events-none rounded-2xl overflow-hidden"
-              />
-              
-              {/* Achievement cycle text & icon */}
-              <div className="relative z-10 w-full h-full flex items-center justify-center">
-                <AchievementCycle achievements={activeAchievements} align="center" isLightBg={false} prefix="mus-badge" />
-              </div>
-            </motion.div>
-          )}
 
           <Link
             to={targetLink}
             onClick={handleClick}
-            className={`block w-full relative pb-2.5 px-2.5 sm:pb-3 sm:px-4 ${hasAch ? 'pt-5 sm:pt-6' : 'pt-3 sm:pt-3.5'}`}
+            className="block w-full relative pt-3 pb-2.5 px-2.5 sm:pt-3 sm:pb-3 sm:px-4"
             style={{
               background: isElevated 
                 ? 'linear-gradient(to bottom, #FFF7DC, #FCE8B3)' 
