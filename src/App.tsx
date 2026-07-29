@@ -1622,7 +1622,7 @@ function MusicianSongCard({
           <Link
             to={targetLink}
             onClick={handleClick}
-            className="block w-full relative pt-3.5 pb-2 px-2.5 sm:pt-4 sm:pb-3 sm:px-4"
+            className="block w-full relative pt-3 pb-2 px-2.5 sm:pt-3 sm:pb-2.5 sm:px-4"
             style={{
               background: isElevated 
                 ? 'linear-gradient(to bottom, #FFF7DC, #FCE8B3)' 
@@ -1636,13 +1636,6 @@ function MusicianSongCard({
                 <div className="w-full h-full bg-gradient-to-r from-transparent via-amber-200/40 to-transparent animate-shimmer-sweep" />
               </div>
             )}
-
-            {/* Desktop Year Badge (Top right of info panel on desktop only) */}
-            <div className="hidden sm:flex items-center justify-end mb-1 relative z-30">
-              <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-black shrink-0 border border-amber-700/40 text-amber-900 bg-amber-100/90 shadow-sm">
-                {songYear}
-              </span>
-            </div>
 
             {/* Title & Artist on Left + Mini Thumbnail on Right */}
             <div className="flex items-center justify-between gap-2">
@@ -1687,13 +1680,11 @@ function MusicianSongCard({
               <div className="w-1.5 h-[1.5px] rounded-full bg-amber-900/70 rotate-45" />
             </div>
 
-            {/* Center year badge on mobile (`sm:hidden`) / golden line on desktop (`hidden sm:block`) */}
+            {/* Center year badge on shelf ledge (Mobile & PC) */}
             <div className="flex-1 mx-2 relative z-10 flex items-center justify-center">
-              <span className="sm:hidden px-2.5 py-0.5 rounded-full text-[9px] font-black border border-amber-400/40 text-amber-200 bg-amber-950/85 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_2px_6px_rgba(0,0,0,0.7)] tracking-wider">
+              <span className="px-3 py-0.5 rounded-full text-[9px] sm:text-[10.5px] font-black border border-amber-400/40 text-amber-200 bg-amber-950/85 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_2px_6px_rgba(0,0,0,0.7)] tracking-wider">
                 {songYear}
               </span>
-              <div className="hidden sm:block h-[1.5px] w-full"
-                style={{ background: 'linear-gradient(to right, transparent, rgba(180,130,40,0.35), transparent)' }} />
             </div>
 
             {/* Brass screw right */}
