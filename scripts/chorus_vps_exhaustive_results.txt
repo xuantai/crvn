@@ -1,0 +1,6 @@
+=== 1. SEARCHING FOR EXACT BIO/ABOUT STRINGS ACROSS ALL FILES IN /home AND /var/www ===
+/home/chorus/htdocs/chorus.vn/data_acxuantai.json:235:      "title": "Một Thời Khắc Khác (OST Hoàng Tử Quỷ)",
+=== 2. SEARCHING FOR JSON KEYS 'aboutMe' OR 'biography' IN ALL JSON FILES ON VPS ===
+=== 3. SEARCHING SQLITE DATABASES ON CHORUS VPS ===
+/home/chorus/htdocs/chorus.vn/bbb_global.db
+/home/chorus/htdocs/chorus.vn/chorus.db

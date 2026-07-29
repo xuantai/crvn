@@ -1,0 +1,66 @@
+          <h1 
+            className="text-xl md:text-2xl font-black text-center mb-1 drop-shadow-sm flex items-center justify-center relative z-30"
+            style={{ color: customConfig?.titleColor || undefined }}
+          >
+            <span className="relative inline-flex items-center">
+              <HoverTranslate text={demo.title} format={true} />
+              <span className="inline-block w-5 md:w-7"></span>
+              {demo.linkType === 'indirect' ? (
+                <div className="absolute top-0 right-0 translate-x-[105%] -translate-y-[25%] rotate-[10deg] bg-indigo-600 text-[7px] md:text-[8px] font-black text-white px-1.5 py-0.5 rounded shadow-[0_0_15px_rgba(79,70,229,0.8)] animate-[pulse_2s_ease-in-out_infinite] tracking-widest border border-white/20 select-none z-50 whitespace-nowrap">
+                  Landing Page
+                </div>
+              ) : demo.isReleased ? (
+                <div className="absolute top-0 right-0 translate-x-[105%] -translate-y-[25%] rotate-[10deg] bg-emerald-600 text-[7px] md:text-[8px] font-black text-white px-1.5 py-0.5 rounded shadow-[0_0_15px_rgba(5,150,105,0.8)] tracking-widest border border-emerald-400/50 select-none animate-released-wiggle z-50 whitespace-nowrap">
+                  {t.lReleasedMark || 'RELEASED'}
+                </div>
+              ) : (
+                <div className="absolute top-0 right-0 translate-x-[105%] -translate-y-[25%] rotate-[10deg] bg-rose-600 text-[7px] md:text-[8px] font-black text-white px-1.5 py-0.5 rounded shadow-[0_0_15px_rgba(225,29,72,0.8)] animate-[pulse_2s_ease-in-out_infinite] tracking-widest border border-white/20 select-none z-50 whitespace-nowrap">
+                  {t.lDemoMark || 'DEMO'}
+                </div>
+              )}
+            </span>
+          </h1>
+          {demo.isBrand && demo.brandName && (() => {
+            const badgeStyle = getBrandBadgeStyle(brandColors.primary);
+            return (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="my-3 flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-xl border shadow-md w-fit mx-auto"
+                style={{
+                  borderColor: badgeStyle.borderColor,
+                  backgroundColor: badgeStyle.backgroundColor,
+                  boxShadow: badgeStyle.boxShadow
+                }}
+              >
+                {demo.brandLogoUrl && (
+                  <div 
+                    className="w-5 h-5 rounded-md overflow-hidden flex items-center justify-center p-0.5 bg-white/10"
+                    style={{ border: `1px solid ${badgeStyle.borderColor}` }}
+                  >
+                    <img src={demo.brandLogoUrl} className="w-full h-full object-contain" alt={demo.brandName} referrerPolicy="no-referrer" />
+                  </div>
+                )}
+                <span className="text-[10px] uppercase tracking-widest font-black flex items-center gap-1">
+                  <span style={{ color: badgeStyle.labelColor }}>{t.pPartner || "Đối tác:"}</span>
+                  <span style={{ color: badgeStyle.valueColor }}>{demo.brandName}</span>
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse ml-0.5" style={{ backgroundColor: badgeStyle.dotColor }}></span>
+              </motion.div>
+            );
+          })()}
+          <p 
+            className="text-lg md:text-xl font-medium text-center mb-0"
+            style={{
+              opacity: isLight ? 0.85 : 0.95,
+              textShadow: isLight ? '0 1px 1.5px rgba(255,255,255,0.7)' : '0 1.5px 3px rgba(0,0,0,0.85)',
+            }}
+          >
+            {renderArtistNameWithLinks(demo.singer || demo.author || (demo as any)?.defaultArtistName || 'Nghệ sĩ', systemArtists)}
+          </p>
+          <p 
+            className={`text-xs md:text-sm text-center mb-1 md:mb-6 ${templateType === '6' ? 'font-semibold text-[#fef08a]' : 'font-medium opacity-60'}`}
+          >
+            {t.sAuth} {renderArtistNameWithLinks(demo.composer || (demo as any)?.defaultArtistName || 'Nghệ sĩ', systemArtists)}
+          </p>

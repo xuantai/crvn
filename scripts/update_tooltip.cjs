@@ -1,0 +1,11 @@
+const fs = require('fs');
+let code = fs.readFileSync('src/App.tsx', 'utf8');
+
+const target = `title="Tải bài hát"`;
+const replacement = `title="Tải Nhạc"`;
+
+if (code.includes(target)) {
+    code = code.replace(target, replacement);
+    fs.writeFileSync('src/App.tsx', code);
+    console.log("Updated tooltip");
+}

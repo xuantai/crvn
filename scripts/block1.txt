@@ -1,0 +1,36 @@
+    setAboutData({ ...aboutData, [field]: e.target.value });
+  };
+
+  
+  
+  const defaultMenus = [
+    { id: 'm1', type: 'vault', title: 'Kho Nhạc', isVisible: true },
+    { id: 'm2', type: 'about', title: 'Về Tôi', isVisible: true },
+    { id: 'm3', type: 'bio', title: 'Tiểu Sử', isVisible: true }
+  ];
+  const currentMenus = data.menus && data.menus.length > 0 ? data.menus : defaultMenus;
+  const activeMenuObj = currentMenus.find((m: any) => m.id === activeMenuTab);
+
+  const hasAbout = Boolean(data.aboutMe && Object.values(data.aboutMe).some(v => v));
+  const hasBio = Boolean(data.biography && ((data.biography.education && data.biography.education.length > 0) || (data.biography.experience && data.biography.experience.length > 0)));
+  
+  const finalMenus = currentMenus.filter((m: any) => {
+    if (m.type === 'about' && !hasAbout) return false;
+    if (m.type === 'bio' && !hasBio) return false;
+    return true;
+  });
+  const hasNavbar = finalMenus.filter((m: any) => m.isVisible).length > 1;
+  const isVault = !hasNavbar || !activeMenuObj || activeMenuObj.type === 'vault';
+  const isAbout = hasNavbar && activeMenuObj?.type === 'about';
+  const isBio = hasNavbar && activeMenuObj?.type === 'bio';
+  const pushDown = hasNavbar && !isScrolled;
+
+  return (
+    <motion.div key="about" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar">
+      <div className="max-w-2xl pb-10">
+        <h2 className="text-2xl font-bold mb-8">{t("Về Tôi")}</h2>
+        <form onSubmit={handleSave} className="space-y-6">
+          <div>
+            <label className="block text-sm font-bold text-stone-700 mb-2">{t("Giới thiệu nghệ sĩ")}</label>
+            <textarea value={aboutData.intro || ''} onChange={handleChange('intro')} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 min-h-[100px]" />
+          </div>

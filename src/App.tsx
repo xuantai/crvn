@@ -282,7 +282,7 @@ if (typeof window !== 'undefined') {
   });
 }
 
-interface MusicianSongCardProps {
+interface DreamySongCardProps {
   key?: React.Key;
   demo: any;
   idx: number;
@@ -441,7 +441,7 @@ function SongTitleMarquee({ title, themeHoverClass }: { title: string; themeHove
   );
 }
 
-function MusicianSongCard({
+function DreamySongCard({
   demo,
   idx,
   activeListTab,
@@ -452,7 +452,7 @@ function MusicianSongCard({
   copyToClipboard,
   setToast,
   setActiveBioSong
-}: MusicianSongCardProps) {
+}: DreamySongCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
@@ -541,6 +541,14 @@ function MusicianSongCard({
   const isReleasedSong = activeListTab === 'released' || demo.isReleased === true || demo.isReleased === 'true' || demo.type === 'released' || !!(demo.linkYoutube || demo.linkSpotify || demo.linkApple || demo.linkZing || demo.linkYoutubeMusic);
   const isDemoSong = !isReleasedSong;
 
+  const hasAchievementsArray = demo.achievements && Array.isArray(demo.achievements) && demo.achievements.length > 0;
+  let achievementText = '';
+  if (demo.achievement) {
+    achievementText = String(demo.achievement);
+  } else if (demo.achievements && typeof demo.achievements === 'string') {
+    achievementText = String(demo.achievements);
+  }
+
   const stopAudio = useCallback(() => {
     if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
     if (timerTimeoutRef.current) clearTimeout(timerTimeoutRef.current);
@@ -557,9 +565,8 @@ function MusicianSongCard({
   }, [demo.id]);
 
   const startAudioPreview = useCallback(() => {
-    const isAuth = !!getAdminToken() || !!getMemberToken();
-    // Absolutely block preview for demo songs if user is not admin or member
-    if (isDemoSong && !isAuth) return;
+    // Absolutely block preview for demo songs or when in demo tab
+    if (activeListTab === 'demos' || isDemoSong) return;
 
     if (!audioUrl) return;
 
@@ -653,8 +660,7 @@ function MusicianSongCard({
   const handleMouseEnter = () => {
     if (isTouchMobile) return;
     setIsHovered(true);
-    const isAuth = !!getAdminToken() || !!getMemberToken();
-    if (isDemoSong && !isAuth) return;
+    if (activeListTab === 'demos' || isDemoSong) return;
     if (audioUrl) {
       startAudioPreview();
     }
@@ -704,8 +710,7 @@ function MusicianSongCard({
     return '';
   };
 
-  const achievementText = getAchievementText(demo);
-  const hasAchievementsArray = Array.isArray(demo.achievements) && demo.achievements.length > 0;
+  // (achievementText & hasAchievementsArray declared above)
 
   // Extract artist names for upper hemisphere of center label (max 3 lines, 1 artist per line)
   const rawArtistStr = demo.singer || demo.author || data?.artistName || '';
@@ -758,8 +763,7 @@ function MusicianSongCard({
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          const isAuth = !!getAdminToken() || !!getMemberToken();
-          if (isDemoSong && !isAuth) return;
+          if (activeListTab === 'demos' || isDemoSong) return;
           if (isPlaying || mobilePopped || globalActiveCardId === demo.id || isHovered) {
             stopAudio();
           } else {
@@ -864,6 +868,30 @@ function MusicianSongCard({
 
       {/* Outer Card Wrapper with Drop Shadow following the concave shape */}
       <div className={`relative w-full z-20 transition-all duration-300 hover:-translate-y-2 group/card ${theme.dropShadow}`}>
+        {/* Tilted RELEASED/DEMO Badge on Right Outer Shoulder */}
+        <motion.div
+          animate={{ 
+            rotate: [14, 10, 18, 10, 14],
+            scale: [1, 1.04, 0.96, 1.04, 1]
+          }}
+          transition={{ 
+            duration: 4.5, 
+            repeat: Infinity, 
+            ease: "easeInOut" 
+          }}
+          className="absolute -top-2.5 -right-3.5 sm:-top-3 sm:-right-5 z-50 select-none pointer-events-none"
+        >
+          <span className={`shadow-lg text-[8px] sm:text-[10px] font-black px-2.5 py-0.5 rounded-md block border tracking-wider transform rotate-[10deg] ${
+            isReleasedSong 
+              ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white border-emerald-300/80 shadow-[0_4px_14px_rgba(16,185,129,0.6)]' 
+              : demo.linkType === 'indirect' 
+                ? 'bg-indigo-600 text-white border border-indigo-300/80 shadow-[0_4px_14px_rgba(79,70,229,0.6)]' 
+                : 'bg-gradient-to-r from-rose-600 to-pink-600 text-white border border-rose-300/80 shadow-[0_4px_14px_rgba(225,29,72,0.6)]'
+          }`}>
+            {isReleasedSong ? (t.lReleasedMark || 'RELEASED') : (demo.linkType === 'indirect' ? 'Landing Page' : (t.lDemoMark || 'DEMO'))}
+          </span>
+        </motion.div>
+
         <Link
           to={targetLink}
           onClick={handleClick}
@@ -891,7 +919,8 @@ function MusicianSongCard({
               <div className="w-full h-full bg-gradient-to-r from-transparent via-white/50 to-transparent animate-shimmer-sweep" />
             </div>
           )}
-          {/* Top Section: Single Unified Row for Achievement & Year Badges (Identical height for all cards) */}
+
+          {/* Top Section: Achievement on Left, Year Badge on Right */}
           <div className="flex items-center justify-between gap-1.5 w-full h-[32px] mt-1 mb-2 relative z-10">
             {hasAchievementsArray ? (
               <AchievementCycle achievements={demo.achievements} align="left" isLightBg={true} />
@@ -902,7 +931,6 @@ function MusicianSongCard({
               </span>
             ) : <div />}
 
-            {/* Year Badge */}
             <span className={`px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black shadow-xs border ${theme.yearBorder} ${theme.yearText} shrink-0 inline-flex items-center gap-0.5 ml-auto`}>
               {songYear}
             </span>
@@ -947,7 +975,161 @@ function MusicianSongCard({
   );
 }
 
-function Musician2SongCard({
+function MusicianWallFrames({
+  data,
+  setWallLightboxImg,
+  t
+}: {
+  data: any;
+  setWallLightboxImg: (img: string) => void;
+  t: (key: string) => string;
+}) {
+  const [orientations, setOrientations] = useState<Record<string, 'landscape' | 'portrait'>>({});
+  const [swayAngle, setSwayAngle] = useState(0);
+  const lastYRef = useRef(typeof window !== 'undefined' ? window.scrollY : 0);
+  const swayTimerRef = useRef<any>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      const dy = currentY - lastYRef.current;
+      lastYRef.current = currentY;
+
+      // Calculate sway amplitude based on scroll velocity (-3.5 to +3.5 deg)
+      const sway = Math.max(-3.5, Math.min(3.5, dy * 0.12));
+      setSwayAngle(sway);
+
+      if (swayTimerRef.current) clearTimeout(swayTimerRef.current);
+      swayTimerRef.current = setTimeout(() => {
+        setSwayAngle(0); // Decays back to 0deg (resting straight vertically)
+      }, 160);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (swayTimerRef.current) clearTimeout(swayTimerRef.current);
+    };
+  }, []);
+
+  // ONLY use slideshowImages uploaded in "Ảnh nền trang chủ ( Chọn nhiều ảnh để chạy slideshow )"
+  const wallImages: string[] = useMemo(() => {
+    const imgs: string[] = [];
+    if (data?.slideshowImages && Array.isArray(data.slideshowImages) && data.slideshowImages.length > 0) {
+      data.slideshowImages.forEach((img: string) => {
+        if (img && typeof img === 'string' && !imgs.includes(img)) {
+          imgs.push(img);
+        }
+      });
+    }
+    // Fallback photos ONLY if no slideshow images have been uploaded yet
+    if (imgs.length === 0) {
+      const fallbacks = [
+        'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=600&q=80'
+      ];
+      fallbacks.forEach(f => imgs.push(f));
+    }
+    return imgs;
+  }, [data?.slideshowImages]);
+
+  const handleImgLoad = (url: string, e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    if (img.naturalWidth && img.naturalHeight) {
+      const isLandscape = img.naturalWidth > img.naturalHeight;
+      setOrientations(prev => {
+        if (prev[url] === (isLandscape ? 'landscape' : 'portrait')) return prev;
+        return { ...prev, [url]: isLandscape ? 'landscape' : 'portrait' };
+      });
+    }
+  };
+
+  const positions = [
+    { top: '150px', left: '0.5%', right: 'auto', border: 'border-[#3B1D0E]', bgMat: 'bg-[#FBF9F5]' },
+    { top: '340px', left: 'auto', right: '0.5%', border: 'border-[#482411]', bgMat: 'bg-[#FDFCF9]' },
+    { top: '700px', left: '0.5%', right: 'auto', border: 'border-[#2A1308]', bgMat: 'bg-[#F5F2EB]' },
+    { top: '1050px', left: 'auto', right: '0.5%', border: 'border-[#3B1D0E]', bgMat: 'bg-[#FBF9F5]' },
+    { top: '1450px', left: '0.5%', right: 'auto', border: 'border-[#482411]', bgMat: 'bg-[#FDFCF9]' },
+    { top: '1850px', left: 'auto', right: '0.5%', border: 'border-[#2A1308]', bgMat: 'bg-[#F5F2EB]' },
+  ];
+
+  return (
+    <div className="hidden sm:block absolute inset-0 overflow-hidden pointer-events-none z-[1]">
+      {wallImages.map((imgUrl: string, idx: number) => {
+        const pos = positions[idx % positions.length];
+        const orient = orientations[imgUrl] || 'portrait';
+        const isLandscape = orient === 'landscape';
+
+        // Orientation-specific dimensions for PC and Mobile:
+        // Horizontal: aspect 4:3 (landscape)
+        // Vertical: aspect 3:4 (portrait)
+        const frameClass = isLandscape
+          ? 'w-[75px] h-[58px] sm:w-[190px] sm:h-[135px] lg:w-[245px] lg:h-[175px]'
+          : 'w-[58px] h-[75px] sm:w-[135px] sm:h-[190px] lg:w-[175px] lg:h-[245px]';
+
+        const frameSway = idx % 2 === 0 ? swayAngle : -swayAngle;
+
+        return (
+          <div
+            key={`musician-wall-frame-${idx}`}
+            className="absolute pointer-events-auto group/wallframe transition-transform duration-300 ease-out hover:scale-105 z-[1] hover:z-30 opacity-85 sm:opacity-95 hover:opacity-100 cursor-pointer"
+            style={{
+              top: pos.top,
+              left: pos.left,
+              right: pos.right,
+              transform: `rotate(${frameSway}deg)`,
+              transformOrigin: '50% 0%', // Anchored at top nail for realistic pendulum sway!
+            }}
+            onClick={() => setWallLightboxImg(imgUrl)}
+            title={t("Bấm để xem ảnh khổ lớn") || "Bấm để xem ảnh khổ lớn"}
+          >
+            {/* Wall Brass Nail (hidden on mobile to merge with the song card's brass bolt above into 1 dot) */}
+            <div className="hidden sm:flex absolute -top-3 sm:-top-5 left-1/2 -translate-x-1/2 w-2.5 sm:w-3.5 h-2.5 sm:h-3.5 rounded-full bg-gradient-to-br from-amber-100 via-amber-400 to-amber-900 border border-amber-200/90 shadow-md z-20 items-center justify-center">
+              <div className="w-0.5 sm:w-1 h-0.5 bg-amber-950/90 rotate-45" />
+            </div>
+
+            {/* Hanging String V-Shape - Attaches directly to the shelf bolt on mobile */}
+            <svg className="absolute -top-4 sm:-top-5 left-0 right-0 h-4 sm:h-5 w-full overflow-visible pointer-events-none z-10">
+              <line x1="50%" y1="0" x2="15%" y2="14" stroke="rgba(245,215,160,0.75)" strokeWidth="1.2" />
+              <line x1="50%" y1="0" x2="85%" y2="14" stroke="rgba(245,215,160,0.75)" strokeWidth="1.2" />
+            </svg>
+
+            {/* Outer Wooden Picture Frame */}
+            <div className={`relative ${frameClass} rounded-md p-1 sm:p-2 lg:p-2.5 shadow-[0_12px_28px_rgba(0,0,0,0.9),inset_0_2px_4px_rgba(255,255,255,0.2)] border-[4px] sm:border-[7px] lg:border-[9px] ${pos.border} ${pos.bgMat} transition-all duration-300 group-hover/wallframe:shadow-[0_20px_45px_rgba(0,0,0,0.95)]`}>
+              {/* Inner Picture Mat Border */}
+              <div className="w-full h-full rounded-[2px] border border-stone-300/70 shadow-inner overflow-hidden relative">
+                <img 
+                  src={imgUrl} 
+                  alt={`Khung ảnh ${idx + 1}`} 
+                  onLoad={(e) => handleImgLoad(imgUrl, e)}
+                  className="w-full h-full object-cover filter brightness-[0.94] contrast-[1.06] group-hover/wallframe:brightness-100 group-hover/wallframe:scale-105 transition-all duration-700" 
+                  referrerPolicy="no-referrer"
+                />
+                {/* Subtle glass reflection highlight */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/12 to-white/0 pointer-events-none" />
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+const getDeterministicCount = (title: string, platform: 'spotify' | 'youtube') => {
+  const hash = Array.from(title || '').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  if (platform === 'spotify') {
+    const list = ['> 10M Lượt nghe', '> 18M Lượt nghe', '> 5.6M Lượt nghe', '> 22M Lượt nghe', '> 8.3M Lượt nghe'];
+    return list[hash % list.length];
+  } else {
+    const list = ['> 410K Lượt xem', '> 413K Lượt xem', '> 2.1M Lượt xem', '> 950K Lượt xem', '> 1.2M Lượt xem'];
+    return list[hash % list.length];
+  }
+};
+
+function MusicianSongCard({
   demo,
   idx,
   activeListTab,
@@ -958,13 +1140,22 @@ function Musician2SongCard({
   copyToClipboard,
   setToast,
   setActiveBioSong
-}: MusicianSongCardProps) {
+}: DreamySongCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const [mobilePopped, setMobilePopped] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
   const fadeIntervalRef = useRef<any>(null);
   const timerTimeoutRef = useRef<any>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const audioUrl = demo.audioUrl || demo.backupAudioUrl || demo.audio_url || '';
   const getSongCoverUrl = (songUrl?: string) => songUrl || data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
@@ -1042,6 +1233,25 @@ function Musician2SongCard({
   const isReleasedSong = activeListTab === 'released' || demo.isReleased === true || demo.isReleased === 'true' || demo.type === 'released' || !!(demo.linkYoutube || demo.linkSpotify || demo.linkApple || demo.linkZing || demo.linkYoutubeMusic);
   const isDemoSong = !isReleasedSong;
 
+  const activeAchievements = useMemo(() => {
+    if (demo.achievements && Array.isArray(demo.achievements) && demo.achievements.length > 0) {
+      return demo.achievements;
+    }
+    if (demo.achievement) {
+      const valStr = String(demo.achievement).replace('> ', '').replace(' Lượt xem', '').replace(' Lượt nghe', '');
+      return [{ type: 'youtube_views', value: valStr }];
+    }
+    return null;
+  }, [demo.achievements, demo.achievement]);
+
+  const hasAchievementsArray = demo.achievements && Array.isArray(demo.achievements) && demo.achievements.length > 0;
+  let achievementText = '';
+  if (demo.achievement) {
+    achievementText = String(demo.achievement);
+  } else if (demo.achievements && typeof demo.achievements === 'string') {
+    achievementText = String(demo.achievements);
+  }
+
   const stopAudio = useCallback(() => {
     if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
     if (timerTimeoutRef.current) clearTimeout(timerTimeoutRef.current);
@@ -1057,8 +1267,7 @@ function Musician2SongCard({
   }, [demo.id]);
 
   const startAudioPreview = useCallback(() => {
-    const isAuth = !!getAdminToken() || !!getMemberToken();
-    if (isDemoSong && !isAuth) return;
+    if (activeListTab === 'demos' || isDemoSong) return;
     if (!audioUrl) return;
 
     stopGlobalPreviewAudio();
@@ -1119,8 +1328,7 @@ function Musician2SongCard({
   const handleMouseEnter = () => {
     if (isTouchMobile) return;
     setIsHovered(true);
-    const isAuth = !!getAdminToken() || !!getMemberToken();
-    if (isDemoSong && !isAuth) return;
+    if (activeListTab === 'demos' || isDemoSong) return;
     if (audioUrl) {
       startAudioPreview();
     }
@@ -1191,29 +1399,25 @@ function Musician2SongCard({
 
   const isElevated = isHovered || isPlaying || isLoadingAudio || mobilePopped;
 
-  const hasSpotify = !!demo.linkSpotify;
-  const hasYoutube = !!demo.linkYoutube || !!demo.linkYoutubeMusic;
-
   return (
     <div 
-      className="relative w-full group pt-24 sm:pt-24 select-none"
+      className={`relative w-full group select-none overflow-visible pt-9 sm:pt-14 transition-all duration-300 ${isElevated ? 'z-40' : 'z-10'}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onPointerLeave={handleMouseLeave}
     >
-      {/* Wooden Shelf Glow */}
+      {/* Golden spotlight glow on hover */}
       <div 
-        className={`absolute left-1/2 -translate-x-1/2 -top-1 sm:top-2 w-60 h-60 sm:w-56 sm:h-56 rounded-full blur-3xl pointer-events-none transition-all duration-700 opacity-70 group-hover:opacity-100 ${theme.halo}`} 
+        className={`absolute -inset-2.5 rounded-2xl bg-gradient-to-r from-amber-400/45 via-yellow-300/50 to-amber-400/45 blur-2xl pointer-events-none transition-all duration-400 ${isElevated ? 'opacity-100 scale-102' : 'opacity-0 scale-95'}`} 
       />
 
-      {/* Vinyl Disc sticking out from wooden shelf */}
+      {/* ── WOODEN CRATE CONTAINER (overflow-visible so cover rises above crate top with ZERO clipping) ── */}
       <div 
-        className={`absolute left-1/2 -translate-x-1/2 -top-3.5 sm:top-1 w-[15.5rem] h-[15.5rem] sm:w-52 sm:h-52 pointer-events-auto cursor-pointer transition-all duration-500 ${isElevated ? 'z-20' : 'z-10'}`}
+        className="relative w-full rounded-xl overflow-visible cursor-pointer"
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          const isAuth = !!getAdminToken() || !!getMemberToken();
-          if (isDemoSong && !isAuth) return;
+          if (activeListTab === 'demos' || isDemoSong) return;
           if (isPlaying || mobilePopped || globalActiveCardId === demo.id || isHovered) {
             stopAudio();
           } else {
@@ -1223,172 +1427,285 @@ function Musician2SongCard({
           }
         }}
       >
-        {(isPlaying || isLoadingAudio) && (
-          <div className="absolute -top-6 -left-6 sm:-top-8 sm:-left-10 z-40 pointer-events-none">
-            <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${isLoadingAudio ? 'bg-amber-600 border-amber-200/90' : 'bg-rose-600 border-rose-200/90'} text-white text-[8px] sm:text-[9px] font-black tracking-widest uppercase shadow-xl border animate-pulse`}>
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-              {isLoadingAudio ? 'LOADING PREVIEW' : 'PREVIEW'}
-            </span>
-          </div>
-        )}
-
-        <div className={`w-full h-full rounded-full border-4 border-neutral-900/30 shadow-[0_20px_40px_rgba(0,0,0,0.6)] overflow-hidden relative transition-all duration-500 transform ${
-          isElevated ? 'scale-106 sm:scale-110 -translate-y-12 sm:-translate-y-14 shadow-[0_20px_45px_rgba(0,0,0,0.7)]' : 'scale-100'
-        }`}>
-          <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/35 via-transparent to-black/60 pointer-events-none z-20" />
-          <div className={`w-full h-full relative ${isTouchMobile ? 'animate-[spin_10s_linear_infinite]' : (isElevated ? 'animate-[spin_6s_linear_infinite]' : '')}`}>
-            {coverUrl ? (
-              <img src={coverUrl} className="w-full h-full object-cover rounded-full filter contrast-[1.05]" alt={demo.title} referrerPolicy="no-referrer" />
-            ) : (
-              <div className="w-full h-full bg-neutral-900 rounded-full" />
-            )}
-            <div 
-              className="absolute inset-0 rounded-full pointer-events-none opacity-50 mix-blend-overlay z-10"
-              style={{
-                background: 'conic-gradient(from 0deg, rgba(255,255,255,0.45) 0deg, rgba(0,0,0,0.85) 90deg, rgba(255,255,255,0.45) 180deg, rgba(0,0,0,0.85) 270deg, rgba(255,255,255,0.45) 360deg)'
-              }}
-            />
-            <div className="absolute inset-0 rounded-full border-[12px] sm:border-[14px] border-black/30 pointer-events-none z-10" />
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 sm:w-16 sm:h-16 bg-white/95 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.4)] flex flex-col items-center justify-between py-1 px-0.5 text-center border-2 border-white z-20 overflow-hidden text-stone-950">
-              <div className="flex flex-col items-center justify-center min-h-0 w-full flex-1 pt-0.5 px-0.5">
-                {singersList.length > 0 ? (
-                  singersList.map((sName: string, sIdx: number) => (
-                    <span key={sIdx} className="text-[5.5px] sm:text-[6.5px] font-black uppercase text-stone-950 leading-tight whitespace-nowrap overflow-hidden text-ellipsis w-full px-0.5">
-                      {sName}
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-[6.5px] font-black uppercase text-stone-950">ARTIST</span>
-                )}
-              </div>
-              <div className="h-3.5 sm:h-4 shrink-0" />
-              <div className="w-full shrink-0 pb-0.5">
-                <span className="text-[7px] sm:text-[8px] font-black text-stone-950 tracking-wider block leading-none">
-                  {songYear}
-                </span>
-              </div>
-            </div>
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border-[1.5px] border-stone-900 bg-transparent shadow-[inset_0_1px_3px_rgba(0,0,0,0.85)] z-30 pointer-events-none" />
-          </div>
-        </div>
-      </div>
-
-      {/* SVG ClipPath Definition for Concave Top Cutout Card Sleeve */}
-      <svg className="w-0 h-0 absolute pointer-events-none" aria-hidden="true">
-        <defs>
-          <clipPath id="card-concave-clip-m2" clipPathUnits="objectBoundingBox">
-            <path d="M 0,0.18 C 0,0.06 0.03,0 0.08,0 L 0.12,0 C 0.24,0 0.30,0.18 0.5,0.18 C 0.70,0.18 0.76,0 0.88,0 L 0.92,0 C 0.97,0 1,0.06 1,0.18 L 1,0.82 C 1,0.94 0.97,1 0.92,1 L 0.08,1 C 0.03,1 0,0.94 0,0.82 Z" />
-          </clipPath>
-        </defs>
-      </svg>
-
-      {/* Outer Card Wrapper with Drop Shadow following the concave shape */}
-      <div className={`relative w-full z-20 transition-all duration-300 hover:-translate-y-2 group/card ${theme.dropShadow}`}>
-        <Link
-          to={targetLink}
-          onClick={handleClick}
-          className={`block w-full ${theme.cardBg} backdrop-blur-2xl transition-all duration-300 relative pt-8 sm:pt-9.5 pb-4.5 px-4 sm:px-5 overflow-hidden`}
-          style={{ clipPath: 'url(#card-concave-clip-m2)', WebkitClipPath: 'url(#card-concave-clip-m2)' }}
-        >
-          {/* SVG Curved Border Stroke following the exact concave path */}
-          <svg 
-            className="absolute inset-0 w-full h-full pointer-events-none z-30 overflow-visible" 
-            viewBox="0 0 1 1" 
-            preserveAspectRatio="none"
-          >
-            <path 
-              d="M 0,0.18 C 0,0.06 0.03,0 0.08,0 L 0.12,0 C 0.24,0 0.30,0.18 0.5,0.18 C 0.70,0.18 0.76,0 0.88,0 L 0.92,0 C 0.97,0 1,0.06 1,0.18 L 1,0.82 C 1,0.94 0.97,1 0.92,1 L 0.08,1 C 0.03,1 0,0.94 0,0.82 Z" 
-              fill="none" 
-              className={`${theme.strokeClass} transition-colors duration-300`} 
-              strokeWidth="3" 
-              vectorEffect="non-scaling-stroke" 
-            />
-          </svg>
-
-          {/* Light Gradient Sweeping Effect across card when playing */}
-          {isPlaying && (
-            <div className="absolute inset-0 pointer-events-none z-30 overflow-hidden">
-              <div className="w-full h-full bg-gradient-to-r from-transparent via-white/50 to-transparent animate-shimmer-sweep" />
-            </div>
-          )}
-
-          {/* Top Section: Badges & Year */}
-          <div className="flex items-center justify-between gap-1.5 w-full h-[32px] mt-1 mb-2 relative z-10">
-            <span className={`px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${isReleasedSong ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white shadow-md' : 'bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 text-white shadow-md'} inline-flex items-center gap-1 shrink-0`}>
-              {isReleasedSong ? 'RELEASED' : 'DEMO'}
-            </span>
-
-            {/* Year Badge */}
-            <span className={`px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black shadow-xs border ${theme.yearBorder} ${theme.yearText} shrink-0 inline-flex items-center gap-0.5 ml-auto`}>
-              {songYear}
-            </span>
-          </div>
-
-          {/* Bottom Content Area */}
-          <div className="flex items-end justify-between gap-3 relative z-10 mt-1">
-            {/* Left Column: Title & Artist */}
-            <div className="flex-1 min-w-0 pr-1">
-              <SongTitleMarquee 
-                title={demo.title} 
-                themeHoverClass={theme.hoverTitle} 
-              />
-              <ArtistNameMarquee 
-                text={rawArtistStr} 
-                className="text-xs font-semibold text-stone-500 mt-1" 
-              />
-            </div>
-
-            {/* Right Column: Square Thumbnail Image */}
-            <div className="w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-2xl overflow-hidden border-2 border-white/90 shadow-md group-hover/card:scale-105 transition-transform duration-500">
-              {coverUrl ? (
-                <img 
-                  src={coverUrl} 
-                  className="w-full h-full object-cover" 
-                  alt={demo.title} 
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <div className="w-full h-full bg-stone-200 flex items-center justify-center text-stone-400">
-                  <Music className="w-6 h-6" />
-                </div>
-              )}
-            </div>
-          </div>
-        </Link>
-      </div>
-
-      {/* Realistic 3D Wooden Shelf Ledge Below Card */}
-      <div 
-        className="w-[140%] -ml-[20%] h-7 mt-[-4px] rounded-b-lg border-t-2 border-amber-400/70 shadow-[0_16px_32px_rgba(0,0,0,0.95),inset_0_1px_2px_rgba(255,255,255,0.2)] relative z-30 flex items-center justify-between px-4 overflow-hidden"
-      >
-        {/* Wood grain texture background for shelf */}
+        {/* ── BACK WOODEN WALL (z-0: interior of the wooden crate) ── */}
         <div 
-          className="absolute inset-0 z-0"
+          className="absolute inset-0 rounded-xl z-0"
           style={{
-            backgroundImage: `url('/wood-bg.jpg')`,
-            backgroundSize: '400px auto',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'repeat',
-            filter: 'brightness(0.55) contrast(1.3) saturate(1.1)',
+            background: `
+              linear-gradient(104deg,
+                #3A1804 0%, #52240A 8%, #3A1804 15%,
+                #451D06 22%, #52240A 28%, #3A1804 35%,
+                #451D06 42%, #52240A 48%, #3A1804 55%,
+                #451D06 62%, #52240A 68%, #3A1804 75%,
+                #451D06 82%, #52240A 88%, #3A1804 100%
+              )
+            `,
+            border: isElevated ? '2.5px solid rgba(251,191,36,0.9)' : '2.5px solid rgba(160,100,30,0.7)',
+            boxShadow: isElevated 
+              ? '0 0 25px rgba(251,191,36,0.65), 0 0 8px rgba(251,191,36,0.85), 0 20px 45px rgba(0,0,0,0.9)' 
+              : 'inset 0 4px 12px rgba(0,0,0,0.85), 0 18px 40px rgba(0,0,0,0.85)',
+            filter: isElevated ? 'brightness(1.22) contrast(1.08)' : 'brightness(0.95)',
+            transition: 'all 0.4s ease',
           }}
         />
-        {/* Gradient overlay for 3D depth on shelf */}
-        <div className="absolute inset-0 z-[1] bg-gradient-to-b from-white/15 via-transparent to-black/50" />
-        {/* Brass screw left */}
-        <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-amber-200 via-amber-500 to-amber-950 shadow-md border border-amber-300/80 flex items-center justify-center relative z-[2]">
-          <div className="w-1 h-0.5 bg-amber-950/80 rotate-45" />
+
+        {/* ── SLOT INNER SIDE SHADOWS (z-5) ── */}
+        <div className="absolute inset-y-0 left-0 w-6 z-[5] pointer-events-none rounded-l-xl"
+          style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.6), transparent)' }} />
+        <div className="absolute inset-y-0 right-0 w-6 z-[5] pointer-events-none rounded-r-xl"
+          style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.6), transparent)' }} />
+
+        {/* ── TOP SLOT AREA (height 175px) ── */}
+        <div className="relative w-full h-[105px] sm:h-[150px] overflow-visible">
+
+          {/* ── HUGE BLACK VINYL DISC (z-10: peaks out slightly behind cover before hover, pops up smoothly on hover) ── */}
+          <motion.div
+            className="absolute z-10 pointer-events-none left-[5%] w-[90%] aspect-square"
+            style={{
+              bottom: isElevated ? (isDesktop ? '48px' : '40px') : (isDesktop ? '-76px' : '-55px'),
+              transition: 'bottom 0.5s cubic-bezier(0.34,1.56,0.64,1)',
+            }}
+            animate={{
+              scale: isElevated ? 1.0 : (isDesktop ? 0.74 : 0.90),
+              y: (isElevated && isPlaying) ? [0, -3, 0] : 0,
+            }}
+            transition={{
+              scale: { duration: 0.45, ease: "easeOut" },
+              y: { duration: 2.5, repeat: Infinity, ease: "easeInOut" }
+            }}
+          >
+            <div
+              className={`w-full h-full rounded-full relative ${isElevated ? 'animate-[spin_4s_linear_infinite]' : ''}`}
+              style={{
+                background: 'radial-gradient(circle at 30% 30%, #444 0%, #1c1c1c 45%, #080808 100%)',
+                boxShadow: '0 14px 40px rgba(0,0,0,0.95), inset 0 2px 5px rgba(255,255,255,0.15)',
+              }}
+            >
+              {/* Groove rings — concentric circles for realistic vinyl */}
+              {[10,18,26,34,42,49,56,62,67].map((r) => (
+                <div key={r} className="absolute inset-0 rounded-full pointer-events-none" style={{
+                  border: `1px solid rgba(255,255,255,0.06)`,
+                  margin: `${r}%`,
+                }} />
+              ))}
+              {/* High-contrast dual specular sheen wedges (clearly visible spin motion!) */}
+              <div className="absolute inset-0 rounded-full pointer-events-none mix-blend-screen opacity-90"
+                style={{
+                  background: 'conic-gradient(from 30deg, rgba(255,255,255,0.28) 0deg, transparent 45deg, transparent 135deg, rgba(255,255,255,0.24) 180deg, transparent 225deg, transparent 315deg, rgba(255,255,255,0.28) 360deg)',
+                }}
+              />
+              {/* Silver light arcs on vinyl surface */}
+              <div className="absolute inset-3 rounded-full border-r-2 border-l-2 border-white/30 pointer-events-none opacity-60" />
+              {/* Center label — amber/brown vintage style with spinning notch indicator */}
+              <div
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full flex flex-col items-center justify-center overflow-hidden"
+                style={{
+                  width: '48px', height: '48px',
+                  background: 'radial-gradient(circle at 40% 35%, #e5aa4c, #9E6C15 60%, #6E460B)',
+                  boxShadow: '0 3px 10px rgba(0,0,0,0.8)',
+                  border: '2px solid rgba(255,200,90,0.6)',
+                }}
+              >
+                {/* Visual spinning notch dot */}
+                <div className="absolute top-1 w-1.5 h-1.5 rounded-full bg-white shadow-xs border border-amber-900" />
+                <span className="text-[6px] font-black uppercase tracking-widest text-amber-100 text-center leading-tight px-0.5 overflow-hidden mt-1" style={{ maxWidth: '44px' }}>
+                  {(singersList[0] || '').substring(0,10)}
+                </span>
+                <span className="text-[5.5px] text-amber-200 font-bold">{songYear}</span>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* ── HUMONGOUS ALBUM COVER IMAGE (z-20: elevated high before hover & lifts gently on hover) ── */}
+          <motion.div
+            className="absolute z-20 left-[5%] w-[90%] aspect-square"
+            style={{
+              bottom: isElevated ? '6px' : (isDesktop ? '-60px' : '-40px'),
+              transformOrigin: 'center bottom',
+              transition: 'bottom 0.45s cubic-bezier(0.34,1.56,0.64,1)',
+            }}
+            animate={{
+              scale: isElevated ? 1.0 : (isDesktop ? 0.74 : 0.90),
+              y: (isElevated && isPlaying) ? [0, -3, 0] : 0,
+            }}
+            transition={{
+              scale: { duration: 0.45, ease: "easeOut" },
+              y: { duration: 2.5, repeat: Infinity, ease: "easeInOut" },
+            }}
+          >
+            {/* ── PREVIEW Indicator Badge (Top-Left corner of Cover) ── */}
+            {(isPlaying || isLoadingAudio) && (
+              <div className="absolute top-0.5 -left-3.5 z-40 pointer-events-none">
+                <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${isLoadingAudio ? 'bg-amber-600' : 'bg-rose-600'} text-white text-[8px] font-black tracking-widest uppercase shadow-xl border border-white/40 animate-pulse`}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                  {isLoadingAudio ? 'LOADING' : 'PREVIEW'}
+                </span>
+              </div>
+            )}
+
+            {/* ── RELEASED/DEMO Tilted Badge (Top-Right corner of Cover, lifts together on hover!) ── */}
+            <motion.div
+              animate={{ rotate: [14, 10, 18, 10, 14], scale: [1, 1.04, 0.96, 1.04, 1] }}
+              transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute top-1 -right-3.5 sm:-right-4.5 z-40 select-none pointer-events-none"
+            >
+              <span className={`shadow-xl text-[7px] sm:text-[9.5px] font-black px-2.5 py-0.5 rounded-md block border tracking-wider transform rotate-[12deg] ${
+                isReleasedSong 
+                  ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white border-emerald-300/80 shadow-[0_6px_16px_rgba(16,185,129,0.6)]' 
+                  : demo.linkType === 'indirect' 
+                    ? 'bg-indigo-600 text-white border border-indigo-300/80 shadow-[0_6px_16px_rgba(79,70,229,0.6)]' 
+                    : 'bg-gradient-to-r from-rose-600 to-pink-600 text-white border border-rose-300/80 shadow-[0_6px_16px_rgba(225,29,72,0.6)]'
+              }`}>
+                {isReleasedSong ? (t.lReleasedMark || 'RELEASED') : (demo.linkType === 'indirect' ? 'Landing Page' : (t.lDemoMark || 'DEMO'))}
+              </span>
+            </motion.div>
+
+            <div
+              className="w-full h-full rounded-lg overflow-hidden relative"
+              style={{
+                boxShadow: isElevated
+                  ? '0 22px 50px rgba(0,0,0,0.9), 0 6px 16px rgba(0,0,0,0.5)'
+                  : '0 12px 30px rgba(0,0,0,0.75)',
+                border: '2.5px solid rgba(255,255,255,0.25)',
+                transition: 'box-shadow 0.45s ease',
+              }}
+            >
+              {coverUrl ? (
+                <img src={coverUrl} className="w-full h-full object-cover" alt={demo.title} referrerPolicy="no-referrer" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-amber-950">
+                  <Music className="w-10 h-10 text-amber-700/60" />
+                </div>
+              )}
+              {/* Gloss overlay on cover */}
+              <div className="absolute inset-0 pointer-events-none rounded-lg"
+                style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 50%)' }}
+              />
+            </div>
+          </motion.div>
         </div>
-        <div className="h-[2px] flex-1 mx-4 bg-gradient-to-r from-transparent via-amber-400/25 to-transparent relative z-[2]" />
-        {/* Brass screw right */}
-        <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-amber-200 via-amber-500 to-amber-950 shadow-md border border-amber-300/80 flex items-center justify-center relative z-[2]">
-          <div className="w-1 h-0.5 bg-amber-950/80 -rotate-45" />
+
+        {/* ── FRONT FACE PANEL (z-30: covers bottom half of crate & album cover, creating slot pocket) ── */}
+        <div className="relative z-30 w-full rounded-b-xl overflow-hidden shadow-2xl"
+          style={{ borderTop: '3px solid rgba(120,65,15,0.8)' }}>
+          <Link
+            to={targetLink}
+            onClick={handleClick}
+            className="block w-full relative"
+            style={{
+              background: isElevated 
+                ? 'linear-gradient(to bottom, #FFF7DC, #FCE8B3)' 
+                : 'linear-gradient(to bottom, rgba(240,212,158,0.98), rgba(220,186,120,0.99))',
+              boxShadow: isElevated ? 'inset 0 0 20px rgba(255,255,255,0.8)' : 'none',
+              padding: '8px 10px 8px',
+            }}
+          >
+            {/* Shimmer when playing */}
+            {isPlaying && (
+              <div className="absolute inset-0 pointer-events-none z-30 overflow-hidden">
+                <div className="w-full h-full bg-gradient-to-r from-transparent via-amber-200/40 to-transparent animate-shimmer-sweep" />
+              </div>
+            )}
+
+            {/* Row 1: Achievement + Year (Floating Gold Layer Badge) */}
+            <div className="flex items-center justify-between gap-1 mb-2 sm:mb-1.5 min-h-[44px] sm:min-h-[48px] relative z-30 overflow-visible">
+              {activeAchievements && activeAchievements.length > 0 ? (
+                <motion.div 
+                  animate={{ 
+                    y: [0, -1.5, 0, 1.5, 0],
+                    rotate: [0, -0.3, 0, 0.3, 0]
+                  }}
+                  transition={{ 
+                    duration: 5.5, 
+                    repeat: Infinity, 
+                    ease: "easeInOut" 
+                  }}
+                  className="relative shrink-0 mx-auto sm:mx-0 w-auto min-w-[155px] sm:min-w-[185px] max-w-[215px] sm:max-w-[240px] h-11 sm:h-12 px-3.5 sm:px-4 py-1.5 rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/80 shadow-[0_2px_6px_rgba(0,0,0,0.4),0_0_6px_rgba(212,175,55,0.2)] flex items-center justify-start overflow-hidden z-30"
+                >
+                  {/* Glowing radial background animation */}
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.25),transparent_70%)] animate-pulse pointer-events-none rounded-2xl" />
+                  
+                  {/* Light sweep animation */}
+                  <motion.div 
+                    animate={{ x: ['-100%', '200%'] }}
+                    transition={{ repeat: Infinity, duration: 4.5, ease: "linear" }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/20 to-transparent skew-x-12 pointer-events-none rounded-2xl overflow-hidden"
+                  />
+                  
+                  {/* Achievement cycle text & icon */}
+                  <div className="relative z-10 w-full h-full flex items-center justify-start">
+                    <AchievementCycle achievements={activeAchievements} align="left" isLightBg={false} />
+                  </div>
+                </motion.div>
+              ) : null}
+              <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full text-[8.5px] sm:text-[10.5px] font-black shrink-0 border border-amber-700/40 text-amber-900 bg-amber-100/90 shadow-sm ml-auto relative z-30">
+                {songYear}
+              </span>
+            </div>
+
+            {/* Row 2: Title & Artist on Left + Mini Thumbnail on Right */}
+            <div className="flex items-center justify-between gap-2 mt-1">
+              <div className="flex-1 min-w-0">
+                <SongTitleMarquee 
+                  title={demo.title} 
+                  themeHoverClass="group-hover:text-amber-950" 
+                />
+                <ArtistNameMarquee 
+                  text={rawArtistStr} 
+                  className="text-[10px] sm:text-xs font-semibold text-amber-900/75 mt-0.5" 
+                />
+              </div>
+
+              {/* Mini square thumbnail */}
+              <div className="hidden sm:block sm:w-14 sm:h-14 shrink-0 rounded-lg overflow-hidden shadow-md"
+                style={{ border: '2px solid rgba(130,75,18,0.45)' }}>
+                {coverUrl ? (
+                  <img src={coverUrl} className="w-full h-full object-cover" alt={demo.title} referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-amber-900/30">
+                    <Music className="w-5 h-5 text-amber-700" />
+                  </div>
+                )}
+              </div>
+            </div>
+          </Link>
+
+          {/* ── SHELF LEDGE at bottom ── */}
+          <div 
+            className="w-full h-5.5 sm:h-6.5 relative flex items-center justify-between px-2 sm:px-3 overflow-hidden"
+            style={{
+              background: 'linear-gradient(104deg, #3A1A06 0%, #5C2A0F 15%, #3A1A06 30%, #4A2007 45%, #3A1A06 60%, #5C2A0F 75%, #3A1A06 90%)',
+              borderTop: '1.5px solid rgba(170,110,35,0.7)',
+              boxShadow: '0 12px 28px rgba(0,0,0,0.85), inset 0 1px 3px rgba(255,200,80,0.12)',
+            }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-black/40 pointer-events-none" />
+            {/* Brass screw left */}
+            <div className="w-2.5 h-2.5 rounded-full relative z-10 flex items-center justify-center shrink-0"
+              style={{ background: 'radial-gradient(circle at 35% 35%, #f5d98b, #c47a15 55%, #7a4a05)', border: '1px solid rgba(220,170,60,0.5)', boxShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+              <div className="w-1.5 h-[1.5px] rounded-full bg-amber-900/70 rotate-45" />
+            </div>
+
+            {/* Center year badge on mobile (`sm:hidden`) / golden line on desktop (`hidden sm:block`) */}
+            <div className="flex-1 mx-2 relative z-10 flex items-center justify-center">
+              <span className="sm:hidden px-2.5 py-0.5 rounded-full text-[9px] font-black border border-amber-400/40 text-amber-200 bg-amber-950/85 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_2px_6px_rgba(0,0,0,0.7)] tracking-wider">
+                {songYear}
+              </span>
+              <div className="hidden sm:block h-[1.5px] w-full"
+                style={{ background: 'linear-gradient(to right, transparent, rgba(180,130,40,0.35), transparent)' }} />
+            </div>
+
+            {/* Brass screw right */}
+            <div className="w-2.5 h-2.5 rounded-full relative z-10 flex items-center justify-center shrink-0"
+              style={{ background: 'radial-gradient(circle at 35% 35%, #f5d98b, #c47a15 55%, #7a4a05)', border: '1px solid rgba(220,170,60,0.5)', boxShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+              <div className="w-1.5 h-[1.5px] rounded-full bg-amber-900/70 -rotate-45" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
-
 function MarqueeText({ children, className }: { children: React.ReactNode, className?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
@@ -1494,7 +1811,7 @@ function formatText(text: string | null | undefined, disableLinks = false, isGol
             return (
               <span 
                 key={`ft-p-${prefix}-${textClean}-${idx}`} 
-                className={`inline-block text-[8.5px] sm:text-[9.5px] max-w-full truncate align-middle my-0.5 leading-tight tracking-normal px-2 py-0.5 rounded-full ${badgeStyle}`}
+                className={`inline-block text-[7px] sm:text-[9.5px] max-w-full truncate align-middle my-0.5 leading-tight tracking-normal px-2 py-0.5 rounded-full ${badgeStyle}`}
               >
                 {trimmedPart}
               </span>
@@ -7063,7 +7380,12 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
                 Xác nhận đổi giao diện
               </h3>
               <p className="text-xs text-stone-500 mb-6">
-                Bạn có chắc chắn muốn đổi sang giao diện <strong className="text-stone-800">{pendingTheme === 'gold' ? 'Gold Luxury' : 'Liquid Glass'}</strong> không?
+                Bạn có chắc chắn muốn đổi sang giao diện <strong className="text-stone-800">{
+                  pendingTheme === 'musician' ? 'Dreamy' :
+                  pendingTheme === 'musician2' ? 'Musician' :
+                  (pendingTheme === 'gold' || pendingTheme === 'gold2') ? 'Gold Luxury' :
+                  'Liquid Glass'
+                }</strong> không?
               </p>
 
               {themeError && (
@@ -8906,6 +9228,7 @@ function RandomSongCard({
   randomSong, 
   data, 
   isGoldTheme, 
+  isMusicianTheme,
   activeListTab, 
   getSongCoverUrl, 
   isMobile, 
@@ -8917,6 +9240,7 @@ function RandomSongCard({
   randomSong: any; 
   data: any; 
   isGoldTheme: boolean; 
+  isMusicianTheme?: boolean;
   activeListTab: string; 
   getSongCoverUrl: (url?: string) => string; 
   isMobile: boolean; 
@@ -8978,7 +9302,7 @@ function RandomSongCard({
             }
           }
         }}
-        className="group relative overflow-visible rounded-[20px] p-2.5 sm:p-3 flex flex-row items-center justify-between gap-2.5 sm:gap-4 w-full sm:hover:scale-[1.015] sm:hover:-translate-y-0.5 sm:hover:shadow-[0_16px_36px_rgba(212,175,55,0.4)] transition-all duration-300 ease-out"
+        className="group relative overflow-visible rounded-[20px] p-2.5 sm:p-3 flex flex-row items-center justify-between gap-2.5 sm:gap-4 w-full sm:hover:scale-[1.015] sm:hover:-translate-y-0.5 transition-all duration-300 ease-out"
         style={{ minHeight: '112px' }}
       >
         {/* PC Version Card Ambient Animation for PC */}
@@ -9006,7 +9330,7 @@ function RandomSongCard({
               animate={{ opacity: 0 }}
               transition={{ duration: 0.7, ease: "easeInOut", layout: { type: "spring", stiffness: 280, damping: 28 } }}
               style={getRandomSongCardStyles(prevSong).customStyle}
-              className={`absolute inset-0 border-2 rounded-[20px] ${getRandomSongCardStyles(prevSong).bgClasses} ${getRandomSongCardStyles(prevSong).borderClass} ${getRandomSongCardStyles(prevSong).shadowClass}`}
+              className={`absolute inset-0 rounded-[20px] ${getRandomSongCardStyles(prevSong).bgClasses} ${isMusicianTheme ? 'border-0' : `${getRandomSongCardStyles(prevSong).borderClass} ${getRandomSongCardStyles(prevSong).shadowClass}`}`}
             />
           )}
           {/* Current background layer fading in */}
@@ -9017,7 +9341,7 @@ function RandomSongCard({
             animate={{ opacity: 1 }}
             transition={{ duration: 0.7, ease: "easeInOut", layout: { type: "spring", stiffness: 280, damping: 28 } }}
             style={randStylesCurrent.customStyle}
-            className={`absolute inset-0 border-2 rounded-[20px] ${randStylesCurrent.bgClasses} ${randStylesCurrent.borderClass} ${randStylesCurrent.shadowClass}`}
+            className={`absolute inset-0 rounded-[20px] ${randStylesCurrent.bgClasses} ${isMusicianTheme ? 'border-0' : `${randStylesCurrent.borderClass} ${randStylesCurrent.shadowClass}`}`}
           />
         </div>
 
@@ -9205,7 +9529,8 @@ function Home() {
   const [activeListTab, setActiveListTab] = useState<'demos'|'released'|'albums'>('released');
   const [hasInitializedTab, setHasInitializedTab] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(21);
+  const [pageSize, setPageSize] = useState(() => (typeof window !== 'undefined' && window.innerWidth < 768) ? 20 : 21);
+  const [userHasChangedPageSize, setUserHasChangedPageSize] = useState(false);
   const [showArtist, setShowArtist] = useState(false);
   const [spotifyLoaded, setSpotifyLoaded] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -9222,22 +9547,24 @@ function Home() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-  const getDeterministicCount = (title: string, platform: 'spotify' | 'youtube') => {
-    const hash = Array.from(title || '').reduce((sum, char) => sum + char.charCodeAt(0), 0);
-    if (platform === 'spotify') {
-      const list = ['> 10M Lượt nghe', '> 18M Lượt nghe', '> 5.6M Lượt nghe', '> 22M Lượt nghe', '> 8.3M Lượt nghe'];
-      return list[hash % list.length];
-    } else {
-      const list = ['> 410K Lượt xem', '> 413K Lượt xem', '> 2.1M Lượt xem', '> 950K Lượt xem', '> 1.2M Lượt xem'];
-      return list[hash % list.length];
-    }
-  };
+
   const [isScrolled, setIsScrolled] = useState(false);
-  const isMusician1Theme = data?.adminTheme === 'musician';
-  const isMusician2Theme = data?.adminTheme === 'musician2';
-  const isMusicianTheme = isMusician1Theme || isMusician2Theme;
-  const isGoldTheme = (data?.adminTheme === 'gold' || data?.adminTheme === 'gold2') && !isMusicianTheme;
-  const isGold2Theme = (data?.adminTheme === 'gold' || data?.adminTheme === 'gold2') && !isMusicianTheme;
+  const isDreamyTheme = data?.adminTheme === 'musician';
+  const isMusicianTheme = data?.adminTheme === 'musician2';
+  const isGoldTheme = (data?.adminTheme === 'gold' || data?.adminTheme === 'gold2') && !isMusicianTheme && !isDreamyTheme;
+  const isGold2Theme = (data?.adminTheme === 'gold' || data?.adminTheme === 'gold2') && !isMusicianTheme && !isDreamyTheme;
+
+  useEffect(() => {
+    if (!userHasChangedPageSize) {
+      if (isMusicianTheme) {
+        setPageSize(isMobile ? 20 : 21);
+      } else if (isGold2Theme) {
+        setPageSize(20);
+      } else if (isGoldTheme) {
+        setPageSize(isMobile ? 20 : 21);
+      }
+    }
+  }, [isMobile, isMusicianTheme, isGoldTheme, isGold2Theme, userHasChangedPageSize]);
   const [currentAvatarSlideIndex, setCurrentAvatarSlideIndex] = useState(0);
   const [wallLightboxImg, setWallLightboxImg] = useState<string | null>(null);
 
@@ -9710,7 +10037,7 @@ function Home() {
       );
     }
 
-    if (isMusicianTheme) {
+    if (isMusicianTheme || isDreamyTheme) {
       const artistAvatar = data?.avatarUrl || data?.aboutMe?.avatarUrl || effectiveCoverUrl || (data?.slideshowImages && data.slideshowImages.length > 0 ? data.slideshowImages[0] : '');
       const hasAvatar = Boolean(artistAvatar);
 
@@ -9718,12 +10045,12 @@ function Home() {
         <section key="title-musician" className={`relative ${isFirst ? 'pt-20 sm:pt-24' : 'pt-8 sm:pt-12'} pb-6 px-4 sm:px-8 max-w-5xl mx-auto flex flex-col items-center justify-center text-center overflow-visible`}>
           {/* Main Header Box */}
           <div className={`relative z-10 w-full rounded-3xl sm:rounded-[2.5rem] overflow-hidden border-2 flex flex-col md:flex-row items-stretch justify-between h-auto md:h-[260px] max-h-[460px] md:max-h-[260px] ${
-            isMusician2Theme
+            isMusicianTheme
               ? 'border-amber-700/80 shadow-[0_16px_45px_rgba(0,0,0,0.85),inset_0_1px_2px_rgba(255,255,255,0.15)] bg-gradient-to-br from-[#2D160B] via-[#3B1E0F] to-[#241108]'
               : 'border-rose-300/60 shadow-[0_12px_35px_rgba(244,63,94,0.15)] bg-gradient-to-br from-[#FCE7F3] via-[#FCE7F3] to-[#FBCFE8] md:bg-gradient-to-r md:from-[#FCE7F3] md:via-[#FCE7F3]/95 md:to-[#FCE7F3]/90'
           }`}>
-            {/* Turntable decoration for Musician2 theme */}
-            {isMusician2Theme && (
+            {/* Turntable decoration for Musician theme */}
+            {isMusicianTheme && (
               <>
                 {/* Wood grain texture overlay on header */}
                 <div className="absolute inset-0 z-0 pointer-events-none rounded-3xl sm:rounded-[2.5rem] overflow-hidden" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '400px auto', backgroundRepeat: 'repeat', opacity: 0.12, filter: 'brightness(0.7) contrast(1.3)' }} />
@@ -9768,7 +10095,7 @@ function Home() {
             {/* Animated Avatar Box with Loop & Hover Effects on Mobile & PC (order-1) */}
             <div 
               className={`relative z-10 w-full md:w-[44%] lg:w-[40%] h-[230px] sm:h-[260px] md:h-full shrink-0 overflow-hidden order-1 md:order-1 group/avatar cursor-pointer select-none ${
-                isMusician2Theme ? 'bg-amber-950/40 border-b-2 md:border-b-0 md:border-r-2 border-amber-800/60' : 'bg-rose-100/50'
+                isMusicianTheme ? 'bg-amber-950/40 border-b-2 md:border-b-0 md:border-r-2 border-amber-800/60' : 'bg-rose-100/50'
               }`}
             >
               {hasAvatar ? (
@@ -9800,7 +10127,7 @@ function Home() {
                       ease: "easeInOut"
                     }}
                     className={`absolute inset-0 bg-gradient-to-tr ${
-                      isMusician2Theme ? 'from-amber-600/20 via-yellow-500/10 to-amber-900/30' : 'from-rose-500/20 via-pink-300/10 to-amber-300/20'
+                      isMusicianTheme ? 'from-amber-600/20 via-yellow-500/10 to-amber-900/30' : 'from-rose-500/20 via-pink-300/10 to-amber-300/20'
                     } pointer-events-none z-10`}
                   />
 
@@ -9818,13 +10145,13 @@ function Home() {
                   <div className="absolute inset-0 border-2 border-transparent group-hover/avatar:border-rose-400/90 transition-all duration-500 z-30 pointer-events-none rounded-t-3xl sm:rounded-t-[2.5rem] md:rounded-l-[2.5rem] md:rounded-tr-none" />
                 </>
               ) : (
-                <div className={`w-full h-full ${isMusician2Theme ? 'bg-gradient-to-r from-[#2D160B] to-[#3B1E0F]' : 'bg-gradient-to-r from-rose-200 to-[#FCE7F3]'}`} />
+                <div className={`w-full h-full ${isMusicianTheme ? 'bg-gradient-to-r from-[#2D160B] to-[#3B1E0F]' : 'bg-gradient-to-r from-rose-200 to-[#FCE7F3]'}`} />
               )}
             </div>
 
             {/* Bio Box: RIGHT side on PC (order-2), Bottom on mobile (order-2) */}
             <div className={`relative z-10 md:z-20 w-full md:w-auto flex-1 flex flex-col items-center md:items-start justify-center text-center md:text-left py-6 sm:py-8 px-6 sm:px-10 min-w-0 overflow-hidden rounded-b-3xl sm:rounded-b-[2.5rem] md:rounded-none order-2 md:order-2 shadow-sm ${
-              isMusician2Theme 
+              isMusicianTheme 
                 ? 'bg-gradient-to-br from-[#2D160B]/90 via-[#3B1E0F]/90 to-[#241108]/90 md:bg-transparent border-t border-amber-800/60 md:border-t-0' 
                 : 'bg-gradient-to-br from-[#FCE7F3] via-[#FCE7F3] to-[#FBCFE8] md:bg-transparent border-t border-rose-200/60 md:border-t-0'
             }`}>
@@ -9839,8 +10166,12 @@ function Home() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.7 }}
                       className={`text-base sm:text-lg md:text-xl font-bold tracking-wide font-serif leading-normal ${
-                        isMusician2Theme ? 'text-amber-200/90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]' : 'text-rose-900/80'
+                        isMusicianTheme ? 'drop-shadow-md' : 'text-rose-900/80'
                       } ${isBioLong ? 'whitespace-nowrap animate-marquee-pingpong' : 'whitespace-nowrap truncate'}`}
+                      style={isMusicianTheme ? {
+                        color: '#E2C498',
+                        textShadow: '-1px -1px 1px rgba(0,0,0,0.95), 1px 1px 1px rgba(255,235,190,0.35), 0 2px 4px rgba(0,0,0,0.9)'
+                      } : undefined}
                     >
                       <AutoTranslate text={bioTextStr} />
                     </motion.p>
@@ -9855,8 +10186,12 @@ function Home() {
                 transition={{ duration: 0.8, delay: 0.1 }}
                 onAnimationComplete={() => setShowArtist(true)}
                 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-none flex items-center justify-center md:justify-start gap-2.5 flex-wrap font-serif ${
-                  isMusician2Theme ? 'text-amber-100 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]' : 'text-stone-900 drop-shadow-xs'
+                  isMusicianTheme ? '' : 'text-stone-900 drop-shadow-xs'
                 }`}
+                style={isMusicianTheme ? {
+                  color: '#F7E7CE',
+                  textShadow: '-1.5px -1.5px 2px rgba(0,0,0,0.98), 0px -2px 3px rgba(0,0,0,0.95), 1px 1.5px 1px rgba(255,240,200,0.45), 0 4px 10px rgba(0,0,0,0.9)'
+                } : undefined}
               >
                 <span>{data.artistName}</span>
                 <div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-1.5">
@@ -9864,13 +10199,13 @@ function Home() {
                     animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }} 
                     transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut", repeatDelay: 2 }} 
                     className={`flex items-center justify-center backdrop-blur-md border-2 p-1 sm:p-1.5 rounded-full shadow-md transition-all duration-300 ${
-                      isMusician2Theme 
+                      isMusicianTheme 
                         ? 'bg-[#2A140A] border-amber-500/80 group-hover:bg-amber-900/50 shadow-[0_0_12px_rgba(245,158,11,0.5)]' 
                         : 'bg-white/95 border-rose-300/80 group-hover:bg-rose-50'
                     }`}
                   >
                     <BadgeCheck className={`w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 shrink-0 cursor-pointer ${
-                      isMusician2Theme ? 'text-amber-400 fill-amber-500/20' : 'text-rose-600 fill-rose-100'
+                      isMusicianTheme ? 'text-amber-400 fill-amber-500/20' : 'text-rose-600 fill-rose-100'
                     }`} />
                   </motion.div>
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-stone-900 border border-stone-800 text-white text-[11px] font-sans font-medium tracking-normal normal-case leading-normal py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none z-50">
@@ -9880,87 +10215,6 @@ function Home() {
                 </div>
               </motion.h1>
             </div>
-
-            {/* Studio Picture Frames Wall Showcase for Musician Theme */}
-            {isMusician2Theme && (() => {
-              const wallImages: string[] = [];
-              if (data?.slideshowImages && Array.isArray(data.slideshowImages) && data.slideshowImages.length > 0) {
-                data.slideshowImages.forEach((img: string) => {
-                  if (img && typeof img === 'string' && !wallImages.includes(img) && wallImages.length < 6) {
-                    wallImages.push(img);
-                  }
-                });
-              } else if (data?.homeCoverUrl) {
-                wallImages.push(data.homeCoverUrl);
-              }
-
-              if (wallImages.length === 0) return null;
-
-              return (
-                <div className="w-full mt-6 sm:mt-10 mb-2 relative z-20">
-                  {/* Studio Wall Header */}
-                  <div className="flex items-center justify-between gap-3 mb-5 px-1 sm:px-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-5 bg-amber-500 rounded-full shadow-[0_0_12px_rgba(245,158,11,0.8)]" />
-                      <h3 className="text-base sm:text-xl font-bold font-serif text-amber-100 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] flex items-center gap-2">
-                        {t("Khung Ảnh Kỷ Niệm Studio") || "Khung Ảnh Kỷ Niệm Studio"}
-                      </h3>
-                    </div>
-                    <span className="text-[11px] sm:text-xs text-amber-300/70 font-medium">
-                      {t("Bấm vào ảnh để xem khổ lớn") || "Bấm vào ảnh để xem khổ lớn"}
-                    </span>
-                  </div>
-
-                  {/* Hanging Picture Frame Rail & Rack */}
-                  <div className="relative pt-6 pb-2 px-1">
-
-
-                    <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
-                      {wallImages.map((imgUrl: string, idx: number) => {
-                        const tilts = ['-3.2deg', '2.8deg', '-2.5deg', '3.5deg', '-2.8deg', '2.2deg'];
-                        const tilt = tilts[idx % tilts.length];
-                        return (
-                          <motion.div
-                            key={`musician-gallery-wall-frame-${idx}`}
-                            initial={{ opacity: 0, y: 15 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: idx * 0.08 }}
-                            whileHover={{ scale: 1.07, rotate: 0, zIndex: 30 }}
-                            className="relative cursor-pointer group/wallcard w-[45%] sm:w-[30%] lg:w-[14%] max-w-[160px]"
-                            style={{ transform: `rotate(${tilt})` }}
-                            onClick={() => setWallLightboxImg(imgUrl)}
-                          >
-                            {/* Brass Wall Nail */}
-                            <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-3 sm:w-3.5 h-3 sm:h-3.5 rounded-full bg-gradient-to-br from-amber-100 via-amber-400 to-amber-900 border border-amber-200/90 shadow-md z-30 flex items-center justify-center">
-                              <div className="w-1 h-0.5 bg-amber-950/90 rotate-45" />
-                            </div>
-
-                            {/* Hanging Twine V-Shape */}
-                            <svg className="absolute -top-5 left-0 right-0 h-5 w-full overflow-visible pointer-events-none z-20">
-                              <line x1="50%" y1="3" x2="18%" y2="18" stroke="rgba(245,215,160,0.75)" strokeWidth="1.3" />
-                              <line x1="50%" y1="3" x2="82%" y2="18" stroke="rgba(245,215,160,0.75)" strokeWidth="1.3" />
-                            </svg>
-
-                            {/* Wooden Frame */}
-                            <div className="relative aspect-[4/5] rounded-lg p-1.5 sm:p-2 bg-[#FBF9F5] border-[5px] sm:border-[7px] border-[#3B1D0E] shadow-[0_12px_28px_rgba(0,0,0,0.85),inset_0_2px_4px_rgba(255,255,255,0.2)] group-hover/wallcard:border-[#522914] group-hover/wallcard:shadow-[0_20px_40px_rgba(0,0,0,0.95)] transition-all duration-300">
-                              <div className="w-full h-full rounded-xs overflow-hidden relative border border-stone-300/80 shadow-inner bg-stone-900">
-                                <img
-                                  src={imgUrl}
-                                  alt={`Khung ảnh ${idx + 1}`}
-                                  className="w-full h-full object-cover filter brightness-95 contrast-[1.05] group-hover/wallcard:brightness-100 group-hover/wallcard:scale-105 transition-all duration-500"
-                                  referrerPolicy="no-referrer"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/12 to-transparent pointer-events-none" />
-                              </div>
-                            </div>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
           </div>
         </section>
       );
@@ -10051,52 +10305,149 @@ function Home() {
 
   const renderRandomSongSection = (isFirst: boolean) => {
     if (!randomSong) return null;
+
+    const cardContent = (
+      <div className="w-full relative overflow-visible">
+        <div className={`font-bold text-xs uppercase tracking-widest mb-2.5 flex items-center gap-1.5 justify-center select-none ${isMusicianTheme ? 'text-amber-100 font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]' : (isGoldTheme || isDreamyTheme) ? 'text-stone-800 font-extrabold' : 'text-stone-300'}`}>
+          <Sparkles className={`w-4 h-4 ${isMusicianTheme ? 'text-amber-400' : isDreamyTheme ? 'text-rose-600' : isGoldTheme ? 'text-[#AA7C11]' : 'text-amber-400'} animate-pulse`} />
+          <span>{t("Bài Hát Ngẫu Nhiên") || "Bài Hát Ngẫu Nhiên"}</span>
+        </div>
+        <div className="w-full relative overflow-visible">
+          <RandomSongCard
+            randomSong={randomSong}
+            data={data}
+            isGoldTheme={isGoldTheme}
+            isMusicianTheme={isMusicianTheme}
+            activeListTab={activeListTab}
+            getSongCoverUrl={getSongCoverUrl}
+            isMobile={isMobile}
+            formatText={formatText}
+            getArtistLink={getArtistLink}
+            setActiveBioSong={setActiveBioSong}
+            t={t}
+          />
+
+          {/* Released / Demo Badge */}
+          <motion.div
+            animate={{ 
+              rotate: [15, 11, 19, 11, 15],
+              scale: [1, 1.05, 0.95, 1.05, 1]
+            }}
+            transition={{ 
+              duration: 4.5, 
+              repeat: Infinity, 
+              ease: "easeInOut" 
+            }}
+            className="absolute -top-2 -right-2 z-40 select-none pointer-events-none"
+          >
+            {randomSong.isReleased ? (
+              <span className="bg-emerald-600 shadow-[0_0_12px_rgba(16,185,129,0.8)] text-[8px] font-black text-white px-2.5 py-0.5 rounded border border-emerald-400/50 block">
+                {t.lReleasedMark || 'RELEASED'}
+              </span>
+            ) : (
+              <span className="bg-[#1A1303] text-[#FAF5E6] border border-[#D4AF37] shadow-md text-[8px] font-black px-2.5 py-0.5 rounded block">
+                {randomSong.linkType === 'indirect' ? 'Landing Page' : (t.lDemoMark || 'DEMO')}
+              </span>
+            )}
+          </motion.div>
+        </div>
+      </div>
+    );
+
+    if (isMusicianTheme) {
+      return (
+        <section key="random-song-sec" className={`w-full max-w-2xl sm:max-w-3xl mx-auto px-4 sm:px-8 ${isFirst ? 'pt-24 sm:pt-28' : 'pt-4 sm:pt-6'} pb-10`}>
+          {/* ── 3D WOODEN SHELF / CRATE CONTAINER ── */}
+          <div className="relative w-full group/shelf">
+
+            {/* Ambient golden glow behind shelf */}
+            <div className="absolute -inset-4 rounded-3xl bg-gradient-to-b from-amber-900/30 via-amber-800/20 to-transparent blur-2xl pointer-events-none" />
+
+            {/* ── MAIN CRATE BODY ── */}
+            <div
+              className="relative w-full rounded-2xl overflow-visible"
+              style={{
+                background: `linear-gradient(160deg,
+                  #4A2208 0%, #5C2A0A 6%, #3E1B06 12%,
+                  #52230A 18%, #3A1804 24%, #4E2009 30%,
+                  #3A1804 36%, #52230A 42%, #3E1B06 48%,
+                  #4A2208 54%, #5C2A0A 60%, #3A1804 66%,
+                  #4E2009 72%, #52230A 78%, #3A1804 84%,
+                  #4A2208 90%, #3E1B06 100%
+                )`,
+                border: '2px solid rgba(160,100,30,0.6)',
+                boxShadow: `
+                  0 30px 60px rgba(0,0,0,0.95),
+                  0 10px 20px rgba(0,0,0,0.7),
+                  inset 0 1px 0 rgba(255,210,100,0.15),
+                  inset 0 -2px 6px rgba(0,0,0,0.8)
+                `,
+              }}
+            >
+              {/* ── WOOD GRAIN OVERLAY (horizontal lines for realism) ── */}
+              <div
+                className="absolute inset-0 rounded-2xl pointer-events-none opacity-30"
+                style={{
+                  backgroundImage: `repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 8px,
+                    rgba(0,0,0,0.15) 8px,
+                    rgba(0,0,0,0.15) 9px
+                  )`,
+                }}
+              />
+
+              {/* ── LEFT & RIGHT INNER SHADOW (depth inside crate) ── */}
+              <div className="absolute inset-y-0 left-0 w-8 rounded-l-2xl pointer-events-none"
+                style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.55), transparent)' }} />
+              <div className="absolute inset-y-0 right-0 w-8 rounded-r-2xl pointer-events-none"
+                style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.55), transparent)' }} />
+
+              {/* ── GOLDEN BORDER HIGHLIGHT (top rim glow) ── */}
+              <div className="absolute inset-x-0 top-0 h-[2px] rounded-t-2xl pointer-events-none"
+                style={{ background: 'linear-gradient(to right, transparent, rgba(255,200,80,0.5) 20%, rgba(255,220,100,0.7) 50%, rgba(255,200,80,0.5) 80%, transparent)' }} />
+
+              {/* ── BRASS CORNER BOLTS ── */}
+              {[
+                { pos: 'top-2.5 left-3' },
+                { pos: 'top-2.5 right-3' },
+                { pos: 'bottom-2.5 left-3' },
+                { pos: 'bottom-2.5 right-3' },
+              ].map(({ pos }, i) => (
+                <div
+                  key={i}
+                  className={`absolute ${pos} w-3 h-3 rounded-full z-10 pointer-events-none`}
+                  style={{
+                    background: 'radial-gradient(circle at 35% 35%, #f5d060, #b8860b 55%, #7a5500)',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,235,100,0.5)',
+                    border: '1px solid rgba(255,200,60,0.4)',
+                  }}
+                />
+              ))}
+
+              {/* ── INNER CONTENT AREA ── */}
+              <div className="relative px-5 py-5 sm:px-7 sm:py-6">
+                {cardContent}
+              </div>
+            </div>
+
+            {/* Drop shadow on the "floor" beneath the shelf */}
+            <div
+              className="absolute -bottom-5 left-[10%] right-[10%] h-5 rounded-full pointer-events-none"
+              style={{
+                background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.7) 0%, transparent 80%)',
+                filter: 'blur(6px)',
+              }}
+            />
+          </div>
+        </section>
+      );
+    }
+
     return (
       <section key="random-song-sec" className={`w-full max-w-2xl sm:max-w-3xl mx-auto px-6 sm:px-12 ${isFirst ? 'pt-24 sm:pt-28' : 'pt-4 sm:pt-6'} pb-6`}>
-        <div className="w-full relative overflow-visible">
-          <div className={`font-bold text-xs uppercase tracking-widest mb-2.5 flex items-center gap-1.5 justify-center select-none ${isMusician2Theme ? 'text-amber-100 font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]' : (isGoldTheme || isMusicianTheme) ? 'text-stone-800 font-extrabold' : 'text-stone-300'}`}>
-            <Sparkles className={`w-4 h-4 ${isMusician2Theme ? 'text-amber-400' : isMusicianTheme ? 'text-rose-600' : isGoldTheme ? 'text-[#AA7C11]' : 'text-amber-400'} animate-pulse`} />
-            <span>{t("Bài Hát Ngẫu Nhiên") || "Bài Hát Ngẫu Nhiên"}</span>
-          </div>
-          <div className="w-full relative overflow-visible">
-            <RandomSongCard
-              randomSong={randomSong}
-              data={data}
-              isGoldTheme={isGoldTheme}
-              activeListTab={activeListTab}
-              getSongCoverUrl={getSongCoverUrl}
-              isMobile={isMobile}
-              formatText={formatText}
-              getArtistLink={getArtistLink}
-              setActiveBioSong={setActiveBioSong}
-              t={t}
-            />
-
-            {/* Released / Demo Badge */}
-            <motion.div
-              animate={{ 
-                rotate: [15, 11, 19, 11, 15],
-                scale: [1, 1.05, 0.95, 1.05, 1]
-              }}
-              transition={{ 
-                duration: 4.5, 
-                repeat: Infinity, 
-                ease: "easeInOut" 
-              }}
-              className="absolute -top-2 -right-2 z-40 select-none pointer-events-none"
-            >
-              {randomSong.isReleased ? (
-                <span className="bg-emerald-600 shadow-[0_0_12px_rgba(16,185,129,0.8)] text-[8px] font-black text-white px-2.5 py-0.5 rounded border border-emerald-400/50 block">
-                  {t.lReleasedMark || 'RELEASED'}
-                </span>
-              ) : (
-                <span className="bg-[#1A1303] text-[#FAF5E6] border border-[#D4AF37] shadow-md text-[8px] font-black px-2.5 py-0.5 rounded block">
-                  {randomSong.linkType === 'indirect' ? 'Landing Page' : (t.lDemoMark || 'DEMO')}
-                </span>
-              )}
-            </motion.div>
-          </div>
-        </div>
+        {cardContent}
       </section>
     );
   };
@@ -10179,9 +10530,9 @@ function Home() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
       className={`min-h-screen flex flex-col ${
-        isMusician2Theme
+        isMusicianTheme
           ? 'bg-[#1C0E07] text-stone-100 selection:bg-amber-600 selection:text-white font-sans'
-          : isMusician1Theme 
+          : isDreamyTheme 
             ? 'bg-gradient-to-br from-[#FFF5F7] via-[#F8F2FC] via-[#FAF5FF] to-[#FFF7ED] text-stone-900 selection:bg-rose-400 selection:text-white font-sans' 
             : isGoldTheme 
               ? 'bg-gradient-to-b from-[#F9F5EA] via-[#FCF9F2] to-[#FAF5E6] text-[#2C1E03] selection:bg-amber-500 selection:text-stone-950 font-sans' 
@@ -10190,7 +10541,7 @@ function Home() {
     >
       <SocialCarousel data={data} pushDown={pushDown} isGoldTheme={isGoldTheme} isMusicianTheme={isMusicianTheme} />
       
-      {isMusician2Theme ? (
+      {isMusicianTheme ? (
         <>
           {/* Realistic Wood Grain Background with 3D Cabinet Overlays */}
           <div className="absolute inset-0 z-[-2] pointer-events-none select-none overflow-hidden bg-[#180A04]">
@@ -10217,10 +10568,6 @@ function Home() {
 
           {/* Fixed Ambient Studio Lighting & Brass Trim Overlay */}
           <div className="fixed inset-0 z-[-1] pointer-events-none select-none">
-            {/* Top & Bottom Vintage Brass Accent Trim */}
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-950 via-amber-400 to-amber-950 border-b border-amber-300/40 shadow-md z-20" />
-            <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-950 via-amber-400 to-amber-950 border-t border-amber-300/40 shadow-md z-20" />
-
             {/* Warm Vignette Overlay for focus & readability */}
             <div className="absolute inset-0 shadow-[inset_0_0_140px_rgba(0,0,0,0.92)] pointer-events-none z-10" />
 
@@ -10229,103 +10576,9 @@ function Home() {
           </div>
 
           {/* Wall Hanging Picture Frames for Musician Theme */}
-          {(() => {
-            const wallImages: string[] = [];
-            if (data?.slideshowImages && Array.isArray(data.slideshowImages) && data.slideshowImages.length > 0) {
-              data.slideshowImages.forEach((img: string) => {
-                if (img && typeof img === 'string' && !wallImages.includes(img)) wallImages.push(img);
-              });
-            }
-            if (data?.homeCoverUrl && !wallImages.includes(data.homeCoverUrl)) wallImages.push(data.homeCoverUrl);
-            if (data?.avatarUrl && !wallImages.includes(data.avatarUrl)) wallImages.push(data.avatarUrl);
-            if (data?.aboutMe?.avatarUrl && !wallImages.includes(data.aboutMe.avatarUrl)) wallImages.push(data.aboutMe.avatarUrl);
-
-            if (wallImages.length < 6 && data?.demos && Array.isArray(data.demos)) {
-              data.demos.forEach((d: any) => {
-                const c = d.coverUrl || d.cover_url || d.image;
-                if (c && typeof c === 'string' && !wallImages.includes(c) && wallImages.length < 6) {
-                  wallImages.push(c);
-                }
-              });
-            }
-
-            // Fallback high-res music & studio aesthetic photos if fewer than 4 images exist
-            const fallbackPhotos = [
-              'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80',
-              'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=600&q=80',
-              'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80',
-              'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=600&q=80',
-              'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=600&q=80',
-              'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?auto=format&fit=crop&w=600&q=80',
-            ];
-
-            let fbIdx = 0;
-            while (wallImages.length < 4 && fbIdx < fallbackPhotos.length) {
-              if (!wallImages.includes(fallbackPhotos[fbIdx])) {
-                wallImages.push(fallbackPhotos[fbIdx]);
-              }
-              fbIdx++;
-            }
-
-            const framePresets = [
-              { top: '160px', left: '0.8%', right: 'auto', width: 'w-[120px] sm:w-[170px] lg:w-[205px] xl:w-[230px]', height: 'h-[140px] sm:h-[195px] lg:h-[240px] xl:h-[265px]', rotate: '-3.5deg', borderColor: 'border-[#3B1D0E]', bgMat: 'bg-[#FBF9F5]' },
-              { top: '380px', left: 'auto', right: '0.8%', width: 'w-[130px] sm:w-[185px] lg:w-[225px] xl:w-[250px]', height: 'h-[105px] sm:h-[150px] lg:h-[180px] xl:h-[200px]', rotate: '3.2deg', borderColor: 'border-[#482411]', bgMat: 'bg-[#FDFCF9]' },
-              { top: '750px', left: '0.6%', right: 'auto', width: 'w-[120px] sm:w-[175px] lg:w-[210px] xl:w-[235px]', height: 'h-[120px] sm:h-[175px] lg:h-[210px] xl:h-[235px]', rotate: '2.5deg', borderColor: 'border-[#2A1308]', bgMat: 'bg-[#F5F2EB]' },
-              { top: '1100px', left: 'auto', right: '0.6%', width: 'w-[115px] sm:w-[170px] lg:w-[200px] xl:w-[220px]', height: 'h-[140px] sm:h-[200px] lg:h-[240px] xl:h-[260px]', rotate: '-2.8deg', borderColor: 'border-[#3B1D0E]', bgMat: 'bg-[#FBF9F5]' },
-              { top: '1500px', left: '0.8%', right: 'auto', width: 'w-[130px] sm:w-[190px] lg:w-[230px] xl:w-[255px]', height: 'h-[110px] sm:h-[155px] lg:h-[185px] xl:h-[205px]', rotate: '-3deg', borderColor: 'border-[#482411]', bgMat: 'bg-[#FDFCF9]' },
-              { top: '1880px', left: 'auto', right: '0.8%', width: 'w-[120px] sm:w-[175px] lg:w-[210px] xl:w-[235px]', height: 'h-[120px] sm:h-[175px] lg:h-[210px] xl:h-[235px]', rotate: '3.5deg', borderColor: 'border-[#2A1308]', bgMat: 'bg-[#F5F2EB]' },
-            ];
-
-            return (
-              <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
-                {wallImages.map((imgUrl: string, idx: number) => {
-                  const preset = framePresets[idx % framePresets.length];
-                  return (
-                    <div
-                      key={`musician-wall-frame-${idx}`}
-                      className="absolute pointer-events-auto group/wallframe transition-all duration-500 hover:scale-105 hover:rotate-0 z-[1] hover:z-30 opacity-80 sm:opacity-95 hover:opacity-100 cursor-pointer"
-                      style={{
-                        top: preset.top,
-                        left: preset.left,
-                        right: preset.right,
-                        transform: `rotate(${preset.rotate})`,
-                      }}
-                      onClick={() => setWallLightboxImg(imgUrl)}
-                      title={t("Bấm để xem ảnh khổ lớn") || "Bấm để xem ảnh khổ lớn"}
-                    >
-                      {/* Wall Brass Nail */}
-                      <div className="absolute -top-4.5 sm:-top-5 left-1/2 -translate-x-1/2 w-3 sm:w-3.5 h-3 sm:h-3.5 rounded-full bg-gradient-to-br from-amber-100 via-amber-400 to-amber-900 border border-amber-200/90 shadow-md z-20 flex items-center justify-center">
-                        <div className="w-1 h-0.5 bg-amber-950/90 rotate-45" />
-                      </div>
-
-                      {/* Hanging String V-Shape */}
-                      <svg className="absolute -top-4.5 sm:-top-5 left-0 right-0 h-4.5 sm:h-5 w-full overflow-visible pointer-events-none z-10">
-                        <line x1="50%" y1="4" x2="15%" y2="18" stroke="rgba(245,215,160,0.65)" strokeWidth="1.2" />
-                        <line x1="50%" y1="4" x2="85%" y2="18" stroke="rgba(245,215,160,0.65)" strokeWidth="1.2" />
-                      </svg>
-
-                      {/* Outer Wooden Picture Frame */}
-                      <div className={`relative ${preset.width} ${preset.height} rounded-md p-1.5 sm:p-2 lg:p-2.5 shadow-[0_16px_35px_rgba(0,0,0,0.9),inset_0_2px_4px_rgba(255,255,255,0.2)] border-[6px] sm:border-[8px] lg:border-[10px] ${preset.borderColor} ${preset.bgMat} transition-all duration-300 group-hover/wallframe:shadow-[0_24px_50px_rgba(0,0,0,0.95)]`}>
-                        {/* Inner Picture Mat Border */}
-                        <div className="w-full h-full rounded-[2px] border border-stone-300/70 shadow-inner overflow-hidden relative">
-                          <img 
-                            src={imgUrl} 
-                            alt={`Khung ảnh treo tường ${idx + 1}`} 
-                            className="w-full h-full object-cover filter brightness-[0.93] contrast-[1.07] group-hover/wallframe:brightness-100 group-hover/wallframe:scale-105 transition-all duration-700" 
-                            referrerPolicy="no-referrer"
-                          />
-                          {/* Subtle glass reflection highlight */}
-                          <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/12 to-white/0 pointer-events-none" />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })()}
+          <MusicianWallFrames data={data} setWallLightboxImg={setWallLightboxImg} t={t} />
         </>
-      ) : isMusician1Theme ? (
+      ) : isDreamyTheme ? (
         <div className="absolute inset-0 z-[-2] overflow-hidden pointer-events-none select-none">
           {/* Background Slideshow for Musician Theme (Low Opacity, Crisp - No Blur) */}
           {data?.slideshowImages && data.slideshowImages.length > 0 && (
@@ -10505,7 +10758,7 @@ function Home() {
 
       {/* Top Navbar */}
       <div className="absolute top-0 left-0 right-0 z-50 pt-6 sm:pt-8">
-        {hasNavbar && <PublicNavbar menus={finalMenus} activeTab={activeMenuTab} setActiveTab={setActiveMenuTab} t={t} isGoldTheme={isGoldTheme} isMusicianTheme={isMusicianTheme} isMusician2Theme={isMusician2Theme} />}
+        {hasNavbar && <PublicNavbar menus={finalMenus} activeTab={activeMenuTab} setActiveTab={setActiveMenuTab} t={t} isGoldTheme={isGoldTheme} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />}
       </div>
 
       {isVault && (() => {
@@ -10557,8 +10810,8 @@ function Home() {
               <section id="music-tabs-section" className={`scroll-mt-24 w-full max-w-5xl mx-auto px-6 sm:px-12 pb-10 ${firstVisibleSection === 'vault' ? 'pt-24 sm:pt-28' : ''}`}>
           {/* Header Row with compact Search Box */}
           <div className="flex items-center justify-between mb-4">
-            <div className={`${isHomeSearchExpanded ? 'hidden sm:flex' : 'flex'} text-base sm:text-lg font-bold tracking-tight ${isMusician2Theme ? 'text-amber-100 font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]' : isMusician1Theme ? 'text-stone-950 font-black' : isGoldTheme ? 'text-stone-950 font-black' : 'text-white/95'} items-center gap-2 shrink-0`}>
-              <span className={`w-1.5 h-4 ${isMusician2Theme ? 'bg-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.8)]' : isMusician1Theme ? 'bg-rose-500 shadow-sm' : isGoldTheme ? 'bg-amber-600 shadow-[0_0_10px_rgba(212,175,55,0.6)]' : 'bg-emerald-500'} rounded-full`} />
+            <div className={`${isHomeSearchExpanded ? 'hidden sm:flex' : 'flex'} text-base sm:text-lg font-bold tracking-tight ${isMusicianTheme ? 'text-amber-100 font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]' : isDreamyTheme ? 'text-stone-950 font-black' : isGoldTheme ? 'text-stone-950 font-black' : 'text-white/95'} items-center gap-2 shrink-0`}>
+              <span className={`w-1.5 h-4 ${isMusicianTheme ? 'bg-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.8)]' : isDreamyTheme ? 'bg-rose-500 shadow-sm' : isGoldTheme ? 'bg-amber-600 shadow-[0_0_10px_rgba(212,175,55,0.6)]' : 'bg-emerald-500'} rounded-full`} />
               <span>{t.mVault || "Kho Nhạc"}</span>
             </div>
 
@@ -10578,7 +10831,7 @@ function Home() {
                       value={searchQuery}
                       onChange={handleSearchChange}
                       placeholder={t.searchSong || "Tìm kiếm bài hát..."}
-                      className={`w-full ${isMusician2Theme ? 'bg-stone-900/90 border-amber-800/80 text-amber-100 focus:ring-amber-500 placeholder:text-amber-300/50 shadow-md' : (isGoldTheme || isMusician1Theme) ? 'bg-white/90 border-purple-200 text-stone-900 focus:ring-rose-400 placeholder:text-stone-400 shadow-xs' : 'bg-neutral-900/60 border border-white/10 text-white focus:ring-emerald-500 placeholder:text-stone-500'} border rounded-xl py-2 text-xs focus:outline-none focus:ring-1 font-medium ${searchQuery ? 'pl-3' : 'pl-9'} ${searchQuery ? 'pr-3 sm:pr-8' : 'pr-3'}`}
+                      className={`w-full ${isMusicianTheme ? 'bg-stone-900/90 border-amber-800/80 text-amber-100 focus:ring-amber-500 placeholder:text-amber-300/50 shadow-md' : (isGoldTheme || isDreamyTheme) ? 'bg-white/90 border-purple-200 text-stone-900 focus:ring-rose-400 placeholder:text-stone-400 shadow-xs' : 'bg-neutral-900/60 border border-white/10 text-white focus:ring-emerald-500 placeholder:text-stone-500'} border rounded-xl py-2 text-xs focus:outline-none focus:ring-1 font-medium ${searchQuery ? 'pl-3' : 'pl-9'} ${searchQuery ? 'pr-3 sm:pr-8' : 'pr-3'}`}
                       autoFocus
                     />
                     {!searchQuery && (
@@ -10592,7 +10845,7 @@ function Home() {
                         onClick={() => {
                           setSearchQuery('');
                         }}
-                        className={`absolute right-3 ${(isGoldTheme || isMusicianTheme) ? 'text-stone-500 hover:text-stone-900' : 'text-stone-400 hover:text-white'} sm:block hidden`}
+                        className={`absolute right-3 ${(isGoldTheme || isDreamyTheme) ? 'text-stone-500 hover:text-stone-900' : 'text-stone-400 hover:text-white'} sm:block hidden`}
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -10610,10 +10863,12 @@ function Home() {
                     setIsHomeSearchExpanded(true);
                   }
                 }}
-                className={`p-2 rounded-xl transition-all ${
+                className={`p-2.5 rounded-xl transition-all ${
                   isHomeSearchExpanded 
-                    ? ((isGoldTheme || isMusicianTheme) ? 'text-stone-500 hover:text-stone-900 ml-2 sm:block hidden' : 'text-stone-400 hover:text-white ml-2 sm:block hidden')
-                    : ((isGoldTheme || isMusicianTheme) ? 'bg-white/90 border border-purple-200 text-stone-700 hover:text-stone-900 shadow-xs' : 'bg-neutral-900/50 border border-white/5 hover:bg-neutral-800/80 text-stone-400 hover:text-white')
+                    ? (isMusicianTheme ? 'text-amber-300 hover:text-amber-100 ml-2 sm:block hidden' : (isGoldTheme || isDreamyTheme) ? 'text-stone-500 hover:text-stone-900 ml-2 sm:block hidden' : 'text-stone-400 hover:text-white ml-2 sm:block hidden')
+                    : (isMusicianTheme 
+                        ? 'bg-gradient-to-b from-[#4A2411] via-[#35180A] to-[#210D04] border-2 border-[#8C4A1C] text-amber-300 hover:border-amber-400 hover:text-amber-100 hover:shadow-[0_0_15px_rgba(245,158,11,0.5)] shadow-md' 
+                        : (isGoldTheme || isDreamyTheme) ? 'bg-white/90 border border-purple-200 text-stone-700 hover:text-stone-900 shadow-xs' : 'bg-neutral-900/50 border border-white/5 hover:bg-neutral-800/80 text-stone-400 hover:text-white')
                 }`}
                 title={isHomeSearchExpanded ? (t.closeSearch || "Đóng tìm kiếm") : (t.searchTitle || "Tìm kiếm bài hát")}
               >
@@ -10623,9 +10878,9 @@ function Home() {
           </div>
 
           <div className={`relative flex items-center gap-2 mb-6 ${
-            isMusician2Theme 
+            isMusicianTheme 
               ? 'bg-gradient-to-r from-[#2A150A] via-[#3D2011] to-[#2A150A] border-2 border-amber-800/80 shadow-[0_12px_35px_rgba(0,0,0,0.85),inset_0_1px_2px_rgba(255,255,255,0.15)] rounded-2xl sm:rounded-full p-1.5' 
-              : isMusician1Theme 
+              : isDreamyTheme 
                 ? 'bg-white/60 border-2 border-purple-200/80 shadow-[0_8px_30px_rgba(244,63,94,0.15)] rounded-full p-1.5' 
                 : isGoldTheme 
                   ? 'bg-[#FAF5E6]/90 border border-[#D4AF37]/35 shadow-md rounded-full p-1.5' 
@@ -10637,17 +10892,17 @@ function Home() {
                  (isMusicianTheme || isGoldTheme) ? 'rounded-full' : 'rounded-xl'
                } text-xs sm:text-base font-bold tracking-tight transition-colors duration-300 ${
                  activeListTab === 'released' 
-                   ? (isMusician2Theme ? 'text-stone-950 font-black' : isMusician1Theme ? 'text-amber-950 font-black' : isGoldTheme ? 'text-[#1A1303] font-black' : 'text-white font-black') 
-                   : (isMusician2Theme ? 'text-amber-200/80 hover:text-amber-100' : isMusician1Theme ? 'text-stone-600 hover:text-amber-900' : isGoldTheme ? 'text-[#1A1303]/70 hover:text-[#1A1303]' : 'text-stone-300 hover:text-white')
+                   ? (isMusicianTheme ? 'text-yellow-100 font-black drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]' : isDreamyTheme ? 'text-amber-950 font-black' : isGoldTheme ? 'text-[#1A1303] font-black' : 'text-white font-black') 
+                   : (isMusicianTheme ? 'text-amber-200/80 hover:text-amber-100' : isDreamyTheme ? 'text-stone-600 hover:text-amber-900' : isGoldTheme ? 'text-[#1A1303]/70 hover:text-[#1A1303]' : 'text-stone-300 hover:text-white')
                }`}
              >
                 {activeListTab === 'released' && (
                   <motion.div 
                     layoutId="music-active-tab-glow" 
                     className={`absolute inset-0 ${
-                      isMusician2Theme
-                        ? 'rounded-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 border border-amber-200 shadow-[0_4px_20px_rgba(245,158,11,0.6)]'
-                        : isMusician1Theme 
+                      isMusicianTheme
+                        ? 'rounded-full bg-amber-400/35 backdrop-blur-md border border-amber-300/80 shadow-[0_0_22px_rgba(251,191,36,0.65),inset_0_1px_2px_rgba(255,255,255,0.6)] before:absolute before:-top-6 before:left-1/2 before:-translate-x-1/2 before:w-16 before:h-8 before:bg-gradient-to-b before:from-amber-200/40 before:to-transparent before:blur-xs pointer-events-none'
+                        : isDreamyTheme 
                           ? 'rounded-full bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-200 border-2 border-amber-300 shadow-[0_4px_20px_rgba(245,158,11,0.4)]' 
                           : isGoldTheme
                             ? 'rounded-full bg-gradient-to-r from-[#D4AF37]/40 via-[#FCF6BA]/60 to-[#D4AF37]/40 border border-[#D4AF37] shadow-md'
@@ -10656,7 +10911,7 @@ function Home() {
                     transition={{ type: "spring", stiffness: 450, damping: 32 }}
                   />
                 )}
-                <Music className={`w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10 ${activeListTab === 'released' ? (isMusician2Theme ? 'text-amber-950' : isMusician1Theme ? 'text-amber-700' : isGoldTheme ? 'text-[#1A1303]' : 'text-emerald-400') : (isMusician2Theme ? 'text-amber-300/70' : 'text-stone-400')}`} />
+                <Music className={`w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10 ${activeListTab === 'released' ? (isMusicianTheme ? 'text-yellow-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.9)]' : isDreamyTheme ? 'text-amber-700' : isGoldTheme ? 'text-[#1A1303]' : 'text-emerald-400') : (isMusicianTheme ? 'text-amber-300/70' : 'text-stone-400')}`} />
                 <span className="whitespace-nowrap relative z-10">{data?.tab1Name?.trim() || t('lReleased') || "Ra Rồi"}</span>
              </button>
              
@@ -10666,17 +10921,17 @@ function Home() {
                  (isMusicianTheme || isGoldTheme) ? 'rounded-full' : 'rounded-xl'
                } text-xs sm:text-base font-bold tracking-tight transition-colors duration-300 ${
                  activeListTab === 'demos' 
-                   ? (isMusician2Theme ? 'text-stone-950 font-black' : isMusician1Theme ? 'text-rose-950 font-black' : isGoldTheme ? 'text-[#1A1303] font-black' : 'text-white font-black') 
-                   : (isMusician2Theme ? 'text-amber-200/80 hover:text-amber-100' : isMusician1Theme ? 'text-stone-600 hover:text-rose-900' : isGoldTheme ? 'text-[#1A1303]/70 hover:text-[#1A1303]' : 'text-stone-300 hover:text-white')
+                   ? (isMusicianTheme ? 'text-yellow-100 font-black drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]' : isDreamyTheme ? 'text-rose-950 font-black' : isGoldTheme ? 'text-[#1A1303] font-black' : 'text-white font-black') 
+                   : (isMusicianTheme ? 'text-amber-200/80 hover:text-amber-100' : isDreamyTheme ? 'text-stone-600 hover:text-rose-900' : isGoldTheme ? 'text-[#1A1303]/70 hover:text-[#1A1303]' : 'text-stone-300 hover:text-white')
                }`}
              >
                 {activeListTab === 'demos' && (
                   <motion.div 
                     layoutId="music-active-tab-glow" 
                     className={`absolute inset-0 ${
-                      isMusician2Theme
-                        ? 'rounded-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 border border-amber-200 shadow-[0_4px_20px_rgba(245,158,11,0.6)]'
-                        : isMusician1Theme 
+                      isMusicianTheme
+                        ? 'rounded-full bg-amber-400/35 backdrop-blur-md border border-amber-300/80 shadow-[0_0_22px_rgba(251,191,36,0.65),inset_0_1px_2px_rgba(255,255,255,0.6)] before:absolute before:-top-6 before:left-1/2 before:-translate-x-1/2 before:w-16 before:h-8 before:bg-gradient-to-b before:from-amber-200/40 before:to-transparent before:blur-xs pointer-events-none'
+                        : isDreamyTheme 
                           ? 'rounded-full bg-gradient-to-r from-pink-200 via-rose-100 to-pink-200 border-2 border-rose-300 shadow-[0_4px_20px_rgba(244,63,94,0.4)]' 
                           : isGoldTheme
                             ? 'rounded-full bg-gradient-to-r from-[#D4AF37]/40 via-[#FCF6BA]/60 to-[#D4AF37]/40 border border-[#D4AF37] shadow-md'
@@ -10685,7 +10940,7 @@ function Home() {
                     transition={{ type: "spring", stiffness: 450, damping: 32 }}
                   />
                 )}
-                <Disc3 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10 ${activeListTab === 'demos' ? (isMusician2Theme ? 'text-amber-950' : isMusician1Theme ? 'text-rose-700' : isGoldTheme ? 'text-[#1A1303]' : 'text-rose-400') : (isMusician2Theme ? 'text-amber-300/70' : 'text-stone-400')}`} />
+                <Disc3 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10 ${activeListTab === 'demos' ? (isMusicianTheme ? 'text-yellow-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.9)]' : isDreamyTheme ? 'text-rose-700' : isGoldTheme ? 'text-[#1A1303]' : 'text-rose-400') : (isMusicianTheme ? 'text-amber-300/70' : 'text-stone-400')}`} />
                 <span className="whitespace-nowrap relative z-10">{data?.tab2Name?.trim() || t('lDemos') || "Đề Mô"}</span>
              </button>
              
@@ -10696,17 +10951,17 @@ function Home() {
                    (isMusicianTheme || isGoldTheme) ? 'rounded-full' : 'rounded-xl'
                  } text-xs sm:text-base font-bold tracking-tight transition-colors duration-300 ${
                    activeListTab === 'albums' 
-                     ? (isMusician2Theme ? 'text-stone-950 font-black' : isMusician1Theme ? 'text-purple-950 font-black' : isGoldTheme ? 'text-[#1A1303] font-black' : 'text-white font-black') 
-                     : (isMusician2Theme ? 'text-amber-200/80 hover:text-amber-100' : isMusician1Theme ? 'text-stone-600 hover:text-purple-900' : isGoldTheme ? 'text-[#1A1303]/70 hover:text-[#1A1303]' : 'text-stone-300 hover:text-white')
+                     ? (isMusicianTheme ? 'text-yellow-100 font-black drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]' : isDreamyTheme ? 'text-purple-950 font-black' : isGoldTheme ? 'text-[#1A1303] font-black' : 'text-white font-black') 
+                     : (isMusicianTheme ? 'text-amber-200/80 hover:text-amber-100' : isDreamyTheme ? 'text-stone-600 hover:text-purple-900' : isGoldTheme ? 'text-[#1A1303]/70 hover:text-[#1A1303]' : 'text-stone-300 hover:text-white')
                  }`}
                >
                   {activeListTab === 'albums' && (
                     <motion.div 
                       layoutId="music-active-tab-glow" 
                       className={`absolute inset-0 ${
-                        isMusician2Theme
-                          ? 'rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 border border-amber-200 shadow-[0_4px_20px_rgba(245,158,11,0.6)]'
-                          : isMusician1Theme 
+                        isMusicianTheme
+                          ? 'rounded-full bg-amber-400/35 backdrop-blur-md border border-amber-300/80 shadow-[0_0_22px_rgba(251,191,36,0.65),inset_0_1px_2px_rgba(255,255,255,0.6)] before:absolute before:-top-6 before:left-1/2 before:-translate-x-1/2 before:w-16 before:h-8 before:bg-gradient-to-b before:from-amber-200/40 before:to-transparent before:blur-xs pointer-events-none'
+                          : isDreamyTheme 
                             ? 'rounded-full bg-gradient-to-r from-purple-200 via-indigo-100 to-purple-200 border-2 border-purple-300 shadow-[0_4px_20px_rgba(168,85,247,0.4)]' 
                             : isGoldTheme
                               ? 'rounded-full bg-gradient-to-r from-[#D4AF37]/40 via-[#FCF6BA]/60 to-[#D4AF37]/40 border border-[#D4AF37] shadow-md'
@@ -10715,7 +10970,7 @@ function Home() {
                       transition={{ type: "spring", stiffness: 450, damping: 32 }}
                     />
                   )}
-                  <ListMusic className={`w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10 ${activeListTab === 'albums' ? (isMusician2Theme ? 'text-amber-950' : isMusician1Theme ? 'text-purple-700' : isGoldTheme ? 'text-[#1A1303]' : 'text-purple-400') : (isMusician2Theme ? 'text-amber-300/70' : 'text-stone-400')}`} />
+                  <ListMusic className={`w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10 ${activeListTab === 'albums' ? (isMusicianTheme ? 'text-yellow-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.9)]' : isDreamyTheme ? 'text-purple-700' : isGoldTheme ? 'text-[#1A1303]' : 'text-purple-400') : (isMusicianTheme ? 'text-amber-300/70' : 'text-stone-400')}`} />
                   <span className="whitespace-nowrap relative z-10">{data?.tab3Name || t('Tab 3 (Album/EP)') || "Album/EP"}</span>
                </button>
              )}
@@ -10803,7 +11058,7 @@ function Home() {
                     initial="hidden"
                     animate="show"
                     exit="exit"
-                    className={activeListTab === 'albums' ? "grid grid-cols-1 gap-3.5 sm:gap-4 max-w-3xl mx-auto w-full" : isMusicianTheme ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-20 sm:gap-y-24 gap-x-6 sm:gap-x-8 max-w-[1400px] mx-auto pt-14 sm:pt-16" : isGold2Theme ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" : (isGoldTheme && !isMobile) ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" : "grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[1400px] mx-auto"}
+                    className={activeListTab === 'albums' ? "grid grid-cols-1 gap-3.5 sm:gap-4 max-w-3xl mx-auto w-full" : isMusicianTheme ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-y-12 sm:gap-y-24 gap-x-3 sm:gap-x-8 max-w-[1400px] mx-auto pt-10 sm:pt-16" : isGold2Theme ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" : (isGoldTheme && !isMobile) ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" : isDreamyTheme ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-[1400px] mx-auto" : "grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[1400px] mx-auto"}
                   >
                     {activeListTab === 'albums' ? (
                       paginatedItems.map((playlist: any, idx: number) => {
@@ -10837,7 +11092,7 @@ function Home() {
                                   to={getArtistLink(`/playlist/${playlist.id}`)} 
                                   className={`group relative border rounded-3xl p-3 sm:p-5 transition-all duration-500 overflow-hidden flex flex-row items-center gap-4 sm:gap-6 w-full ${
                                     isMusicianTheme 
-                                      ? 'bg-gradient-to-br from-pink-50/95 via-rose-50/85 to-white/95 border-pink-300/80 hover:border-pink-500 shadow-[0_12px_35px_rgba(244,63,94,0.15)] hover:shadow-[0_20px_50px_rgba(244,63,94,0.3)]' 
+                                      ? 'bg-gradient-to-br from-[#2D180C]/95 via-[#231208]/98 to-[#190C05]/95 border-amber-700/60 hover:border-amber-400 shadow-[0_12px_35px_rgba(0,0,0,0.85)] hover:shadow-[0_18px_45px_rgba(245,158,11,0.3)] backdrop-blur-md' 
                                       : isGoldTheme
                                       ? 'bg-[#FAF5E6] border-[#D4AF37]/35 hover:border-[#D4AF37] hover:shadow-[0_12px_45px_rgba(212,175,55,0.18)]' 
                                       : 'bg-neutral-900/50 border-white/5 hover:border-purple-500/50 hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.3)]'
@@ -10883,7 +11138,7 @@ function Home() {
                                     })}
 
                                     {/* Square Album Cover Sleeve */}
-                                    <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden relative z-20 shadow-[0_8px_25px_rgba(0,0,0,0.3)] border-2 border-white/90 group-hover:scale-[1.02] transition-transform duration-500 bg-stone-900 shrink-0">
+                                    <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden relative z-20 shadow-[0_8px_25px_rgba(0,0,0,0.3)] border-2 border-amber-600/40 group-hover:scale-[1.02] transition-transform duration-500 bg-stone-900 shrink-0">
                                       {coverUrl ? (
                                         <img src={coverUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={playlist.title} referrerPolicy="no-referrer" />
                                       ) : (
@@ -10892,8 +11147,8 @@ function Home() {
                                         </div>
                                       )}
                                       <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <div className={`w-10 h-10 rounded-full ${isMusicianTheme ? 'bg-rose-500' : isGoldTheme ? 'bg-[#AA7C11]' : 'bg-purple-500'} flex items-center justify-center scale-80 group-hover:scale-100 transition-transform shadow-lg`}>
-                                          <Play className="w-4 h-4 text-white ml-0.5" fill="currentColor" />
+                                        <div className={`w-10 h-10 rounded-full ${isMusicianTheme ? 'bg-amber-500 hover:bg-amber-400 text-stone-950' : isGoldTheme ? 'bg-[#AA7C11]' : 'bg-purple-500'} flex items-center justify-center scale-80 group-hover:scale-100 transition-transform shadow-lg`}>
+                                          <Play className={`w-4 h-4 ${isMusicianTheme ? 'text-stone-950 ml-0.5' : 'text-white ml-0.5'}`} fill="currentColor" />
                                         </div>
                                       </div>
                                     </div>
@@ -10901,16 +11156,20 @@ function Home() {
 
                                   {/* Right Container: Album Details */}
                                   <div className="flex-1 min-w-0 relative z-20 pr-6 sm:pr-8 pl-4 sm:pl-8">
-                                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black tracking-widest uppercase mb-1.5 bg-rose-500/10 text-rose-600 border border-rose-200/80">
-                                      <Disc3 className="w-3 h-3 text-rose-500 animate-spin-slow" />
+                                    <div className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black tracking-widest uppercase mb-1.5 ${
+                                      isMusicianTheme 
+                                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
+                                        : 'bg-rose-500/10 text-rose-600 border border-rose-200/80'
+                                    }`}>
+                                      <Disc3 className={`w-3 h-3 ${isMusicianTheme ? 'text-amber-400' : 'text-rose-500'} animate-spin-slow`} />
                                       ALBUM / EP
                                     </div>
                                     <h3 className={`text-lg sm:text-xl font-black transition-colors line-clamp-2 leading-snug break-words ${
-                                      isMusicianTheme ? 'text-stone-900 group-hover:text-rose-600' : isGoldTheme ? 'text-[#1A1303] group-hover:text-[#AA7C11]' : 'group-hover:text-purple-400 text-white'
+                                      isMusicianTheme ? 'text-amber-100 group-hover:text-amber-300' : isGoldTheme ? 'text-[#1A1303] group-hover:text-[#AA7C11]' : 'group-hover:text-purple-400 text-white'
                                     }`}>
                                       {playlist.title}
                                     </h3>
-                                    <p className={`text-xs sm:text-sm mt-1.5 font-bold ${isMusicianTheme ? 'text-stone-600' : isGoldTheme ? 'text-stone-500' : 'text-neutral-400'}`}>
+                                    <p className={`text-xs sm:text-sm mt-1.5 font-bold ${isMusicianTheme ? 'text-amber-200/70' : isGoldTheme ? 'text-stone-500' : 'text-neutral-400'}`}>
                                       {songsInPlaylist.length} bài hát
                                     </p>
                                   </div>
@@ -10928,7 +11187,7 @@ function Home() {
                                     }}
                                     className={`absolute bottom-3 right-3 z-20 ${
                                       isMusicianTheme
-                                        ? 'bg-white border border-rose-200 text-rose-600 hover:bg-rose-50'
+                                        ? 'bg-stone-900/80 border border-amber-600/40 text-amber-300 hover:bg-amber-500 hover:text-stone-950'
                                         : isGoldTheme 
                                         ? 'bg-[#FAF5E6] border border-[#D4AF37]/35 text-[#AA7C11] hover:text-[#1A1303]' 
                                         : 'bg-black/40 border border-white/10 text-white/80 hover:text-white'
@@ -10963,9 +11222,9 @@ function Home() {
                               }}
                               className="relative overflow-visible w-full h-full"
                             >
-                              {isMusician2Theme ? (
-                                <Musician2SongCard 
-                                  key={`musician2-card-${demo.id || idx}`}
+                              {isMusicianTheme ? (
+                                <MusicianSongCard 
+                                  key={`musician-card-${demo.id || idx}`}
                                   demo={demo} 
                                   idx={idx} 
                                   activeListTab={activeListTab} 
@@ -10977,9 +11236,9 @@ function Home() {
                                   setToast={setToast}
                                   setActiveBioSong={setActiveBioSong}
                                 />
-                              ) : isMusician1Theme ? (
-                                <MusicianSongCard 
-                                  key={`musician-card-${demo.id || idx}`}
+                              ) : isDreamyTheme ? (
+                                <DreamySongCard 
+                                  key={`dreamy-card-${demo.id || idx}`}
                                   demo={demo} 
                                   idx={idx} 
                                   activeListTab={activeListTab} 
@@ -11464,35 +11723,37 @@ const activeAchievements = hasAchievements;
                                 </Link>
                               )}
 
-                              {/* Wobbling, non-clipped absolute badge (Top-right corner, on top of any overflows) */}
-                              <motion.div
-                                animate={{ 
-                                  rotate: [15, 11, 19, 11, 15],
-                                  scale: [1, 1.05, 0.95, 1.05, 1]
-                                }}
-                                transition={{ 
-                                  duration: 4.5, 
-                                  repeat: Infinity, 
-                                  ease: "easeInOut" 
-                                }}
-                                className="absolute -top-2.5 -right-2.5 z-40 select-none pointer-events-none"
-                              >
-                                {demo.isReleased ? (
-                                  <span className="bg-emerald-600 shadow-[0_0_12px_rgba(16,185,129,0.8)] text-[9px] font-black text-white px-2.5 py-0.5 rounded border border-emerald-400/50 block">
-                                    {t.lReleasedMark || 'RELEASED'}
-                                  </span>
-                                ) : (
-                                  <span className={`shadow-md text-[9px] font-black px-2.5 py-0.5 rounded block ${
-                                    isGoldTheme 
-                                      ? 'bg-[#1A1303] text-[#FAF5E6] border border-[#D4AF37]' 
-                                      : demo.linkType === 'indirect' 
-                                        ? 'bg-indigo-600 text-white border border-white/20 shadow-[0_0_12px_rgba(79,70,229,0.5)]' 
-                                        : 'bg-rose-600 text-white border border-white/20 shadow-[0_0_12px_rgba(225,29,72,0.5)]'
-                                  }`}>
-                                    {demo.linkType === 'indirect' ? 'Landing Page' : (t.lDemoMark || 'DEMO')}
-                                  </span>
-                                )}
-                              </motion.div>
+                              {/* Wobbling outer badge (only for non-musician themes) */}
+                              {!isMusicianTheme && !isDreamyTheme && (
+                                <motion.div
+                                  animate={{ 
+                                    rotate: [15, 11, 19, 11, 15],
+                                    scale: [1, 1.05, 0.95, 1.05, 1]
+                                  }}
+                                  transition={{ 
+                                    duration: 4.5, 
+                                    repeat: Infinity, 
+                                    ease: "easeInOut" 
+                                  }}
+                                  className="absolute -top-2.5 -right-2.5 z-40 select-none pointer-events-none"
+                                >
+                                  {demo.isReleased ? (
+                                    <span className="bg-emerald-600 shadow-[0_0_12px_rgba(16,185,129,0.8)] text-[9px] font-black text-white px-2.5 py-0.5 rounded border border-emerald-400/50 block">
+                                      {t.lReleasedMark || 'RELEASED'}
+                                    </span>
+                                  ) : (
+                                    <span className={`shadow-md text-[9px] font-black px-2.5 py-0.5 rounded block ${
+                                      isGoldTheme 
+                                        ? 'bg-[#1A1303] text-[#FAF5E6] border border-[#D4AF37]' 
+                                        : demo.linkType === 'indirect' 
+                                          ? 'bg-indigo-600 text-white border border-white/20 shadow-[0_0_12px_rgba(79,70,229,0.5)]' 
+                                          : 'bg-rose-600 text-white border border-white/20 shadow-[0_0_12px_rgba(225,29,72,0.5)]'
+                                    }`}>
+                                      {demo.linkType === 'indirect' ? 'Landing Page' : (t.lDemoMark || 'DEMO')}
+                                    </span>
+                                  )}
+                                </motion.div>
+                              )}
                             </motion.div>
                           )}
                         </BrandLogoColorExtractor>
@@ -11502,18 +11763,20 @@ const activeAchievements = hasAchievements;
                 )}
 
                 {totalItems > 0 && (
-                  <div className={`col-span-full flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t ${isMusician2Theme ? 'border-amber-800/60' : isMusicianTheme ? 'border-purple-200/80' : isGoldTheme ? 'border-[#D4AF37]/35' : 'border-white/10'}`}>
-                    <div className={`flex items-center gap-2 text-xs sm:text-sm ${isMusician2Theme ? 'text-amber-100/90 font-serif font-bold drop-shadow-xs' : isMusicianTheme ? 'text-stone-900 font-extrabold' : isGoldTheme ? 'text-[#1A1303] font-semibold' : 'text-neutral-300'}`}>
+                  <div className={`col-span-full flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t ${isMusicianTheme ? 'border-amber-800/60' : isDreamyTheme ? 'border-purple-200/80' : isGoldTheme ? 'border-[#D4AF37]/35' : 'border-white/10'}`}>
+                    <div className={`flex items-center gap-2 text-xs sm:text-sm ${isMusicianTheme ? 'text-amber-100/90 font-serif font-bold drop-shadow-xs' : isDreamyTheme ? 'text-stone-900 font-extrabold' : isGoldTheme ? 'text-[#1A1303] font-semibold' : 'text-neutral-300'}`}>
                       <span>{t("Hiển thị")}</span>
                       <BeautifulSelect 
                         value={pageSize} 
                         onChange={(val) => {
+                          setUserHasChangedPageSize(true);
                           setPageSize(val);
                           setCurrentPage(1);
                         }}
-                        options={[21, 50, 100]}
+                        options={isMobile ? [20, 50, 100] : [21, 50, 100]}
                         isGoldTheme={isGoldTheme || isMusicianTheme}
-                        isMusician2Theme={isMusician2Theme}
+                        isMusicianTheme={isMusicianTheme}
+                        isDreamyTheme={isDreamyTheme}
                       />
                       <span>{t("bài / trang")} ({t("Tổng")}: {totalItems})</span>
                     </div>
@@ -11531,23 +11794,23 @@ const activeAchievements = hasAchievements;
                           }}
                           className={`px-3.5 py-2 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md relative overflow-hidden ${
                             currentPage === 1 
-                              ? isMusician2Theme
+                              ? isMusicianTheme
                                 ? 'bg-[#1A0B05]/60 border-amber-950/60 text-amber-200/30 cursor-not-allowed select-none'
-                                : isMusicianTheme
-                                  ? 'bg-stone-200/60 border-stone-300/60 text-stone-400 cursor-not-allowed select-none'
+                                : isDreamyTheme
+                                  ? 'bg-white/60 border border-purple-200 text-stone-400 cursor-not-allowed select-none'
                                   : isGoldTheme
                                     ? 'bg-neutral-100/50 border-neutral-200 text-neutral-300 cursor-not-allowed select-none' 
                                     : 'bg-white/[0.02] border-white/5 text-white/20 cursor-not-allowed select-none' 
-                              : isMusician2Theme
+                              : isMusicianTheme
                                 ? 'border-amber-800/80 text-amber-100 hover:border-amber-400 hover:text-amber-200 shadow-md font-bold'
-                                : isMusicianTheme
-                                  ? 'bg-white border-purple-200 text-stone-900 font-extrabold hover:bg-rose-50 hover:border-rose-300 shadow-xs'
+                                : isDreamyTheme
+                                  ? 'bg-white border-2 border-purple-200 text-stone-900 font-extrabold hover:bg-rose-50 hover:border-rose-400 shadow-xs'
                                   : isGoldTheme 
                                     ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
                                     : `bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 ${activeHoverBorderColor}`
                           }`}
                         >
-                          {isMusician2Theme && currentPage !== 1 && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
+                          {isMusicianTheme && currentPage !== 1 && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
                           <span className="relative z-[2]">{t("Trước")}</span>
                         </button>
                         
@@ -11575,19 +11838,21 @@ const activeAchievements = hasAchievements;
                                 }}
                                 className={`w-9 h-9 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md flex items-center justify-center relative overflow-hidden ${
                                   isCurrent 
-                                    ? isMusician2Theme
+                                    ? isMusicianTheme
                                       ? 'bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-stone-950 font-black border-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.6)]'
-                                      : activeColorClass 
-                                    : isMusician2Theme
+                                      : isDreamyTheme
+                                        ? 'bg-gradient-to-br from-rose-500 to-rose-600 text-white font-black border-rose-400 shadow-md'
+                                        : activeColorClass 
+                                    : isMusicianTheme
                                       ? 'border-amber-800/80 text-amber-100 font-bold hover:border-amber-400 shadow-md'
-                                      : isMusicianTheme
-                                        ? 'bg-white border-purple-200 text-stone-900 font-extrabold hover:bg-rose-50 hover:border-rose-300 shadow-xs'
+                                      : isDreamyTheme
+                                        ? 'bg-white border-2 border-purple-200 text-stone-900 font-extrabold hover:bg-rose-50 hover:border-rose-400 shadow-xs'
                                         : isGoldTheme 
                                           ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
                                           : `bg-white/5 border-white/10 text-white/70 hover:text-white hover:bg-white/15 ${activeHoverBorderColor}`
                                 }`}
                               >
-                                {isMusician2Theme && !isCurrent && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '200px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
+                                {isMusicianTheme && !isCurrent && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '200px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
                                 <span className="relative z-[2]">{page}</span>
                               </button>
                             );
@@ -11605,23 +11870,23 @@ const activeAchievements = hasAchievements;
                           }}
                           className={`px-3.5 py-2 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md relative overflow-hidden ${
                             currentPage === totalPages 
-                              ? isMusician2Theme
+                              ? isMusicianTheme
                                 ? 'bg-[#1A0B05]/60 border-amber-950/60 text-amber-200/30 cursor-not-allowed select-none'
-                                : isMusicianTheme
-                                  ? 'bg-stone-200/60 border-stone-300/60 text-stone-400 cursor-not-allowed select-none'
+                                : isDreamyTheme
+                                  ? 'bg-white/60 border border-purple-200 text-stone-400 cursor-not-allowed select-none'
                                   : isGoldTheme
                                     ? 'bg-neutral-100/50 border-neutral-200 text-neutral-300 cursor-not-allowed select-none' 
                                     : 'bg-white/[0.02] border-white/5 text-white/20 cursor-not-allowed select-none' 
-                              : isMusician2Theme
+                              : isMusicianTheme
                                 ? 'border-amber-800/80 text-amber-100 hover:border-amber-400 hover:text-amber-200 shadow-md font-bold'
-                                : isMusicianTheme
-                                  ? 'bg-white border-purple-200 text-stone-900 font-extrabold hover:bg-rose-50 hover:border-rose-300 shadow-xs'
+                                : isDreamyTheme
+                                  ? 'bg-white border-2 border-purple-200 text-stone-900 font-extrabold hover:bg-rose-50 hover:border-rose-400 shadow-xs'
                                   : isGoldTheme 
                                     ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
                                     : `bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 ${activeHoverBorderColor}`
                           }`}
                         >
-                          {isMusician2Theme && currentPage !== totalPages && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
+                          {isMusicianTheme && currentPage !== totalPages && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
                           <span className="relative z-[2]">{t("Sau")}</span>
                         </button>
                       </div>
@@ -11660,9 +11925,9 @@ const activeAchievements = hasAchievements;
               return (
                 <div style={{ order: mvOrder }} className={`w-full max-w-5xl mx-auto px-6 sm:px-12 pb-32 ${firstVisibleSection === 'mv' ? 'pt-24 sm:pt-28' : ''}`}>
                   <section id="mv-section" className="mt-12">
-                    <div className={`flex items-center gap-3 mb-8 px-4 border-b pb-4 ${isMusician2Theme ? 'border-amber-800/60' : (isGoldTheme || isMusicianTheme) ? 'border-purple-200/80' : 'border-white/10'}`}>
-                      <Music className={`w-6 h-6 ${isMusician2Theme ? 'text-amber-400' : isMusicianTheme ? 'text-rose-500' : isGoldTheme ? 'text-[#AA7C11]' : 'text-emerald-500'}`} />
-                      <h2 className={`text-2xl font-bold tracking-tight ${isMusician2Theme ? 'text-amber-100 font-serif font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]' : (isGoldTheme || isMusicianTheme) ? 'text-stone-950 font-black' : 'text-white'}`}>{t.rMv}</h2>
+                    <div className={`flex items-center gap-3 mb-8 px-4 border-b pb-4 ${isMusicianTheme ? 'border-amber-800/60' : (isGoldTheme || isDreamyTheme) ? 'border-purple-200/80' : 'border-white/10'}`}>
+                      <Music className={`w-6 h-6 ${isMusicianTheme ? 'text-amber-400' : isDreamyTheme ? 'text-rose-500' : isGoldTheme ? 'text-[#AA7C11]' : 'text-emerald-500'}`} />
+                      <h2 className={`text-2xl font-bold tracking-tight ${isMusicianTheme ? 'text-amber-100 font-serif font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]' : (isGoldTheme || isDreamyTheme) ? 'text-stone-950 font-black' : 'text-white'}`}>{t.rMv}</h2>
                     </div>
                     <motion.div 
                       key={`mv-page-${mvCurrentPage}`}
@@ -11676,34 +11941,34 @@ const activeAchievements = hasAchievements;
                         <button 
                           onClick={() => setPlayingVideo(song.videoId)} key={`l8724-${song.videoId || ''}-${song.id || ''}-${idx}`} 
                           className={`w-full text-left flex items-center gap-4 rounded-2xl p-3.5 shadow-lg transition-all duration-300 group border relative overflow-hidden ${
-                            isMusician2Theme
+                            isMusicianTheme
                               ? 'border-amber-800/80 hover:border-amber-500/90 shadow-[0_8px_25px_rgba(0,0,0,0.8)]'
-                              : isMusicianTheme
-                                ? 'bg-white/90 border-purple-200/80 hover:bg-white hover:border-rose-300 shadow-[0_4px_20px_rgba(244,63,94,0.08)]'
+                              : isDreamyTheme
+                                ? 'bg-white/95 border-2 border-rose-200/90 hover:bg-white hover:border-rose-400 shadow-[0_4px_20px_rgba(244,63,94,0.12)] hover:shadow-[0_8px_25px_rgba(244,63,94,0.22)]'
                                 : isGoldTheme 
                                   ? 'bg-[#FAF5E6] border-[#D4AF37]/35 hover:bg-white hover:border-[#D4AF37] shadow-[0_4px_20px_rgba(212,175,55,0.06)]' 
                                   : 'bg-white/5 backdrop-blur-md border-white/10 hover:bg-white/10 hover:border-white/20 shadow-black/10'
                           }`}
                         >
                           {/* Wood grain texture for MV items */}
-                          {isMusician2Theme && (
+                          {isMusicianTheme && (
                             <>
                               <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '500px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />
                               <div className="absolute inset-0 z-[1] bg-gradient-to-r from-black/30 via-transparent to-black/30" />
                             </>
                           )}
-                          <div className={`w-24 h-16 rounded-xl overflow-hidden flex-shrink-0 relative z-[2] border ${isMusician2Theme ? 'border-amber-700/60' : isMusicianTheme ? 'border-purple-200' : isGoldTheme ? 'border-[#D4AF37]/20' : 'border-white/5'}`}>
+                          <div className={`w-24 h-16 rounded-xl overflow-hidden flex-shrink-0 relative z-[2] border ${isMusicianTheme ? 'border-amber-700/60' : isDreamyTheme ? 'border-2 border-rose-300' : isGoldTheme ? 'border-[#D4AF37]/20' : 'border-white/5'}`}>
                             <img src={`https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`} alt={song.title} className="w-full h-full object-cover opacity-85 group-hover:opacity-100 transition-all duration-300 group-hover:scale-105" />
                             <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center">
                               <div className={`p-2 backdrop-blur-md border rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_4px_12px_rgba(0,0,0,0.3)] opacity-90 group-hover:opacity-100 scale-90 group-hover:scale-105 transition-all duration-300 flex items-center justify-center ${
-                                isMusician2Theme ? 'bg-amber-600/90 border-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.6)]' : isMusicianTheme ? 'bg-rose-500/80 border-rose-300' : isGoldTheme ? 'bg-[#AA7C11]/20 border-[#D4AF37]' : 'bg-white/10 border-white/30'
+                                isMusicianTheme ? 'bg-amber-600/90 border-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.6)]' : isDreamyTheme ? 'bg-rose-500/80 border-rose-300' : isGoldTheme ? 'bg-[#AA7C11]/20 border-[#D4AF37]' : 'bg-white/10 border-white/30'
                               }`}>
                                 <Play className="w-4 h-4 text-white fill-white translate-x-0.5" />
                               </div>
                             </div>
                           </div>
                           <h3 className={`text-base sm:text-lg font-bold pr-2 break-words transition-colors relative z-[2] ${
-                            isMusician2Theme ? 'text-amber-100 group-hover:text-amber-300 font-serif font-extrabold' : isMusicianTheme ? 'text-stone-900 group-hover:text-rose-600 font-extrabold' : isGoldTheme ? 'text-[#1A1303] group-hover:text-[#AA7C11]' : 'text-white/90 group-hover:text-white'
+                            isMusicianTheme ? 'text-amber-100 group-hover:text-amber-300 font-serif font-extrabold' : isDreamyTheme ? 'text-stone-900 group-hover:text-rose-600 font-extrabold' : isGoldTheme ? 'text-[#1A1303] group-hover:text-[#AA7C11]' : 'text-white/90 group-hover:text-white'
                           }`}>{song.title}</h3>
                         </button>
                       ))}
@@ -11711,8 +11976,8 @@ const activeAchievements = hasAchievements;
 
               {/* Pagination controls for MV */}
               {mvTotalItems > 0 && (
-                <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 mt-6 border-t ${isMusician2Theme ? 'border-amber-800/60' : isMusicianTheme ? 'border-purple-200/80' : isGoldTheme ? 'border-[#D4AF37]/35' : 'border-white/10'}`}>
-                  <div className={`flex items-center gap-2 text-xs sm:text-sm ${isMusician2Theme ? 'text-amber-100/90 font-serif font-bold drop-shadow-xs' : isMusicianTheme ? 'text-stone-900 font-extrabold' : isGoldTheme ? 'text-[#1A1303] font-semibold' : 'text-neutral-300'}`}>
+                <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 mt-6 border-t ${isMusicianTheme ? 'border-amber-800/60' : isDreamyTheme ? 'border-purple-200/80' : isGoldTheme ? 'border-[#D4AF37]/35' : 'border-white/10'}`}>
+                  <div className={`flex items-center gap-2 text-xs sm:text-sm ${isMusicianTheme ? 'text-amber-100/90 font-serif font-bold drop-shadow-xs' : isDreamyTheme ? 'text-stone-900 font-extrabold' : isGoldTheme ? 'text-[#1A1303] font-semibold' : 'text-neutral-300'}`}>
                     <span>{t("Hiển thị")}</span>
                     <BeautifulSelect 
                       value={mvPageSize} 
@@ -11722,7 +11987,8 @@ const activeAchievements = hasAchievements;
                       }}
                       options={[8, 20, 50]}
                       isGoldTheme={isGoldTheme || isMusicianTheme}
-                      isMusician2Theme={isMusician2Theme}
+                      isMusicianTheme={isMusicianTheme}
+                      isDreamyTheme={isDreamyTheme}
                     />
                     <span>{t("bài / trang")} ({t("Tổng")}: {mvTotalItems})</span>
                   </div>
@@ -11740,23 +12006,23 @@ const activeAchievements = hasAchievements;
                         }}
                         className={`px-3.5 py-2 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md relative overflow-hidden ${
                           mvCurrentPage === 1 
-                            ? isMusician2Theme
+                            ? isMusicianTheme
                               ? 'bg-[#1A0B05]/60 border-amber-950/60 text-amber-200/30 cursor-not-allowed select-none'
-                              : isMusicianTheme 
-                                ? 'bg-stone-200/60 border-stone-300/60 text-stone-400 cursor-not-allowed select-none' 
+                              : isDreamyTheme 
+                                ? 'bg-white/60 border border-purple-200 text-stone-400 cursor-not-allowed select-none' 
                                 : isGoldTheme 
                                   ? 'bg-neutral-100/50 border-neutral-200 text-neutral-300 cursor-not-allowed select-none' 
                                   : 'bg-white/[0.02] border-white/5 text-white/20 cursor-not-allowed select-none' 
-                            : isMusician2Theme
+                            : isMusicianTheme
                               ? 'border-amber-800/80 text-amber-100 hover:border-amber-400 hover:text-amber-200 shadow-md font-bold'
-                              : isMusicianTheme 
-                                ? 'bg-white border-purple-200 text-stone-900 font-extrabold hover:bg-rose-50 hover:border-rose-300 shadow-xs' 
+                              : isDreamyTheme 
+                                ? 'bg-white border-2 border-purple-200 text-stone-900 font-extrabold hover:bg-rose-50 hover:border-rose-400 shadow-xs' 
                                 : isGoldTheme 
                                   ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
                                   : 'bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 hover:border-emerald-500/50'
                         }`}
                       >
-                        {isMusician2Theme && mvCurrentPage !== 1 && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
+                        {isMusicianTheme && mvCurrentPage !== 1 && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
                         <span className="relative z-[2]">{t("Trước")}</span>
                       </button>
                       
@@ -11784,23 +12050,23 @@ const activeAchievements = hasAchievements;
                               }}
                               className={`w-9 h-9 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md flex items-center justify-center relative overflow-hidden ${
                                 isCurrent 
-                                  ? isMusician2Theme
+                                  ? isMusicianTheme
                                     ? 'bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-stone-950 font-black border-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.6)]'
-                                    : isMusicianTheme 
-                                      ? 'bg-rose-500 text-white font-black shadow-md border-rose-400' 
+                                    : isDreamyTheme 
+                                      ? 'bg-gradient-to-br from-rose-500 to-rose-600 text-white font-black shadow-md border-rose-400' 
                                       : isGoldTheme 
                                         ? 'bg-[#AA7C11] text-white shadow-[0_0_15px_rgba(170,124,17,0.45)] border-[#AA7C11]' 
                                         : 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.45)] border-emerald-500' 
-                                  : isMusician2Theme
+                                  : isMusicianTheme
                                     ? 'border-amber-800/80 text-amber-100 font-bold hover:border-amber-400 hover:text-amber-200 shadow-md'
-                                    : isMusicianTheme 
-                                      ? 'bg-white border-purple-200 text-stone-900 font-extrabold hover:bg-rose-50 hover:border-rose-300 shadow-xs' 
+                                    : isDreamyTheme 
+                                      ? 'bg-white border-2 border-purple-200 text-stone-900 font-extrabold hover:bg-rose-50 hover:border-rose-400 shadow-xs' 
                                       : isGoldTheme 
                                         ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
                                         : 'bg-white/5 border-white/10 text-white/70 hover:text-white hover:bg-white/15 hover:border-emerald-500/50'
                               }`}
                             >
-                              {isMusician2Theme && !isCurrent && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '200px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
+                              {isMusicianTheme && !isCurrent && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '200px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
                               <span className="relative z-[2]">{page}</span>
                             </button>
                           );
@@ -11818,23 +12084,23 @@ const activeAchievements = hasAchievements;
                         }}
                         className={`px-3.5 py-2 rounded-xl text-xs font-bold border backdrop-blur-md transition-all duration-300 shadow-md relative overflow-hidden ${
                           mvCurrentPage === mvTotalPages 
-                            ? isMusician2Theme
+                            ? isMusicianTheme
                               ? 'bg-[#1A0B05]/60 border-amber-950/60 text-amber-200/30 cursor-not-allowed select-none'
-                              : isMusicianTheme 
-                                ? 'bg-stone-200/60 border-stone-300/60 text-stone-400 cursor-not-allowed select-none' 
+                              : isDreamyTheme 
+                                ? 'bg-white/60 border border-purple-200 text-stone-400 cursor-not-allowed select-none' 
                                 : isGoldTheme 
                                   ? 'bg-neutral-100/50 border-neutral-200 text-neutral-300 cursor-not-allowed select-none' 
                                   : 'bg-white/[0.02] border-white/5 text-white/20 cursor-not-allowed select-none' 
-                            : isMusician2Theme
+                            : isMusicianTheme
                               ? 'border-amber-800/80 text-amber-100 hover:border-amber-400 hover:text-amber-200 shadow-md font-bold'
-                              : isMusicianTheme 
-                                ? 'bg-white border-purple-200 text-stone-900 font-extrabold hover:bg-rose-50 hover:border-rose-300 shadow-xs' 
+                              : isDreamyTheme 
+                                ? 'bg-white border-2 border-purple-200 text-stone-900 font-extrabold hover:bg-rose-50 hover:border-rose-400 shadow-xs' 
                                 : isGoldTheme 
                                   ? 'bg-[#FAF5E6] border-[#D4AF37]/35 text-[#1A1303] hover:bg-white hover:border-[#D4AF37]' 
                                   : 'bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 hover:border-emerald-500/50'
                         }`}
                       >
-                        {isMusician2Theme && mvCurrentPage !== mvTotalPages && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
+                        {isMusicianTheme && mvCurrentPage !== mvTotalPages && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
                         <span className="relative z-[2]">{t("Sau")}</span>
                       </button>
                     </div>
@@ -15623,9 +15889,9 @@ function SocialCarousel({ data, pushDown = false, isGoldTheme = false, isMusicia
     <div className={`fixed left-6 z-[105] flex flex-col items-center gap-3 transition-all duration-500 ease-in-out top-6 sm:top-8`}>
       <button 
         onClick={() => { setIsOpen(!isOpen); console.log('Clicked, new state:', !isOpen); }}
-        className={`relative flex items-center justify-center w-10 h-10 rounded-full ${
+        className={`relative flex items-center justify-center w-10.5 h-10.5 rounded-full ${
           isMusicianTheme 
-            ? 'bg-white/95 border-2 border-rose-300 text-rose-600 shadow-[0_6px_20px_rgba(244,63,94,0.3)] hover:border-rose-400 hover:scale-110 hover:text-rose-700' 
+            ? 'bg-gradient-to-b from-[#4A2411] via-[#35180A] to-[#210D04] border-2 border-[#8C4A1C] text-amber-300 shadow-[0_8px_20px_rgba(0,0,0,0.9),inset_0_1px_2px_rgba(255,220,150,0.3)] hover:border-amber-400 hover:scale-110 hover:text-amber-100 hover:shadow-[0_0_20px_rgba(245,158,11,0.6)]' 
             : isGoldTheme 
             ? 'bg-[#1A1303] border-[#D4AF37]/50 text-[#D4AF37] shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:border-[#D4AF37] hover:text-amber-300 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)]' 
             : 'bg-white/10 border-white/20 text-white hover:bg-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]'
@@ -15690,9 +15956,9 @@ function SocialCarousel({ data, pushDown = false, isGoldTheme = false, isMusicia
                     hidden: {  opacity: 0, y: -10, scale: 0.8 },
                     visible: { opacity: 1, y: 0, scale: 1 }
                   }}
-                  className={`flex items-center justify-center w-10 h-10 rounded-full backdrop-blur-md border hover:scale-110 shadow-lg transition-all ${
+                  className={`flex items-center justify-center w-10.5 h-10.5 rounded-full backdrop-blur-md border hover:scale-110 shadow-lg transition-all ${
                     isMusicianTheme 
-                      ? 'bg-white/90 border-2 border-rose-200 text-rose-600 hover:bg-rose-500 hover:text-white shadow-md' 
+                      ? 'bg-gradient-to-b from-[#4A2411] via-[#35180A] to-[#210D04] border-2 border-[#8C4A1C] text-amber-300 hover:border-amber-400 hover:text-amber-100 hover:shadow-[0_0_20px_rgba(245,158,11,0.6)] shadow-md' 
                       : isGoldTheme 
                       ? 'bg-[#1A1303] border-[#D4AF37]/40 text-[#D4AF37] ' + social.color.replace('hover:bg-', 'hover:text-white hover:bg-') 
                       : 'bg-black/40 border-white/10 text-white ' + social.color
@@ -25581,13 +25847,15 @@ function BeautifulSelect({
   onChange, 
   options, 
   isGoldTheme,
-  isMusician2Theme
+  isMusicianTheme,
+  isDreamyTheme
 }: { 
   value: number, 
   onChange: (val: number) => void, 
   options: number[], 
   isGoldTheme?: boolean,
-  isMusician2Theme?: boolean
+  isMusicianTheme?: boolean,
+  isDreamyTheme?: boolean
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -25608,14 +25876,16 @@ function BeautifulSelect({
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={`flex items-center justify-center gap-1.5 cursor-pointer backdrop-blur-md transition-all duration-300 focus:outline-none text-xs sm:text-sm shadow-md rounded-xl px-3 py-1.5 border min-w-[60px] font-bold relative overflow-hidden ${
-          isMusician2Theme
+          isMusicianTheme
             ? 'border-amber-600/80 text-amber-100 hover:border-amber-400'
-            : isGoldTheme 
-              ? 'bg-[#FAF5E6] border-[#D4AF37] text-[#1A1303] hover:bg-white hover:border-[#AA7C11] hover:shadow-lg' 
-              : 'bg-[#18181b]/95 border-white/20 text-white hover:bg-[#27272a]/95 hover:border-white/45'
+            : isDreamyTheme
+              ? 'bg-white/95 border-2 border-rose-200 text-stone-900 font-extrabold hover:bg-rose-50 hover:border-rose-400 shadow-xs'
+              : isGoldTheme 
+                ? 'bg-[#FAF5E6] border-[#D4AF37] text-[#1A1303] hover:bg-white hover:border-[#AA7C11] hover:shadow-lg' 
+                : 'bg-[#18181b]/95 border-white/20 text-white hover:bg-[#27272a]/95 hover:border-white/45'
         }`}
       >
-        {isMusician2Theme && (
+        {isMusicianTheme && (
           <>
             <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.4) contrast(1.2) saturate(1.1)' }} />
             <div className="absolute inset-0 z-[1] bg-gradient-to-b from-white/10 to-black/20" />
@@ -25623,7 +25893,7 @@ function BeautifulSelect({
         )}
         <span className="relative z-[2] tabular-nums text-center">{value}</span>
         <svg 
-          className={`w-3 h-3 transition-transform duration-200 relative z-[2] ${isOpen ? 'rotate-180' : ''} ${isMusician2Theme ? 'text-amber-400' : isGoldTheme ? 'text-[#AA7C11]' : 'text-neutral-400'}`} 
+          className={`w-3 h-3 transition-transform duration-200 relative z-[2] ${isOpen ? 'rotate-180' : ''} ${isMusicianTheme ? 'text-amber-400' : isDreamyTheme ? 'text-rose-500' : isGoldTheme ? 'text-[#AA7C11]' : 'text-neutral-400'}`} 
           viewBox="0 0 24 24" 
           fill="none" 
           stroke="currentColor" 
@@ -25638,13 +25908,15 @@ function BeautifulSelect({
       {isOpen && (
         <div 
           className={`absolute bottom-full left-0 mb-1.5 w-full min-w-[65px] rounded-xl shadow-2xl border backdrop-blur-lg overflow-hidden py-1 z-40 animate-in fade-in slide-in-from-bottom-2 duration-150 ${
-            isMusician2Theme
+            isMusicianTheme
               ? 'border-amber-700/80 shadow-[0_8px_30px_rgba(0,0,0,0.9)]'
-              : isGoldTheme 
-                ? 'bg-[#FAF5E6]/95 border-[#D4AF37] shadow-[0_8px_30px_rgba(170,124,17,0.2)]' 
-                : 'bg-[#18181b]/95 border-white/10 shadow-black/80'
+              : isDreamyTheme
+                ? 'bg-white/95 border-2 border-rose-200 shadow-xl'
+                : isGoldTheme 
+                  ? 'bg-[#FAF5E6]/95 border-[#D4AF37] shadow-[0_8px_30px_rgba(170,124,17,0.2)]' 
+                  : 'bg-[#18181b]/95 border-white/10 shadow-black/80'
           }`}
-          style={isMusician2Theme ? { backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.4) contrast(1.2) saturate(1.1)' } : undefined}
+          style={isMusicianTheme ? { backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.4) contrast(1.2) saturate(1.1)' } : undefined}
         >
           {options.map((opt, optIdx) => (
             <button
@@ -25656,16 +25928,20 @@ function BeautifulSelect({
               }}
               className={`w-full text-center px-3 py-1.5 text-xs sm:text-sm font-semibold transition-colors cursor-pointer tabular-nums ${
                 opt === value
-                  ? isMusician2Theme
+                  ? isMusicianTheme
                     ? 'bg-amber-600/40 text-amber-200 font-bold'
-                    : isGoldTheme
-                      ? 'bg-[#D4AF37]/20 text-[#1A1303] font-bold'
-                      : 'bg-white/15 text-white font-bold'
-                  : isMusician2Theme
+                    : isDreamyTheme
+                      ? 'bg-rose-500 text-white font-black'
+                      : isGoldTheme
+                        ? 'bg-[#D4AF37]/20 text-[#1A1303] font-bold'
+                        : 'bg-white/15 text-white font-bold'
+                  : isMusicianTheme
                     ? 'text-amber-100/70 hover:bg-amber-800/40 hover:text-amber-100'
-                    : isGoldTheme
-                      ? 'text-stone-600 hover:bg-[#D4AF37]/10 hover:text-[#1A1303]'
-                      : 'text-neutral-400 hover:bg-white/5 hover:text-white'
+                    : isDreamyTheme
+                      ? 'text-stone-800 font-bold hover:bg-rose-50 hover:text-rose-600'
+                      : isGoldTheme
+                        ? 'text-stone-600 hover:bg-[#D4AF37]/10 hover:text-[#1A1303]'
+                        : 'text-neutral-400 hover:bg-white/5 hover:text-white'
               }`}
             >
               {opt}
@@ -25678,7 +25954,7 @@ function BeautifulSelect({
 }
 
 
-function PublicNavbar({ menus, activeTab, setActiveTab, t, isGoldTheme, isMusicianTheme, isMusician2Theme }: any) {
+function PublicNavbar({ menus, activeTab, setActiveTab, t, isGoldTheme, isMusicianTheme, isDreamyTheme }: any) {
   const { landingConfig } = useContext(LanguageContext);
   if (!menus || menus.length === 0) return null;
   const visibleMenus = menus.filter((m: any) => m.isVisible);
@@ -25692,7 +25968,7 @@ function PublicNavbar({ menus, activeTab, setActiveTab, t, isGoldTheme, isMusici
   };
 
   return (
-    <div className={`w-full max-w-5xl mx-auto px-6 sm:px-12 mb-12 flex items-center justify-center gap-6 sm:gap-10 border-b pb-4 ${isMusician2Theme ? 'border-amber-800/60' : isMusicianTheme ? 'border-purple-200/80' : isGoldTheme ? 'border-stone-200/60' : 'border-white/10'}`}>
+    <div className={`w-full max-w-5xl mx-auto px-6 sm:px-12 mb-12 flex items-center justify-center gap-6 sm:gap-10 border-b pb-4 ${isMusicianTheme ? 'border-amber-800/60' : isDreamyTheme ? 'border-purple-200/80' : isGoldTheme ? 'border-stone-200/60' : 'border-white/10'}`}>
       {visibleMenus.map((m: any, i: number) => (
         <button
           key={`l22034-${m.id || ''}-${i}`}
@@ -25705,13 +25981,13 @@ function PublicNavbar({ menus, activeTab, setActiveTab, t, isGoldTheme, isMusici
           }}
           className={`font-bold transition-all relative text-sm sm:text-base ${
             activeTab === m.id 
-              ? (isMusician2Theme ? 'text-amber-100 font-black scale-105 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]' : isMusicianTheme ? 'text-stone-950 font-black scale-102' : isGoldTheme ? 'text-[#AA7C11] font-black scale-102' : 'text-white') 
-              : (isMusician2Theme ? 'text-amber-200/80 hover:text-amber-100 font-bold' : isMusicianTheme ? 'text-stone-700 hover:text-stone-950 font-bold' : isGoldTheme ? 'text-stone-500 hover:text-[#AA7C11]' : 'text-white/80 hover:text-white')
+              ? (isMusicianTheme ? 'text-amber-100 font-black scale-105 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]' : isDreamyTheme ? 'text-stone-950 font-black scale-102' : isGoldTheme ? 'text-[#AA7C11] font-black scale-102' : 'text-white') 
+              : (isMusicianTheme ? 'text-amber-200/80 hover:text-amber-100 font-bold' : isDreamyTheme ? 'text-stone-700 hover:text-stone-950 font-bold' : isGoldTheme ? 'text-stone-500 hover:text-[#AA7C11]' : 'text-white/80 hover:text-white')
           }`}
         >
           {t(getMenuTitle(m))}
           {activeTab === m.id && (
-            <motion.div layoutId="nav-indicator" className={`absolute -bottom-[17px] left-0 right-0 h-[2.5px] ${isMusician2Theme ? 'bg-gradient-to-r from-amber-500 via-amber-300 to-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.8)]' : isMusicianTheme ? 'bg-rose-500' : isGoldTheme ? 'bg-[#AA7C11]' : 'bg-emerald-500'}`} />
+            <motion.div layoutId="nav-indicator" className={`absolute -bottom-[17px] left-0 right-0 h-[2.5px] ${isMusicianTheme ? 'bg-gradient-to-r from-amber-500 via-amber-300 to-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.8)]' : isDreamyTheme ? 'bg-rose-500' : isGoldTheme ? 'bg-[#AA7C11]' : 'bg-emerald-500'}`} />
           )}
         </button>
       ))}

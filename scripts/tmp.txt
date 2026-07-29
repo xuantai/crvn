@@ -1,0 +1,5 @@
+            </div>
+            
+          <h1 
+            className="text-xl md:text-2xl font-black text-center mb-1 drop-shadow-sm flex items-center justify-center relative z-30"
+            style={{ color: customConfig?.titleColor || undefined }}

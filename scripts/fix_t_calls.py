@@ -1,0 +1,26 @@
+with open('src/App.tsx', 'r') as f:
+    content = f.read()
+
+content = content.replace("t['Về Tôi']", "t('Về Tôi')")
+content = content.replace("t['Tên Thật']", "t('Tên Thật')")
+content = content.replace("t['Ngày Sinh']", "t('Ngày Sinh')")
+content = content.replace("t['Địa Chỉ']", "t('Địa Chỉ')")
+content = content.replace("t['Công Ty']", "t('Công Ty')")
+content = content.replace("t['Vai Trò']", "t('Vai Trò')")
+content = content.replace("t['Email']", "t('Email')")
+content = content.replace("t['SĐT']", "t('SĐT')")
+content = content.replace("t['Hình Ảnh']", "t('Hình Ảnh')")
+content = content.replace("t['Học Vấn']", "t('Học Vấn')")
+content = content.replace("t['Kinh nghiệm']", "t('Kinh nghiệm')")
+content = content.replace('t["Tên Thật"]', 't("Tên Thật")')
+content = content.replace('t["Ngày Sinh"]', 't("Ngày Sinh")')
+content = content.replace('t["Địa Chỉ"]', 't("Địa Chỉ")')
+content = content.replace('t["Công Ty"]', 't("Công Ty")')
+content = content.replace('t["Vai Trò"]', 't("Vai Trò")')
+content = content.replace('t["Email"]', 't("Email")')
+content = content.replace('t["SĐT"]', 't("SĐT")')
+content = content.replace('t["Hình Ảnh"]', 't("Hình Ảnh")')
+
+with open('src/App.tsx', 'w') as f:
+    f.write(content)
+print("Fixed t calls")

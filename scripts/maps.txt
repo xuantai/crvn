@@ -1,0 +1,76 @@
+14:      {lines.map((line, lineIdx) => {
+19:            {segments.map((segment, segIdx) => {
+52:      {lines.map((line, lineIdx) => {
+57:            {segments.map((segment, segIdx) => {
+811:            {langs.map(l => (
+1627:                      paginatedItems.map((playlist: any) => {
+1687:                      paginatedItems.map((demo: any) => (
+1851:                          return pages.map(page => {
+1905:              {ytVideos.slice(0, visibleMVs).map((song, i) => (
+2181:        {waves.map((_, i) => {
+2274:      {Array.from({ length: 12 }).map((_, i) => (
+2296:      {Array.from({ length: 20 }).map((_, i) => (
+2325:      {Array.from({ length: 15 }).map((_, i) => {
+2353:      {Array.from({ length: 25 }).map((_, i) => (
+2375:      {Array.from({ length: 20 }).map((_, i) => (
+2395:      {Array.from({ length: 30 }).map((_, i) => (
+2415:      {Array.from({ length: 40 }).map((_, i) => (
+2436:      {Array.from({ length: 15 }).map((_, i) => (
+2457:      {Array.from({ length: 30 }).map((_, i) => (
+2479:      {Array.from({ length: 25 }).map((_, i) => (
+2580:            {Array.from({ length: 12 }).map((_, idx) => {
+2612:      {cloudsData.map((cloud, idx) => (
+2674:      {Array.from({ length: 25 }).map((_, i) => (
+2707:      {Array.from({ length: 30 }).map((_, i) => (
+2767:      {clouds.map((c, i) => (
+2796:      {Array.from({ length: 28 }).map((_, i) => (
+2832:      {Array.from({ length: 30 }).map((_, i) => {
+2860:    const items = Array.from({ length: 24 }).map((_, i) => {
+2882:    const items = Array.from({ length: count }).map((_, i) => {
+2980:        {hatWaves.map(wave => 
+2981:          wave.items.map((hat, i) => (
+3005:        {confettiBursts.map(burst => 
+3006:          burst.items.map((conf, i) => (
+3038:  const buildings = Array.from({ length: 35 }).map((_, i) => ({
+3049:      {fireworks.map((_, i) => {
+3080:         {buildings.map((b, i) => (
+3394:                   {songs.map((song, i) => (
+3698:        {cleanedLines.map(({ text, origIdx }) => {
+4671:            {socials.map((social) => {
+4739:          const merged = data.templateConfigs.map((c: any) => c.id === '9' ? { ...c, name: 'Cầu Vồng' } : c);
+4808:               const newConfigs = templateConfigs.map(c => c.id === editingId ? newConfig : c);
+4826:        {templateConfigs.map(config => {
+4855:               {activeDemos.map(d => (
+4947:                       {demos.map((d: any) => (
+5200:        {configsData?.configs?.map((c: any) => {
+6272:                      {landingList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((demo, localIdx) => {
+6325:                      {releasedList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((demo, localIdx) => {
+6356:                              body: JSON.stringify({ demoIds: [...items, ...((data.demos || []).filter(d => (!d.isReleased || d.isDraft) && !d.deleted))].map(d => d.id) })
+6417:                      {demoList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((demo, localIdx) => {
+6448:                              body: JSON.stringify({ demoIds: [...((data.demos || []).filter(d => (d.isReleased || d.isDraft) && !d.deleted)), ...items].map(d => d.id) })
+6513:                      {draftList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((demo, localIdx) => {
+6544:                              body: JSON.stringify({ demoIds: [...items, ...((data.demos || []).filter(d => !d.isDraft && !d.deleted))].map(d => d.id) })
+6593:                      {playlistList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((pl, localIdx) => {
+6629:                                body: JSON.stringify({ playlistIds: items.map(p => p.id) })
+6662:                     ...trashedDemos.map(d => ({ ...d, _type: 'song' as const })),
+6663:                     ...trashedPlaylists.map(p => ({ ...p, _type: 'playlist' as const }))
+6703:                          {allTrashed.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item: any) => (
+6849:                       {slideshowImages.map((src, i) => (
+7252:                        {otherSongs.map((song) => {
+7355:                      ticketsList.map((ticket) => {
+7445:                        {selectedTicket.messages.map((msg: any) => {
+7693:              {playlists.map(p => (
+7750:               {configs.map(c => (
+7818:          {achievements.map((ach, index) => (
+7828:                     {Object.entries(achievementTypes).map(([k, v]) => (
+7936:          const sorted = data.templateConfigs.map((c: any) => c.id === '9' ? { ...c, name: 'Cầu Vồng' } : c).sort((a: any, b: any) => a.order - b.order);
+8069:          const sorted = data.templateConfigs.map((c: any) => c.id === '9' ? { ...c, name: 'Cầu Vồng' } : c).sort((a: any, b: any) => a.order - b.order);
+8600:                      ].map((tag) => (
+8628:                        {templateConfigs.map((tc: any) => (
+8943:          const sorted = data.templateConfigs.map((c: any) => c.id === '9' ? { ...c, name: 'Cầu Vồng' } : c).sort((a: any, b: any) => a.order - b.order);
+9644:                      ].map((tag) => (
+9672:                        {templateConfigs.map((tc: any) => (
+10013:    const songIds = songs.map(s => s.id);
+10173:                 {songs.map((song, i) => (
+10231:                const currentSongIds = songs.map(s => s.id);
+10236:                return availableSongs.map((song: any) => {

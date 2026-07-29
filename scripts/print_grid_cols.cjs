@@ -1,0 +1,10 @@
+const fs = require('fs');
+let code = fs.readFileSync('src/App.tsx', 'utf8');
+const startMarker = '<form onSubmit={handleProfileSave} className="space-y-6">';
+const endMarker = '          {activeTab === \'socials\' && (';
+const formContent = code.substring(code.indexOf(startMarker), code.indexOf(endMarker));
+const gridColsStr = formContent.match(/<div className="grid grid-cols-1 md:grid-cols-2 gap-6">[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/)[0];
+let opens = (gridColsStr.match(/<div/g)||[]).length;
+let selfClosing = (gridColsStr.match(/<div[^>]*\/>/g)||[]).length;
+let closes = (gridColsStr.match(/<\/div>/g)||[]).length;
+console.log("Op:", opens, "Self:", selfClosing, "Cl:", closes, "Exp:", opens - selfClosing);

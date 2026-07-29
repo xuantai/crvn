@@ -1,0 +1,1116 @@
+178-  if (!hex) return 0.5;
+179-  let cleanHex = hex.replace('#', '');
+180-  if (cleanHex.length === 3) {
+181:    cleanHex = cleanHex.split('').map(c => c + c).join('');
+182-  }
+183-  if (cleanHex.length !== 6) return 0.5;
+184-  const r = parseInt(cleanHex.substring(0, 2), 16) / 255;
+185-  const g = parseInt(cleanHex.substring(2, 4), 16) / 255;
+186-  const b = parseInt(cleanHex.substring(4, 6), 16) / 255;
+187-  
+188:  const a = [r, g, b].map(v => {
+189-    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+190-  });
+191-  return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+--
+315-  const parts = text.split(/(\([^)]+\))/g);
+316-  return (
+317-    <>
+318:      {parts.map((part, idx) => {
+319-        const trimmedPart = part.trim();
+320-        if (!trimmedPart) return null;
+321-
+--
+347-        const lines = cleanedPart.split('\n');
+348-        return (
+349-          <React.Fragment key={`ft-n-${prefix}-${textClean}-${idx}`}>
+350:            {lines.map((line, lineIdx) => {
+351-              const segments = line.split(/(\s*,\s*|\s*&\s*)/g);
+352-              return (
+353-                <React.Fragment key={`ft-l-${prefix}-${textClean}-${idx}-${lineIdx}`}>
+354-                  {lineIdx > 0 && <br />}
+355:                  {segments.map((segment, segIdx) => {
+356-                    const isSeparator = /^(\s*,\s*|\s*&\s*)$/.test(segment);
+357-                    if (isSeparator) {
+358-                      return <span key={`ft-s-${prefix}-${textClean}-${idx}-${lineIdx}-${segIdx}`}>{segment}</span>;
+--
+389-  const lines = text.replace(/\s+\(/g, '\n(').split('\n');
+390-  return (
+391-    <>
+392:      {lines.map((line, lineIdx) => {
+393-        const segments = line.split(/(\s*,\s*|\s*&\s*)/g);
+394-        return (
+395-          <React.Fragment key={`ranwl-l-${textClean}-${lineIdx}`}>
+396-            {lineIdx > 0 && <br />}
+397:            {segments.map((segment, segIdx) => {
+398-              const isSeparator = /^(\s*,\s*|\s*&\s*)$/.test(segment);
+399-              if (isSeparator) {
+400-                return <span key={`ranwl-sep-${textClean}-${lineIdx}-${segIdx}`}>{segment}</span>;
+--
+5803-          <div className="absolute top-2 right-8 w-12 h-12 rounded-full border border-amber-300/20 bg-gradient-to-tr from-amber-400/5 to-amber-200/20" />
+5804-          {/* Butterflies & Spars */}
+5805-          <div className="absolute inset-0 opacity-50">
+5806:            {Array.from({ length: 4 }).map((_, i) => (
+5807-              <div 
+5808-                key={`l5435-bf-${i}`} 
+5809-                className="absolute text-lg animate-float-shape"
+--
+5817-                {['🦋', '🌻', '✨', '🎈'][i % 4]}
+5818-              </div>
+5819-            ))}
+5820:            {Array.from({ length: 6 }).map((_, i) => (
+5821-              <div 
+5822-                key={`l5449-p-${i}`} 
+5823-                className="absolute bg-amber-400/35 rounded-full animate-pulse"
+--
+5876-          {/* Pulse lasers & Equalizers */}
+5877-          <div className="absolute inset-0 bg-gradient-to-r from-purple-900/10 via-fuchsia-950/15 to-pink-900/10 opacity-40 animate-pulse" />
+5878-          <div className="absolute bottom-0 right-4 flex items-end gap-1 opacity-30 h-10">
+5879:            {[14, 28, 20, 36, 16, 24, 8, 30, 18, 22].map((h, i) => (
+5880-              <div 
+5881-                key={`l5508-i-${i}`} 
+5882-                className="w-0.5 bg-fuchsia-400 rounded-t"
+--
+5914-          <div className="absolute bottom-4 right-12 text-xl opacity-[0.06] animate-[float-gentle_16s_ease-in-out_infinite_reverse]">☁️</div>
+5915-          {/* Rain / Snow particles */}
+5916-          <div className="absolute inset-0 opacity-40">
+5917:            {Array.from({ length: 8 }).map((_, i) => (
+5918-              <div 
+5919-                key={`l5546-i-${i}`} 
+5920-                className="absolute text-[8px] sm:text-[10px] text-sky-100/60 animate-snow-contained"
+--
+5962-
+5963-          {/* Floating Notes */}
+5964-          <div className="absolute inset-0 opacity-35">
+5965:            {['♩', '♪', '♫', '♬', '♩', '♪'].map((note, i) => (
+5966-              <div 
+5967-                key={`l5594-i-${i}`} 
+5968-                className="absolute text-teal-600/35 font-bold text-sm animate-bounce"
+--
+6008-              { icon: '🍡', left: '55%', top: '75%', rotate: '15deg', anim: 'animate-bounce' },
+6009-              { icon: '💖', left: '80%', top: '15%', rotate: '5deg', anim: 'animate-float-shape' },
+6010-              { icon: '🍬', left: '90%', top: '50%', rotate: '35deg', anim: 'animate-pulse' },
+6011:            ].map((item, i) => (
+6012-              <div 
+6013-                key={`l5640-i-${i}`} 
+6014-                className={`absolute text-sm drop-shadow-[0_2px_4px_rgba(225,29,72,0.4)] ${item.anim}`}
+--
+6052-          </svg>
+6053-          {/* Drifting petals */}
+6054-          <div className="absolute inset-0 opacity-35">
+6055:            {Array.from({ length: 6 }).map((_, i) => (
+6056-              <div 
+6057-                key={`l5684-i-${i}`} 
+6058-                className="absolute text-sm animate-snow-contained"
+--
+6083-          <div className="absolute bottom-2 right-8 text-xs opacity-15 select-none font-serif rotate-12">Music & Life 📖</div>
+6084-          
+6085-          <div className="absolute inset-0 opacity-40">
+6086:            {Array.from({ length: 5 }).map((_, i) => (
+6087-              <div 
+6088-                key={`l5715-i-${i}`} 
+6089-                className="absolute text-sm animate-snow-contained"
+--
+6108-          {/* Radial Golden Sunbeams pattern */}
+6109-          <svg className="absolute inset-0 w-full h-full opacity-10 text-yellow-300" xmlns="http://www.w3.org/2000/svg">
+6110-            <g transform="translate(100, 50)">
+6111:              {Array.from({ length: 16 }).map((_, i) => (
+6112-                <line 
+6113-                  key={`l5740-i-${i}`} 
+6114-                  x1="0" 
+--
+6127-          
+6128-          {/* Glowing yellow stars */}
+6129-          <div className="absolute inset-0 opacity-45">
+6130:            {Array.from({ length: 5 }).map((_, i) => (
+6131-              <div 
+6132-                key={`l5759-i-${i}`} 
+6133-                className="absolute text-yellow-300 animate-pulse drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]"
+--
+6160-          </svg>
+6161-          {/* Colorful glossy bubbles and sparkles */}
+6162-          <div className="absolute inset-0 opacity-35">
+6163:            {Array.from({ length: 6 }).map((_, i) => (
+6164-              <div 
+6165-                key={`l5792-i-${i}`} 
+6166-                className="absolute rounded-full border border-pink-400/30 bg-gradient-to-tr from-sky-300/10 to-pink-300/15 animate-bounce"
+--
+6200-          <div className="absolute top-2 right-6 text-sm opacity-20 select-none rotate-12">👑</div>
+6201-          <div className="absolute bottom-2 left-6 text-xl opacity-10 select-none -rotate-12">🔥</div>
+6202-          <div className="absolute inset-0 opacity-25">
+6203:            {['⛓️', '🎵', '⛓️', '🔥'].map((item, i) => (
+6204-              <div 
+6205-                key={`l5832-i-${i}`} 
+6206-                className="absolute text-sm animate-pulse"
+--
+6235-          <div className="absolute top-2 right-6 w-10 h-10 rounded-full bg-amber-400/5 border border-amber-300/20 blur-xs animate-pulse" />
+6236-          <div className="absolute top-3 right-7 text-sm opacity-35">🌕</div>
+6237-          <div className="absolute inset-0 opacity-40">
+6238:            {Array.from({ length: 6 }).map((_, i) => (
+6239-              <div 
+6240-                key={`l5867-i-${i}`} 
+6241-                className="absolute bg-amber-300/50 rounded-full animate-pulse"
+--
+6269-          {/* Classic gold notes and Gramophone symbol */}
+6270-          <div className="absolute bottom-3 left-6 text-xl text-[#8D6E63]/25 rotate-12">🎼</div>
+6271-          <div className="absolute inset-0 opacity-25">
+6272:            {['♪', '♩', '♫', '♬'].map((note, i) => (
+6273-              <div 
+6274-                key={`l5901-i-${i}`} 
+6275-                className="absolute text-amber-700/40 font-serif text-sm animate-bounce"
+--
+6302-          <div className="absolute top-4 left-1/4 text-xs text-orange-400/15 select-none animate-[drift_24s_linear_infinite]">🕊️ 🕊️</div>
+6303-          <div className="absolute inset-0 opacity-25 bg-gradient-to-tr from-rose-500/5 via-orange-500/5 to-yellow-500/15" />
+6304-          <div className="absolute inset-0 opacity-25">
+6305:            {Array.from({ length: 5 }).map((_, i) => (
+6306-              <div 
+6307-                key={`l5934-i-${i}`} 
+6308-                className="absolute bg-orange-300/35 rounded-full animate-pulse"
+--
+6335-          {/* Sea bubbles rising & ocean background radial glow */}
+6336-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,#0ea5e912,transparent_50%)]" />
+6337-          <div className="absolute inset-0 opacity-35">
+6338:            {Array.from({ length: 5 }).map((_, i) => (
+6339-              <div 
+6340-                key={`l5967-i-${i}`} 
+6341-                className="absolute rounded-full border border-sky-400/40 bg-sky-200/10 animate-bounce"
+--
+6378-          <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0)_50%,_rgba(0,0,0,0.12)_50%)] bg-[size:100%_4px]" />
+6379-          {/* Jumping 8-bit game items */}
+6380-          <div className="absolute inset-0 opacity-40 font-mono text-xs">
+6381:            {['👾', '🍒', '⭐', '🪙', '❤️'].map((item, i) => (
+6382-              <div 
+6383-                key={`l6010-i-${i}`} 
+6384-                className="absolute animate-bounce"
+--
+6411-          </svg>
+6412-          {/* Floating jigsaw pieces */}
+6413-          <div className="absolute inset-0 opacity-30">
+6414:            {['🧩', '🧩', '🧩'].map((puzzle, i) => (
+6415-              <div 
+6416-                key={`l6043-i-${i}`} 
+6417-                className="absolute text-sm animate-bounce"
+--
+6451-          <div className="absolute bottom-10 left-16 text-lg opacity-10 select-none animate-[float-gentle_14s_infinite_alternate_reverse]">☁️</div>
+6452-          
+6453-          <div className="absolute inset-0 opacity-40">
+6454:            {['🎉', '✨', '🎈', '✨', '🎈'].map((item, i) => (
+6455-              <div 
+6456-                key={`l6083-i-${i}`} 
+6457-                className="absolute text-xs animate-bounce"
+--
+6479-          </svg>
+6480-          {/* Multiple bursting firework stars */}
+6481-          <div className="absolute inset-0 opacity-50">
+6482:            {Array.from({ length: 5 }).map((_, i) => (
+6483-              <div 
+6484-                key={`l6111-c-${i}`} 
+6485-                className="absolute bg-cyan-400/40 rounded-full animate-ping"
+--
+6493-                }}
+6494-              />
+6495-            ))}
+6496:            {Array.from({ length: 5 }).map((_, i) => (
+6497-              <div 
+6498-                key={`l6125-f-${i}`} 
+6499-                className="absolute bg-fuchsia-400/45 rounded-full animate-ping"
+--
+6521-          </svg>
+6522-          {/* Drifting maple leaves and acorns */}
+6523-          <div className="absolute inset-0 opacity-40">
+6524:            {['🍁', '🌰', '🍁', '🍂', '🍂'].map((item, i) => (
+6525-              <div 
+6526-                key={`l6153-i-${i}`} 
+6527-                className="absolute text-sm animate-snow-contained"
+--
+6577-          {/* Sweet bubbles, clouds & pastel stars */}
+6578-          <div className="absolute top-2 left-8 text-sm opacity-20 select-none animate-[float-gentle_8s_infinite_alternate]">☁️</div>
+6579-          <div className="absolute inset-0 opacity-35">
+6580:            {['🫧', '⭐', '🫧', '✨', '💖'].map((item, i) => (
+6581-              <div 
+6582-                key={`l6209-i-${i}`} 
+6583-                className="absolute text-xs animate-bounce"
+--
+6608-            <rect width="100%" height="100%" fill="url(#defaultgrid)" />
+6609-          </svg>
+6610-          <div className="absolute inset-0 opacity-20">
+6611:            {Array.from({ length: 4 }).map((_, i) => (
+6612-              <div 
+6613-                key={`l6240-i-${i}`} 
+6614-                className="absolute bg-amber-400/20 rounded-full animate-pulse"
+--
+6796-    return formatTextFn ? formatTextFn(textVal) : textVal;
+6797-  }
+6798-  const escaped = keywords
+6799:    .map(kw => kw.trim())
+6800-    .filter(Boolean)
+6801:    .map(kw => kw.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'));
+6802-  if (escaped.length === 0) {
+6803-    return formatTextFn ? formatTextFn(textVal) : textVal;
+6804-  }
+--
+6807-    const parts = textVal.split(regex);
+6808-    return (
+6809-      <>
+6810:        {parts.map((part, idx) => {
+6811-          const isBanned = keywords.some(kw => kw.trim().toLowerCase() === part.trim().toLowerCase());
+6812-          if (isBanned) {
+6813-            return (
+--
+6917-            transition={{ duration: 0.2, ease: "easeOut" }}
+6918-            className={`absolute right-0 top-full mt-3 flex flex-col ${isRelative ? 'bg-white border border-stone-200 text-stone-800 shadow-xl' : 'bg-neutral-950/90 border border-white/10 text-white shadow-2xl'} rounded-2xl overflow-hidden origin-top-right z-[10000]`}
+6919-          >
+6920:            {langs.map(l => (
+6921-              <button 
+6922-                key={l}
+6923-                onClick={() => { 
+--
+7130-  const [currentIndex, setCurrentIndex] = useState(0);
+7131-
+7132-  const achievementsKey = useMemo(() => {
+7133:    return (achievements || []).map((a: any) => `${a.type || ''}-${a.value || ''}`).join(',');
+7134-  }, [achievements]);
+7135-
+7136-  useEffect(() => {
+--
+7586-        if (!includeDemo && !d.isReleased && d.linkType !== 'indirect') return false;
+7587-        return true;
+7588-      })
+7589:      .map((d: any) => d.id)
+7590-      .join(',') + `_${includeDemo}`;
+7591-  }, [data?.demos, data?.includeDemoInRandomSong]);
+7592-
+--
+7963-                  transition={{ duration: 1.2, ease: "easeOut" }}
+7964-                  className="text-4xl sm:text-6xl md:text-[6rem] lg:text-[7rem] font-black mb-4 tracking-tighter text-white drop-shadow-lg leading-[1.15] text-center max-w-full mt-3 sm:mt-4"
+7965-                >
+7966:                  {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
+7967-                    if (index === array.length - 1) {
+7968-                      return (
+7969-                        <span key={`l7529-idx-${index}`} className="whitespace-nowrap"><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
+--
+7999-                  transition={{ duration: 1.2, ease: "easeOut" }}
+8000-                  className="text-3xl sm:text-5xl md:text-6xl font-black mb-0 tracking-tight leading-[1.15] text-center max-w-full mt-2 sm:mt-3"
+8001-                >
+8002:                  {(data.artistName || '').split(' ').map((word: string, index: number, array: string[]) => {
+8003-                    if (index === array.length - 1) {
+8004-                      return (
+8005-                        <span key={`l7565-idx-${index}`} className="whitespace-nowrap"><span className={isGoldTheme ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)] font-black" : "animate-text-shine drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"}>{word}</span><div className="relative group inline-flex items-center justify-center align-middle ml-1 sm:ml-2 md:ml-3 -mt-2 sm:-mt-4 md:-mt-6 lg:-mt-8">
+--
+8599-                    className={isGoldTheme && !isMobile && activeListTab !== 'albums' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" : "grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[1400px] mx-auto"}
+8600-                  >
+8601-                    {activeListTab === 'albums' ? (
+8602:                      paginatedItems.map((playlist: any, idx: number) => {
+8603-                        const songsInPlaylist = (data?.demos || []).filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id));
+8604-                        if (songsInPlaylist.length === 0) return <React.Fragment key={`l8086-${playlist.id || ''}-${idx}`} />;
+8605-                        
+--
+8677-                        );
+8678-                      })
+8679-                    ) : (
+8680:                      paginatedItems.map((demo: any, idx: number) => (
+8681-                        <BrandLogoColorExtractor 
+8682-                          key={`l8164-demo-${demo.id || ""}-${idx}`} 
+8683-                          logoUrl={demo.isBrand ? demo.brandLogoUrl : undefined} 
+--
+9249-                          for (let p = startPage; p <= endPage; p++) {
+9250-                            pages.push(p);
+9251-                          }
+9252:                          return pages.map(page => {
+9253-                            const isCurrent = currentPage === page;
+9254-                            return (
+9255-                              <button
+--
+9317-                <h2 className={`text-2xl font-bold tracking-tight ${isGoldTheme ? 'text-[#1A1303]' : 'text-white'}`}>{t.rMv}</h2>
+9318-              </div>
+9319-              <div className="space-y-4">
+9320:                {paginatedMVs.map((song, idx) => (
+9321-                  <button 
+9322-                    onClick={() => setPlayingVideo(song.videoId)} key={`l8724-${song.videoId || ''}-${song.id || ''}-${idx}`} 
+9323-                    className={`w-full text-left flex items-center gap-4 rounded-xl p-3 shadow-lg transition-all duration-300 group border ${
+--
+9392-                        for (let p = startPage; p <= endPage; p++) {
+9393-                          pages.push(p);
+9394-                        }
+9395:                        return pages.map(page => {
+9396-                          const isCurrent = mvCurrentPage === page;
+9397-                          return (
+9398-                            <button
+--
+9722-      <div 
+9723-        className="flex items-end justify-between h-4 md:h-5 w-full mb-0"
+9724-      >
+9725:        {waves.map((_, i) => {
+9726-          const randDur = 0.5 + Math.random() * 0.8;
+9727-          return (
+9728-             <div 
+--
+9853-function ButterflyEffect() {
+9854-  return (
+9855-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-[30] opacity-60">
+9856:      {Array.from({ length: 12 }).map((_, i) => (
+9857-        <div 
+9858-          key={`l9260-i-${i}`} 
+9859-          className="absolute animate-float-shape"
+--
+9875-  const candies = ['🍬', '🍭', '🍫', '🍡'];
+9876-  return (
+9877-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 opacity-80">
+9878:      {Array.from({ length: 20 }).map((_, i) => (
+9879-        <div 
+9880-          key={`l9282-i-${i}`} 
+9881-          className="absolute text-xl md:text-2xl animate-snow will-change-transform"
+--
+9904-  ];
+9905-  return (
+9906-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-[30] opacity-50">
+9907:      {Array.from({ length: 15 }).map((_, i) => {
+9908-        const item = colorMap[i % colorMap.length];
+9909-        const height = Math.random() * 100 + 50;
+9910-        const duration = Math.random() * 5 + 3;
+--
+9932-  const chains = ['⛓️', '💎', '💰', '👑'];
+9933-  return (
+9934-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-[30] opacity-70">
+9935:      {Array.from({ length: 25 }).map((_, i) => (
+9936-        <div 
+9937-          key={`l9339-i-${i}`} 
+9938-          className="absolute text-2xl md:text-3xl animate-snow will-change-transform drop-shadow-md"
+--
+9954-  const notes = ['🎵', '🎼', '🎶', '♩', '♪', '♫', '♬'];
+9955-  return (
+9956-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 opacity-40">
+9957:      {Array.from({ length: 20 }).map((_, i) => (
+9958-        <div 
+9959-          key={`l9361-i-${i}`} 
+9960-          className="absolute text-2xl md:text-4xl animate-snow will-change-transform drop-shadow-sm text-stone-100"
+--
+9974-function EightBitEffect() {
+9975-  return (
+9976-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-[30] opacity-30">
+9977:      {Array.from({ length: 30 }).map((_, i) => (
+9978-        <div 
+9979-          key={`l9381-i-${i}`} 
+9980-          className="absolute w-4 h-4 bg-white animate-snow will-change-transform"
+--
+9994-function SnowEffect() {
+9995-  return (
+9996-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+9997:      {Array.from({ length: 40 }).map((_, i) => (
+9998-        <div 
+9999-          key={`l9401-i-${i}`} 
+10000-          className="absolute bg-white/30 rounded-full animate-snow will-change-transform"
+--
+10015-  const shapes = ['rounded-full', 'rounded-lg rotate-45', 'rounded-tl-3xl rounded-br-3xl'];
+10016-  return (
+10017-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 opacity-30">
+10018:      {Array.from({ length: 15 }).map((_, i) => (
+10019-        <div 
+10020-          key={`l9422-i-${i}`} 
+10021-          className={`absolute bg-[#fef08a] animate-float-shape ${shapes[i % 3]}`}
+--
+10036-function BlossomEffect() {
+10037-  return (
+10038-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+10039:      {Array.from({ length: 30 }).map((_, i) => (
+10040-        <div 
+10041-          key={`l9443-i-${i}`} 
+10042-          className="absolute bg-pink-300 animate-snow will-change-transform opacity-70 shadow-[0_0_8px_rgba(244,114,182,0.4)]"
+--
+10058-function LeavesEffect() {
+10059-  return (
+10060-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+10061:      {Array.from({ length: 25 }).map((_, i) => (
+10062-        <div 
+10063-          key={`l9465-i-${i}`} 
+10064-          className="absolute bg-yellow-600/30 animate-snow will-change-transform"
+--
+10159-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(253,224,71,0.25)_0%,transparent_70%)] animate-sun-rays-spin" style={{ transformOrigin: 'center' }}>
+10160-          <svg className="w-full h-full text-yellow-300 opacity-30" viewBox="0 0 100 100">
+10161-            <circle cx="50" cy="50" r="10" />
+10162:            {Array.from({ length: 12 }).map((_, idx) => {
+10163-              const angle = (idx * 360) / 12;
+10164-              return (
+10165-                <line
+--
+10191-      </svg>
+10192-
+10193-      {/* Floating clouds looping left to right */}
+10194:      {cloudsData.map((cloud, idx) => (
+10195-        <svg 
+10196-          key={`l9598-idx-5-${idx}`}
+10197-          className={`absolute ${cloud.size} ${cloud.opacity} animate-cloud-slow pointer-events-none z-10 w-28 md:w-36`} 
+--
+10253-  const notes = ['🎵', '🎶', '♩', '♪', '♫', '♬'];
+10254-  return (
+10255-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 opacity-40">
+10256:      {Array.from({ length: 25 }).map((_, i) => (
+10257-        <div 
+10258-          key={`l9660-i-${i}`} 
+10259-          className="absolute text-xl sm:text-2xl animate-snow will-change-transform drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] text-[#a16207]"
+--
+10286-  const colors = ['bg-orange-500/40', 'bg-amber-500/50', 'bg-yellow-500/40', 'bg-red-500/30', 'bg-rose-500/30'];
+10287-  return (
+10288-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+10289:      {Array.from({ length: 30 }).map((_, i) => (
+10290-        <div 
+10291-          key={`l9693-i-${i}`} 
+10292-          className={`absolute ${colors[i % colors.length]} animate-snow will-change-transform`}
+--
+10346-        🌙
+10347-      </div>
+10348-      {/* Drifting Clouds */}
+10349:      {clouds.map((c, i) => (
+10350-        <div
+10351-          key={`l9753-i-${i}`}
+10352-          className="absolute text-5xl sm:text-7xl pointer-events-none select-none text-white/12"
+--
+10375-      <div className="absolute top-0 left-0 w-[100vw] h-[100vh] bg-[radial-gradient(ellipse_at_top_left,rgba(236,72,153,0.15),transparent_50%)]"></div>
+10376-      <div className="absolute bottom-0 right-0 w-[100vw] h-[100vh] bg-[radial-gradient(ellipse_at_bottom_right,rgba(16,185,129,0.15),transparent_50%)]"></div>
+10377-      
+10378:      {Array.from({ length: 28 }).map((_, i) => (
+10379-        <div 
+10380-          key={`l9782-i-${i}`} 
+10381-          className="absolute text-xl sm:text-3xl animate-snow drop-shadow-[0_3px_6px_rgba(236,72,153,0.6)] font-mono select-none will-change-transform"
+--
+10411-      <div className="absolute top-[20%] right-0 w-[100vw] h-[100vh] bg-[radial-gradient(ellipse_at_right,rgba(6,182,212,0.15),transparent_50%)] animate-pulse" style={{ animationDuration: '10s' }}></div>
+10412-      <div className="absolute bottom-0 left-[20%] w-[100vw] h-[100vh] bg-[radial-gradient(ellipse_at_bottom,rgba(234,179,8,0.1),transparent_50%)] animate-pulse" style={{ animationDuration: '9s' }}></div>
+10413-
+10414:      {Array.from({ length: 30 }).map((_, i) => {
+10415-        const colorClass = colors[i % colors.length];
+10416-        const randomRot = Math.random() * 360;
+10417-        const randomScale = 0.5 + Math.random() * 1.5;
+--
+10439-  const [hatWaves, setHatWaves] = useState<{ id: number; items: any[] }[]>([]);
+10440-
+10441-  const generateConfettiBurst = () => {
+10442:    const items = Array.from({ length: 24 }).map((_, i) => {
+10443-      const isLeft = i % 2 === 0;
+10444-      const colors = ['bg-red-400', 'bg-blue-400', 'bg-emerald-400', 'bg-yellow-300', 'bg-purple-300', 'bg-pink-400'];
+10445-      const isSquare = Math.random() > 0.5;
+--
+10461-  };
+10462-
+10463-  const generateHatWave = (count: number) => {
+10464:    const items = Array.from({ length: count }).map((_, i) => {
+10465-      const tx = (Math.random() * 40 - 20) + 'vw';
+10466-      const ty = `-${25 + Math.random() * 30}vh`; // Heights from -25vh to -55vh
+10467-      const left = `${10 + Math.random() * 80}%`;
+--
+10559-          ☀️
+10560-        </div>
+10561-        {/* Hats thrown from bottom */}
+10562:        {hatWaves.map(wave => 
+10563:          wave.items.map((hat, i) => (
+10564-            <div
+10565-              key={`l9967-${wave.id}-${i}`}
+10566-              className="absolute text-5xl md:text-6xl drop-shadow-xl will-change-transform"
+--
+10584-      {/* Confetti (z-[20]) */}
+10585-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-[20]">
+10586-        {/* Rhythmic Burst Confetti */}
+10587:        {confettiBursts.map(burst => 
+10588:          burst.items.map((conf, i) => (
+10589-            <div
+10590-              key={`l9992-${burst.id}-${i}`}
+10591-              className={`absolute ${conf.color} ${conf.isSquare ? 'w-2 h-2' : 'w-1.5 h-3'} will-change-transform`}
+--
+10697-      </svg>
+10698-      
+10699-      {/* Uneven vintage stains (loang lổ) */}
+10700:      {stains.map((stain, idx) => (
+10701-        <div
+10702-          key={`l10104-stain-${idx}`}
+10703-          className="absolute rounded-full filter blur-[60px] opacity-70 mix-blend-multiply"
+--
+10720-      <div className="absolute top-0 bottom-0 w-[1.5px] bg-amber-950/20 animate-scratch-slow z-[2]" style={{ animationDelay: '1.5s' }} />
+10721-
+10722-      {/* Falling dried leaves */}
+10723:      {Array.from({ length: 15 }).map((_, i) => (
+10724-        <div 
+10725-          key={`l10127-i-${i}`} 
+10726-          className="absolute text-xl sm:text-2xl animate-snow will-change-transform drop-shadow-md mix-blend-overlay z-[3]"
+--
+10795-      </div>
+10796-
+10797-      {/* 6. Falling Sparkles, Stars, Sweets, and Hearts */}
+10798:      {Array.from({ length: 28 }).map((_, i) => (
+10799-        <div 
+10800-          key={`l10202-i-${i}`} 
+10801-          className="absolute text-xl sm:text-2xl animate-snow will-change-transform drop-shadow-[0_2px_4px_rgba(255,182,193,0.4)]"
+--
+10816-
+10817-function FireworksEffect() {
+10818-  const fireworks = Array.from({ length: 15 });
+10819:  const buildings = Array.from({ length: 35 }).map((_, i) => ({
+10820-    height: 30 + Math.random() * 60,
+10821-    width: 20 + Math.random() * 50,
+10822-    lights: Math.random() > 0.3,
+--
+10827-      {/* Background flash */}
+10828-      <div className="absolute inset-0 animate-pulse bg-amber-500/10 mix-blend-screen" style={{ animationDuration: '2s' }}></div>
+10829-      
+10830:      {fireworks.map((_, i) => {
+10831-        const left = 10 + Math.random() * 80;
+10832-        return (
+10833-          <div
+--
+10858-
+10859-      {/* City Skyline */}
+10860-      <div className="absolute bottom-0 inset-x-0 h-[25vh] flex items-end justify-center px-2 opacity-95 z-0">
+10861:         {buildings.map((b, i) => (
+10862-            <div key={`l10264-i-${i}`} className="bg-[#0a0a0a] border-t border-white/5 mx-[1px]" style={{
+10863-                height: `${b.height}%`,
+10864-                width: `${b.width}px`,
+--
+11206-                 </div>
+11207-
+11208-                 <div className="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar" onScroll={resetTimer}>
+11209:                   {songs.map((song, i) => (
+11210-                       <button
+11211-                         key={`l10613-${song.id || ''}-${i}`} 
+11212-                        ref={i === currentIndex ? activeSongRef : null}
+--
+11279-function formatBriefText(text: string | null | undefined) {
+11280-  if (!text) return null;
+11281-  const lines = text.split(/\r?\n/);
+11282:  return lines.map((line, idx) => {
+11283-    const trimmed = line.trim();
+11284-    if (!trimmed) {
+11285-      return <div key={`l10687-idx-6-${idx}`} className="h-2" />;
+--
+11657-          textShadow: isLight ? '0 1px 1px rgba(255,255,255,0.5)' : '0 1px 3px rgba(0,0,0,0.7)'
+11658-        }}
+11659-      >
+11660:        {cleanedLines.map(({ text, origIdx }, arrIdx) => {
+11661-          const trimmed = text.trim();
+11662-          const lower = trimmed.toLowerCase();
+11663-          
+--
+11780-  }, [loading, unlocked, isAdmin, playlistSongs, id, onEnd]);
+11781-
+11782-  const previewDataStr = previewData ? JSON.stringify(previewData) : '';
+11783:  const playlistSongsStr = playlistSongs ? JSON.stringify(playlistSongs.map((s: any) => s.id)) : '';
+11784-
+11785-  useEffect(() => {
+11786-    if (previewData) {
+--
+12456-                    <div className="relative w-full aspect-[4/5] bg-[#E2DCD2] p-4 flex flex-col justify-center items-center shadow-[inset_0_4px_20px_rgba(0,0,0,0.15)] rounded-2xl overflow-hidden border border-[#D1C6B7]">
+12457-                      {/* Falling Vintage Dust and Dried Leaves Inside Card */}
+12458-                      <div className="absolute inset-0 pointer-events-none z-30">
+12459:                        {Array.from({ length: 8 }).map((_, i) => {
+12460-                          const dustChars = ['🍂', '🍁', '✨', '•', '·', '🍂'];
+12461-                          return (
+12462-                            <div 
+--
+12481-                        <div className="relative w-full h-full bg-[#1F0E05] overflow-hidden group px-[12%] flex items-center justify-center">
+12482-                           {/* Left Film Sprocket Strip inside the photo frame */}
+12483-                           <div className="absolute top-0 bottom-0 left-0 w-[12%] bg-[#151515] border-r border-[#2c2c2c] z-20 flex flex-col justify-around py-1.5 shadow-lg select-none">
+12484:                             {Array.from({length: 6}).map((_, i) => (
+12485-                               <div key={`l11894-sprocket-l-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2]/20 mx-auto rounded-[1.5px] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.9)]"></div>
+12486-                             ))}
+12487-                             <div className="absolute top-[25%] left-1/2 -translate-x-1/2 text-white/10 text-[6px] font-mono tracking-widest font-black select-none pointer-events-none rotate-90 scale-90">KODAK</div>
+--
+12489-
+12490-                           {/* Right Film Sprocket Strip inside the photo frame */}
+12491-                           <div className="absolute top-0 bottom-0 right-0 w-[12%] bg-[#151515] border-l border-[#2c2c2c] z-20 flex flex-col justify-around py-1.5 shadow-lg select-none">
+12492:                             {Array.from({length: 6}).map((_, i) => (
+12493-                               <div key={`l11902-sprocket-r-${i}`} className="w-[45%] aspect-square bg-[#E2DCD2]/20 mx-auto rounded-[1.5px] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.9)]"></div>
+12494-                             ))}
+12495-                             <div className="absolute top-[65%] left-1/2 -translate-x-1/2 text-white/10 text-[6px] font-mono tracking-widest font-black select-none pointer-events-none rotate-90 scale-90">500T</div>
+--
+12586-
+12587-                         {/* Sound Speaker Grille (Physical-looking dots with pulsing notes) */}
+12588-                         <div className="relative flex flex-col gap-1 w-11 py-1.5 px-2 bg-black/10 rounded-lg shadow-[inset_0_1px_3px_rgba(0,0,0,0.2)]">
+12589:                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={`l11998-g1-${n}`} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
+12590:                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={`l11999-g2-${n}`} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
+12591:                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={`l12000-g3-${n}`} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
+12592:                            <div className="flex justify-between">{[1,2,3,4].map(n=><div key={`l12001-g4-${n}`} className="w-1 h-1 rounded-full bg-[#B31D45]/40 shadow-[0_0.5px_0_rgba(255,255,255,0.2)]"></div>)}</div>
+12593-                         </div>
+12594-
+12595-
+--
+12932-                <button onClick={() => setShowBrandVideos(false)} className="p-1 hover:bg-white/10 rounded-lg"><X className="w-5 h-5" /></button>
+12933-              </div>
+12934-              <div className="grid grid-cols-1 gap-4 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">
+12935:                {demo?.brandReferenceVideos?.map((vid, idx) => {
+12936-                  const getYoutubeId = (url: string): string | null => {
+12937-                    if (!url) return null;
+12938-                    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+--
+13193-            }}
+13194-            className="flex flex-col gap-3"
+13195-          >
+13196:            {socials.map((social, idx) => {
+13197-              const IconComponent = social.Icon;
+13198-              return (
+13199-                <motion.a
+--
+13337-        ];
+13338-        let merged: any[] = [];
+13339-        if (data.templateConfigs && data.templateConfigs.length > 0) {
+13340:          merged = data.templateConfigs.map((c: any) => ({
+13341-            ...c,
+13342-            name: translateTemplateName(c.name || String(c.id), landingConfig?.templateNames, String(c.id))
+13343-          }));
+--
+13407-                if (setIsPCPreviewMode) setIsPCPreviewMode(false);
+13408-             }}
+13409-             onSave={async (newConfig: TemplateConfig) => {
+13410:               const newConfigs = templateConfigs.map(c => c.id === editingId ? newConfig : c);
+13411-               setTemplateConfigs(newConfigs);
+13412-               await handleSaveAll(newConfigs);
+13413-             }}
+--
+13430-      </div>
+13431-      
+13432-      <div className="space-y-3">
+13433:        {templateConfigs.map((config, idx) => {
+13434-          const isExpanded = expandedTemplateIds.includes(config.id);
+13435-          const activeDemos = demos.filter(d => (d.template || '1') === config.id);
+13436-          return (
+--
+13462-          </div>
+13463-          {isExpanded && activeDemos.length > 0 && (
+13464-            <div className="pl-14 pr-4 py-2 bg-stone-50/50 rounded-xl border border-stone-100 space-y-1">
+13465:               {activeDemos.map((d, idx) => (
+13466-                 <div key={`l12865-${d.id || ''}-${idx}`} className="text-sm font-medium text-stone-600 flex items-center gap-2 truncate">
+13467-                   <span className="w-1.5 h-1.5 rounded-full bg-stone-300 shrink-0"></span>
+13468-                   <span className="truncate">{d.title}</span>
+--
+13564-                    <label className={`${isPCPreviewMode ? 'text-xs' : 'text-sm'} block font-semibold text-stone-700 mb-2`}>{t("Bài hát Preview")}</label>
+13565-                    <div className="relative">
+13566-                       <select className={`w-full border border-stone-300 rounded-xl pl-4 pr-10 ${isPCPreviewMode ? 'py-2 text-sm' : 'py-3'} bg-white shadow-xs appearance-none cursor-pointer hover:border-stone-400 transition-colors`} value={previewSongId} onChange={e => setPreviewSongId(e.target.value)}>
+13567:                          {demos.map((d: any, idx: number) => (
+13568-                              <option key={`l12967-${d.id || ''}-${idx}`} value={d.id}>{d.title}</option>
+13569-                          ))}
+13570-                       </select>
+--
+13944-      )}
+13945-
+13946-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+13947:        {configsData?.configs?.map((c: any, idx: number) => {
+13948-          const isActive = c.id === configsData.activeId;
+13949-          return (
+13950-            <div key={`l13349-${c.id || ''}-${idx}`} className={`p-5 rounded-2xl border-2 transition-all ${isActive ? 'border-blue-500 bg-blue-50/30' : 'border-stone-200 bg-white hover:border-stone-300'}`}>
+--
+15051-                  { id: 'free', name: 'Gói Miễn Phí', price: '0', features: ['Quản lý bài hát cơ bản', 'Upload tối đa 5 bản nhạc demo', 'Chủ đề cơ bản'] },
+15052-                  { id: 'pro', name: 'Gói Chuyên Nghiệp', price: '199.000', features: ['Không giới hạn số bài hát', 'Tự tùy biến chủ đề', 'Hỗ trợ nâng cao', 'Sử dụng tên miền riêng'] },
+15053-                  { id: 'vip', name: 'Gói VIP', price: '500.000', features: ['Tất cả quyền lợi Pro', 'Hiệu ứng hiển thị đặc biệt', 'Hỗ trợ 1-1', 'Nhạc thương hiệu (Brand Music)'] }
+15054:                ]).map((role: any, idx: number) => {
+15055-                  const isActive = data?.roleId === role.id || data?.roleId === role.name;
+15056-                  return (
+15057-                    <div
+--
+15091-
+15092-                        {/* Features list */}
+15093-                        <ul className={`space-y-2 text-xs ${role.id === 'vip' ? 'text-amber-900/80 font-medium' : 'text-stone-600'}`}>
+15094:                          {(Array.isArray(role.features) ? role.features : (role.features || '').split('\n').filter(Boolean)).map((feat: string, idx: number) => (
+15095-                            <li key={`l14494-idx-12-${idx}`} className="flex items-start gap-1.5">
+15096-                              <Check className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${role.id === 'vip' ? 'text-amber-500' : 'text-emerald-500'}`} />
+15097-                              <span>{feat}</span>
+--
+16188-                      <div className="text-xs text-stone-400 mb-2 italic px-1 flex items-center gap-1">
+16189-                        <GripVertical className="w-3.5 h-3.5 shrink-0" /> {t("Kéo thả các dòng để sắp xếp thứ tự")}
+16190-                      </div>
+16191:                      {landingList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((demo, localIdx) => {
+16192-                        const idx = (currentPage - 1) * itemsPerPage + localIdx;
+16193-                        return (
+16194-                        <div
+--
+16241-                      <div className="text-xs text-stone-400 mb-2 italic px-1 flex items-center gap-1">
+16242-                        <GripVertical className="w-3.5 h-3.5 shrink-0" /> {t("Kéo thả các dòng bài hát để sắp xếp thứ tự hiển thị ưu tiên ngoài trang chủ")}
+16243-                      </div>
+16244:                      {releasedList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((demo, localIdx) => {
+16245-                        const idx = (currentPage - 1) * itemsPerPage + localIdx;
+16246-                        return (
+16247-                        <div
+--
+16272-                                'Content-Type': 'application/json',
+16273-                                'Authorization': `Bearer ${getAdminToken()}`
+16274-                              },
+16275:                              body: JSON.stringify({ demoIds: [...items, ...((data.demos || []).filter(d => (!d.isReleased || d.isDraft) && !d.deleted))].map(d => d.id) })
+16276-                            });
+16277-                          }}
+16278-                          className={`border border-stone-100 rounded-xl p-3 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white hover:bg-stone-50/50 transition-all cursor-move select-none ${draggedItemIdx === idx ? 'opacity-40 border-dashed border-stone-300 bg-stone-50' : 'shadow-sm'}`}
+--
+16333-                      <div className="text-xs text-stone-400 mb-2 italic px-1 flex items-center gap-1">
+16334-                        <GripVertical className="w-3.5 h-3.5 shrink-0" /> {t("Kéo thả các dòng bài hát để sắp xếp thứ tự hiển thị ưu tiên ngoài trang chủ")}
+16335-                      </div>
+16336:                      {demoList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((demo, localIdx) => {
+16337-                        const idx = (currentPage - 1) * itemsPerPage + localIdx;
+16338-                        return (
+16339-                        <div
+--
+16364-                                'Content-Type': 'application/json',
+16365-                                'Authorization': `Bearer ${getAdminToken()}`
+16366-                              },
+16367:                              body: JSON.stringify({ demoIds: [...((data.demos || []).filter(d => (d.isReleased || d.isDraft) && !d.deleted)), ...items].map(d => d.id) })
+16368-                            });
+16369-                          }}
+16370-                          className={`border border-stone-100 rounded-xl p-3 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white hover:bg-stone-50/50 transition-all cursor-move select-none ${draggedItemIdx === idx ? 'opacity-40 border-dashed border-stone-300 bg-stone-50' : 'shadow-sm'}`}
+--
+16429-                      <div className="text-xs text-stone-400 mb-2 italic px-1 flex items-center gap-1">
+16430-                        <GripVertical className="w-3.5 h-3.5 shrink-0" /> {t("Kéo thả các dòng bài hát để sắp xếp thứ tự hiển thị ưu tiên ngoài trang chủ")}
+16431-                      </div>
+16432:                      {brandList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((demo, localIdx) => {
+16433-                        const idx = (currentPage - 1) * itemsPerPage + localIdx;
+16434-                        return (
+16435-                        <div
+--
+16528-                      <div className="text-xs text-stone-400 mb-2 italic px-1 flex items-center gap-1">
+16529-                        <GripVertical className="w-3.5 h-3.5 shrink-0" /> {t("Kéo thả để sắp xếp thứ tự hiển thị bản nháp")}
+16530-                      </div>
+16531:                      {draftList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((demo, localIdx) => {
+16532-                        const idx = (currentPage - 1) * itemsPerPage + localIdx;
+16533-                        return (
+16534-                        <div
+--
+16559-                                'Content-Type': 'application/json',
+16560-                                'Authorization': `Bearer ${getAdminToken()}`
+16561-                              },
+16562:                              body: JSON.stringify({ demoIds: [...items, ...((data.demos || []).filter(d => !d.isDraft && !d.deleted))].map(d => d.id) })
+16563-                            });
+16564-                          }}
+16565-                          className={`border border-stone-100 rounded-xl p-3 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white hover:bg-stone-50/50 transition-all cursor-move select-none ${draggedItemIdx === idx ? 'opacity-40 border-dashed border-stone-300 bg-stone-50' : 'shadow-sm'}`}
+--
+16608-                      <div className="text-xs text-stone-400 mb-2 italic px-1 flex items-center gap-1">
+16609-                        <GripVertical className="w-3.5 h-3.5 shrink-0" /> {t("Kéo thả để sắp xếp thứ tự hiển thị playlist ưu tiên ngoài trang chủ")}
+16610-                      </div>
+16611:                      {playlistList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((pl, localIdx) => {
+16612-                        const idx = (currentPage - 1) * itemsPerPage + localIdx;
+16613-                        const songCount = (data.demos || []).filter(d => 
+16614-                           !d.deleted && ((d.playlistIds && d.playlistIds.includes(pl.id)) || 
+--
+16644-                                  'Content-Type': 'application/json',
+16645-                                  'Authorization': `Bearer ${getAdminToken()}`
+16646-                                },
+16647:                                body: JSON.stringify({ playlistIds: items.map(p => p.id) })
+16648-                              });
+16649-                            }}
+16650-                            className={`border border-stone-100 rounded-xl p-3 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white hover:bg-stone-50/50 transition-all cursor-move select-none ${draggedItemIdx === idx ? 'opacity-40 border-dashed border-stone-300 bg-stone-50' : 'shadow-sm'}`}
+--
+16677-                  const trashedPlaylists = (data.playlists || []).filter(p => p.deleted);
+16678-                  
+16679-                  let allTrashed = [
+16680:                     ...trashedDemos.map(d => ({ ...d, _type: 'song' as const })),
+16681:                     ...trashedPlaylists.map(p => ({ ...p, _type: 'playlist' as const }))
+16682-                  ].sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
+16683-
+16684-                  if (adminSearchQuery.trim()) {
+--
+16718-                      <div>
+16719-                        <h4 className="text-stone-500 text-xs font-bold uppercase tracking-wider mb-2 px-1">{t('Các mục trong thùng rác')} ({allTrashed.length})</h4>
+16720-                        <div className="space-y-2">
+16721:                          {allTrashed.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item: any, idx: number) => (
+16722-                            <div key={`l16121-${item._type}-${item.id || ''}-${idx}`} className="border border-stone-100 p-3 rounded-xl flex items-center justify-between gap-3 bg-white shadow-sm hover:bg-stone-50/30 transition-all">
+16723-                              <div className="flex flex-col min-w-0">
+16724-                                <span className="font-bold text-stone-850 text-sm md:text-base truncate">{item.title || t("(Chưa đặt tiêu đề)")}</span>
+--
+17028-                  <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Ảnh nền trang chủ ( Chọn nhiều ảnh để chạy slideshow )")}</label>
+17029-                  <div className="flex flex-col gap-3">
+17030-                    <div className="flex flex-wrap gap-3">
+17031:                       {slideshowImages.map((src, i) => (
+17032-                          <div 
+17033-                             key={src + i} 
+17034-                             draggable
+--
+17655-                        </tr>
+17656-                      </thead>
+17657-                      <tbody className="divide-y divide-stone-150 text-sm text-stone-700">
+17658:                        {otherSongs.map((song, idx) => {
+17659-                          const isSinger = song.singer?.toLowerCase().includes(data?.artistName?.toLowerCase() || '');
+17660-                          const isComposer = song.composer?.toLowerCase().includes(data?.artistName?.toLowerCase() || '');
+17661-                          
+--
+17771-                        {t("Không có ticket nào hiện tại.")}
+17772-                      </div>
+17773-                    ) : (
+17774:                      ticketsList.map((ticket, idx) => {
+17775-                        const isSelected = selectedTicket?.id === ticket.id;
+17776-                        const lastMsg = ticket.messages[ticket.messages.length - 1];
+17777-                        
+--
+17888-                          <p className="text-stone-400 text-[10px] text-right">{new Date(selectedTicket.createdAt).toLocaleString('vi-VN')}</p>
+17889-                        </div>
+17890-
+17891:                        {selectedTicket.messages.map((msg: any, idx: number) => {
+17892-                          let senderUsername = msg.sender;
+17893-                          if (msg.sender === 'admin' && msg.senderName !== t("Hệ thống") && msg.senderName !== t("Admin hệ thống") && msg.senderName !== 'Admin') {
+17894-                            const found = systemArtists.find(a => a.artistName === msg.senderName);
+--
+18423-
+18424-      {isOpen && (
+18425-        <div className={`absolute top-full left-0 right-0 mt-1.5 bg-white border border-stone-200 rounded-xl shadow-xl z-[150] py-1.5 max-h-60 overflow-y-auto custom-scrollbar ${dropdownClassName}`}>
+18426:          {options.map((opt, idx) => (
+18427-            <button
+18428-              key={`l17827-${opt.value}-${idx}`}
+18429-              type="button"
+--
+18529-      
+18530-      {isOpen && (
+18531-        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-stone-200 rounded-xl shadow-2xl z-[100] p-2 space-y-1 max-h-80 overflow-y-auto custom-scrollbar">
+18532:              {playlists.map((p, idx) => (
+18533-                 <label className="flex items-center gap-3 px-3 py-2.5 hover:bg-stone-50 rounded-lg cursor-pointer transition-colors" key={`l17932-${p.id || ''}-${idx}`}>
+18534-                    <input type="checkbox" checked={selectedIds.includes(p.id)} onChange={(e) => toggle(p.id, e)} className="w-[18px] h-[18px] rounded border-stone-300 text-stone-900 focus:ring-stone-900" />
+18535-                    <span className="flex-1 truncate text-sm font-medium text-stone-800">{p.title}</span>
+--
+18587-         <div className={`w-full h-auto md:h-full ${isPCPreviewMode ? 'md:w-[260px] p-4 space-y-4' : 'md:w-[400px] p-6 md:p-8 space-y-6'} bg-white flex-shrink-0 border-b md:border-b-0 md:border-r overflow-visible md:overflow-y-auto custom-scrollbar`}>
+18588-            <h3 className="text-xl font-black mb-4">{t("Chọn Template")}</h3>
+18589-            <div className="space-y-2 pb-6">
+18590:               {configs.map((c, idx) => (
+18591-                  <button type="button" key={`l17990-${c.id || ''}-${idx}`} onClick={() => setSelectedId(c.id)} className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-colors flex justify-between items-center ${selectedId === c.id ? 'border-stone-900 bg-stone-50 font-bold' : 'border-transparent bg-white hover:bg-stone-100'}`}>
+18592-                      <span>{t(c.name)}</span>
+18593-                      {landingConfig?.templateVip?.[c.id] && (
+--
+18660-      </h3>
+18661-      {achievements.length > 0 && (
+18662-        <div className="space-y-4 mb-4">
+18663:          {achievements.map((ach, index) => (
+18664-            <div key={`l18063-idx-${index}`} className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl border border-stone-200 shadow-sm relative group items-end">
+18665-              <div className="w-full sm:w-[220px] shrink-0">
+18666-                <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-2">{t("Loại thành tích")}</label>
+18667-                <CustomSelect
+18668-                  value={ach.type} 
+18669-                  onChange={val => handleUpdate(index, 'type', val)}
+18670:                  options={Object.entries(achievementTypes).map(([k, v]) => ({ value: k, label: v }))}
+18671-                  className="w-full"
+18672-                />
+18673-              </div>
+--
+18747-          setRandomSlideUrl(data.slideshowImages[randomIndex]);
+18748-        }
+18749-        if (data.templateConfigs && data.templateConfigs.length > 0) {
+18750:          const sorted = data.templateConfigs.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id), landingConfig?.templateNames, String(c.id)) })).sort((a: any, b: any) => a.order - b.order);
+18751-          setTemplateConfigs(sorted);
+18752-        } else {
+18753-          const fallbackList = [
+--
+18772-            { id: '19', name: 'Ký Ức' },
+18773-            { id: '20', name: 'Ngọt Ngào' }
+18774-          ];
+18775:          setTemplateConfigs(fallbackList.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id), landingConfig?.templateNames, String(c.id)) })));
+18776-        }
+18777-      } catch (err) {}
+18778-    };
+--
+18946-          }
+18947-        }
+18948-        if (data.templateConfigs && data.templateConfigs.length > 0) {
+18949:          const sorted = data.templateConfigs.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id), landingConfig?.templateNames, String(c.id)) })).sort((a: any, b: any) => a.order - b.order);
+18950-          setTemplateConfigs(sorted);
+18951-        } else {
+18952-          // Fallback static
+--
+18972-            { id: '19', name: 'Ký Ức' },
+18973-            { id: '20', name: 'Ngọt Ngào' }
+18974-          ];
+18975:          setTemplateConfigs(fallbackList.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id), landingConfig?.templateNames, String(c.id)) })));
+18976-        }
+18977-      })
+18978-      .catch(console.error);
+--
+19518-                            <button type="button" onClick={() => setBrandReferenceVideos([...brandReferenceVideos, ""])} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-indigo-200"><Plus className="w-3 h-3"/>{t("Thêm video")}</button>
+19519-                          )}
+19520-                        </label>
+19521:                        {brandReferenceVideos.map((vid, idx) => (
+19522-                          <div key={`l18921-idx-13-${idx}`} className="flex gap-2 mb-2">
+19523-                            <input type="text" value={vid} onChange={e => { const newVids = [...brandReferenceVideos]; newVids[idx] = e.target.value; setBrandReferenceVideos(newVids); }} className="flex-1 border border-stone-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm text-sm" placeholder="Link video Youtube..." />
+19524-                            <button type="button" onClick={() => { const newVids = brandReferenceVideos.filter((_, i) => i !== idx); setBrandReferenceVideos(newVids); }} className="px-3 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100"><Trash2 className="w-4 h-4"/></button>
+--
+19609-                        { label: 'Bridge', value: 'Bridge', className: 'bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200' },
+19610-                        { label: 'Outro', value: 'Outro', className: 'bg-pink-50 hover:bg-pink-100 text-pink-700 border-pink-200' },
+19611-                        { label: 'Ending', value: 'Ending', className: 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200' }
+19612:                      ].map((tag, tagIdx) => (
+19613-                        <button
+19614-                          key={`l19013-tag-badge-1-${tag.value}-${tagIdx}`}
+19615-                          type="button"
+--
+19639-                      <CustomSelect
+19640-                        value={template}
+19641-                        onChange={val => setTemplate(val)}
+19642:                        options={templateConfigs.map((tc: any) => ({ value: tc.id, label: t(tc.name), isVip: tc.isVip || tc.id === '2', disabled: (tc.isVip || tc.id === '2') && !(appData?.roleId === 'vip' || appData?.roleId === 'pro' || appData?.isSpecial || (appData?.maxTemplates && appData.maxTemplates > 0)) }))}
+19643-                        className="w-full"
+19644-                      />
+19645-                      <input type="hidden" name="templateCreate" value={template} />
+--
+19680-                            <button type="button" onClick={() => setBrandReferenceVideos([...brandReferenceVideos, ""])} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-indigo-200"><Plus className="w-3 h-3"/>{t("Thêm video")}</button>
+19681-                          )}
+19682-                        </label>
+19683:                        {brandReferenceVideos.map((vid, idx) => (
+19684-                          <div key={`l19083-idx-14-${idx}`} className="flex gap-2 mb-2">
+19685-                            <input type="text" value={vid} onChange={e => { const newVids = [...brandReferenceVideos]; newVids[idx] = e.target.value; setBrandReferenceVideos(newVids); }} className="flex-1 border border-stone-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm text-sm" placeholder="Link video Youtube..." />
+19686-                            <button type="button" onClick={() => { const newVids = brandReferenceVideos.filter((_, i) => i !== idx); setBrandReferenceVideos(newVids); }} className="px-3 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100"><Trash2 className="w-4 h-4"/></button>
+--
+20094-          setRandomSlideUrl(data.slideshowImages[randomIndex]);
+20095-        }
+20096-        if (data.templateConfigs && data.templateConfigs.length > 0) {
+20097:          const sorted = data.templateConfigs.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id), landingConfig?.templateNames, String(c.id)) })).sort((a: any, b: any) => a.order - b.order);
+20098-          setTemplateConfigs(sorted);
+20099-        } else {
+20100-          const fallbackList = [
+--
+20119-            { id: '19', name: 'Ký Ức' },
+20120-            { id: '20', name: 'Ngọt Ngào' }
+20121-          ];
+20122:          setTemplateConfigs(fallbackList.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id), landingConfig?.templateNames, String(c.id)) })));
+20123-        }
+20124-        const found = data.demos.find((d: any) => d.id === id);
+20125-        if (found) {
+--
+20855-                            <button type="button" onClick={() => setBrandReferenceVideos([...brandReferenceVideos, ""])} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-indigo-200"><Plus className="w-3 h-3"/>{t("Thêm video")}</button>
+20856-                          )}
+20857-                        </label>
+20858:                        {brandReferenceVideos.map((vid, idx) => (
+20859-                          <div key={`l20264-idx-15-${idx}`} className="flex gap-2 mb-2">
+20860-                            <input type="text" value={vid} onChange={e => { const newVids = [...brandReferenceVideos]; newVids[idx] = e.target.value; setBrandReferenceVideos(newVids); }} className="flex-1 border border-stone-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm text-sm" placeholder="Link video Youtube..." />
+20861-                            <button type="button" onClick={() => { const newVids = brandReferenceVideos.filter((_, i) => i !== idx); setBrandReferenceVideos(newVids); }} className="px-3 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100"><Trash2 className="w-4 h-4"/></button>
+--
+20946-                        { label: 'Bridge', value: 'Bridge', className: 'bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200' },
+20947-                        { label: 'Outro', value: 'Outro', className: 'bg-pink-50 hover:bg-pink-100 text-pink-700 border-pink-200' },
+20948-                        { label: 'Ending', value: 'Ending', className: 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200' }
+20949:                      ].map((tag, tagIdx) => (
+20950-                        <button
+20951-                          key={`l20356-tag-badge-2-${tag.value}-${tagIdx}`}
+20952-                          type="button"
+--
+20976-                      <CustomSelect
+20977-                        value={template}
+20978-                        onChange={val => setTemplate(val)}
+20979:                        options={templateConfigs.map((tc: any) => ({ value: tc.id, label: t(tc.name), isVip: tc.isVip || tc.id === '2', disabled: (tc.isVip || tc.id === '2') && !(appData?.roleId === 'vip' || appData?.roleId === 'pro' || appData?.isSpecial || (appData?.maxTemplates && appData.maxTemplates > 0)) }))}
+20980-                        className="w-full"
+20981-                      />
+20982-                      <input type="hidden" name="template" value={template} />
+--
+21018-                            <button type="button" onClick={() => setBrandReferenceVideos([...brandReferenceVideos, ""])} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-indigo-200"><Plus className="w-3 h-3"/>{t("Thêm video")}</button>
+21019-                          )}
+21020-                        </label>
+21021:                        {brandReferenceVideos.map((vid, idx) => (
+21022-                          <div key={`l20427-idx-16-${idx}`} className="flex gap-2 mb-2">
+21023-                            <input type="text" value={vid} onChange={e => { const newVids = [...brandReferenceVideos]; newVids[idx] = e.target.value; setBrandReferenceVideos(newVids); }} className="flex-1 border border-stone-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm text-sm" placeholder="Link video Youtube..." />
+21024-                            <button type="button" onClick={() => { const newVids = brandReferenceVideos.filter((_, i) => i !== idx); setBrandReferenceVideos(newVids); }} className="px-3 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100"><Trash2 className="w-4 h-4"/></button>
+--
+21450-  }, [id]);
+21451-
+21452-  const handleSave = async () => {
+21453:    const songIds = songs.map(s => s.id);
+21454-    await fetch(`/api/playlists/${id}/update`, {
+21455-      method: 'POST',
+21456-      headers: {
+--
+21615-               <div className="text-center py-8 text-stone-400 border-2 border-dashed rounded-xl">{t("Chưa có bài hát nào trong playlist này.")}</div>
+21616-             ) : (
+21617-               <div className="space-y-2">
+21618:                 {songs.map((song, i) => (
+21619-                     <div
+21620-                        key={`l21025-${song.id || ''}-${i}`}
+21621-                       draggable
+--
+21673-            
+21674-            <div className="flex-1 overflow-y-auto space-y-2 pr-2">
+21675-              {(() => {
+21676:                const currentSongIds = songs.map(s => s.id);
+21677-                const availableSongs = appData?.demos?.filter((d: any) => !currentSongIds.includes(d.id)) || [];
+21678-                if (availableSongs.length === 0) {
+21679-                  return <p className="text-center text-stone-500 py-8">{t("Tất cả bài hát đều đã ở trong playlist này rồi.")}</p>;
+21680-                }
+21681:                return availableSongs.map((song: any, i: number) => {
+21682-                  const isChecked = selectedNewSongIds.includes(song.id);
+21683-                  return (
+21684-                    <label 
+--
+22011-      {/* List of uploaded images */}
+22012-      {values.length > 0 && (
+22013-        <div className="grid grid-cols-4 gap-3">
+22014:          {values.map((url: string, index: number) => (
+22015-            <div 
+22016-              key={`l21421-idx-${index}`} 
+22017-              draggable="true"
+--
+22180-              </button>
+22181-            </div>
+22182-            <div className="space-y-4">
+22183:              {education.map((edu, idx) => (
+22184-                <div key={`l21589-idx-17-${idx}`} className="bg-white border border-stone-200 rounded-xl p-4 flex flex-col gap-4 relative">
+22185-                  <div className="flex justify-end">
+22186-                    <button type="button" onClick={() => removeEdu(idx)} className="text-stone-400 hover:text-red-500 p-2 cursor-pointer">
+--
+22246-              </button>
+22247-            </div>
+22248-            <div className="space-y-4">
+22249:              {experience.map((exp, idx) => (
+22250-                <div key={`l21655-idx-18-${idx}`} className="bg-white border border-stone-200 rounded-xl p-4 flex flex-col gap-4 relative">
+22251-                  <div className="flex justify-end">
+22252-                    <button type="button" onClick={() => removeExp(idx)} className="text-stone-400 hover:text-red-500 p-2 cursor-pointer">
+--
+22378-      </div>
+22379-      
+22380-      <div className="space-y-3 mb-6">
+22381:        {menus.map((m: any, i: number) => (
+22382-          <div 
+22383-            key={`l21788-${m.id || ''}-${i}`} 
+22384-            draggable 
+--
+22502-      </div>
+22503-
+22504-      <div className="space-y-3 mb-6">
+22505:        {layoutSections.map((sec, i) => {
+22506-          const isHidden = hiddenSections.includes(sec);
+22507-          const isVault = sec === 'vault';
+22508-          return (
+--
+22659-              : 'bg-[#18181b]/95 border-white/10 shadow-black/80'
+22660-          }`}
+22661-        >
+22662:          {options.map((opt, optIdx) => (
+22663-            <button
+22664-              key={`l21991-${opt}-${optIdx}`}
+22665-              type="button"
+--
+22702-
+22703-  return (
+22704-    <div className={`w-full max-w-5xl mx-auto px-6 sm:px-12 mb-12 flex items-center justify-center gap-6 sm:gap-10 border-b pb-4 ${isGoldTheme ? 'border-stone-200/60' : 'border-white/10'}`}>
+22705:      {visibleMenus.map((m: any, i: number) => (
+22706-        <button
+22707-          key={`l22034-${m.id || ''}-${i}`}
+22708-          onClick={() => {
+--
+22876-              transition={{ duration: 1.5, ease: 'easeOut' }} 
+22877-              className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${isGoldTheme ? 'bg-amber-500/30' : 'bg-white/20'} origin-top z-0`} 
+22878-            />
+22879:            {biography.education.map((item: any, idx: number) => (
+22880-              <TimelineItem key={`l22207-idx-19-${idx}`} item={item} isSplit={true} color="emerald" index={idx} />
+22881-            ))}
+22882-          </div>
+--
+22896-              transition={{ duration: 1.5, ease: 'easeOut' }} 
+22897-              className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${isGoldTheme ? 'bg-amber-500/30' : 'bg-white/20'} origin-top z-0`} 
+22898-            />
+22899:            {biography.experience.map((item: any, idx: number) => (
+22900-              <TimelineItem key={`l22227-idx-20-${idx}`} item={item} isSplit={true} color="blue" index={idx} />
+22901-            ))}
+22902-          </div>
+--
+22996-            </div>
+22997-            {/* Auto-detect bullet points/lists and render with proper indentation */}
+22998-            <div className="space-y-2 mt-2">
+22999:              {item.description ? item.description.split('\n').map((line: string, idx: number) => {
+23000-                const trimmed = line.trim();
+23001-                const bulletMatch = trimmed.match(/^([-*+•–—]|\d+[.)])\s*(.*)/);
+23002-                if (bulletMatch) {
+--
+23051-              {/* Indicator dots for multiple images on miniature Polaroid */}
+23052-              {images.length > 1 && (
+23053-                <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex items-center gap-0.5 pointer-events-none">
+23054:                  {images.map((_, i) => (
+23055-                    <div 
+23056-                      key={`l22383-i-${i}`} 
+23057-                      className={`w-1 h-1 rounded-full transition-all duration-300 ${i === activeImgIdx ? 'bg-amber-500 scale-125' : 'bg-stone-300'}`} 
+--
+23148-                {/* Dots indicator for multiple images in Modal */}
+23149-                {images.length > 1 && (
+23150-                  <div className="flex justify-center gap-1.5 mt-3 select-none">
+23151:                    {images.map((_, i) => (
+23152-                      <button
+23153-                        key={`l22480-i-${i}`}
+23154-                        type="button"

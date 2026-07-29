@@ -1,0 +1,2 @@
+sed -i 's/    const data = await loadData((req as any).artist?.username);/    const data = await loadData((req as any).artist?.username);\n    const hashedNewPassword = require("bcrypt").hashSync(newPassword, 10);\n    data.adminPassword = hashedNewPassword;\n    await saveData(data);\n    artist.password = hashedNewPassword;\n    await saveArtists(artists);\n    res.json({ success: true });\n  });\n/g' server.ts
+npm run build
