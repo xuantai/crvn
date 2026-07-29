@@ -1397,6 +1397,7 @@ function MusicianSongCard({
   };
 
   const isElevated = isHovered || isPlaying || isLoadingAudio || mobilePopped;
+  const hasAch = activeAchievements && activeAchievements.length > 0;
 
   return (
     <div 
@@ -1461,7 +1462,7 @@ function MusicianSongCard({
           <motion.div
             className="absolute z-10 pointer-events-none left-[5%] w-[90%] aspect-square"
             style={{
-              bottom: isElevated ? (isDesktop ? '48px' : '40px') : (isDesktop ? '-76px' : '-55px'),
+              bottom: isElevated ? (isDesktop ? '60px' : '48px') : (isDesktop ? '-55px' : '-40px'),
               transition: 'bottom 0.5s cubic-bezier(0.34,1.56,0.64,1)',
             }}
             animate={{
@@ -1519,7 +1520,7 @@ function MusicianSongCard({
           <motion.div
             className="absolute z-20 left-[5%] w-[90%] aspect-square"
             style={{
-              bottom: isElevated ? '6px' : (isDesktop ? '-60px' : '-40px'),
+              bottom: isElevated ? '20px' : (isDesktop ? '-36px' : '-22px'),
               transformOrigin: 'center bottom',
               transition: 'bottom 0.45s cubic-bezier(0.34,1.56,0.64,1)',
             }}
@@ -1589,7 +1590,7 @@ function MusicianSongCard({
           style={{ borderTop: '3px solid rgba(120,65,15,0.8)' }}>
           
           {/* Floating Gold Achievement Badge (Centered & Floats higher over top seam) */}
-          {activeAchievements && activeAchievements.length > 0 && (
+          {hasAch && (
             <motion.div 
               animate={{ 
                 y: [0, -1.5, 0, 1.5, 0],
@@ -1600,7 +1601,7 @@ function MusicianSongCard({
                 repeat: Infinity, 
                 ease: "easeInOut" 
               }}
-              className="absolute -top-7 sm:-top-8 left-1/2 -translate-x-1/2 z-40 shrink-0 w-auto min-w-[140px] sm:min-w-[185px] md:min-w-[200px] max-w-[90%] sm:max-w-[240px] h-11 sm:h-13 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_4px_14px_rgba(0,0,0,0.65),0_0_10px_rgba(212,175,55,0.25)] flex items-center justify-center overflow-hidden pointer-events-none"
+              className="absolute -top-9 sm:-top-11 left-1/2 -translate-x-1/2 z-40 shrink-0 w-auto min-w-[140px] sm:min-w-[185px] md:min-w-[200px] max-w-[90%] sm:max-w-[240px] h-11 sm:h-13 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-2xl bg-gradient-to-r from-stone-950 via-[#1E1505] to-stone-950 border border-[#D4AF37]/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_4px_14px_rgba(0,0,0,0.65),0_0_10px_rgba(212,175,55,0.25)] flex items-center justify-center overflow-hidden pointer-events-none"
             >
               {/* Glowing radial background animation */}
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.25),transparent_70%)] animate-pulse pointer-events-none rounded-2xl" />
@@ -1622,7 +1623,7 @@ function MusicianSongCard({
           <Link
             to={targetLink}
             onClick={handleClick}
-            className="block w-full relative pt-3 pb-2 px-2.5 sm:pt-3 sm:pb-2.5 sm:px-4"
+            className={`block w-full relative pb-2.5 px-2.5 sm:pb-3 sm:px-4 ${hasAch ? 'pt-5 sm:pt-6' : 'pt-3 sm:pt-3.5'}`}
             style={{
               background: isElevated 
                 ? 'linear-gradient(to bottom, #FFF7DC, #FCE8B3)' 
