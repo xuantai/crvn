@@ -9886,38 +9886,15 @@ function Home() {
               const wallImages: string[] = [];
               if (data?.slideshowImages && Array.isArray(data.slideshowImages) && data.slideshowImages.length > 0) {
                 data.slideshowImages.forEach((img: string) => {
-                  if (img && typeof img === 'string' && !wallImages.includes(img)) wallImages.push(img);
-                });
-              }
-              if (data?.homeCoverUrl && !wallImages.includes(data.homeCoverUrl)) wallImages.push(data.homeCoverUrl);
-              if (data?.avatarUrl && !wallImages.includes(data.avatarUrl)) wallImages.push(data.avatarUrl);
-              if (data?.aboutMe?.avatarUrl && !wallImages.includes(data.aboutMe.avatarUrl)) wallImages.push(data.aboutMe.avatarUrl);
-
-              if (wallImages.length < 6 && data?.demos && Array.isArray(data.demos)) {
-                data.demos.forEach((d: any) => {
-                  const c = d.coverUrl || d.cover_url || d.image;
-                  if (c && typeof c === 'string' && !wallImages.includes(c) && wallImages.length < 6) {
-                    wallImages.push(c);
+                  if (img && typeof img === 'string' && !wallImages.includes(img) && wallImages.length < 6) {
+                    wallImages.push(img);
                   }
                 });
+              } else if (data?.homeCoverUrl) {
+                wallImages.push(data.homeCoverUrl);
               }
 
-              const fallbackPhotos = [
-                'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80',
-                'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=600&q=80',
-                'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80',
-                'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=600&q=80',
-                'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=600&q=80',
-                'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?auto=format&fit=crop&w=600&q=80',
-              ];
-
-              let fbIdx = 0;
-              while (wallImages.length < 6 && fbIdx < fallbackPhotos.length) {
-                if (!wallImages.includes(fallbackPhotos[fbIdx])) {
-                  wallImages.push(fallbackPhotos[fbIdx]);
-                }
-                fbIdx++;
-              }
+              if (wallImages.length === 0) return null;
 
               return (
                 <div className="w-full mt-6 sm:mt-10 mb-2 relative z-20">
@@ -9936,10 +9913,9 @@ function Home() {
 
                   {/* Hanging Picture Frame Rail & Rack */}
                   <div className="relative pt-6 pb-2 px-1">
-                    {/* Top Brass Hanging Rail */}
-                    <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-950 via-[#482411] to-amber-950 rounded-full border-b border-amber-400/40 shadow-md z-10" />
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-5">
+
+                    <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
                       {wallImages.map((imgUrl: string, idx: number) => {
                         const tilts = ['-3.2deg', '2.8deg', '-2.5deg', '3.5deg', '-2.8deg', '2.2deg'];
                         const tilt = tilts[idx % tilts.length];
@@ -9950,7 +9926,7 @@ function Home() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: idx * 0.08 }}
                             whileHover={{ scale: 1.07, rotate: 0, zIndex: 30 }}
-                            className="relative cursor-pointer group/wallcard"
+                            className="relative cursor-pointer group/wallcard w-[45%] sm:w-[30%] lg:w-[14%] max-w-[160px]"
                             style={{ transform: `rotate(${tilt})` }}
                             onClick={() => setWallLightboxImg(imgUrl)}
                           >
