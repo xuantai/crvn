@@ -870,7 +870,7 @@ function DreamySongCard({
       {/* Outer Card Wrapper with Drop Shadow following the concave shape */}
       <div className={`relative w-full z-20 transition-all duration-300 hover:-translate-y-2 group/card ${theme.dropShadow}`}>
         {/* Centered Year Badge at Bottom Edge of Card Sleeve (Photo 1) - Placed outside overflow-hidden with z-[90] */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-[90] pointer-events-none">
+        <div className="absolute bottom-1.5 sm:bottom-2 left-1/2 -translate-x-1/2 z-[90] pointer-events-none">
           <span className={`px-3.5 py-0.5 rounded-full text-[10px] sm:text-[11.5px] font-black shadow-md border ${theme.yearBorder} ${theme.yearText} bg-white/95 inline-flex items-center justify-center tracking-wider`}>
             {songYear}
           </span>
@@ -887,7 +887,7 @@ function DreamySongCard({
             repeat: Infinity, 
             ease: "easeInOut" 
           }}
-          className="absolute -top-2.5 -right-3.5 sm:-top-3 sm:-right-5 z-50 select-none pointer-events-none"
+          className="absolute top-2 -right-2 sm:top-2.5 sm:-right-3.5 z-50 select-none pointer-events-none"
         >
           <span className={`shadow-lg text-[8px] sm:text-[10px] font-black px-2.5 py-0.5 rounded-md block border tracking-wider transform rotate-[10deg] ${
             isReleasedSong 
