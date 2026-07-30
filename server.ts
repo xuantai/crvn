@@ -1767,9 +1767,9 @@ async function startServer() {
       // Do not leak passwords & hide audio URLs of demo/unreleased songs for non-auth users
       const isAuthUser = isRequestAdmin(req) || isRequestMember(req);
       let publicDemos = data.demos.map((d: any) => {
-        const isReleased = d.isReleased === true || d.isReleased === 'true';
+        const isReleased = d.isReleased === true || d.isReleased === 'true' || d.isReleased === 1 || d.isReleased === '1';
         const isDemoSong = !isReleased && d.linkType !== 'indirect';
-        const effectivePassword = isReleased ? d.password : (d.password || data.globalPassword);
+        const effectivePassword = isReleased ? null : (d.password || data.globalPassword);
         const hasPwd = !!effectivePassword;
         const shouldHideAudio = (isDemoSong || hasPwd) && !isAuthUser;
         if (shouldHideAudio) {
@@ -5810,7 +5810,8 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     let isAuthorized = false;
     
     // Check demo password
-    const rawExpectedPassword = demo.linkType === 'indirect' ? demo.password : (demo.isReleased ? demo.password : (demo.password || data.globalPassword));
+    const isReleased = demo.isReleased === true || demo.isReleased === 'true' || demo.isReleased === 1 || demo.isReleased === '1';
+    const rawExpectedPassword = isReleased ? null : (demo.linkType === 'indirect' ? demo.password : (demo.password || data.globalPassword));
     const expectedPassword = (rawExpectedPassword && String(rawExpectedPassword).trim().length > 0) ? String(rawExpectedPassword).trim() : null;
 
     if (!expectedPassword) {
@@ -5820,12 +5821,16 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     }
     
     // Check if bypassed by playlist token
-    if (!isAuthorized && req.body.playlistId && req.body.playlistToken) {
-       const playlist = data.playlists?.find((p: any) => p.id === req.body.playlistId);
-       if (playlist) {
-          if ((playlist.password && playlist.password === req.body.playlistToken) || 
-              (playlist.secretLink && playlist.secretLink === req.body.playlistToken)) {
-             isAuthorized = true;
+    if (!isAuthorized && req.body.playlistId) {
+       if (req.body.playlistId === 'released') {
+          isAuthorized = true;
+       } else if (req.body.playlistToken) {
+          const playlist = data.playlists?.find((p: any) => p.id === req.body.playlistId);
+          if (playlist) {
+             if ((playlist.password && playlist.password === req.body.playlistToken) || 
+                 (playlist.secretLink && playlist.secretLink === req.body.playlistToken)) {
+                isAuthorized = true;
+             }
           }
        }
     }
@@ -5870,6 +5875,34 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
 
   app.get('/api/playlists/:id', async (req, res) => {
       const data = await loadData((req as any).artist?.username);
+
+      if (req.params.id === 'released') {
+          const releasedSongs = (data.demos || [])
+              .filter((d: any) => (d.isReleased === true || d.isReleased === 'true' || d.isReleased === 1 || d.isReleased === '1') && d.status === 'public' && !d.deleted)
+              .map((d: any) => ({
+                  id: d.id,
+                  slug: d.slug,
+                  title: d.title,
+                  singer: d.singer,
+                  author: d.author,
+                  composer: d.composer,
+                  coverUrl: formatUrl(d.coverUrl || data.aboutMe?.avatarUrl || data.homeCoverUrl || '', data.globalBaseUrl),
+                  requiresPassword: false
+              }));
+
+          return res.json({
+              playlist: {
+                  id: 'released',
+                  title: 'Các bài hát đã phát hành',
+                  coverUrl: releasedSongs[0]?.coverUrl || '',
+                  password: false,
+                  hasSecretLink: false,
+                  artistExtension: (req as any).artist?.username
+              },
+              songs: releasedSongs,
+              artistExtension: (req as any).artist?.username
+          });
+      }
 
       const playlist = data.playlists?.find((p: any) => p.id === req.params.id && !p.deleted);
       if (!playlist) return res.status(404).json({ error: 'Playlist not found' });
@@ -5985,8 +6018,8 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
 
       const isUserAdmin = isRequestAdmin(req);
       const isUserMember = isRequestMember(req);
-      const isReleased = demo.isReleased === true || demo.isReleased === 'true';
-      const rawExpectedPassword = demo.linkType === 'indirect' ? demo.password : (isReleased ? demo.password : (demo.password || data.globalPassword));
+      const isReleased = demo.isReleased === true || demo.isReleased === 'true' || demo.isReleased === 1 || demo.isReleased === '1';
+      const rawExpectedPassword = isReleased ? null : (demo.linkType === 'indirect' ? demo.password : (demo.password || data.globalPassword));
       const expectedPassword = (rawExpectedPassword && String(rawExpectedPassword).trim().length > 0) ? String(rawExpectedPassword).trim() : null;
       const requiresAuth = !!expectedPassword;
 
@@ -5994,12 +6027,16 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
       const providedSecret = req.query.secret as string | undefined;
       let isValidSecret = !!(demo.secretKey && providedSecret && demo.secretKey === providedSecret);
       
-      if (!isValidSecret && req.query.playlistId && req.query.playlistToken) {
-         const playlist = data.playlists?.find((p: any) => p.id === req.query.playlistId);
-         if (playlist) {
-            if ((playlist.password && playlist.password === req.query.playlistToken) || 
-                (playlist.secretLink && playlist.secretLink === req.query.playlistToken)) {
-               isValidSecret = true;
+      if (!isValidSecret && req.query.playlistId) {
+         if (req.query.playlistId === 'released') {
+            isValidSecret = true;
+         } else if (req.query.playlistToken) {
+            const playlist = data.playlists?.find((p: any) => p.id === req.query.playlistId);
+            if (playlist) {
+               if ((playlist.password && playlist.password === req.query.playlistToken) || 
+                   (playlist.secretLink && playlist.secretLink === req.query.playlistToken)) {
+                  isValidSecret = true;
+               }
             }
          }
       }
