@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, EyeOff, Music, BadgeCheck, Lock, Globe, ArrowRight, Sparkles, Disc3, CheckCircle2, ListMusic, X, AlertCircle, Mail, ChevronLeft, ChevronRight, UserPlus, RefreshCw, Search, LogOut, UserCircle, Settings } from 'lucide-react';
+import { Eye, EyeOff, Music, BadgeCheck, Lock, Globe, ArrowRight, Sparkles, Disc3, CheckCircle2, XCircle, ListMusic, X, AlertCircle, Mail, ChevronLeft, ChevronRight, UserPlus, RefreshCw, Search, LogOut, UserCircle, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChorusLogo } from './ChorusLogo';
 
@@ -770,6 +770,9 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [publicPricing, setPublicPricing] = useState<any>(null);
+  const [publicFeatures, setPublicFeatures] = useState<any[]>([]);
+  const [membershipBillingCycle, setMembershipBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   const checkSession = useCallback(() => {
     const activeExt = localStorage.getItem('activeAdminExtension');
@@ -1215,7 +1218,16 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
           }
         }
       })
-      .catch((err) => console.error('Error fetching landing config:', err));
+    // Load public pricing and features matrix (synced with /master)
+    fetch('/api/public/pricing')
+      .then((res) => res.json())
+      .then((data) => { if (data && !data.error) setPublicPricing(data); })
+      .catch(() => {});
+
+    fetch('/api/public/features')
+      .then((res) => res.json())
+      .then((data) => { if (Array.isArray(data)) setPublicFeatures(data); })
+      .catch(() => {});
 
     // Load public artists
     fetch('/api/public/artists')
@@ -1665,13 +1677,26 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
 
           {/* Navigation links */}
           <nav className="hidden md:flex items-center gap-6 text-xs font-black uppercase tracking-wider text-neutral-500">
-            <a href="#pricing" onClick={(e) => { e.preventDefault(); setShowComingSoonModal(true); }} className="hover:text-black transition-colors cursor-pointer">
+            <a 
+              href="#pricing" 
+              onClick={(e) => { 
+                e.preventDefault(); 
+                document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' }); 
+              }} 
+              className="hover:text-black transition-colors cursor-pointer"
+            >
               {lang === 'vi' ? 'Bảng giá' : (lang === 'ko' ? '요금제' : 'Pricing')}
             </a>
-            <a href="#discover" onClick={(e) => { e.preventDefault(); setShowComingSoonModal(true); }} className="hover:text-black transition-colors cursor-pointer">
+            <a 
+              href="#artist-showcase" 
+              onClick={(e) => { 
+                e.preventDefault(); 
+                document.getElementById('artist-showcase')?.scrollIntoView({ behavior: 'smooth' }); 
+              }} 
+              className="hover:text-black transition-colors cursor-pointer"
+            >
               {lang === 'vi' ? 'Khám Phá' : (lang === 'ko' ? '탐색' : 'Discover')}
             </a>
-
           </nav>
 
           {/* Action Header: Status Badge & Language Segmented Toggler */}
@@ -2085,132 +2110,200 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
             </p>
           </div>
 
-          {!config.roles || config.roles.length === 0 ? (
-            <div className="bg-white/60 border border-dashed border-neutral-200 rounded-[3rem] p-16 text-center max-w-md mx-auto">
-              <p className="text-neutral-500 text-sm">
-                {lang === 'vi' 
-                  ? 'Thông tin bảng giá đang được cập nhật.' 
-                  : lang === 'ko' 
-                  ? '요금제 정보를 업데이트하고 있습니다.' 
-                  : 'Pricing information is being updated.'}
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-center">
-              {config.roles.map((r: any, idx: number) => {
-                const maxPostsText = r.maxPosts === -1 || r.maxPosts === 'unlimited'
-                  ? (lang === 'vi' ? 'Không giới hạn bài hát' : lang === 'ko' ? '무제한 곡 업로드' : 'Unlimited songs')
-                  : (lang === 'vi' ? `Tối đa ${r.maxPosts} bài hát` : lang === 'ko' ? `최대 ${r.maxPosts}곡 업로드` : `Up to ${r.maxPosts} songs`);
+          {(() => {
+            const getPriceInfo = (id: string) => {
+              if (id === 'free') {
+                return { sale: lang === 'vi' ? 'Miễn Phí' : lang === 'ko' ? '무료' : 'Free', orig: '', period: '' };
+              }
+              const tier = publicPricing?.[id] || {};
+              const isYearly = membershipBillingCycle === 'yearly';
+              const origVal = isYearly ? Number(tier.yearlyOriginalPrice || 0) : Number(tier.monthlyOriginalPrice || 0);
+              const saleVal = isYearly ? Number(tier.yearlySalePrice || 0) : Number(tier.monthlySalePrice || 0);
+              
+              const fmt = (num: number) => num > 0 ? `${num.toLocaleString('vi-VN')}đ` : '';
+              let defaultSale = id === 'pro' ? (isYearly ? '890.000đ' : '99.000đ') : (isYearly ? '1.990.000đ' : '249.000đ');
 
-                return (
-                  <div 
-                    key={`l1884-idx-${idx}`} 
-                    className="bg-white border border-neutral-200/60 hover:border-neutral-300 rounded-[2.5rem] p-8 flex flex-col justify-between transition-all shadow-sm hover:shadow-md relative overflow-hidden"
-                  >
-                    <div>
-                      {/* Badge if subscriptionPricing is true */}
-                      {r.subscriptionPricing && (
-                        <div className="absolute top-4 right-4 bg-purple-100 text-purple-700 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
-                          {lang === 'vi' ? 'Phổ biến' : lang === 'ko' ? '인기' : 'Popular'}
+              return {
+                sale: saleVal > 0 ? fmt(saleVal) : defaultSale,
+                orig: origVal > saleVal ? fmt(origVal) : '',
+                period: isYearly ? (lang === 'vi' ? '/năm' : lang === 'ko' ? '/년' : '/yr') : (lang === 'vi' ? '/tháng' : lang === 'ko' ? '/월' : '/mo')
+              };
+            };
+
+            const buildTierFeatures = (tierId: 'free' | 'pro' | 'vip') => {
+              if (Array.isArray(publicFeatures) && publicFeatures.length > 0) {
+                return publicFeatures.map(f => {
+                  const isCheck = tierId === 'free' ? !!f.free : tierId === 'pro' ? !!f.pro : !!f.vip;
+                  const customText = tierId === 'free' ? f.freeText : tierId === 'pro' ? f.proText : f.vipText;
+                  const text = (customText && customText.trim()) ? customText : f.name;
+                  return { text, active: isCheck };
+                });
+              }
+
+              // Fallback if publicFeatures is empty
+              const matchedRole = (config.roles || []).find((r: any) => String(r.id || r.name).toLowerCase() === tierId);
+              if (matchedRole) {
+                return [
+                  { text: matchedRole.maxPosts === -1 || matchedRole.maxPosts === 'unlimited' ? (lang === 'vi' ? 'Không giới hạn bài hát' : 'Unlimited songs') : (lang === 'vi' ? `Tối đa ${matchedRole.maxPosts} bài hát` : `Up to ${matchedRole.maxPosts} songs`), active: true },
+                  { text: lang === 'vi' ? 'Giao diện Kho Nhạc Tiêu Chuẩn' : 'Standard Vault UI', active: true },
+                  { text: lang === 'vi' ? 'Backup 24/7' : '24/7 Backup', active: true },
+                  { text: lang === 'vi' ? 'Mật khẩu bảo mật kho nhạc & demo' : 'Secure Vault & Demo Passwords', active: !!(matchedRole.accessControl || matchedRole.demoPassword) },
+                  { text: lang === 'vi' ? 'Tạo đường dẫn chia sẻ bí mật' : 'Secret Link Generation', active: !!matchedRole.secretLink },
+                  { text: lang === 'vi' ? 'Hỗ trợ tên miền riêng' : 'Custom Domain Support', active: !!matchedRole.customDomain },
+                  { text: lang === 'vi' ? 'Trang tiểu sử (Bio) & About Me' : 'Rich Bio & About Me Section', active: !!(matchedRole.bio || matchedRole.aboutMe) },
+                  { text: lang === 'vi' ? 'Giao diện Độc Quyền Premium' : 'Exclusive Premium UI', active: !!matchedRole.exclusiveUi },
+                ];
+              }
+
+              return [
+                { text: tierId === 'free' ? 'Số Bài Hát Tối Đa: 5' : tierId === 'pro' ? 'Số Bài Hát Tối Đa: 50' : 'Số Bài Hát: KHÔNG GIỚI HẠN', active: true },
+                { text: 'Giao Diện Kho Nhạc Tiêu Chuẩn', active: true },
+                { text: 'Template Chủ Đề', active: true },
+                { text: 'Backup 24/7', active: true },
+                { text: 'Trang tiểu sử (Bio)', active: tierId !== 'free' },
+                { text: 'Mật khẩu bảo vệ Demo & Kho nhạc', active: tierId !== 'free' },
+                { text: 'Tạo đường dẫn chia sẻ bí mật', active: tierId !== 'free' },
+                { text: 'Tùy chỉnh tên miền riêng', active: tierId === 'vip' },
+                { text: 'Template Độc Quyền', active: tierId === 'vip' },
+                { text: 'Hỗ trợ ưu tiên 1:1', active: tierId === 'vip' },
+              ];
+            };
+
+            const membershipTiers = [
+              {
+                id: 'free',
+                name: lang === 'vi' ? 'Gói Miễn Phí' : lang === 'ko' ? '무료 요금제' : 'Free Plan',
+                priceInfo: getPriceInfo('free'),
+                badgeStyle: 'bg-neutral-100 text-neutral-600 border border-neutral-200',
+                badgeText: lang === 'vi' ? 'CƠ BẢN' : lang === 'ko' ? '기본' : 'BASIC',
+                features: buildTierFeatures('free')
+              },
+              {
+                id: 'pro',
+                name: lang === 'vi' ? 'Gói Pro' : lang === 'ko' ? '프로 요금제' : 'Pro Plan',
+                priceInfo: getPriceInfo('pro'),
+                badgeStyle: 'bg-purple-600 text-white shadow-sm font-black',
+                badgeText: lang === 'vi' ? 'PHỔ BIẾN NHẤT' : lang === 'ko' ? '가장 인기' : 'MOST POPULAR',
+                features: buildTierFeatures('pro')
+              },
+              {
+                id: 'vip',
+                name: lang === 'vi' ? 'Gói VIP' : lang === 'ko' ? 'VIP 요금제' : 'VIP Plan',
+                priceInfo: getPriceInfo('vip'),
+                badgeStyle: 'bg-amber-100 text-amber-800 border border-amber-300 font-black',
+                badgeText: lang === 'vi' ? 'ĐỘC QUYỀN VIP' : lang === 'ko' ? 'VIP 독점' : 'EXCLUSIVE VIP',
+                features: buildTierFeatures('vip')
+              }
+            ];
+
+            return (
+              <div className="space-y-10">
+                {/* Billing Cycle Switcher: Hàng Tháng / Theo Năm */}
+                <div className="flex justify-center">
+                  <div className="inline-flex items-center p-1.5 rounded-full border-2 border-neutral-300 bg-neutral-200/60 shadow-inner gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setMembershipBillingCycle('monthly')}
+                      className={`px-5 py-2.5 rounded-full text-xs font-black transition-all cursor-pointer ${
+                        membershipBillingCycle === 'monthly'
+                          ? 'bg-neutral-950 text-white shadow-md'
+                          : 'text-neutral-600 hover:text-neutral-950 hover:bg-neutral-300/60'
+                      }`}
+                    >
+                      {lang === 'vi' ? 'Hàng Tháng' : lang === 'ko' ? '월간' : 'Monthly'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMembershipBillingCycle('yearly')}
+                      className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-black transition-all cursor-pointer ${
+                        membershipBillingCycle === 'yearly'
+                          ? 'bg-neutral-950 text-white shadow-md'
+                          : 'text-neutral-600 hover:text-neutral-950 hover:bg-neutral-300/60'
+                      }`}
+                    >
+                      <span>{lang === 'vi' ? 'Theo Năm' : lang === 'ko' ? '연간' : 'Yearly'}</span>
+                      {(() => {
+                        const proM = Number(publicPricing?.pro?.monthlySalePrice || 99000);
+                        const proY = Number(publicPricing?.pro?.yearlySalePrice || 890000);
+                        const maxSavings = proM > 0 && proY > 0 ? Math.max(0, Math.round((1 - proY / (proM * 12)) * 100)) : 25;
+                        return (
+                          <span className="bg-amber-400 text-stone-950 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider animate-pulse">
+                            {lang === 'vi' ? `TIẾT KIỆM TỚI ${maxSavings}%` : `SAVE UP TO ${maxSavings}%`}
+                          </span>
+                        );
+                      })()}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-center">
+                  {membershipTiers.map((tier) => (
+                    <div 
+                      key={tier.id}
+                      className={`bg-white border rounded-[2.5rem] p-8 flex flex-col justify-between transition-all shadow-sm hover:shadow-md relative overflow-hidden ${
+                        tier.id === 'pro' ? 'border-purple-300 ring-2 ring-purple-400/20' : tier.id === 'vip' ? 'border-amber-300 ring-2 ring-amber-400/20' : 'border-neutral-200/80'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider ${tier.badgeStyle}`}>
+                            {tier.badgeText}
+                          </span>
                         </div>
-                      )}
 
-                      <h3 className="text-xl font-extrabold text-neutral-900 mb-2">{r.name}</h3>
-                      
-                      <div className="flex items-baseline gap-1 my-4">
-                        <span className="text-3xl font-black text-neutral-950">{r.price || (lang === 'vi' ? 'Miễn phí' : lang === 'ko' ? '무료' : 'Free')}</span>
+                        <h3 className="text-xl font-extrabold text-neutral-900 mb-2">{tier.name}</h3>
+                        
+                        <div className="flex items-baseline gap-2 my-4 flex-wrap">
+                          {tier.priceInfo.orig && (
+                            <span className="text-sm font-bold text-neutral-400 line-through">
+                              {tier.priceInfo.orig}
+                            </span>
+                          )}
+                          <span className="text-3xl font-black text-neutral-950">
+                            {tier.priceInfo.sale}
+                          </span>
+                          {tier.priceInfo.period && <span className="text-xs text-neutral-500 font-bold">{tier.priceInfo.period}</span>}
+                        </div>
+
+                        <div className="border-t border-neutral-100 my-6"></div>
+
+                        <ul className="space-y-3 text-xs sm:text-sm font-medium">
+                          {tier.features.map((feat, fIdx) => (
+                            <li key={`landing-feat-${tier.id}-${fIdx}`} className={`flex items-start gap-2.5 ${feat.active ? 'text-neutral-700 font-medium' : 'text-neutral-400 line-through opacity-50'}`}>
+                              {feat.active ? (
+                                <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0 mt-0.5" />
+                              ) : (
+                                <XCircle className="w-4.5 h-4.5 text-neutral-300 shrink-0 mt-0.5" />
+                              )}
+                              <span>{feat.text}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
 
-                      <div className="border-t border-neutral-100 my-6"></div>
-
-                      <ul className="space-y-3 text-neutral-600 text-xs sm:text-sm font-medium">
-                        <li className="flex items-center gap-2.5">
-                          <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
-                          <span>{maxPostsText}</span>
-                        </li>
-                        {r.accessControl && (
-                          <li className="flex items-center gap-2.5">
-                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
-                            <span>{lang === 'vi' ? 'Mật khẩu bảo mật kho nhạc' : lang === 'ko' ? '보관함 비밀번호 설정' : 'Secure Vault Password'}</span>
-                          </li>
-                        )}
-                        {r.demoPassword && (
-                          <li className="flex items-center gap-2.5">
-                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
-                            <span>{lang === 'vi' ? 'Mật khẩu bảo mật demo' : lang === 'ko' ? '데모 비밀번호 설정' : 'Secure Demo Password'}</span>
-                          </li>
-                        )}
-                        {r.secretLink && (
-                          <li className="flex items-center gap-2.5">
-                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
-                            <span>{lang === 'vi' ? 'Tạo đường dẫn bí mật' : lang === 'ko' ? '비밀 링크 생성' : 'Secret Link Generation'}</span>
-                          </li>
-                        )}
-                        {r.customDomain && (
-                          <li className="flex items-center gap-2.5">
-                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
-                            <span>{lang === 'vi' ? 'Hỗ trợ tên miền riêng' : lang === 'ko' ? '개인 도메인 연결' : 'Custom Domain Support'}</span>
-                          </li>
-                        )}
-                        {r.bio && (
-                          <li className="flex items-center gap-2.5">
-                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
-                            <span>{lang === 'vi' ? 'Trang tiểu sử (Bio) chi tiết' : lang === 'ko' ? '상세 바이오 페이지' : 'Detailed Rich Bio'}</span>
-                          </li>
-                        )}
-                        {r.aboutMe && (
-                          <li className="flex items-center gap-2.5">
-                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
-                            <span>{lang === 'vi' ? 'Mục Giới thiệu (About Me)' : lang === 'ko' ? '소개 섹션 (About Me)' : 'About Me Section'}</span>
-                          </li>
-                        )}
-                        {r.uiEdit && (
-                          <li className="flex items-center gap-2.5">
-                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
-                            <span>{lang === 'vi' ? 'Tùy biến giao diện linh hoạt' : lang === 'ko' ? '유연한 테마 사용자 지정' : 'Flexible UI Customization'}</span>
-                          </li>
-                        )}
-                        {r.exclusiveUi && (
-                          <li className="flex items-center gap-2.5">
-                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
-                            <span>{lang === 'vi' ? 'Giao diện độc quyền cao cấp' : lang === 'ko' ? '독점 프리미엄 테마' : 'Exclusive Premium UI'}</span>
-                          </li>
-                        )}
-                        {r.database && (
-                          <li className="flex items-center gap-2.5">
-                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
-                            <span>{lang === 'vi' ? 'Sao lưu dữ liệu cá nhân' : lang === 'ko' ? '개인 데이터 백업' : 'Personal Data Backup'}</span>
-                          </li>
-                        )}
-                        {r.subscriptionPricing && (
-                          <li className="flex items-center gap-2.5">
-                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
-                            <span>{lang === 'vi' ? 'Bán nhạc & Gói hội viên' : lang === 'ko' ? '음악 판매 및 회원제' : 'Sell Music & Membership'}</span>
-                          </li>
-                        )}
-                      </ul>
+                      <div className="mt-8">
+                        <button
+                          onClick={() => {
+                            const registerBtn = document.querySelector('button[id="register-navbar-btn"]') || document.querySelector('button[onClick*="setShowRegisterModal"]');
+                            if (registerBtn) {
+                              (registerBtn as HTMLButtonElement).click();
+                            } else {
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }
+                          }}
+                          className={`w-full text-white transition-all text-xs font-bold py-4 px-6 rounded-2xl cursor-pointer text-center block ${
+                            tier.id === 'vip' ? 'bg-amber-600 hover:bg-amber-700 shadow-md' : tier.id === 'pro' ? 'bg-purple-600 hover:bg-purple-700 shadow-md' : 'bg-neutral-950 hover:bg-neutral-800 shadow-sm'
+                          }`}
+                        >
+                          {lang === 'vi' ? 'Đăng ký ngay' : lang === 'ko' ? '지금 신청하기' : 'Register Now'}
+                        </button>
+                      </div>
                     </div>
-
-                    <div className="mt-8">
-                      <button
-                        onClick={() => {
-                          const registerBtn = document.querySelector('button[id="register-navbar-btn"]') || document.querySelector('button[onClick*="setShowRegisterModal"]');
-                          if (registerBtn) {
-                            (registerBtn as HTMLButtonElement).click();
-                          } else {
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                          }
-                        }}
-                        className="w-full bg-neutral-950 text-white hover:bg-neutral-800 transition-all text-xs font-bold py-4 px-6 rounded-2xl cursor-pointer text-center block"
-                      >
-                        {lang === 'vi' ? 'Đăng ký ngay' : lang === 'ko' ? '지금 신청하기' : 'Register Now'}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </section>
 

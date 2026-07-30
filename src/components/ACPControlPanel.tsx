@@ -4339,7 +4339,7 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                     className="w-5 h-5 accent-amber-500 rounded border-white/10"
                   />
                   <label htmlFor="add-special" className="text-sm font-bold select-none cursor-pointer text-amber-400">
-                    Đặc biệt (ACP riêng)
+                    V.VIP (ACP riêng)
                   </label>
                 </div>
               </div>
@@ -4581,7 +4581,7 @@ Admin Password: ${newArtistCreatedInfo.password}`;
                     className="w-5 h-5 accent-amber-500 rounded border-white/10"
                   />
                   <label htmlFor="edit-special" className="text-sm font-bold select-none cursor-pointer text-amber-400">
-                    Đặc biệt (ACP riêng)
+                    V.VIP (ACP riêng)
                   </label>
                 </div>
               </div>

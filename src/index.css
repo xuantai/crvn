@@ -6,6 +6,17 @@
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
 }
 
+@keyframes vinyl-spin {
+  from { transform: rotate(0deg) translateZ(0); }
+  to { transform: rotate(360deg) translateZ(0); }
+}
+.animate-vinyl-spin {
+  animation: vinyl-spin 4s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+
 @keyframes wiggle {
   0%, 100% { transform: rotate(15deg) scale(1); }
   50% { transform: rotate(11deg) scale(1.04); }
