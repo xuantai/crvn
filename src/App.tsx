@@ -788,7 +788,7 @@ function DreamySongCard({
           </div>
         )}
 
-        {/* Swirling Orbiting Light Beam around spinning vinyl disc */}
+        {/* Swirling Orbiting Light Beam ring around spinning vinyl disc */}
         {(isElevated || isPlaying) && (
           <>
             {/* Primary arc - clockwise */}
@@ -796,23 +796,27 @@ function DreamySongCard({
               initial={{ rotate: 0 }}
               animate={{ rotate: 360 }}
               transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
-              className="absolute -inset-[6px] sm:-inset-[8px] rounded-full pointer-events-none z-30"
+              className="absolute -inset-[8px] sm:-inset-[10px] rounded-full pointer-events-none z-30"
               style={{
-                background: 'conic-gradient(from 0deg, transparent 0deg, transparent 30deg, rgba(244,63,94,0.7) 60deg, rgba(236,72,153,0.9) 120deg, rgba(168,85,247,0.7) 160deg, transparent 200deg, transparent 360deg)',
-                filter: 'blur(4px) drop-shadow(0 0 14px rgba(244,63,94,0.85))',
-                opacity: 0.9
+                background: 'conic-gradient(from 0deg, transparent 0deg, transparent 40deg, rgba(244,63,94,0.8) 80deg, rgba(236,72,153,0.95) 130deg, rgba(168,85,247,0.8) 170deg, transparent 210deg, transparent 360deg)',
+                WebkitMask: 'radial-gradient(circle, transparent calc(50% - 6px), black calc(50% - 4px))',
+                mask: 'radial-gradient(circle, transparent calc(50% - 6px), black calc(50% - 4px))',
+                filter: 'blur(3px)',
+                opacity: 0.95
               }}
             />
-            {/* Secondary arc - counter-clockwise, offset */}
+            {/* Outer glow halo - soft */}
             <motion.div
               initial={{ rotate: 180 }}
               animate={{ rotate: -180 }}
-              transition={{ repeat: Infinity, duration: 4.5, ease: "linear" }}
-              className="absolute -inset-[5px] sm:-inset-[7px] rounded-full pointer-events-none z-30"
+              transition={{ repeat: Infinity, duration: 5, ease: "linear" }}
+              className="absolute -inset-[12px] sm:-inset-[14px] rounded-full pointer-events-none z-[29]"
               style={{
-                background: 'conic-gradient(from 0deg, transparent 0deg, transparent 100deg, rgba(251,207,232,0.6) 140deg, rgba(244,114,182,0.8) 180deg, rgba(236,72,153,0.6) 220deg, transparent 260deg, transparent 360deg)',
-                filter: 'blur(5px) drop-shadow(0 0 10px rgba(251,207,232,0.7))',
-                opacity: 0.75
+                background: 'conic-gradient(from 0deg, transparent 0deg, transparent 120deg, rgba(251,207,232,0.5) 160deg, rgba(244,114,182,0.7) 200deg, rgba(236,72,153,0.5) 240deg, transparent 280deg, transparent 360deg)',
+                WebkitMask: 'radial-gradient(circle, transparent calc(50% - 8px), black calc(50% - 5px))',
+                mask: 'radial-gradient(circle, transparent calc(50% - 8px), black calc(50% - 5px))',
+                filter: 'blur(6px)',
+                opacity: 0.6
               }}
             />
           </>
@@ -11275,20 +11279,20 @@ function Home() {
                           {(activeBrandColors) => (
                             <motion.div
                               key={`song-card-motion-${activeListTab}-${currentPage}-${demo.id || idx}`}
-                              initial={isDreamyTheme ? { opacity: 0, y: 22, scale: 0.95 } : { opacity: 0, y: 14 }}
+                              initial={isDreamyTheme ? { opacity: 0, y: 16, scale: 0.97 } : { opacity: 0, y: 10 }}
                               animate={isDreamyTheme ? { opacity: 1, y: 0, scale: 1 } : { opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
+                              exit={{ opacity: 0 }}
                               transition={
                                 isDreamyTheme 
                                   ? { 
-                                      duration: 0.42, 
-                                      delay: (idx % 6) * 0.05, 
-                                      ease: [0.22, 1, 0.36, 1] 
+                                      duration: 0.35, 
+                                      delay: (idx % 6) * 0.04, 
+                                      ease: [0.25, 0.46, 0.45, 0.94] 
                                     } 
                                   : { 
-                                      duration: 0.2, 
-                                      delay: Math.min(idx, 3) * 0.02, 
-                                      ease: "easeOut" 
+                                      duration: 0.25, 
+                                      delay: Math.min(idx, 5) * 0.03, 
+                                      ease: [0.25, 0.46, 0.45, 0.94] 
                                     }
                               }
                               className="relative overflow-visible w-full h-full"
