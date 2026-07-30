@@ -730,6 +730,8 @@ function DreamySongCard({
     .filter(Boolean)
     .slice(0, 3);
 
+  const navigate = useNavigate();
+
   const handleClick = (e: React.MouseEvent) => {
     if (demo.linkType === 'indirect') {
       e.preventDefault();
@@ -750,7 +752,8 @@ function DreamySongCard({
     }
     // On mobile: first tap = preview (disc pops up), second tap = navigate
     if (isTouchMobile && !(activeListTab === 'demos' || isDemoSong)) {
-      if (!isElevated) {
+      const alreadyElevated = mobilePoppedRef.current || isPlaying || isLoadingAudio;
+      if (!alreadyElevated) {
         // First tap: prevent navigation, trigger preview
         e.preventDefault();
         mobilePoppedRef.current = true;
@@ -758,10 +761,11 @@ function DreamySongCard({
         startAudioPreview();
         return;
       }
-      // Already elevated: allow navigation but stop audio first
+      // Already elevated: stop audio then let navigation happen
       stopAudio();
     }
   };
+
 
   const targetLink = activeListTab === 'released' 
     ? getArtistLink(`/playlist/released?song=${demo.slug || demo.id}`) 
@@ -784,7 +788,7 @@ function DreamySongCard({
 
       {/* Vinyl Record (BEHIND card sleeve - Clickable to pop up & preview) */}
       <div 
-        className={`absolute left-1/2 -translate-x-1/2 top-1 sm:top-2 w-[78%] sm:w-[74%] aspect-square pointer-events-auto cursor-pointer transition-all duration-500 z-10 ${isElevated ? '-translate-y-10 sm:-translate-y-16' : ''}`}
+        className={`absolute left-1/2 -translate-x-1/2 top-1 sm:top-2 w-[78%] sm:w-[74%] aspect-square pointer-events-auto cursor-pointer transition-all duration-500 ${isElevated ? 'z-[25] -translate-y-10 sm:-translate-y-16' : 'z-10'}`}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -966,18 +970,6 @@ function DreamySongCard({
         <Link
           to={targetLink}
           onClick={handleClick}
-          onTouchStart={(e) => {
-            if (!isTouchMobile) return;
-            if (activeListTab === 'demos' || isDemoSong) return;
-            if (!isElevated) {
-              // First tap: block router navigation, pop disc + start preview
-              e.preventDefault();
-              mobilePoppedRef.current = true;
-              setMobilePopped(true);
-              startAudioPreview();
-            }
-            // Second tap (isElevated): let navigation happen naturally via onClick/handleClick
-          }}
           className={`block w-full pointer-events-auto ${theme.cardBg} backdrop-blur-2xl transition-all duration-300 relative pt-8 sm:pt-9.5 pb-4.5 px-4 sm:px-5 overflow-hidden`}
           style={{ clipPath: 'url(#card-concave-clip)', WebkitClipPath: 'url(#card-concave-clip)' }}
         >
