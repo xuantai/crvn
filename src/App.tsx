@@ -26129,10 +26129,10 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
       isMusicianTheme
         ? 'bg-gradient-to-br from-[#2D160B]/95 via-[#210E06]/95 to-[#160803]/98 border-amber-700/60 shadow-[0_20px_50px_rgba(0,0,0,0.85)] text-amber-50' 
         : isDreamyTheme 
-          ? 'bg-slate-950/85 border-rose-500/35 shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_40px_rgba(244,63,94,0.2)] text-white' 
+          ? 'bg-slate-950/40 border-rose-500/35 shadow-[0_20px_50px_rgba(0,0,0,0.4),0_0_40px_rgba(244,63,94,0.2)] text-white' 
           : isGoldTheme 
             ? 'bg-gradient-to-br from-stone-900/95 via-amber-950/40 to-stone-900/95 border-amber-500/30 shadow-[0_8px_32px_0_rgba(251,191,36,0.2)] text-white' 
-            : 'bg-slate-950/85 border-cyan-500/35 shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_40px_rgba(6,182,212,0.2)] text-white'
+            : 'bg-slate-950/40 border-cyan-500/35 shadow-[0_20px_50px_rgba(0,0,0,0.4),0_0_40px_rgba(6,182,212,0.2)] text-white'
     }`}>
       {/* Background ambient lighting */}
       {isDreamyTheme && (
@@ -26317,10 +26317,10 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme, is
       isMusicianTheme
         ? 'bg-gradient-to-br from-[#2D160B]/95 via-[#210E06]/95 to-[#160803]/98 border-amber-700/60 shadow-[0_20px_50px_rgba(0,0,0,0.85)] text-amber-50' 
         : isDreamyTheme 
-          ? 'bg-slate-950/85 border-rose-500/35 shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_40px_rgba(244,63,94,0.2)] text-white' 
+          ? 'bg-slate-950/40 border-rose-500/35 shadow-[0_20px_50px_rgba(0,0,0,0.4),0_0_40px_rgba(244,63,94,0.2)] text-white' 
           : isGoldTheme 
             ? 'bg-gradient-to-br from-stone-900/95 via-amber-950/40 to-stone-900/95 border-amber-500/30 shadow-[0_8px_32px_0_rgba(251,191,36,0.2)] text-white' 
-            : 'bg-slate-950/85 border-cyan-500/35 shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_40px_rgba(6,182,212,0.2)] text-white'
+            : 'bg-slate-950/40 border-cyan-500/35 shadow-[0_20px_50px_rgba(0,0,0,0.4),0_0_40px_rgba(6,182,212,0.2)] text-white'
     }`}>
       {/* Background ambient lighting */}
       {isDreamyTheme && (
