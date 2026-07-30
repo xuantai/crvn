@@ -26038,12 +26038,22 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
   
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto ${
-      isMusicianTheme 
-        ? 'bg-white/90 border-2 border-purple-200/80 shadow-[0_20px_50px_rgba(244,63,94,0.14)] text-stone-950' 
+      isMusicianTheme || isDreamyTheme
+        ? 'border-2 border-stone-300/80 shadow-[0_20px_50px_rgba(0,0,0,0.14)] text-stone-950' 
         : isGoldTheme 
           ? 'bg-gradient-to-br from-stone-900/95 via-amber-950/30 to-stone-900/95 border-amber-500/20 shadow-[0_8px_32px_0_rgba(251,191,36,0.15)] text-white' 
-          : 'bg-white/10 border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] text-white'
-    } backdrop-blur-2xl border rounded-[2.5rem] p-6 sm:p-10 mt-4 sm:mt-8 mb-20 relative z-10 max-w-6xl flex flex-col lg:flex-row gap-10 lg:gap-16 items-center lg:items-start`}>
+          : 'border-2 border-stone-300/80 shadow-[0_20px_50px_rgba(0,0,0,0.14)] text-stone-950'
+    } backdrop-blur-2xl border rounded-[2.5rem] p-6 sm:p-10 mt-4 sm:mt-8 mb-20 relative z-10 max-w-6xl flex flex-col lg:flex-row gap-10 lg:gap-16 items-center lg:items-start`} style={
+      (!isGoldTheme || isMusicianTheme || isDreamyTheme)
+        ? {
+            backgroundColor: '#fbf9f3',
+            backgroundImage: `
+              repeating-linear-gradient(to bottom, transparent, transparent 27px, rgba(148, 163, 184, 0.28) 27px, rgba(148, 163, 184, 0.28) 28px),
+              linear-gradient(to right, transparent 48px, rgba(244, 63, 94, 0.35) 48px, rgba(244, 63, 94, 0.35) 50px, transparent 50px)
+            `
+          }
+        : undefined
+    }>
       {isAdmin && (
         <a href={getAdminLink('about')} className={`absolute top-6 right-6 p-3 ${isMusicianTheme || isDreamyTheme ? 'bg-stone-200/80 text-stone-700 hover:text-stone-950 hover:bg-stone-300' : 'bg-white/10 text-white/70 hover:text-white hover:bg-white/20'} rounded-full transition-colors z-20`} title={t("Chỉnh sửa")}>
           <Edit3 className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -26169,12 +26179,22 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme, is
   
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto mt-4 sm:mt-8 mb-20 relative z-10 px-4 sm:px-8 lg:px-12 ${
-      isMusicianTheme 
-        ? 'bg-white/90 border-2 border-purple-200/80 shadow-[0_20px_50px_rgba(244,63,94,0.14)] text-stone-950' 
+      isMusicianTheme || isDreamyTheme
+        ? 'border-2 border-stone-300/80 shadow-[0_20px_50px_rgba(0,0,0,0.14)] text-stone-950' 
         : isGoldTheme 
           ? 'bg-gradient-to-br from-stone-900/95 via-amber-950/30 to-stone-900/95 border-amber-500/20 shadow-[0_8px_32px_0_rgba(251,191,36,0.15)] text-white' 
-          : 'bg-white/10 border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] text-white'
-    } backdrop-blur-2xl border rounded-[2.5rem] py-12 max-w-7xl ${hasEdu && hasExp ? 'grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16' : 'flex flex-col'}`}>
+          : 'border-2 border-stone-300/80 shadow-[0_20px_50px_rgba(0,0,0,0.14)] text-stone-950'
+    } backdrop-blur-2xl border rounded-[2.5rem] py-12 max-w-7xl ${hasEdu && hasExp ? 'grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16' : 'flex flex-col'}`} style={
+      (!isGoldTheme || isMusicianTheme || isDreamyTheme)
+        ? {
+            backgroundColor: '#fbf9f3',
+            backgroundImage: `
+              repeating-linear-gradient(to bottom, transparent, transparent 27px, rgba(148, 163, 184, 0.28) 27px, rgba(148, 163, 184, 0.28) 28px),
+              linear-gradient(to right, transparent 48px, rgba(244, 63, 94, 0.35) 48px, rgba(244, 63, 94, 0.35) 50px, transparent 50px)
+            `
+          }
+        : undefined
+    }>
       {isAdmin && (
         <a href={getAdminLink('bio')} className={`absolute top-6 right-6 p-3 ${isMusicianTheme || isDreamyTheme ? 'bg-stone-200/80 text-stone-700 hover:text-stone-950 hover:bg-stone-300' : 'bg-white/10 text-white/70 hover:text-white hover:bg-white/20'} rounded-full transition-colors z-20`} title={t("Chỉnh sửa")}>
           <Edit3 className="w-5 h-5 sm:w-6 sm:h-6" />
