@@ -26150,7 +26150,7 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme, is
       )}
       {hasEdu && (
         <div className="w-full">
-          <h2 className={`text-2xl sm:text-3xl font-black ${isMusicianTheme || isDreamyTheme ? 'text-stone-950' : 'text-white'} drop-shadow-md mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-4 sm:pl-6 lg:pl-8`}>
+          <h2 className={`text-2xl sm:text-3xl font-black ${isMusicianTheme || isDreamyTheme ? 'text-stone-950' : 'text-white'} mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-4 sm:pl-6 lg:pl-8`}>
             {t('Học Vấn') || 'Học Vấn'}
           </h2>
           <div className="space-y-8 relative">
@@ -26159,7 +26159,7 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme, is
               whileInView={{ height: '100%' }} 
               viewport={{ once: true }} 
               transition={{ duration: 1.5, ease: 'easeOut' }} 
-              className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${isMusicianTheme ? 'bg-purple-300' : isGoldTheme ? 'bg-amber-500/30' : 'bg-white/20'} origin-top z-0`} 
+              className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${isMusicianTheme || isDreamyTheme ? 'bg-rose-300/80' : isGoldTheme ? 'bg-amber-500/30' : 'bg-white/20'} origin-top z-0`} 
             />
             {biography.education.map((item: any, idx: number) => (
               <TimelineItem key={`l22207-idx-19-${idx}`} item={item} isSplit={true} color="emerald" index={idx} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />
@@ -26179,7 +26179,7 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme, is
               whileInView={{ height: '100%' }} 
               viewport={{ once: true }} 
               transition={{ duration: 1.5, ease: 'easeOut' }} 
-              className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${isMusicianTheme ? 'bg-purple-300' : isGoldTheme ? 'bg-amber-500/30' : 'bg-white/20'} origin-top z-0`} 
+              className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${isMusicianTheme || isDreamyTheme ? 'bg-rose-300/80' : isGoldTheme ? 'bg-amber-500/30' : 'bg-white/20'} origin-top z-0`} 
             />
             {biography.experience.map((item: any, idx: number) => (
               <TimelineItem key={`l22227-idx-20-${idx}`} item={item} isSplit={true} color="blue" index={idx} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />
@@ -26252,7 +26252,7 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0, isM
           whileInView={{ scale: 1, opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: index * 0.2 + 0.3, type: 'spring' }}
-          className={`flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-white/30 backdrop-blur-md ${isEmerald ? 'bg-[#059669]' : 'bg-[#0ea5e9]'} text-white shadow-md shrink-0 relative z-10 ${!isSplit ? 'md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2' : '-ml-3 sm:-ml-[14px] mt-1 sm:mt-0.5'}`}
+          className={`flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-white/80 backdrop-blur-md ${isDreamyTheme ? 'bg-rose-500 shadow-rose-300' : isEmerald ? 'bg-[#059669]' : 'bg-[#0ea5e9]'} text-white shadow-md shrink-0 relative z-10 ${!isSplit ? 'md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2' : '-ml-3 sm:-ml-[14px] mt-1 sm:mt-0.5'}`}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 sm:w-3.5 sm:h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             {isEmerald ? (
@@ -26275,7 +26275,13 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0, isM
           <div className={`${hasImages ? 'w-[85%] md:w-[85%] lg:w-[82%] md:pr-6' : 'w-full'} relative z-0`}>
             <div className={`flex flex-col mb-1 ${!isSplit && hasImages ? 'md:group-odd:items-end' : ''}`}>
               <div className="mb-2">
-                <span className={`text-xs sm:text-sm font-bold inline-block px-3 py-1.5 rounded-lg border transition-all duration-300 shadow-sm ${isEmerald ? (isMusicianTheme ? 'text-emerald-700 border-emerald-300 bg-emerald-50' : 'text-[#34d399] border-[#34d399]/10 bg-[#34d399]/5 group-hover:border-[#34d399]/40 group-hover:bg-[#34d399]/15') : (isMusicianTheme ? 'text-sky-700 border-sky-300 bg-sky-50' : 'text-[#38bdf8] border-[#38bdf8]/10 bg-[#38bdf8]/5 group-hover:border-[#38bdf8]/40 group-hover:bg-[#38bdf8]/15')}`}>{item.time}</span>
+                <span className={`text-xs sm:text-sm font-bold inline-block px-3 py-1.5 rounded-lg border transition-all duration-300 shadow-sm ${
+                isDreamyTheme 
+                  ? 'text-rose-700 border-rose-200/90 bg-rose-50/90 font-extrabold shadow-xs' 
+                  : isEmerald 
+                    ? (isMusicianTheme ? 'text-emerald-700 border-emerald-300 bg-emerald-50' : 'text-[#34d399] border-[#34d399]/10 bg-[#34d399]/5 group-hover:border-[#34d399]/40 group-hover:bg-[#34d399]/15') 
+                    : (isMusicianTheme ? 'text-sky-700 border-sky-300 bg-sky-50' : 'text-[#38bdf8] border-[#38bdf8]/10 bg-[#38bdf8]/5 group-hover:border-[#38bdf8]/40 group-hover:bg-[#38bdf8]/15')
+              }`}>{item.time}</span>
               </div>
               <h3 className={`font-black ${isMusicianTheme || isDreamyTheme ? 'text-stone-950' : 'text-white'} drop-shadow-sm text-base sm:text-lg leading-snug`}>{item.title}</h3>
             </div>
@@ -26298,7 +26304,7 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0, isM
                   );
                 }
                 return (
-                  <p key={`l22343-idx-22-${idx}`} className={`${isMusicianTheme ? 'text-stone-800 font-medium' : 'text-white/80'} text-sm leading-relaxed min-h-[1rem]`}>
+                  <p key={`l22343-idx-22-${idx}`} className={`${isMusicianTheme || isDreamyTheme ? 'text-stone-800 font-semibold' : 'text-white/80'} text-sm leading-relaxed min-h-[1rem]`}>
                     {line}
                   </p>
                 );
