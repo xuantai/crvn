@@ -759,12 +759,12 @@ function DreamySongCard({
     >
       {/* Halo Glow behind top of vinyl record */}
       <div 
-        className={`absolute left-1/2 -translate-x-1/2 -top-1 sm:top-2 w-[85%] aspect-square rounded-full blur-2xl sm:blur-3xl pointer-events-none transition-all duration-700 opacity-70 group-hover:opacity-100 ${theme.halo}`} 
+        className={`absolute left-1/2 -translate-x-1/2 -top-1 sm:top-2 w-[85%] aspect-square rounded-full blur-2xl sm:blur-3xl pointer-events-none transition-all duration-700 ${isElevated ? 'opacity-90' : 'opacity-0 group-hover:opacity-60'} ${theme.halo}`} 
       />
 
       {/* Vinyl Record (BEHIND card sleeve - Clickable to pop up & preview) */}
       <div 
-        className={`absolute left-1/2 -translate-x-1/2 top-1 sm:top-2 w-[78%] sm:w-[74%] aspect-square pointer-events-auto cursor-pointer transition-all duration-500 ${isElevated ? 'z-20' : 'z-10'}`}
+        className={`absolute left-1/2 -translate-x-1/2 top-1 sm:top-2 w-[78%] sm:w-[74%] aspect-square pointer-events-auto cursor-pointer transition-all duration-500 ${isElevated ? 'z-20 -translate-y-10 sm:-translate-y-16' : 'z-10'}`}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -822,7 +822,7 @@ function DreamySongCard({
           </>
         )}
         <div className={`w-full h-full rounded-full border-4 border-neutral-900/20 shadow-[0_20px_40px_rgba(0,0,0,0.4)] overflow-hidden relative transition-all duration-500 transform ${
-          isElevated ? 'scale-104 sm:scale-106 -translate-y-10 sm:-translate-y-16 shadow-[0_20px_45px_rgba(0,0,0,0.45)]' : 'scale-100'
+          isElevated ? 'scale-104 sm:scale-106 shadow-[0_20px_45px_rgba(0,0,0,0.45)]' : 'scale-100'
         }`}>
           {/* Shiny Glass Arc Reflection Overlay */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/35 via-transparent to-black/50 pointer-events-none z-20" />
