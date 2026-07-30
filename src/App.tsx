@@ -1446,7 +1446,8 @@ function MusicianSongCard({
             repeat: Infinity, 
             ease: "easeInOut" 
           }}
-          className="absolute -top-14 sm:-top-17 left-1/2 -translate-x-1/2 z-40 shrink-0 w-auto min-w-[140px] sm:min-w-[170px] max-w-[90%] sm:max-w-[240px] h-8.5 sm:h-10.5 px-3 sm:px-4 py-1 rounded-full bg-[#180e08]/95 border border-amber-500/50 shadow-[0_4px_18px_rgba(0,0,0,0.85),0_0_12px_rgba(245,158,11,0.3)] backdrop-blur-md flex items-center justify-center overflow-hidden pointer-events-none"
+          style={{ zIndex: 8 }}
+          className="absolute -top-20 sm:-top-24 left-1/2 -translate-x-1/2 shrink-0 w-auto min-w-[140px] sm:min-w-[170px] max-w-[90%] sm:max-w-[240px] h-8.5 sm:h-10.5 px-3 sm:px-4 py-1 rounded-full bg-[#180e08]/95 border border-amber-500/50 shadow-[0_4px_18px_rgba(0,0,0,0.85),0_0_12px_rgba(245,158,11,0.3)] backdrop-blur-md flex items-center justify-center overflow-hidden pointer-events-none"
         >
           {/* Glowing radial background animation */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.25),transparent_70%)] animate-pulse pointer-events-none rounded-2xl" />
@@ -1515,15 +1516,13 @@ function MusicianSongCard({
           {/* ── HUGE BLACK VINYL DISC (z-10: peaks out slightly behind cover before hover, pops up smoothly on hover) ── */}
           <motion.div
             className="absolute z-10 pointer-events-none left-[5%] w-[90%] aspect-square"
-            style={{
-              bottom: isElevated ? (isDesktop ? '46px' : '36px') : (isDesktop ? '-55px' : '-40px'),
-              transition: 'bottom 0.5s cubic-bezier(0.34,1.56,0.64,1)',
-            }}
             animate={{
+              bottom: isElevated ? (isDesktop ? 46 : 36) : (isDesktop ? -55 : -40),
               scale: isElevated ? 1.0 : (isDesktop ? 0.74 : 0.90),
               y: (isElevated && isPlaying) ? [0, -3, 0] : 0,
             }}
             transition={{
+              bottom: { duration: 0.45, ease: [0.34, 1.56, 0.64, 1] },
               scale: { duration: 0.45, ease: "easeOut" },
               y: { duration: 2.5, repeat: Infinity, ease: "easeInOut" }
             }}
@@ -1572,17 +1571,17 @@ function MusicianSongCard({
 
           {/* ── HUMONGOUS ALBUM COVER IMAGE (z-20: elevated high before hover & lifts gently on hover) ── */}
           <motion.div
-            className="absolute z-20 left-[5%] w-[90%] aspect-square"
+            className="absolute z-20 left-[4%] w-[92%] aspect-square"
             style={{
-              bottom: isElevated ? '-6px' : (isDesktop ? '-36px' : '-22px'),
               transformOrigin: 'center bottom',
-              transition: 'bottom 0.45s cubic-bezier(0.34,1.56,0.64,1)',
             }}
             animate={{
+              bottom: isElevated ? -6 : (isDesktop ? -36 : -22),
               scale: isElevated ? 1.0 : (isDesktop ? 0.74 : 0.90),
               y: (isElevated && isPlaying) ? [0, -3, 0] : 0,
             }}
             transition={{
+              bottom: { duration: 0.45, ease: [0.34, 1.56, 0.64, 1] },
               scale: { duration: 0.45, ease: "easeOut" },
               y: { duration: 2.5, repeat: Infinity, ease: "easeInOut" },
             }}
@@ -1615,34 +1614,36 @@ function MusicianSongCard({
             </motion.div>
 
             <div
-              className="w-full h-full rounded-lg overflow-hidden relative"
+              className="w-full h-full flex flex-row items-stretch relative"
               style={{
-                boxShadow: isElevated
-                  ? '0 22px 50px rgba(0,0,0,0.9), 0 6px 16px rgba(0,0,0,0.5)'
-                  : '0 12px 30px rgba(0,0,0,0.75)',
-                border: '2.5px solid rgba(255,255,255,0.25)',
-                transition: 'box-shadow 0.45s ease',
+                filter: isElevated
+                  ? 'drop-shadow(0 22px 35px rgba(0,0,0,0.9))'
+                  : 'drop-shadow(0 12px 20px rgba(0,0,0,0.75))',
+                transition: 'filter 0.45s ease',
               }}
             >
-              {coverUrl ? (
-                <img src={coverUrl} className="w-full h-full object-cover" alt={demo.title} referrerPolicy="no-referrer" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-amber-950">
-                  <Music className="w-10 h-10 text-amber-700/60" />
-                </div>
-              )}
-              {/* Transparent DVD Plastic Jewel Case Spine on Left Edge */}
-              <div className="absolute left-0 top-0 bottom-0 w-3.5 sm:w-4.5 z-20 pointer-events-none bg-gradient-to-r from-white/40 via-white/15 to-black/45 border-r border-white/40 shadow-[inset_1px_0_3px_rgba(255,255,255,0.8),inset_-1px_0_3px_rgba(0,0,0,0.6)] flex flex-col justify-between py-2">
+              {/* Extra Transparent DVD Plastic Jewel Case Spine on Left Side (Does NOT clip the cover image) */}
+              <div className="w-3 sm:w-4 shrink-0 rounded-l-md bg-gradient-to-r from-white/45 via-white/20 to-black/45 border-y border-l border-white/50 shadow-[inset_1px_1px_3px_rgba(255,255,255,0.8),inset_-1px_0_3px_rgba(0,0,0,0.6)] flex flex-col justify-between py-1.5 relative z-10 -mr-[1px] pointer-events-none">
                 <div className="w-full h-full border-r border-black/30 relative">
                   <div className="absolute inset-y-1 left-[30%] w-[1px] bg-white/45 shadow-[0_0_2px_rgba(255,255,255,0.8)]" />
                   <div className="absolute inset-y-1 left-[65%] w-[1px] bg-black/40" />
                 </div>
               </div>
 
-              {/* Gloss overlay on cover */}
-              <div className="absolute inset-0 pointer-events-none rounded-lg"
-                style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 50%)' }}
-              />
+              {/* 1:1 Square Album Cover Image Sleeve */}
+              <div className="flex-1 aspect-square rounded-r-md overflow-hidden relative border-y border-r border-white/35 shadow-2xl">
+                {coverUrl ? (
+                  <img src={coverUrl} className="w-full h-full object-cover" alt={demo.title} referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-amber-950">
+                    <Music className="w-10 h-10 text-amber-700/60" />
+                  </div>
+                )}
+                {/* Gloss overlay on cover */}
+                <div className="absolute inset-0 pointer-events-none"
+                  style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 50%)' }}
+                />
+              </div>
             </div>
           </motion.div>
         </div>
