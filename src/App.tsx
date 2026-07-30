@@ -747,7 +747,7 @@ function DreamySongCard({
 
   return (
     <div 
-      className="relative w-full group pt-14 sm:pt-24 select-none"
+      className={`relative w-full group pt-14 sm:pt-24 select-none transition-all duration-300 ${isElevated ? 'z-[80]' : 'z-10 hover:z-[60]'}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onPointerLeave={handleMouseLeave}
@@ -868,6 +868,13 @@ function DreamySongCard({
 
       {/* Outer Card Wrapper with Drop Shadow following the concave shape */}
       <div className={`relative w-full z-20 transition-all duration-300 hover:-translate-y-2 group/card ${theme.dropShadow}`}>
+        {/* Centered Year Badge at Bottom Edge of Card Sleeve (Photo 1) - Placed outside overflow-hidden with z-[90] */}
+        <div className="absolute -bottom-3.5 left-1/2 -translate-x-1/2 z-[90] pointer-events-none">
+          <span className={`px-3.5 py-0.5 rounded-full text-[10px] sm:text-[11.5px] font-black shadow-md border ${theme.yearBorder} ${theme.yearText} bg-white/95 inline-flex items-center justify-center tracking-wider`}>
+            {songYear}
+          </span>
+        </div>
+
         {/* Tilted RELEASED/DEMO Badge on Right Outer Shoulder */}
         <motion.div
           animate={{ 
@@ -932,12 +939,7 @@ function DreamySongCard({
             ) : <div />}
           </div>
 
-          {/* Centered Year Badge at Bottom Edge of Card Sleeve (Photo 1) */}
-          <div className="absolute -bottom-3.5 left-1/2 -translate-x-1/2 z-40 pointer-events-none">
-            <span className={`px-3.5 py-0.5 rounded-full text-[10px] sm:text-[11.5px] font-black shadow-md border ${theme.yearBorder} ${theme.yearText} bg-white/95 inline-flex items-center justify-center tracking-wider`}>
-              {songYear}
-            </span>
-          </div>
+
 
           {/* Bottom Content Area */}
           <div className="flex items-end justify-between gap-3 relative z-10 mt-1">
@@ -956,8 +958,8 @@ function DreamySongCard({
               />
             </div>
 
-            {/* Right Column: Square Thumbnail Image */}
-            <div className="w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-2xl overflow-hidden border-2 border-white/90 shadow-md group-hover/card:scale-105 transition-transform duration-500">
+            {/* Right Column: Square Thumbnail Image (Hidden on Mobile only for max title/artist space, visible on PC md:block) */}
+            <div className="hidden md:block w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-2xl overflow-hidden border-2 border-white/90 shadow-md group-hover/card:scale-105 transition-transform duration-500">
               {coverUrl ? (
                 <img 
                   src={coverUrl} 
@@ -12121,8 +12123,8 @@ const activeAchievements = hasAchievements;
 
       {!isVault && (
         <main className="flex-1 w-full max-w-5xl mx-auto px-6 sm:px-12 pb-32 pt-24 sm:pt-28">
-          {isAbout && <PublicAboutView aboutMe={data.aboutMe} data={data} t={t} onGoToVault={() => setActiveMenuTab(data.menus?.find((m: any) => m.type === 'vault')?.id || 'm1')} isAdmin={!!getAdminToken()} artistExtension={getArtistExtensionFromUrl()} isGoldTheme={isGoldTheme} isMusicianTheme={isMusicianTheme} />}
-          {isBio && <PublicBioView biography={data.biography} t={t} isAdmin={!!getAdminToken()} artistExtension={getArtistExtensionFromUrl()} isGoldTheme={isGoldTheme} isMusicianTheme={isMusicianTheme} />}
+          {isAbout && <PublicAboutView aboutMe={data.aboutMe} data={data} t={t} onGoToVault={() => setActiveMenuTab(data.menus?.find((m: any) => m.type === 'vault')?.id || 'm1')} isAdmin={!!getAdminToken()} artistExtension={getArtistExtensionFromUrl()} isGoldTheme={isGoldTheme} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />}
+          {isBio && <PublicBioView biography={data.biography} t={t} isAdmin={!!getAdminToken()} artistExtension={getArtistExtensionFromUrl()} isGoldTheme={isGoldTheme} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />}
         </main>
       )}
 
@@ -25999,7 +26001,7 @@ function PublicNavbar({ menus, activeTab, setActiveTab, t, isGoldTheme, isMusici
   );
 }
 
-function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtension, isGoldTheme, isMusicianTheme }: any) {
+function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtension, isGoldTheme, isMusicianTheme, isDreamyTheme }: any) {
   if (!aboutMe) return null;
   
   const avatar = aboutMe.avatarUrl || data?.homeCoverUrl;
@@ -26127,7 +26129,7 @@ function InfoField({ label, value, isMusicianTheme }: { label: string, value: st
   );
 }
 
-function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme, isMusicianTheme }: any) {
+function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme, isMusicianTheme, isDreamyTheme }: any) {
   if (!biography) return null;
   
   const hasEdu = biography.education?.length > 0;
