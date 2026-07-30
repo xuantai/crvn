@@ -10321,7 +10321,7 @@ function Home() {
             randomSong={randomSong}
             data={data}
             isGoldTheme={isGoldTheme}
-            isMusicianTheme={isMusicianTheme}
+            isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme}
             activeListTab={activeListTab}
             getSongCoverUrl={getSongCoverUrl}
             isMobile={isMobile}
@@ -10543,7 +10543,7 @@ function Home() {
               : 'bg-neutral-950 text-white selection:bg-rose-500 selection:text-white font-sans bg-notebook-dark'
       } relative z-0`}
     >
-      <SocialCarousel data={data} pushDown={pushDown} isGoldTheme={isGoldTheme} isMusicianTheme={isMusicianTheme} />
+      <SocialCarousel data={data} pushDown={pushDown} isGoldTheme={isGoldTheme} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />
       
       {isMusicianTheme ? (
         <>
@@ -11781,8 +11781,7 @@ const activeAchievements = hasAchievements;
                         }}
                         options={isMobile ? [20, 50, 100] : [21, 50, 100]}
                         isGoldTheme={isGoldTheme || isMusicianTheme}
-                        isMusicianTheme={isMusicianTheme}
-                        isDreamyTheme={isDreamyTheme}
+                        isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme}
                       />
                       <span>{t("bài / trang")} ({t("Tổng")}: {totalItems})</span>
                     </div>
@@ -11993,8 +11992,7 @@ const activeAchievements = hasAchievements;
                       }}
                       options={[8, 20, 50]}
                       isGoldTheme={isGoldTheme || isMusicianTheme}
-                      isMusicianTheme={isMusicianTheme}
-                      isDreamyTheme={isDreamyTheme}
+                      isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme}
                     />
                     <span>{t("bài / trang")} ({t("Tổng")}: {mvTotalItems})</span>
                   </div>
@@ -26050,24 +26048,24 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
       
       {/* Details */}
       <div className={`w-full ${avatar ? "lg:flex-1" : "max-w-3xl mx-auto"} flex flex-col justify-center space-y-1 sm:space-y-2 z-10 relative mt-6 lg:mt-0`}>
-        <span className={`${isMusicianTheme ? 'text-rose-600 font-extrabold' : isGoldTheme ? 'text-amber-400 font-black' : 'text-[#06b6d4]'} font-bold text-sm sm:text-base mb-1 tracking-wide uppercase inline-block text-center lg:text-left`}>{aboutMe.role || 'Profile Card'}</span>
-        <h2 className={`text-[clamp(1.5rem,3.5vw,2.25rem)] font-black ${isMusicianTheme ? 'text-stone-950' : 'text-white'} drop-shadow-md mb-4 sm:mb-6 leading-tight text-center lg:text-left break-words`}>
+        <span className={`${isMusicianTheme || isDreamyTheme ? 'text-rose-600 font-extrabold' : isGoldTheme ? 'text-amber-400 font-black' : 'text-[#06b6d4]'} font-bold text-sm sm:text-base mb-1 tracking-wide uppercase inline-block text-center lg:text-left`}>{aboutMe.role || 'Profile Card'}</span>
+        <h2 className={`text-[clamp(1.5rem,3.5vw,2.25rem)] font-black ${isMusicianTheme || isDreamyTheme ? 'text-stone-950' : 'text-white'} drop-shadow-md mb-4 sm:mb-6 leading-tight text-center lg:text-left break-words`}>
           {data?.artistName || t('Về Tôi') || 'Về Tôi'}
         </h2>
           
           {aboutMe.intro && (
-            <div className={`mb-6 ${isMusicianTheme ? 'text-stone-800 font-semibold' : 'text-white/90 font-medium'} text-[clamp(0.875rem,3.5vw,1.25rem)] leading-relaxed whitespace-pre-line drop-shadow-sm`}>
+            <div className={`mb-6 ${isMusicianTheme || isDreamyTheme ? 'text-stone-800 font-semibold' : 'text-white/90 font-medium'} text-[clamp(0.875rem,3.5vw,1.25rem)] leading-relaxed whitespace-pre-line drop-shadow-sm`}>
               {aboutMe.intro}
             </div>
           )}
           
           <div className="space-y-3 mb-6 text-lg">
-            {aboutMe.realName && <InfoField label={t("Tên Thật") || "Tên Thật"} value={aboutMe.realName} isMusicianTheme={isMusicianTheme} />}
-            {aboutMe.dob && <InfoField label={t("Ngày Sinh") || "Ngày Sinh"} value={aboutMe.dob} isMusicianTheme={isMusicianTheme} />}
-            {aboutMe.address && <InfoField label={t("Đến Từ") || "Đến Từ"} value={aboutMe.address} isMusicianTheme={isMusicianTheme} />}
-            {aboutMe.company && <InfoField label={t("Sinh Sống") || "Sinh Sống"} value={aboutMe.company} isMusicianTheme={isMusicianTheme} />}
-            {aboutMe.email && <InfoField label={t("Email") || "Email"} value={aboutMe.email} isMusicianTheme={isMusicianTheme} />}
-            {aboutMe.phone && <InfoField label={t("SĐT") || "SĐT"} value={aboutMe.phone} isMusicianTheme={isMusicianTheme} />}
+            {aboutMe.realName && <InfoField label={t("Tên Thật") || "Tên Thật"} value={aboutMe.realName} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />}
+            {aboutMe.dob && <InfoField label={t("Ngày Sinh") || "Ngày Sinh"} value={aboutMe.dob} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />}
+            {aboutMe.address && <InfoField label={t("Đến Từ") || "Đến Từ"} value={aboutMe.address} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />}
+            {aboutMe.company && <InfoField label={t("Sinh Sống") || "Sinh Sống"} value={aboutMe.company} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />}
+            {aboutMe.email && <InfoField label={t("Email") || "Email"} value={aboutMe.email} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />}
+            {aboutMe.phone && <InfoField label={t("SĐT") || "SĐT"} value={aboutMe.phone} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />}
           </div>
           
           <div className="flex flex-wrap items-center gap-4 mb-6">
@@ -26119,12 +26117,12 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
   );
 }
 
-function InfoField({ label, value, isMusicianTheme }: { label: string, value: string, isMusicianTheme?: boolean }) {
+function InfoField({ label, value, isMusicianTheme, isDreamyTheme }: { label: string, value: string, isMusicianTheme?: boolean, isDreamyTheme?: boolean }) {
   return (
-    <div className={`flex items-center font-medium ${isMusicianTheme ? 'text-stone-950 font-bold' : 'text-white/90 drop-shadow-sm'} text-[clamp(0.75rem,3.5vw,1.125rem)] w-full`}>
-      <span className={`font-bold w-[35%] max-w-[160px] shrink-0 ${isMusicianTheme ? 'text-stone-700' : 'text-white'} whitespace-nowrap overflow-hidden text-ellipsis`}>{label}</span>
+    <div className={`flex items-center font-medium ${isMusicianTheme || isDreamyTheme ? 'text-stone-950 font-bold' : 'text-white/90 drop-shadow-sm'} text-[clamp(0.75rem,3.5vw,1.125rem)] w-full`}>
+      <span className={`font-bold w-[35%] max-w-[160px] shrink-0 ${isMusicianTheme || isDreamyTheme ? 'text-stone-700' : 'text-white'} whitespace-nowrap overflow-hidden text-ellipsis`}>{label}</span>
       <span className="mx-1 sm:mx-2 shrink-0">:</span>
-      <span className={`${isMusicianTheme ? 'text-stone-950 font-extrabold' : 'text-white/80'} flex-1 whitespace-nowrap overflow-hidden text-ellipsis`}>{value}</span>
+      <span className={`${isMusicianTheme || isDreamyTheme ? 'text-stone-950 font-extrabold' : 'text-white/80'} flex-1 whitespace-nowrap overflow-hidden text-ellipsis`}>{value}</span>
     </div>
   );
 }
@@ -26152,7 +26150,7 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme, is
       )}
       {hasEdu && (
         <div className="w-full">
-          <h2 className={`text-2xl sm:text-3xl font-black ${isMusicianTheme ? 'text-stone-950' : 'text-white'} drop-shadow-md mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-4 sm:pl-6 lg:pl-8`}>
+          <h2 className={`text-2xl sm:text-3xl font-black ${isMusicianTheme || isDreamyTheme ? 'text-stone-950' : 'text-white'} drop-shadow-md mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-4 sm:pl-6 lg:pl-8`}>
             {t('Học Vấn') || 'Học Vấn'}
           </h2>
           <div className="space-y-8 relative">
@@ -26164,7 +26162,7 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme, is
               className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${isMusicianTheme ? 'bg-purple-300' : isGoldTheme ? 'bg-amber-500/30' : 'bg-white/20'} origin-top z-0`} 
             />
             {biography.education.map((item: any, idx: number) => (
-              <TimelineItem key={`l22207-idx-19-${idx}`} item={item} isSplit={true} color="emerald" index={idx} isMusicianTheme={isMusicianTheme} />
+              <TimelineItem key={`l22207-idx-19-${idx}`} item={item} isSplit={true} color="emerald" index={idx} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />
             ))}
           </div>
         </div>
@@ -26184,7 +26182,7 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme, is
               className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${isMusicianTheme ? 'bg-purple-300' : isGoldTheme ? 'bg-amber-500/30' : 'bg-white/20'} origin-top z-0`} 
             />
             {biography.experience.map((item: any, idx: number) => (
-              <TimelineItem key={`l22227-idx-20-${idx}`} item={item} isSplit={true} color="blue" index={idx} isMusicianTheme={isMusicianTheme} />
+              <TimelineItem key={`l22227-idx-20-${idx}`} item={item} isSplit={true} color="blue" index={idx} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />
             ))}
           </div>
         </div>
@@ -26193,7 +26191,7 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme, is
   );
 }
 
-function TimelineItem({ item, isSplit = false, color = "emerald", index = 0, isMusicianTheme = false }: { item: any, isSplit?: boolean, color?: "emerald" | "blue", key?: number | string, index?: number, isMusicianTheme?: boolean }) {
+function TimelineItem({ item, isSplit = false, color = "emerald", index = 0, isMusicianTheme = false, isDreamyTheme = false }: { item: any, isSplit?: boolean, color?: "emerald" | "blue", key?: number | string, index?: number, isMusicianTheme?: boolean, isDreamyTheme?: boolean }) {
   const isEmerald = color === "emerald";
   const [isImgOpen, setIsImgOpen] = useState(false);
   
@@ -26279,7 +26277,7 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0, isM
               <div className="mb-2">
                 <span className={`text-xs sm:text-sm font-bold inline-block px-3 py-1.5 rounded-lg border transition-all duration-300 shadow-sm ${isEmerald ? (isMusicianTheme ? 'text-emerald-700 border-emerald-300 bg-emerald-50' : 'text-[#34d399] border-[#34d399]/10 bg-[#34d399]/5 group-hover:border-[#34d399]/40 group-hover:bg-[#34d399]/15') : (isMusicianTheme ? 'text-sky-700 border-sky-300 bg-sky-50' : 'text-[#38bdf8] border-[#38bdf8]/10 bg-[#38bdf8]/5 group-hover:border-[#38bdf8]/40 group-hover:bg-[#38bdf8]/15')}`}>{item.time}</span>
               </div>
-              <h3 className={`font-black ${isMusicianTheme ? 'text-stone-950' : 'text-white'} drop-shadow-sm text-base sm:text-lg leading-snug`}>{item.title}</h3>
+              <h3 className={`font-black ${isMusicianTheme || isDreamyTheme ? 'text-stone-950' : 'text-white'} drop-shadow-sm text-base sm:text-lg leading-snug`}>{item.title}</h3>
             </div>
             {/* Auto-detect bullet points/lists and render with proper indentation */}
             <div className="space-y-2 mt-2">
@@ -26291,7 +26289,7 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0, isM
                   const content = bulletMatch[2];
                   const isNumber = /^\d+/.test(bullet);
                   return (
-                    <div key={`l22334-idx-21-${idx}`} className={`flex items-start gap-2.5 pl-3 ${isMusicianTheme ? 'text-stone-800 font-medium' : 'text-white/85'} text-sm leading-relaxed`}>
+                    <div key={`l22334-idx-21-${idx}`} className={`flex items-start gap-2.5 pl-3 ${isMusicianTheme || isDreamyTheme ? 'text-stone-800 font-medium' : 'text-white/85'} text-sm leading-relaxed`}>
                       <span className={`text-rose-500 shrink-0 select-none ${isNumber ? 'font-bold text-xs mt-0.5' : 'text-base -mt-0.5'}`}>
                         {isNumber ? bullet : '•'}
                       </span>
