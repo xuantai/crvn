@@ -575,16 +575,18 @@ function DreamySongCard({
 
     setIsLoadingAudio(true);
 
-    // Stop any existing global audio immediately before playing new preview
-    stopGlobalPreviewAudio();
+    // Stop any existing global audio without resetting THIS card's mobilePopped state
+    if (globalPreviewAudio) {
+      try { globalPreviewAudio.pause(); globalPreviewAudio.currentTime = 0; } catch (e) {}
+      globalPreviewAudio = null;
+    }
+    globalActiveCardId = demo.id;
+    // Notify OTHER cards to reset (currentId = demo.id so THIS card's handler skips)
+    window.dispatchEvent(new CustomEvent('crvn-stop-all-audio-previews', { detail: { currentId: demo.id } }));
 
     const audio = new Audio(audioUrl);
     audio.preload = 'auto';
     globalPreviewAudio = audio;
-    globalActiveCardId = demo.id;
-
-    // Dispatch event so all other card instances update their isPlaying state
-    window.dispatchEvent(new CustomEvent('crvn-stop-all-audio-previews', { detail: { currentId: demo.id } }));
 
     audio.volume = 0;
     const playSnippet = () => {
@@ -765,6 +767,25 @@ function DreamySongCard({
         className={`absolute left-1/2 -translate-x-1/2 -top-1 sm:top-2 w-[85%] aspect-square rounded-full blur-2xl sm:blur-3xl pointer-events-none transition-all duration-700 ${isElevated ? 'opacity-90' : 'opacity-0 group-hover:opacity-60'} ${theme.halo}`} 
       />
 
+      {/* Mobile tap zone: invisible overlay above card sleeve so touch reaches disc area (z-[30] > sleeve z-20) */}
+      {isTouchMobile && (activeListTab !== 'demos' && !isDemoSong) && (
+        <div
+          className={`absolute left-1/2 -translate-x-1/2 top-0 w-[78%] sm:w-[74%] z-[30] cursor-pointer ${isElevated ? 'pointer-events-none' : 'pointer-events-auto'}`}
+          style={{ height: '56px' }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (isPlaying || mobilePopped || globalActiveCardId === demo.id) {
+              stopAudio();
+            } else {
+              mobilePoppedRef.current = true;
+              setMobilePopped(true);
+              startAudioPreview();
+            }
+          }}
+        />
+      )}
+
       {/* Vinyl Record (BEHIND card sleeve - Clickable to pop up & preview) */}
       <div 
         className={`absolute left-1/2 -translate-x-1/2 top-1 sm:top-2 w-[78%] sm:w-[74%] aspect-square pointer-events-auto cursor-pointer transition-all duration-500 z-10 ${isElevated ? '-translate-y-10 sm:-translate-y-16' : ''}`}
@@ -772,25 +793,17 @@ function DreamySongCard({
           e.preventDefault();
           e.stopPropagation();
           if (activeListTab === 'demos' || isDemoSong) return;
-          if (isPlaying || mobilePopped || globalActiveCardId === demo.id || isHovered) {
+          if (isPlaying || mobilePopped || globalActiveCardId === demo.id) {
             stopAudio();
           } else {
             mobilePoppedRef.current = true;
             setMobilePopped(true);
-            // Stop old preview audio without resetting THIS card's state
-            if (globalPreviewAudio) {
-              try { globalPreviewAudio.pause(); globalPreviewAudio.currentTime = 0; } catch (e) {}
-              globalPreviewAudio = null;
-            }
-            globalActiveCardId = demo.id;
-            // Notify OTHER cards to reset (currentId = demo.id so THIS card's handler skips)
-            window.dispatchEvent(new CustomEvent('crvn-stop-all-audio-previews', { detail: { currentId: demo.id } }));
             startAudioPreview();
           }
         }}
       >
         {/* Floating Top-Left PREVIEW / LOADING Badge */}
-        {(isPlaying || isLoadingAudio) && (
+        {(isPlaying || isLoadingAudio || mobilePopped) && (
           <div className="absolute -top-6 -left-6 sm:-top-8 sm:-left-10 z-40 pointer-events-none">
             <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${isLoadingAudio ? 'bg-amber-600 border-amber-200/90' : 'bg-rose-600 border-rose-200/90'} text-white text-[8px] sm:text-[9px] font-black tracking-widest uppercase shadow-xl border animate-pulse`}>
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
