@@ -1451,7 +1451,7 @@ function MusicianSongCard({
             ease: "easeInOut" 
           }}
           style={{ zIndex: 8 }}
-          className="absolute -top-16 sm:-top-19.5 left-1/2 -translate-x-1/2 shrink-0 w-auto min-w-[140px] sm:min-w-[170px] max-w-[90%] sm:max-w-[240px] h-8.5 sm:h-10.5 px-3 sm:px-4 py-1 rounded-full bg-[#180e08]/95 border border-amber-500/50 shadow-[0_4px_18px_rgba(0,0,0,0.85),0_0_12px_rgba(245,158,11,0.3)] backdrop-blur-md flex items-center justify-center overflow-hidden pointer-events-none"
+          className="absolute -top-16 sm:-top-19.5 left-1/2 -translate-x-1/2 shrink-0 w-auto min-w-[140px] sm:min-w-[170px] max-w-[90%] sm:max-w-[240px] h-8.5 sm:h-10.5 px-3 sm:px-4 py-1 rounded-xl bg-[#180e08]/95 border border-amber-500/50 shadow-[0_4px_18px_rgba(0,0,0,0.85),0_0_12px_rgba(245,158,11,0.3)] backdrop-blur-md flex items-center justify-center overflow-hidden pointer-events-none"
         >
           {/* Glowing radial background animation */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.25),transparent_70%)] animate-pulse pointer-events-none rounded-2xl" />
@@ -8071,16 +8071,16 @@ function renderContainedEffect(templateType: string) {
           {/* EXACT SINGLE 5-POINTED GOLDEN STAR IN DEAD CENTER (Flag Waving & Light Pulse Animation) */}
           <motion.div 
             animate={{
-              scale: [1, 1.06, 0.97, 1.04, 1],
+              scale: [1, 1.05, 0.98, 1.03, 1],
               rotate: [-2, 2, -1, 1.5, -2],
-              opacity: [0.22, 0.38, 0.22]
+              opacity: [0.88, 1.0, 0.88]
             }}
             transition={{
               duration: 5,
               repeat: Infinity,
               ease: "easeInOut"
             }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-yellow-400 select-none pointer-events-none filter drop-shadow-[0_0_25px_rgba(250,204,21,0.7)]"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[#FFD700] select-none pointer-events-none filter drop-shadow-[0_0_35px_rgba(255,215,0,0.95)] drop-shadow-[0_0_12px_rgba(255,215,0,0.8)]"
           >
             <svg className="w-32 h-32 sm:w-40 sm:h-40" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
@@ -11093,7 +11093,7 @@ function Home() {
                     initial="hidden"
                     animate="show"
                     exit="exit"
-                    className={activeListTab === 'albums' ? "grid grid-cols-1 gap-3.5 sm:gap-4 max-w-3xl mx-auto w-full" : isMusicianTheme ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-y-12 sm:gap-y-24 gap-x-3 sm:gap-x-8 max-w-[1400px] mx-auto pt-10 sm:pt-16" : isGold2Theme ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" : (isGoldTheme && !isMobile) ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" : isDreamyTheme ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6 max-w-[1400px] mx-auto" : "grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[1400px] mx-auto"}
+                    className={activeListTab === 'albums' ? "grid grid-cols-1 gap-3.5 sm:gap-4 max-w-3xl mx-auto w-full" : isMusicianTheme ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-y-22 sm:gap-y-26 gap-x-3 sm:gap-x-8 max-w-[1400px] mx-auto pt-10 sm:pt-16" : isGold2Theme ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" : (isGoldTheme && !isMobile) ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" : isDreamyTheme ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6 max-w-[1400px] mx-auto" : "grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[1400px] mx-auto"}
                   >
                     {activeListTab === 'albums' ? (
                       paginatedItems.map((playlist: any, idx: number) => {
