@@ -18169,9 +18169,24 @@ function AdminDashboard() {
                   return (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-h-[60vh] overflow-y-auto pr-1 pt-3">
                       {membershipTiers.map((tier) => {
-                        const isActive = (tier.id === 'free' && (!currentRole || currentRole === 'free' || currentRole === 'miễn phí')) ||
-                                         (tier.id === 'pro' && (currentRole === 'pro' || currentRole === 'member')) ||
-                                         (tier.id === 'vip' && (currentRole === 'vip' || (data as any)?.isSpecial || (data as any)?.isMasterAdmin));
+                        const userTierIndex = (currentRole === 'vip' || (data as any)?.isSpecial || (data as any)?.isMasterAdmin) ? 2 :
+                                              (currentRole === 'pro' || currentRole === 'member') ? 1 : 0;
+                        const tierIndex = tier.id === 'free' ? 0 : tier.id === 'pro' ? 1 : 2;
+                        const isActive = userTierIndex === tierIndex;
+                        const isUpgrade = userTierIndex < tierIndex;
+                        const isDowngrade = userTierIndex > tierIndex;
+
+                        let buttonLabel = '';
+                        if (isActive) {
+                          buttonLabel = t('Gói Của Bạn');
+                        } else if (isUpgrade) {
+                          buttonLabel = t('Nâng Cấp');
+                        } else if (isDowngrade) {
+                          buttonLabel = t('Hạ Cấp');
+                        } else {
+                          buttonLabel = t('Đăng Ký Ngay');
+                        }
+
                         return (
                           <div
                             key={tier.id}
@@ -18183,7 +18198,7 @@ function AdminDashboard() {
                           >
                             {isActive && (
                               <span className="absolute -top-3.5 right-4 bg-emerald-600 text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-md z-20">
-                                {t("Bạn đang ở gói này")}
+                                {t("Gói Của Bạn")}
                               </span>
                             )}
                             
@@ -18215,7 +18230,7 @@ function AdminDashboard() {
                                 className={`w-full py-2.5 rounded-xl font-bold text-xs mb-5 transition-all ${
                                   isActive
                                     ? 'bg-emerald-600 text-white shadow-md cursor-default'
-                                    : 'bg-stone-900 text-white hover:bg-stone-800 cursor-pointer shadow-sm'
+                                    : 'bg-stone-900 text-white hover:bg-stone-800 cursor-pointer shadow-sm active:scale-[0.98]'
                                 }`}
                                 onClick={() => {
                                    if (!isActive) {
@@ -18224,7 +18239,7 @@ function AdminDashboard() {
                                    }
                                 }}
                               >
-                                {isActive ? t('Đang Sử Dụng') : t('Nâng Cấp Ngay')}
+                                {buttonLabel}
                               </button>
 
                               {/* Features list dynamically from featuresMatrix */}

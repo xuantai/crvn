@@ -2236,71 +2236,110 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-center">
-                  {membershipTiers.map((tier) => (
-                    <div 
-                      key={tier.id}
-                      className={`bg-white border rounded-[2.5rem] p-8 flex flex-col justify-between transition-all shadow-sm hover:shadow-md relative overflow-hidden ${
-                        tier.id === 'pro' ? 'border-purple-300 ring-2 ring-purple-400/20' : tier.id === 'vip' ? 'border-amber-300 ring-2 ring-amber-400/20' : 'border-neutral-200/80'
-                      }`}
-                    >
-                      <div>
-                        <div className="flex items-center justify-between mb-4">
-                          <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider ${tier.badgeStyle}`}>
-                            {tier.badgeText}
-                          </span>
-                        </div>
+                {(() => {
+                  const currentRole = String((loggedInArtist as any)?.roleId || (loggedInArtist as any)?.role || '').toLowerCase();
+                  const isUserLoggedIn = !!loggedInArtist;
+                  const userTierIndex = !isUserLoggedIn ? -1 :
+                    (currentRole === 'vip' || (loggedInArtist as any)?.isSpecial || (loggedInArtist as any)?.isMasterAdmin) ? 2 :
+                    (currentRole === 'pro' || currentRole === 'member') ? 1 : 0;
 
-                        <h3 className="text-xl font-extrabold text-neutral-900 mb-2">{tier.name}</h3>
-                        
-                        <div className="flex items-baseline gap-2 my-4 flex-wrap">
-                          {tier.priceInfo.orig && (
-                            <span className="text-sm font-bold text-neutral-400 line-through">
-                              {tier.priceInfo.orig}
-                            </span>
-                          )}
-                          <span className="text-3xl font-black text-neutral-950">
-                            {tier.priceInfo.sale}
-                          </span>
-                          {tier.priceInfo.period && <span className="text-xs text-neutral-500 font-bold">{tier.priceInfo.period}</span>}
-                        </div>
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-center">
+                      {membershipTiers.map((tier) => {
+                        const tierIndex = tier.id === 'free' ? 0 : tier.id === 'pro' ? 1 : 2;
+                        const isActive = isUserLoggedIn && userTierIndex === tierIndex;
+                        const isUpgrade = isUserLoggedIn && userTierIndex < tierIndex;
+                        const isDowngrade = isUserLoggedIn && userTierIndex > tierIndex;
 
-                        <div className="border-t border-neutral-100 my-6"></div>
+                        let buttonLabel = '';
+                        if (isActive) {
+                          buttonLabel = lang === 'vi' ? 'Gói của bạn' : lang === 'ko' ? '현재 요금제' : 'Your Current Plan';
+                        } else if (isUpgrade) {
+                          buttonLabel = lang === 'vi' ? 'Nâng cấp' : lang === 'ko' ? '업그레이드' : 'Upgrade';
+                        } else if (isDowngrade) {
+                          buttonLabel = lang === 'vi' ? 'Hạ cấp' : lang === 'ko' ? '다운그레이드' : 'Downgrade';
+                        } else {
+                          buttonLabel = lang === 'vi' ? 'Đăng ký ngay' : lang === 'ko' ? '지금 신청하기' : 'Register Now';
+                        }
 
-                        <ul className="space-y-3 text-xs sm:text-sm font-medium">
-                          {tier.features.map((feat, fIdx) => (
-                            <li key={`landing-feat-${tier.id}-${fIdx}`} className={`flex items-start gap-2.5 ${feat.active ? 'text-neutral-700 font-medium' : 'text-neutral-400 line-through opacity-50'}`}>
-                              {feat.active ? (
-                                <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0 mt-0.5" />
-                              ) : (
-                                <XCircle className="w-4.5 h-4.5 text-neutral-300 shrink-0 mt-0.5" />
-                              )}
-                              <span>{feat.text}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                        return (
+                          <div 
+                            key={tier.id}
+                            className={`bg-white border rounded-[2.5rem] p-8 flex flex-col justify-between transition-all shadow-sm hover:shadow-md relative overflow-hidden ${
+                              isActive
+                                ? 'border-emerald-500 ring-2 ring-emerald-500/30 bg-emerald-50/20 shadow-md'
+                                : tier.id === 'pro' 
+                                  ? 'border-purple-300 ring-2 ring-purple-400/20' 
+                                  : tier.id === 'vip' 
+                                    ? 'border-amber-300 ring-2 ring-amber-400/20' 
+                                    : 'border-neutral-200/80'
+                            }`}
+                          >
+                            <div>
+                              <div className="flex items-center justify-between mb-4">
+                                <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider ${tier.badgeStyle}`}>
+                                  {tier.badgeText}
+                                </span>
+                                {isActive && (
+                                  <span className="bg-emerald-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-md">
+                                    {lang === 'vi' ? 'Gói của bạn' : lang === 'ko' ? '현재 요금제' : 'Your Plan'}
+                                  </span>
+                                )}
+                              </div>
 
-                      <div className="mt-8">
-                        <button
-                          onClick={() => {
-                            const registerBtn = document.querySelector('button[id="register-navbar-btn"]') || document.querySelector('button[onClick*="setShowRegisterModal"]');
-                            if (registerBtn) {
-                              (registerBtn as HTMLButtonElement).click();
-                            } else {
-                              window.scrollTo({ top: 0, behavior: 'smooth' });
-                            }
-                          }}
-                          className={`w-full text-white transition-all text-xs font-bold py-4 px-6 rounded-2xl cursor-pointer text-center block ${
-                            tier.id === 'vip' ? 'bg-amber-600 hover:bg-amber-700 shadow-md' : tier.id === 'pro' ? 'bg-purple-600 hover:bg-purple-700 shadow-md' : 'bg-neutral-950 hover:bg-neutral-800 shadow-sm'
-                          }`}
-                        >
-                          {lang === 'vi' ? 'Đăng ký ngay' : lang === 'ko' ? '지금 신청하기' : 'Register Now'}
-                        </button>
-                      </div>
+                              <h3 className="text-xl font-extrabold text-neutral-900 mb-2">{tier.name}</h3>
+                              
+                              <div className="flex items-baseline gap-2 my-4 flex-wrap">
+                                {tier.priceInfo.orig && (
+                                  <span className="text-sm font-bold text-neutral-400 line-through">
+                                    {tier.priceInfo.orig}
+                                  </span>
+                                )}
+                                <span className="text-3xl font-black text-neutral-950">
+                                  {tier.priceInfo.sale}
+                                </span>
+                                {tier.priceInfo.period && <span className="text-xs text-neutral-500 font-bold">{tier.priceInfo.period}</span>}
+                              </div>
+
+                              <div className="border-t border-neutral-100 my-6"></div>
+
+                              <ul className="space-y-3 text-xs sm:text-sm font-medium">
+                                {tier.features.map((feat, fIdx) => (
+                                  <li key={`landing-feat-${tier.id}-${fIdx}`} className={`flex items-start gap-2.5 ${feat.active ? 'text-neutral-700 font-medium' : 'text-neutral-400 line-through opacity-50'}`}>
+                                    {feat.active ? (
+                                      <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0 mt-0.5" />
+                                    ) : (
+                                      <XCircle className="w-4.5 h-4.5 text-neutral-300 shrink-0 mt-0.5" />
+                                    )}
+                                    <span>{feat.text}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+
+                            <div className="mt-8">
+                              <button
+                                type="button"
+                                disabled={isActive}
+                                onClick={() => {
+                                  if (isActive) return;
+                                  setShowRegisterModal(true);
+                                }}
+                                className={`w-full text-xs font-bold py-4 px-6 rounded-2xl transition-all cursor-pointer text-center block ${
+                                  isActive
+                                    ? 'bg-emerald-600 text-white shadow-md cursor-default'
+                                    : 'bg-neutral-950 hover:bg-neutral-800 text-white shadow-sm active:scale-[0.98]'
+                                }`}
+                              >
+                                {buttonLabel}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  ))}
-                </div>
+                  );
+                })()}
               </div>
             );
           })()}
