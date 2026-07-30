@@ -1249,12 +1249,23 @@ function MusicianSongCard({
     if (demo.achievements && Array.isArray(demo.achievements) && demo.achievements.length > 0) {
       return demo.achievements;
     }
+    const list: any[] = [];
+    if (demo.spotifyListens || demo.spListens || demo.streamsCount) {
+      list.push({ type: 'spotify_streams', value: demo.spotifyListens || demo.spListens || demo.streamsCount });
+    }
+    if (demo.youtubeViews || demo.ytViews || demo.viewsCount || demo.views) {
+      list.push({ type: 'youtube_views', value: demo.youtubeViews || demo.ytViews || demo.viewsCount || demo.views });
+    }
     if (demo.achievement) {
       const valStr = String(demo.achievement).replace('> ', '').replace(' Lượt xem', '').replace(' Lượt nghe', '');
-      return [{ type: 'youtube_views', value: valStr }];
+      if (String(demo.achievement).toLowerCase().includes('spotify')) {
+        list.push({ type: 'spotify_streams', value: valStr });
+      } else {
+        list.push({ type: 'youtube_views', value: valStr });
+      }
     }
-    return null;
-  }, [demo.achievements, demo.achievement]);
+    return list.length > 0 ? list : null;
+  }, [demo.achievements, demo.achievement, demo.spotifyListens, demo.spListens, demo.streamsCount, demo.youtubeViews, demo.ytViews, demo.viewsCount, demo.views]);
 
   const hasAchievementsArray = demo.achievements && Array.isArray(demo.achievements) && demo.achievements.length > 0;
   let achievementText = '';
@@ -1423,7 +1434,7 @@ function MusicianSongCard({
         className={`absolute -inset-2.5 rounded-2xl bg-gradient-to-r from-amber-400/45 via-yellow-300/50 to-amber-400/45 blur-2xl pointer-events-none transition-all duration-400 ${isElevated ? 'opacity-100 scale-102' : 'opacity-0 scale-95'}`} 
       />
 
-      {/* ── FLOATING ACHIEVEMENT BADGE (Positioned at top of outer gap, zIndex 8: covered by vinyl/cover when hovered) ── */}
+      {/* ── FLOATING ACHIEVEMENT BADGE (Positioned floating above card sleeve, zIndex 40) ── */}
       {hasAch && (
         <motion.div 
           animate={{ 
@@ -1435,8 +1446,7 @@ function MusicianSongCard({
             repeat: Infinity, 
             ease: "easeInOut" 
           }}
-          style={{ zIndex: 8 }}
-          className="absolute -top-5.5 sm:-top-6.5 left-1/2 -translate-x-1/2 shrink-0 w-auto min-w-[140px] sm:min-w-[185px] md:min-w-[200px] max-w-[90%] sm:max-w-[240px] h-10 sm:h-12 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-2xl bg-gradient-to-r from-[#160E08] via-[#2F1C0D] to-[#160E08] border border-[#D4AF37]/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_4px_14px_rgba(0,0,0,0.65),0_0_10px_rgba(212,175,55,0.25)] flex items-center justify-center overflow-hidden pointer-events-none"
+          className="absolute -top-3.5 sm:-top-4.5 left-1/2 -translate-x-1/2 z-40 shrink-0 w-auto min-w-[140px] sm:min-w-[170px] max-w-[90%] sm:max-w-[240px] h-9 sm:h-11 px-3 sm:px-4 py-1 rounded-full bg-[#180e08]/90 border border-amber-500/50 shadow-[0_4px_18px_rgba(0,0,0,0.85),0_0_12px_rgba(245,158,11,0.3)] backdrop-blur-md flex items-center justify-center overflow-hidden pointer-events-none"
         >
           {/* Glowing radial background animation */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.25),transparent_70%)] animate-pulse pointer-events-none rounded-2xl" />
@@ -1621,6 +1631,14 @@ function MusicianSongCard({
                   <Music className="w-10 h-10 text-amber-700/60" />
                 </div>
               )}
+              {/* Transparent DVD Plastic Jewel Case Spine on Left Edge */}
+              <div className="absolute left-0 top-0 bottom-0 w-3.5 sm:w-4.5 z-20 pointer-events-none bg-gradient-to-r from-white/40 via-white/15 to-black/45 border-r border-white/40 shadow-[inset_1px_0_3px_rgba(255,255,255,0.8),inset_-1px_0_3px_rgba(0,0,0,0.6)] flex flex-col justify-between py-2">
+                <div className="w-full h-full border-r border-black/30 relative">
+                  <div className="absolute inset-y-1 left-[30%] w-[1px] bg-white/45 shadow-[0_0_2px_rgba(255,255,255,0.8)]" />
+                  <div className="absolute inset-y-1 left-[65%] w-[1px] bg-black/40" />
+                </div>
+              </div>
+
               {/* Gloss overlay on cover */}
               <div className="absolute inset-0 pointer-events-none rounded-lg"
                 style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 50%)' }}
