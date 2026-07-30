@@ -11093,7 +11093,7 @@ function Home() {
                     initial="hidden"
                     animate="show"
                     exit="exit"
-                    className={activeListTab === 'albums' ? "grid grid-cols-1 gap-3.5 sm:gap-4 max-w-3xl mx-auto w-full" : isMusicianTheme ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-y-22 sm:gap-y-26 gap-x-3 sm:gap-x-8 max-w-[1400px] mx-auto pt-22 sm:pt-16" : isGold2Theme ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" : (isGoldTheme && !isMobile) ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" : isDreamyTheme ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6 max-w-[1400px] mx-auto" : "grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[1400px] mx-auto"}
+                    className={activeListTab === 'albums' ? "grid grid-cols-1 gap-3.5 sm:gap-4 max-w-3xl mx-auto w-full" : isMusicianTheme ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-y-[88px] sm:gap-y-[100px] gap-x-3 sm:gap-x-8 max-w-[1400px] mx-auto pt-[96px] sm:pt-[64px]" : isGold2Theme ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" : (isGoldTheme && !isMobile) ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" : isDreamyTheme ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6 max-w-[1400px] mx-auto" : "grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[1400px] mx-auto"}
                   >
                     {activeListTab === 'albums' ? (
                       paginatedItems.map((playlist: any, idx: number) => {
