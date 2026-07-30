@@ -871,8 +871,19 @@ function DreamySongCard({
         </defs>
       </svg>
 
+      {/* Glowing Dreamy Aura ring on hover/audio preview */}
+      <div className={`absolute -inset-3 rounded-[2.5rem] transition-all duration-500 pointer-events-none z-10 ${
+        isElevated 
+          ? 'opacity-100 scale-105 bg-gradient-to-tr from-pink-400/80 via-rose-300/90 to-purple-400/80 blur-xl animate-pulse' 
+          : 'opacity-0 scale-95'
+      }`} />
+
       {/* Outer Card Wrapper with Drop Shadow following the concave shape */}
-      <div className={`relative w-full z-20 transition-all duration-300 hover:-translate-y-2 group/card ${theme.dropShadow}`}>
+      <div className={`relative w-full z-20 transition-all duration-300 hover:-translate-y-2 group/card ${
+        isElevated 
+          ? 'drop-shadow-[0_0_35px_rgba(244,114,182,0.85)] drop-shadow-[0_0_60px_rgba(251,207,232,0.9)] scale-[1.02]' 
+          : theme.dropShadow
+      }`}>
         {/* Centered Year Badge at Bottom Edge of Card Sleeve (Photo 1) - Placed outside overflow-hidden with z-[90] */}
         <div className="absolute -bottom-1.5 sm:-bottom-2 left-1/2 -translate-x-1/2 z-[90] pointer-events-none">
           <span className={`px-3.5 py-0.5 rounded-full text-[10px] sm:text-[11.5px] font-black shadow-md border ${theme.yearBorder} ${theme.yearText} bg-white/95 inline-flex items-center justify-center tracking-wider`}>
@@ -919,8 +930,8 @@ function DreamySongCard({
             <path 
               d="M 0,0.18 C 0,0.06 0.03,0 0.08,0 L 0.12,0 C 0.24,0 0.30,0.18 0.5,0.18 C 0.70,0.18 0.76,0 0.88,0 L 0.92,0 C 0.97,0 1,0.06 1,0.18 L 1,0.82 C 1,0.94 0.97,1 0.92,1 L 0.08,1 C 0.03,1 0,0.94 0,0.82 Z" 
               fill="none" 
-              className={`${theme.strokeClass} transition-colors duration-300`} 
-              strokeWidth="3" 
+              className={`${isElevated ? 'stroke-rose-400 filter drop-shadow-[0_0_10px_rgba(244,63,94,0.9)]' : theme.strokeClass} transition-all duration-300`} 
+              strokeWidth={isElevated ? "4" : "3"} 
               vectorEffect="non-scaling-stroke" 
             />
           </svg>
@@ -7176,7 +7187,7 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
   const showWidget = !shouldHideOnMobilePlayer;
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {showWidget && (
         <motion.div key="widget"
           initial={{ opacity: 0, y: 50, scale: 0.9 }}
@@ -11080,16 +11091,31 @@ function Home() {
                 ) : (
                   <motion.div 
                     key={`${activeListTab}-page-${currentPage}`}
-                    variants={{
-                      hidden: { opacity: 0, y: 8 },
-                      show: {
-                        opacity: 1, y: 0,
-                        transition: {
-                          staggerChildren: 0.03
-                        }
-                      },
-                      exit: { opacity: 0, y: -8 }
-                    }}
+                    variants={
+                      isDreamyTheme 
+                        ? {
+                            hidden: { opacity: 0, filter: 'blur(10px)', scale: 0.97, y: 15 },
+                            show: {
+                              opacity: 1, filter: 'blur(0px)', scale: 1, y: 0,
+                              transition: {
+                                duration: 0.4,
+                                ease: [0.22, 1, 0.36, 1],
+                                staggerChildren: 0.04
+                              }
+                            },
+                            exit: { opacity: 0, filter: 'blur(10px)', scale: 1.02, y: -15, transition: { duration: 0.25 } }
+                          }
+                        : {
+                            hidden: { opacity: 0, y: 8 },
+                            show: {
+                              opacity: 1, y: 0,
+                              transition: {
+                                staggerChildren: 0.03
+                              }
+                            },
+                            exit: { opacity: 0, y: -8 }
+                          }
+                    }
                     initial="hidden"
                     animate="show"
                     exit="exit"
