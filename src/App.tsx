@@ -591,7 +591,7 @@ function DreamySongCard({
       try { audio.currentTime = startTime; } catch (e) {}
 
       audio.play().then(() => {
-        if (globalActiveCardId === demo.id) {
+        if (globalActiveCardId === demo.id && isHoveredRef.current) {
           setIsLoadingAudio(false);
           setIsPlaying(true);
           let vol = 0;
@@ -658,8 +658,11 @@ function DreamySongCard({
     }
   }, [audioUrl, demo.id, stopAudio]);
 
+  const isHoveredRef = useRef(false);
+
   const handleMouseEnter = () => {
     if (isTouchMobile) return;
+    isHoveredRef.current = true;
     setIsHovered(true);
     if (activeListTab === 'demos' || isDemoSong) return;
     if (audioUrl) {
@@ -669,6 +672,7 @@ function DreamySongCard({
 
   const handleMouseLeave = () => {
     if (isTouchMobile) return;
+    isHoveredRef.current = false;
     setIsHovered(false);
     stopAudio();
   };
@@ -1447,7 +1451,7 @@ function MusicianSongCard({
             ease: "easeInOut" 
           }}
           style={{ zIndex: 8 }}
-          className="absolute -top-13 sm:-top-16 left-1/2 -translate-x-1/2 shrink-0 w-auto min-w-[140px] sm:min-w-[170px] max-w-[90%] sm:max-w-[240px] h-8.5 sm:h-10.5 px-3 sm:px-4 py-1 rounded-full bg-[#180e08]/95 border border-amber-500/50 shadow-[0_4px_18px_rgba(0,0,0,0.85),0_0_12px_rgba(245,158,11,0.3)] backdrop-blur-md flex items-center justify-center overflow-hidden pointer-events-none"
+          className="absolute -top-16 sm:-top-19.5 left-1/2 -translate-x-1/2 shrink-0 w-auto min-w-[140px] sm:min-w-[170px] max-w-[90%] sm:max-w-[240px] h-8.5 sm:h-10.5 px-3 sm:px-4 py-1 rounded-full bg-[#180e08]/95 border border-amber-500/50 shadow-[0_4px_18px_rgba(0,0,0,0.85),0_0_12px_rgba(245,158,11,0.3)] backdrop-blur-md flex items-center justify-center overflow-hidden pointer-events-none"
         >
           {/* Glowing radial background animation */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.25),transparent_70%)] animate-pulse pointer-events-none rounded-2xl" />
@@ -1522,7 +1526,7 @@ function MusicianSongCard({
               y: (isElevated && isPlaying) ? [0, -3, 0] : 0,
             }}
             transition={{
-              bottom: { duration: 0.45, ease: [0.34, 1.56, 0.64, 1] },
+              bottom: { duration: 0.4, ease: [0.25, 1, 0.5, 1] },
               scale: { duration: 0.45, ease: "easeOut" },
               y: { duration: 2.5, repeat: Infinity, ease: "easeInOut" }
             }}
@@ -1581,7 +1585,7 @@ function MusicianSongCard({
               y: (isElevated && isPlaying) ? [0, -3, 0] : 0,
             }}
             transition={{
-              bottom: { duration: 0.45, ease: [0.34, 1.56, 0.64, 1] },
+              bottom: { duration: 0.4, ease: [0.25, 1, 0.5, 1] },
               scale: { duration: 0.45, ease: "easeOut" },
               y: { duration: 2.5, repeat: Infinity, ease: "easeInOut" },
             }}
