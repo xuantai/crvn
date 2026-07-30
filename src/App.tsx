@@ -826,7 +826,7 @@ function DreamySongCard({
                 WebkitMask: 'radial-gradient(circle, transparent calc(50% - 6px), black calc(50% - 4px))',
                 mask: 'radial-gradient(circle, transparent calc(50% - 6px), black calc(50% - 4px))',
                 filter: 'blur(3px)',
-                opacity: 0.95
+                opacity: 0.6
               }}
             />
             {/* Outer glow halo - soft */}
