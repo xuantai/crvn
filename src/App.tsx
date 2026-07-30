@@ -788,7 +788,7 @@ function DreamySongCard({
 
       {/* Vinyl Record (BEHIND card sleeve - Clickable to pop up & preview) */}
       <div 
-        className={`absolute left-1/2 -translate-x-1/2 top-1 sm:top-2 w-[78%] sm:w-[74%] aspect-square pointer-events-auto cursor-pointer transition-all duration-500 ${isElevated ? 'z-[25] -translate-y-10 sm:-translate-y-16' : 'z-10'}`}
+        className={`absolute left-1/2 -translate-x-1/2 top-1 sm:top-2 w-[78%] sm:w-[74%] aspect-square pointer-events-auto cursor-pointer transition-all duration-500 z-10 ${isElevated ? '-translate-y-10 sm:-translate-y-16' : ''}`}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
