@@ -9533,7 +9533,7 @@ function Home() {
   const [activeListTab, setActiveListTab] = useState<'demos'|'released'|'albums'>('released');
   const [hasInitializedTab, setHasInitializedTab] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(() => (typeof window !== 'undefined' && window.innerWidth < 768) ? 20 : 21);
+  const [pageSize, setPageSize] = useState(() => (typeof window !== 'undefined' && window.innerWidth < 1024) ? 20 : 21);
   const [userHasChangedPageSize, setUserHasChangedPageSize] = useState(false);
   const [showArtist, setShowArtist] = useState(false);
   const [spotifyLoaded, setSpotifyLoaded] = useState(false);
@@ -9560,15 +9560,16 @@ function Home() {
 
   useEffect(() => {
     if (!userHasChangedPageSize) {
-      if (isMusicianTheme) {
-        setPageSize(isMobile ? 20 : 21);
-      } else if (isGold2Theme) {
+      const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
+      // 2 columns per row (screen < 1024px): pageSize = 20 (20 % 2 = 0, no trailing orphan item!)
+      // 3 columns per row (screen >= 1024px): pageSize = 21 (21 % 3 = 0, no trailing orphan item!)
+      if (screenWidth < 1024) {
         setPageSize(20);
-      } else if (isGoldTheme) {
-        setPageSize(isMobile ? 20 : 21);
+      } else {
+        setPageSize(21);
       }
     }
-  }, [isMobile, isMusicianTheme, isGoldTheme, isGold2Theme, userHasChangedPageSize]);
+  }, [isMobile, isMusicianTheme, isDreamyTheme, isGoldTheme, isGold2Theme, userHasChangedPageSize]);
   const [currentAvatarSlideIndex, setCurrentAvatarSlideIndex] = useState(0);
   const [wallLightboxImg, setWallLightboxImg] = useState<string | null>(null);
 
@@ -11779,7 +11780,7 @@ const activeAchievements = hasAchievements;
                           setPageSize(val);
                           setCurrentPage(1);
                         }}
-                        options={isMobile ? [20, 50, 100] : [21, 50, 100]}
+                        options={(typeof window !== 'undefined' && window.innerWidth < 1024) ? [20, 50, 100] : [21, 50, 100]}
                         isGoldTheme={isGoldTheme || isMusicianTheme}
                         isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme}
                       />
