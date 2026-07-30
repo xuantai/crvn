@@ -1447,7 +1447,7 @@ function MusicianSongCard({
             ease: "easeInOut" 
           }}
           style={{ zIndex: 8 }}
-          className="absolute -top-20 sm:-top-24 left-1/2 -translate-x-1/2 shrink-0 w-auto min-w-[140px] sm:min-w-[170px] max-w-[90%] sm:max-w-[240px] h-8.5 sm:h-10.5 px-3 sm:px-4 py-1 rounded-full bg-[#180e08]/95 border border-amber-500/50 shadow-[0_4px_18px_rgba(0,0,0,0.85),0_0_12px_rgba(245,158,11,0.3)] backdrop-blur-md flex items-center justify-center overflow-hidden pointer-events-none"
+          className="absolute -top-13 sm:-top-16 left-1/2 -translate-x-1/2 shrink-0 w-auto min-w-[140px] sm:min-w-[170px] max-w-[90%] sm:max-w-[240px] h-8.5 sm:h-10.5 px-3 sm:px-4 py-1 rounded-full bg-[#180e08]/95 border border-amber-500/50 shadow-[0_4px_18px_rgba(0,0,0,0.85),0_0_12px_rgba(245,158,11,0.3)] backdrop-blur-md flex items-center justify-center overflow-hidden pointer-events-none"
         >
           {/* Glowing radial background animation */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.25),transparent_70%)] animate-pulse pointer-events-none rounded-2xl" />
@@ -1614,24 +1614,23 @@ function MusicianSongCard({
             </motion.div>
 
             <div
-              className="w-full h-full flex flex-row items-stretch relative"
+              className="w-full h-full rounded-[4px] overflow-hidden relative p-[2.5px] bg-[#121212]/85 border border-white/40 flex flex-row items-stretch shadow-2xl"
               style={{
-                filter: isElevated
-                  ? 'drop-shadow(0 22px 35px rgba(0,0,0,0.9))'
-                  : 'drop-shadow(0 12px 20px rgba(0,0,0,0.75))',
-                transition: 'filter 0.45s ease',
+                boxShadow: isElevated
+                  ? '0 24px 45px rgba(0,0,0,0.92), inset 0 1px 2px rgba(255,255,255,0.5), inset 0 -1px 2px rgba(0,0,0,0.8)'
+                  : '0 12px 25px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.35), inset 0 -1px 2px rgba(0,0,0,0.7)',
+                transition: 'box-shadow 0.45s ease',
               }}
             >
-              {/* Extra Transparent DVD Plastic Jewel Case Spine on Left Side (Does NOT clip the cover image) */}
-              <div className="w-3 sm:w-4 shrink-0 rounded-l-md bg-gradient-to-r from-white/45 via-white/20 to-black/45 border-y border-l border-white/50 shadow-[inset_1px_1px_3px_rgba(255,255,255,0.8),inset_-1px_0_3px_rgba(0,0,0,0.6)] flex flex-col justify-between py-1.5 relative z-10 -mr-[1px] pointer-events-none">
-                <div className="w-full h-full border-r border-black/30 relative">
-                  <div className="absolute inset-y-1 left-[30%] w-[1px] bg-white/45 shadow-[0_0_2px_rgba(255,255,255,0.8)]" />
-                  <div className="absolute inset-y-1 left-[65%] w-[1px] bg-black/40" />
-                </div>
+              {/* Clear Plastic DVD Hinge/Spine on Left Side (Photo 1 style) */}
+              <div className="w-3.5 sm:w-4.5 shrink-0 rounded-l-[3px] bg-gradient-to-r from-white/40 via-black/50 to-black/70 border-r border-white/25 flex flex-col justify-between py-1 relative z-10 -mr-[1px] pointer-events-none">
+                <div className="w-2.5 h-1.5 bg-white/30 border-r border-b border-white/50 rounded-br-xs shadow-xs" />
+                <div className="w-[1.5px] h-3/4 mx-auto bg-gradient-to-b from-white/45 via-white/10 to-white/45 shadow-[0_0_2px_rgba(255,255,255,0.6)]" />
+                <div className="w-2.5 h-1.5 bg-white/30 border-r border-t border-white/50 rounded-tr-xs shadow-xs" />
               </div>
 
               {/* 1:1 Square Album Cover Image Sleeve */}
-              <div className="flex-1 aspect-square rounded-r-md overflow-hidden relative border-y border-r border-white/35 shadow-2xl">
+              <div className="flex-1 aspect-square rounded-r-[3px] overflow-hidden relative border border-white/20 shadow-inner">
                 {coverUrl ? (
                   <img src={coverUrl} className="w-full h-full object-cover" alt={demo.title} referrerPolicy="no-referrer" />
                 ) : (
@@ -1639,9 +1638,10 @@ function MusicianSongCard({
                     <Music className="w-10 h-10 text-amber-700/60" />
                   </div>
                 )}
-                {/* Gloss overlay on cover */}
-                <div className="absolute inset-0 pointer-events-none"
-                  style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 50%)' }}
+                {/* Realistic Plastic Gloss Glare Sweep across CD Front Cover */}
+                <div 
+                  className="absolute inset-0 pointer-events-none mix-blend-screen opacity-45"
+                  style={{ background: 'linear-gradient(125deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.08) 35%, transparent 60%, rgba(255,255,255,0.25) 100%)' }}
                 />
               </div>
             </div>
