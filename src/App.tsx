@@ -788,6 +788,35 @@ function DreamySongCard({
           </div>
         )}
 
+        {/* Swirling Orbiting Light Beam around spinning vinyl disc */}
+        {(isElevated || isPlaying) && (
+          <>
+            {/* Primary arc - clockwise */}
+            <motion.div
+              initial={{ rotate: 0 }}
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
+              className="absolute -inset-[6px] sm:-inset-[8px] rounded-full pointer-events-none z-30"
+              style={{
+                background: 'conic-gradient(from 0deg, transparent 0deg, transparent 30deg, rgba(244,63,94,0.7) 60deg, rgba(236,72,153,0.9) 120deg, rgba(168,85,247,0.7) 160deg, transparent 200deg, transparent 360deg)',
+                filter: 'blur(4px) drop-shadow(0 0 14px rgba(244,63,94,0.85))',
+                opacity: 0.9
+              }}
+            />
+            {/* Secondary arc - counter-clockwise, offset */}
+            <motion.div
+              initial={{ rotate: 180 }}
+              animate={{ rotate: -180 }}
+              transition={{ repeat: Infinity, duration: 4.5, ease: "linear" }}
+              className="absolute -inset-[5px] sm:-inset-[7px] rounded-full pointer-events-none z-30"
+              style={{
+                background: 'conic-gradient(from 0deg, transparent 0deg, transparent 100deg, rgba(251,207,232,0.6) 140deg, rgba(244,114,182,0.8) 180deg, rgba(236,72,153,0.6) 220deg, transparent 260deg, transparent 360deg)',
+                filter: 'blur(5px) drop-shadow(0 0 10px rgba(251,207,232,0.7))',
+                opacity: 0.75
+              }}
+            />
+          </>
+        )}
         <div className={`w-full h-full rounded-full border-4 border-neutral-900/20 shadow-[0_20px_40px_rgba(0,0,0,0.4)] overflow-hidden relative transition-all duration-500 transform ${
           isElevated ? 'scale-104 sm:scale-106 -translate-y-10 sm:-translate-y-16 shadow-[0_20px_45px_rgba(0,0,0,0.45)]' : 'scale-100'
         }`}>
@@ -11064,15 +11093,15 @@ function Home() {
               : 'hover:border-purple-500/50';
 
             return (
-              <div className="w-full min-h-[550px] sm:min-h-[700px] transition-all duration-300">
-                <AnimatePresence>
+              <div className="w-full min-h-[550px] sm:min-h-[700px] relative">
+                <AnimatePresence mode="popLayout">
                 {totalItems === 0 ? (
                   <motion.div
                     key="empty-state"
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -15 }}
-                    transition={{ type: "spring", stiffness: 100, damping: 15 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
                     className={`col-span-full py-16 px-4 text-center rounded-2xl border flex flex-col items-center justify-center transition-all duration-300 ${
                       isGoldTheme 
                         ? 'bg-[#FAF5E6] border-[#D4AF37]/30 shadow-md shadow-[#D4AF37]/5' 
@@ -11086,21 +11115,10 @@ function Home() {
                 ) : (
                   <motion.div 
                     key={`${activeListTab}-page-${currentPage}`}
-                    variants={{
-                      hidden: { opacity: 0, y: 8 },
-                      show: {
-                        opacity: 1, y: 0,
-                        transition: {
-                          duration: 0.25,
-                          ease: "easeOut",
-                          staggerChildren: 0.02
-                        }
-                      },
-                      exit: { opacity: 0, y: -8, transition: { duration: 0.15 } }
-                    }}
-                    initial="hidden"
-                    animate="show"
-                    exit="exit"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
                     className={activeListTab === 'albums' ? "grid grid-cols-1 gap-3.5 sm:gap-4 max-w-3xl mx-auto w-full" : isMusicianTheme ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-y-[88px] sm:gap-y-[100px] gap-x-3 sm:gap-x-8 max-w-[1400px] mx-auto pt-[96px] sm:pt-[64px]" : isGold2Theme ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" : (isGoldTheme && !isMobile) ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" : isDreamyTheme ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6 max-w-[1400px] mx-auto" : "grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[1400px] mx-auto"}
                   >
                     {activeListTab === 'albums' ? (
@@ -11256,15 +11274,23 @@ function Home() {
                         >
                           {(activeBrandColors) => (
                             <motion.div
-                              key={`musician-motion-${activeListTab}-${demo.id || idx}`}
-                              initial={{ opacity: 0, y: 14 }}
-                              animate={{ opacity: 1, y: 0 }}
+                              key={`song-card-motion-${activeListTab}-${currentPage}-${demo.id || idx}`}
+                              initial={isDreamyTheme ? { opacity: 0, y: 22, scale: 0.95 } : { opacity: 0, y: 14 }}
+                              animate={isDreamyTheme ? { opacity: 1, y: 0, scale: 1 } : { opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -10 }}
-                              transition={{ 
-                                duration: 0.2, 
-                                delay: Math.min(idx, 3) * 0.02, 
-                                ease: "easeOut" 
-                              }}
+                              transition={
+                                isDreamyTheme 
+                                  ? { 
+                                      duration: 0.42, 
+                                      delay: (idx % 6) * 0.05, 
+                                      ease: [0.22, 1, 0.36, 1] 
+                                    } 
+                                  : { 
+                                      duration: 0.2, 
+                                      delay: Math.min(idx, 3) * 0.02, 
+                                      ease: "easeOut" 
+                                    }
+                              }
                               className="relative overflow-visible w-full h-full"
                             >
                               {isMusicianTheme ? (
