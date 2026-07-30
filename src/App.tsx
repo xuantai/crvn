@@ -871,12 +871,7 @@ function DreamySongCard({
         </defs>
       </svg>
 
-      {/* Glowing Dreamy Aura ring on hover/audio preview */}
-      <div className={`absolute -inset-3 rounded-[2.5rem] transition-all duration-500 pointer-events-none z-10 ${
-        isElevated 
-          ? 'opacity-100 scale-105 bg-gradient-to-tr from-pink-400/80 via-rose-300/90 to-purple-400/80 blur-xl animate-pulse' 
-          : 'opacity-0 scale-95'
-      }`} />
+
 
       {/* Outer Card Wrapper with Drop Shadow following the concave shape */}
       <div className={`relative w-full z-20 transition-all duration-300 hover:-translate-y-2 group/card ${
@@ -6993,7 +6988,7 @@ function AnimatedRoutes() {
   }, [location.pathname]);
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence>
       {/* @ts-ignore */}
       <Routes location={location} key={location.pathname}>
         {/* Core Root Routes */}
@@ -11091,31 +11086,18 @@ function Home() {
                 ) : (
                   <motion.div 
                     key={`${activeListTab}-page-${currentPage}`}
-                    variants={
-                      isDreamyTheme 
-                        ? {
-                            hidden: { opacity: 0, filter: 'blur(10px)', scale: 0.97, y: 15 },
-                            show: {
-                              opacity: 1, filter: 'blur(0px)', scale: 1, y: 0,
-                              transition: {
-                                duration: 0.4,
-                                ease: [0.22, 1, 0.36, 1],
-                                staggerChildren: 0.04
-                              }
-                            },
-                            exit: { opacity: 0, filter: 'blur(10px)', scale: 1.02, y: -15, transition: { duration: 0.25 } }
-                          }
-                        : {
-                            hidden: { opacity: 0, y: 8 },
-                            show: {
-                              opacity: 1, y: 0,
-                              transition: {
-                                staggerChildren: 0.03
-                              }
-                            },
-                            exit: { opacity: 0, y: -8 }
-                          }
-                    }
+                    variants={{
+                      hidden: { opacity: 0, y: 8 },
+                      show: {
+                        opacity: 1, y: 0,
+                        transition: {
+                          duration: 0.25,
+                          ease: "easeOut",
+                          staggerChildren: 0.02
+                        }
+                      },
+                      exit: { opacity: 0, y: -8, transition: { duration: 0.15 } }
+                    }}
                     initial="hidden"
                     animate="show"
                     exit="exit"
