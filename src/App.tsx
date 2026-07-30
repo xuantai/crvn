@@ -970,7 +970,7 @@ function DreamySongCard({
         <Link
           to={targetLink}
           onClick={handleClick}
-          className={`block w-full pointer-events-auto ${theme.cardBg} backdrop-blur-2xl transition-all duration-300 relative pt-8 sm:pt-9.5 pb-4.5 px-4 sm:px-5 overflow-hidden`}
+          className={`block w-full h-[145px] sm:h-[175px] flex flex-col justify-between pointer-events-auto ${theme.cardBg} backdrop-blur-2xl transition-all duration-300 relative pt-7.5 sm:pt-9 pb-4.5 px-4 sm:px-5 overflow-hidden`}
           style={{ clipPath: 'url(#card-concave-clip)', WebkitClipPath: 'url(#card-concave-clip)' }}
         >
           {/* SVG Curved Border Stroke following the exact concave path */}
@@ -995,41 +995,37 @@ function DreamySongCard({
             </div>
           )}
 
-          {/* Top Section: Achievement on Left, Year Badge on Right */}
-          {hasRowAchievement !== false && (hasAchievementsArray || achievementText) ? (
-            <div className="flex items-center justify-between gap-1.5 w-full h-[28px] sm:h-[32px] mt-0.5 mb-1.5 relative z-10">
-              {hasAchievementsArray ? (
-                <AchievementCycle achievements={demo.achievements} align="left" isLightBg={true} />
-              ) : achievementText ? (
-                <span className={`px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${theme.badgeBg} inline-flex items-center gap-1 shrink-0`}>
-                  <Award className="w-3 h-3 stroke-[2.5]" />
-                  {achievementText}
-                </span>
-              ) : <div />}
-            </div>
-          ) : hasRowAchievement ? (
-            <div className="flex items-center justify-between gap-1.5 w-full h-[28px] sm:h-[32px] mt-0.5 mb-1.5 relative z-10" />
-          ) : (
-            <div className="h-1 w-full" />
-          )}
-
-
+          {/* Top Section: Achievement on Left */}
+          <div className="flex items-center justify-between gap-1.5 w-full h-[28px] sm:h-[32px] mt-0.5 relative z-10 shrink-0">
+            {hasAchievementsArray ? (
+              <AchievementCycle achievements={demo.achievements} align="left" isLightBg={true} />
+            ) : achievementText ? (
+              <span className={`px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${theme.badgeBg} inline-flex items-center gap-1 shrink-0`}>
+                <Award className="w-3 h-3 stroke-[2.5]" />
+                {achievementText}
+              </span>
+            ) : null}
+          </div>
 
           {/* Bottom Content Area */}
-          <div className="flex items-end justify-between gap-3 relative z-10 mt-1">
+          <div className="flex items-end justify-between gap-3 relative z-10 shrink-0">
             {/* Left Column: Title (Marquee) & Artist */}
-            <div className="flex-1 min-w-0 pr-1">
+            <div className="flex-1 min-w-0 pr-1 flex flex-col justify-end">
               {/* Song Title with Immediate Marquee Effect for long titles */}
-              <SongTitleMarquee 
-                title={demo.title} 
-                themeHoverClass={theme.hoverTitle} 
-              />
+              <div className="h-[20px] sm:h-[24px] flex items-center">
+                <SongTitleMarquee 
+                  title={demo.title} 
+                  themeHoverClass={theme.hoverTitle} 
+                />
+              </div>
 
               {/* Artist Name with Ping-Pong Marquee when overflowing */}
-              <ArtistNameMarquee 
-                text={rawArtistStr} 
-                className="text-xs font-semibold text-stone-500 mt-1" 
-              />
+              <div className="h-[16px] sm:h-[18px] flex items-center mt-0.5">
+                <ArtistNameMarquee 
+                  text={rawArtistStr} 
+                  className="text-xs font-semibold text-stone-500" 
+                />
+              </div>
             </div>
 
             {/* Right Column: Square Thumbnail Image (Hidden on Mobile only for max title/artist space, visible on PC md:block) */}
