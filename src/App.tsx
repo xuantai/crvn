@@ -458,6 +458,7 @@ function DreamySongCard({
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const [mobilePopped, setMobilePopped] = useState(false);
+  const mobilePoppedRef = useRef(false);
   const fadeIntervalRef = useRef<any>(null);
   const timerTimeoutRef = useRef<any>(null);
 
@@ -562,6 +563,7 @@ function DreamySongCard({
     setIsPlaying(false);
     setIsLoadingAudio(false);
     setMobilePopped(false);
+    mobilePoppedRef.current = false;
     setIsHovered(false);
   }, [demo.id]);
 
@@ -591,7 +593,7 @@ function DreamySongCard({
       try { audio.currentTime = startTime; } catch (e) {}
 
       audio.play().then(() => {
-        if (globalActiveCardId === demo.id && isHoveredRef.current) {
+        if (globalActiveCardId === demo.id && (isHoveredRef.current || mobilePoppedRef.current)) {
           setIsLoadingAudio(false);
           setIsPlaying(true);
           let vol = 0;
@@ -684,6 +686,7 @@ function DreamySongCard({
         setIsPlaying(false);
         setIsLoadingAudio(false);
         setMobilePopped(false);
+        mobilePoppedRef.current = false;
       }
     };
     window.addEventListener('crvn-stop-all-audio-previews', handleStopOthers);
@@ -772,8 +775,16 @@ function DreamySongCard({
           if (isPlaying || mobilePopped || globalActiveCardId === demo.id || isHovered) {
             stopAudio();
           } else {
-            stopGlobalPreviewAudio();
+            mobilePoppedRef.current = true;
             setMobilePopped(true);
+            // Stop old preview audio without resetting THIS card's state
+            if (globalPreviewAudio) {
+              try { globalPreviewAudio.pause(); globalPreviewAudio.currentTime = 0; } catch (e) {}
+              globalPreviewAudio = null;
+            }
+            globalActiveCardId = demo.id;
+            // Notify OTHER cards to reset (currentId = demo.id so THIS card's handler skips)
+            window.dispatchEvent(new CustomEvent('crvn-stop-all-audio-previews', { detail: { currentId: demo.id } }));
             startAudioPreview();
           }
         }}
