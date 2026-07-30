@@ -26122,27 +26122,34 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
   if (!aboutMe) return null;
   
   const avatar = aboutMe.avatarUrl || data?.homeCoverUrl;
+  const isLiquidGlassTheme = !isGoldTheme && !isMusicianTheme && !isDreamyTheme;
   
   return (
-    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto ${
-      isMusicianTheme || isDreamyTheme
-        ? 'border-2 border-stone-300/80 shadow-[0_20px_50px_rgba(0,0,0,0.14)] text-stone-950' 
-        : isGoldTheme 
-          ? 'bg-gradient-to-br from-stone-900/95 via-amber-950/30 to-stone-900/95 border-amber-500/20 shadow-[0_8px_32px_0_rgba(251,191,36,0.15)] text-white' 
-          : 'border-2 border-stone-300/80 shadow-[0_20px_50px_rgba(0,0,0,0.14)] text-stone-950'
-    } backdrop-blur-2xl border rounded-[2.5rem] p-6 sm:p-10 mt-4 sm:mt-8 mb-20 relative z-10 max-w-6xl flex flex-col lg:flex-row gap-10 lg:gap-16 items-center lg:items-start`} style={
-      (!isGoldTheme || isMusicianTheme || isDreamyTheme)
-        ? {
-            backgroundColor: '#fbf9f3',
-            backgroundImage: `
-              repeating-linear-gradient(to bottom, transparent, transparent 27px, rgba(148, 163, 184, 0.28) 27px, rgba(148, 163, 184, 0.28) 28px),
-              linear-gradient(to right, transparent 48px, rgba(244, 63, 94, 0.35) 48px, rgba(244, 63, 94, 0.35) 50px, transparent 50px)
-            `
-          }
-        : undefined
-    }>
+    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto backdrop-blur-2xl border rounded-[2.5rem] p-6 sm:p-10 mt-4 sm:mt-8 mb-20 relative z-10 max-w-6xl flex flex-col lg:flex-row gap-10 lg:gap-16 items-center lg:items-start overflow-hidden ${
+      isMusicianTheme
+        ? 'bg-gradient-to-br from-[#2D160B]/95 via-[#210E06]/95 to-[#160803]/98 border-amber-700/60 shadow-[0_20px_50px_rgba(0,0,0,0.85)] text-amber-50' 
+        : isDreamyTheme 
+          ? 'bg-slate-950/85 border-rose-500/35 shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_40px_rgba(244,63,94,0.2)] text-white' 
+          : isGoldTheme 
+            ? 'bg-gradient-to-br from-stone-900/95 via-amber-950/40 to-stone-900/95 border-amber-500/30 shadow-[0_8px_32px_0_rgba(251,191,36,0.2)] text-white' 
+            : 'bg-slate-950/85 border-cyan-500/35 shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_40px_rgba(6,182,212,0.2)] text-white'
+    }`}>
+      {/* Background ambient lighting */}
+      {isDreamyTheme && (
+        <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 via-purple-500/10 to-transparent pointer-events-none rounded-[2.5rem]" />
+      )}
+      {isMusicianTheme && (
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(217,119,6,0.15),transparent_70%)] pointer-events-none rounded-[2.5rem]" />
+      )}
+      {isGoldTheme && (
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,158,11,0.15),transparent_70%)] pointer-events-none rounded-[2.5rem]" />
+      )}
+      {isLiquidGlassTheme && (
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-teal-500/5 to-transparent pointer-events-none rounded-[2.5rem]" />
+      )}
+
       {isAdmin && (
-        <a href={getAdminLink('about')} className={`absolute top-6 right-6 p-3 ${isMusicianTheme || isDreamyTheme ? 'bg-stone-200/80 text-stone-700 hover:text-stone-950 hover:bg-stone-300' : 'bg-white/10 text-white/70 hover:text-white hover:bg-white/20'} rounded-full transition-colors z-20`} title={t("Chỉnh sửa")}>
+        <a href={getAdminLink('about')} className={`absolute top-6 right-6 p-3 ${isMusicianTheme ? 'bg-amber-900/60 text-amber-200 hover:bg-amber-800/80 hover:text-white' : 'bg-white/10 text-white/70 hover:text-white hover:bg-white/20'} rounded-full transition-colors z-20`} title={t("Chỉnh sửa")}>
           <Edit3 className="w-5 h-5 sm:w-6 sm:h-6" />
         </a>
       )}
@@ -26158,12 +26165,12 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
           <motion.div 
             animate={{ rotate: [0, 5, -5, 0], scale: [1, 1.02, 1] }}
             transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
-            className={`absolute inset-0 bg-gradient-to-tr ${isMusicianTheme ? 'from-rose-400 via-purple-400 to-amber-300' : isGoldTheme ? 'from-amber-600 via-yellow-500 to-amber-400' : 'from-blue-600 via-purple-500 to-emerald-400'} rounded-[2.5rem] translate-x-4 translate-y-4 sm:translate-x-5 sm:translate-y-5 -z-10 opacity-70 blur-md group-hover:blur-lg transition-all duration-700`}
+            className={`absolute inset-0 bg-gradient-to-tr ${isMusicianTheme ? 'from-amber-600 via-orange-500 to-amber-300' : isDreamyTheme ? 'from-rose-500 via-purple-500 to-pink-300' : isGoldTheme ? 'from-amber-600 via-yellow-500 to-amber-400' : 'from-cyan-500 via-teal-500 to-emerald-400'} rounded-[2.5rem] translate-x-4 translate-y-4 sm:translate-x-5 sm:translate-y-5 -z-10 opacity-70 blur-md group-hover:blur-lg transition-all duration-700`}
           ></motion.div>
           <motion.div 
             animate={{ rotate: [0, -5, 5, 0], scale: [1, 1.02, 1] }}
             transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
-            className={`absolute inset-0 bg-gradient-to-br ${isMusicianTheme ? 'from-pink-400 via-rose-300 to-purple-300' : isGoldTheme ? 'from-yellow-600 via-amber-500 to-yellow-400' : 'from-rose-500 via-orange-400 to-amber-300'} rounded-[2.5rem] translate-x-3 translate-y-3 sm:translate-x-4 sm:translate-y-4 -z-10 opacity-60`}
+            className={`absolute inset-0 bg-gradient-to-br ${isMusicianTheme ? 'from-orange-500 via-amber-400 to-yellow-300' : isDreamyTheme ? 'from-pink-500 via-rose-400 to-purple-300' : isGoldTheme ? 'from-yellow-600 via-amber-500 to-yellow-400' : 'from-teal-400 via-cyan-400 to-emerald-300'} rounded-[2.5rem] translate-x-3 translate-y-3 sm:translate-x-4 sm:translate-y-4 -z-10 opacity-60`}
           ></motion.div>
           <motion.div 
             animate={{ y: [0, -10, 0] }}
@@ -26177,24 +26184,50 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
       
       {/* Details */}
       <div className={`w-full ${avatar ? "lg:flex-1" : "max-w-3xl mx-auto"} flex flex-col justify-center space-y-1 sm:space-y-2 z-10 relative mt-6 lg:mt-0`}>
-        <span className={`${isMusicianTheme || isDreamyTheme ? 'text-rose-600 font-extrabold' : isGoldTheme ? 'text-amber-400 font-black' : 'text-[#06b6d4]'} font-bold text-sm sm:text-base mb-1 tracking-wide uppercase inline-block text-center lg:text-left`}>{aboutMe.role || 'Profile Card'}</span>
-        <h2 className={`text-[clamp(1.5rem,3.5vw,2.25rem)] font-black ${isMusicianTheme || isDreamyTheme ? 'text-stone-950' : 'text-white'} drop-shadow-md mb-4 sm:mb-6 leading-tight text-center lg:text-left break-words`}>
+        <span className={`font-black text-xs sm:text-sm px-3.5 py-1 rounded-full tracking-widest uppercase inline-block text-center lg:text-left mb-2.5 border w-max mx-auto lg:mx-0 shadow-xs ${
+          isMusicianTheme
+            ? 'text-amber-300 bg-amber-950/80 border-amber-600/40'
+            : isDreamyTheme
+              ? 'text-rose-300 bg-rose-950/80 border-rose-500/40 shadow-[0_0_10px_rgba(244,63,94,0.25)]'
+              : isGoldTheme
+                ? 'text-amber-400 bg-amber-950/80 border-amber-500/40 shadow-[0_0_10px_rgba(245,158,11,0.25)]'
+                : 'text-cyan-300 bg-cyan-950/80 border-cyan-500/40 shadow-[0_0_10px_rgba(6,182,212,0.25)]'
+        }`}>
+          {aboutMe.role || 'Profile Card'}
+        </span>
+        <h2 className={`text-[clamp(1.75rem,4vw,2.75rem)] font-black drop-shadow-md mb-4 sm:mb-6 leading-tight text-center lg:text-left break-words ${
+          isMusicianTheme
+            ? 'text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-300 to-orange-200'
+            : isDreamyTheme
+              ? 'text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-pink-200 to-purple-200'
+              : isGoldTheme
+                ? 'text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-amber-300 to-yellow-400'
+                : 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 via-teal-200 to-emerald-200'
+        }`}>
           {data?.artistName || t('Về Tôi') || 'Về Tôi'}
         </h2>
           
           {aboutMe.intro && (
-            <div className={`mb-6 ${isMusicianTheme || isDreamyTheme ? 'text-stone-800 font-semibold' : 'text-white/90 font-medium'} text-[clamp(0.875rem,3.5vw,1.25rem)] leading-relaxed whitespace-pre-line drop-shadow-sm`}>
+            <div className={`mb-6 text-[clamp(0.925rem,3.5vw,1.2rem)] leading-relaxed whitespace-pre-line drop-shadow-sm font-medium ${
+              isMusicianTheme
+                ? 'text-amber-100/95'
+                : isDreamyTheme
+                  ? 'text-rose-100/95'
+                  : isGoldTheme
+                    ? 'text-stone-100'
+                    : 'text-slate-100'
+            }`}>
               {aboutMe.intro}
             </div>
           )}
           
           <div className="space-y-3 mb-6 text-lg">
-            {aboutMe.realName && <InfoField label={t("Tên Thật") || "Tên Thật"} value={aboutMe.realName} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />}
-            {aboutMe.dob && <InfoField label={t("Ngày Sinh") || "Ngày Sinh"} value={aboutMe.dob} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />}
-            {aboutMe.address && <InfoField label={t("Đến Từ") || "Đến Từ"} value={aboutMe.address} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />}
-            {aboutMe.company && <InfoField label={t("Sinh Sống") || "Sinh Sống"} value={aboutMe.company} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />}
-            {aboutMe.email && <InfoField label={t("Email") || "Email"} value={aboutMe.email} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />}
-            {aboutMe.phone && <InfoField label={t("SĐT") || "SĐT"} value={aboutMe.phone} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />}
+            {aboutMe.realName && <InfoField label={t("Tên Thật") || "Tên Thật"} value={aboutMe.realName} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} isGoldTheme={isGoldTheme} />}
+            {aboutMe.dob && <InfoField label={t("Ngày Sinh") || "Ngày Sinh"} value={aboutMe.dob} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} isGoldTheme={isGoldTheme} />}
+            {aboutMe.address && <InfoField label={t("Đến Từ") || "Đến Từ"} value={aboutMe.address} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} isGoldTheme={isGoldTheme} />}
+            {aboutMe.company && <InfoField label={t("Sinh Sống") || "Sinh Sống"} value={aboutMe.company} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} isGoldTheme={isGoldTheme} />}
+            {aboutMe.email && <InfoField label={t("Email") || "Email"} value={aboutMe.email} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} isGoldTheme={isGoldTheme} />}
+            {aboutMe.phone && <InfoField label={t("SĐT") || "SĐT"} value={aboutMe.phone} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} isGoldTheme={isGoldTheme} />}
           </div>
           
           <div className="flex flex-wrap items-center gap-4 mb-6">
@@ -26232,10 +26265,12 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
                 onClick={onGoToVault} 
                 className={`bg-[length:200%_100%] font-bold py-3 px-10 rounded-full transition-all hover:scale-105 active:scale-95 text-lg cursor-pointer border ${
                   isMusicianTheme
-                    ? 'bg-rose-500 text-white border-rose-400 hover:shadow-[0_8px_20px_rgba(244,63,94,0.4)] font-black'
-                    : isGoldTheme 
-                      ? 'bg-[linear-gradient(110deg,#f59e0b,45%,#fef08a,55%,#f59e0b)] text-stone-950 border-yellow-400/50 hover:shadow-[0_8px_20px_rgba(245,158,11,0.5)] font-black' 
-                      : 'bg-[linear-gradient(110deg,#4f46e5,45%,#818cf8,55%,#4f46e5)] text-white border-white/20 hover:shadow-[0_8px_20px_rgba(79,70,229,0.4)]'
+                    ? 'bg-[linear-gradient(110deg,#d97706,45%,#fef08a,55%,#d97706)] text-stone-950 border-amber-400/50 hover:shadow-[0_8px_20px_rgba(217,119,6,0.5)] font-black'
+                    : isDreamyTheme
+                      ? 'bg-[linear-gradient(110deg,#e11d48,45%,#fbcfe8,55%,#e11d48)] text-white border-rose-400/50 hover:shadow-[0_8px_20px_rgba(225,29,72,0.5)] font-black'
+                      : isGoldTheme 
+                        ? 'bg-[linear-gradient(110deg,#f59e0b,45%,#fef08a,55%,#f59e0b)] text-stone-950 border-yellow-400/50 hover:shadow-[0_8px_20px_rgba(245,158,11,0.5)] font-black' 
+                        : 'bg-[linear-gradient(110deg,#06b6d4,45%,#a5f3fc,55%,#06b6d4)] text-stone-950 border-cyan-400/50 hover:shadow-[0_8px_20px_rgba(6,182,212,0.5)] font-black'
                 }`}
              >
                 {t("Kho Nhạc")}
@@ -26246,12 +26281,22 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
   );
 }
 
-function InfoField({ label, value, isMusicianTheme, isDreamyTheme }: { label: string, value: string, isMusicianTheme?: boolean, isDreamyTheme?: boolean }) {
+function InfoField({ label, value, isMusicianTheme, isDreamyTheme, isGoldTheme }: { label: string, value: string, isMusicianTheme?: boolean, isDreamyTheme?: boolean, isGoldTheme?: boolean }) {
   return (
-    <div className={`flex items-center font-medium ${isMusicianTheme || isDreamyTheme ? 'text-stone-950 font-bold' : 'text-white/90 drop-shadow-sm'} text-[clamp(0.75rem,3.5vw,1.125rem)] w-full`}>
-      <span className={`font-bold w-[35%] max-w-[160px] shrink-0 ${isMusicianTheme || isDreamyTheme ? 'text-stone-700' : 'text-white'} whitespace-nowrap overflow-hidden text-ellipsis`}>{label}</span>
-      <span className="mx-1 sm:mx-2 shrink-0">:</span>
-      <span className={`${isMusicianTheme || isDreamyTheme ? 'text-stone-950 font-extrabold' : 'text-white/80'} flex-1 whitespace-nowrap overflow-hidden text-ellipsis`}>{value}</span>
+    <div className="flex items-center font-medium text-[clamp(0.85rem,3.5vw,1.125rem)] w-full py-0.5">
+      <span className={`font-bold w-[35%] max-w-[160px] shrink-0 whitespace-nowrap overflow-hidden text-ellipsis ${
+        isMusicianTheme
+          ? 'text-amber-300/90'
+          : isDreamyTheme
+            ? 'text-rose-200/90'
+            : isGoldTheme
+              ? 'text-amber-300/90'
+              : 'text-cyan-200/90'
+      }`}>{label}</span>
+      <span className={`mx-1 sm:mx-2 shrink-0 font-bold ${
+        isMusicianTheme ? 'text-amber-500' : isDreamyTheme ? 'text-rose-400' : isGoldTheme ? 'text-amber-400' : 'text-cyan-400'
+      }`}>:</span>
+      <span className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis font-extrabold text-white drop-shadow-xs">{value}</span>
     </div>
   );
 }
@@ -26263,33 +26308,50 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme, is
   const hasExp = biography.experience?.length > 0;
   
   if (!hasEdu && !hasExp) return null;
+  const isLiquidGlassTheme = !isGoldTheme && !isMusicianTheme && !isDreamyTheme;
   
   return (
-    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto mt-4 sm:mt-8 mb-20 relative z-10 px-4 sm:px-8 lg:px-12 ${
-      isMusicianTheme || isDreamyTheme
-        ? 'border-2 border-stone-300/80 shadow-[0_20px_50px_rgba(0,0,0,0.14)] text-stone-950' 
-        : isGoldTheme 
-          ? 'bg-gradient-to-br from-stone-900/95 via-amber-950/30 to-stone-900/95 border-amber-500/20 shadow-[0_8px_32px_0_rgba(251,191,36,0.15)] text-white' 
-          : 'border-2 border-stone-300/80 shadow-[0_20px_50px_rgba(0,0,0,0.14)] text-stone-950'
-    } backdrop-blur-2xl border rounded-[2.5rem] py-12 max-w-7xl ${hasEdu && hasExp ? 'grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16' : 'flex flex-col'}`} style={
-      (!isGoldTheme || isMusicianTheme || isDreamyTheme)
-        ? {
-            backgroundColor: '#fbf9f3',
-            backgroundImage: `
-              repeating-linear-gradient(to bottom, transparent, transparent 27px, rgba(148, 163, 184, 0.28) 27px, rgba(148, 163, 184, 0.28) 28px),
-              linear-gradient(to right, transparent 48px, rgba(244, 63, 94, 0.35) 48px, rgba(244, 63, 94, 0.35) 50px, transparent 50px)
-            `
-          }
-        : undefined
-    }>
+    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto mt-4 sm:mt-8 mb-20 relative z-10 px-4 sm:px-8 lg:px-12 backdrop-blur-2xl border rounded-[2.5rem] py-12 max-w-7xl overflow-hidden ${
+      hasEdu && hasExp ? 'grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16' : 'flex flex-col'
+    } ${
+      isMusicianTheme
+        ? 'bg-gradient-to-br from-[#2D160B]/95 via-[#210E06]/95 to-[#160803]/98 border-amber-700/60 shadow-[0_20px_50px_rgba(0,0,0,0.85)] text-amber-50' 
+        : isDreamyTheme 
+          ? 'bg-slate-950/85 border-rose-500/35 shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_40px_rgba(244,63,94,0.2)] text-white' 
+          : isGoldTheme 
+            ? 'bg-gradient-to-br from-stone-900/95 via-amber-950/40 to-stone-900/95 border-amber-500/30 shadow-[0_8px_32px_0_rgba(251,191,36,0.2)] text-white' 
+            : 'bg-slate-950/85 border-cyan-500/35 shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_40px_rgba(6,182,212,0.2)] text-white'
+    }`}>
+      {/* Background ambient lighting */}
+      {isDreamyTheme && (
+        <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 via-purple-500/10 to-transparent pointer-events-none rounded-[2.5rem]" />
+      )}
+      {isMusicianTheme && (
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(217,119,6,0.15),transparent_70%)] pointer-events-none rounded-[2.5rem]" />
+      )}
+      {isGoldTheme && (
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,158,11,0.15),transparent_70%)] pointer-events-none rounded-[2.5rem]" />
+      )}
+      {isLiquidGlassTheme && (
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-teal-500/5 to-transparent pointer-events-none rounded-[2.5rem]" />
+      )}
+
       {isAdmin && (
-        <a href={getAdminLink('bio')} className={`absolute top-6 right-6 p-3 ${isMusicianTheme || isDreamyTheme ? 'bg-stone-200/80 text-stone-700 hover:text-stone-950 hover:bg-stone-300' : 'bg-white/10 text-white/70 hover:text-white hover:bg-white/20'} rounded-full transition-colors z-20`} title={t("Chỉnh sửa")}>
+        <a href={getAdminLink('bio')} className={`absolute top-6 right-6 p-3 ${isMusicianTheme ? 'bg-amber-900/60 text-amber-200 hover:bg-amber-800/80 hover:text-white' : 'bg-white/10 text-white/70 hover:text-white hover:bg-white/20'} rounded-full transition-colors z-20`} title={t("Chỉnh sửa")}>
           <Edit3 className="w-5 h-5 sm:w-6 sm:h-6" />
         </a>
       )}
       {hasEdu && (
-        <div className="w-full">
-          <h2 className={`text-2xl sm:text-3xl font-black ${isMusicianTheme || isDreamyTheme ? 'text-stone-950' : 'text-white'} mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-4 sm:pl-6 lg:pl-8`}>
+        <div className="w-full relative z-10">
+          <h2 className={`text-2xl sm:text-3xl font-black mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-4 sm:pl-6 lg:pl-8 ${
+            isMusicianTheme
+              ? 'text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-400'
+              : isDreamyTheme
+                ? 'text-transparent bg-clip-text bg-gradient-to-r from-rose-200 to-pink-300'
+                : isGoldTheme
+                  ? 'text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-300'
+                  : 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-teal-300'
+          }`}>
             {t('Học Vấn') || 'Học Vấn'}
           </h2>
           <div className="space-y-8 relative">
@@ -26298,18 +26360,28 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme, is
               whileInView={{ height: '100%' }} 
               viewport={{ once: true }} 
               transition={{ duration: 1.5, ease: 'easeOut' }} 
-              className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${isMusicianTheme || isDreamyTheme ? 'bg-rose-300/80' : isGoldTheme ? 'bg-amber-500/30' : 'bg-white/20'} origin-top z-0`} 
+              className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${
+                isMusicianTheme ? 'bg-amber-500/50' : isDreamyTheme ? 'bg-rose-500/50' : isGoldTheme ? 'bg-amber-500/50' : 'bg-cyan-500/50'
+              } origin-top z-0`} 
             />
             {biography.education.map((item: any, idx: number) => (
-              <TimelineItem key={`l22207-idx-19-${idx}`} item={item} isSplit={true} color="emerald" index={idx} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />
+              <TimelineItem key={`l22207-idx-19-${idx}`} item={item} isSplit={true} color="emerald" index={idx} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} isGoldTheme={isGoldTheme} />
             ))}
           </div>
         </div>
       )}
       
       {hasExp && (
-        <div className="w-full">
-          <h2 className={`text-2xl sm:text-3xl font-black ${isMusicianTheme || isDreamyTheme ? 'text-stone-950' : 'text-white'} mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-4 sm:pl-6 lg:pl-8`}>
+        <div className="w-full relative z-10">
+          <h2 className={`text-2xl sm:text-3xl font-black mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-4 sm:pl-6 lg:pl-8 ${
+            isMusicianTheme
+              ? 'text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-400'
+              : isDreamyTheme
+                ? 'text-transparent bg-clip-text bg-gradient-to-r from-rose-200 to-pink-300'
+                : isGoldTheme
+                  ? 'text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-300'
+                  : 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-teal-300'
+          }`}>
             {t('Kinh nghiệm') || 'Kinh nghiệm'}
           </h2>
           <div className="space-y-8 relative">
@@ -26318,10 +26390,12 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme, is
               whileInView={{ height: '100%' }} 
               viewport={{ once: true }} 
               transition={{ duration: 1.5, ease: 'easeOut' }} 
-              className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${isMusicianTheme || isDreamyTheme ? 'bg-rose-300/80' : isGoldTheme ? 'bg-amber-500/30' : 'bg-white/20'} origin-top z-0`} 
+              className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${
+                isMusicianTheme ? 'bg-amber-500/50' : isDreamyTheme ? 'bg-rose-500/50' : isGoldTheme ? 'bg-amber-500/50' : 'bg-cyan-500/50'
+              } origin-top z-0`} 
             />
             {biography.experience.map((item: any, idx: number) => (
-              <TimelineItem key={`l22227-idx-20-${idx}`} item={item} isSplit={true} color="blue" index={idx} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />
+              <TimelineItem key={`l22227-idx-20-${idx}`} item={item} isSplit={true} color="blue" index={idx} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} isGoldTheme={isGoldTheme} />
             ))}
           </div>
         </div>
@@ -26330,7 +26404,7 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme, is
   );
 }
 
-function TimelineItem({ item, isSplit = false, color = "emerald", index = 0, isMusicianTheme = false, isDreamyTheme = false }: { item: any, isSplit?: boolean, color?: "emerald" | "blue", key?: number | string, index?: number, isMusicianTheme?: boolean, isDreamyTheme?: boolean }) {
+function TimelineItem({ item, isSplit = false, color = "emerald", index = 0, isMusicianTheme = false, isDreamyTheme = false, isGoldTheme = false }: { item: any, isSplit?: boolean, color?: "emerald" | "blue", key?: number | string, index?: number, isMusicianTheme?: boolean, isDreamyTheme?: boolean, isGoldTheme?: boolean }) {
   const isEmerald = color === "emerald";
   const [isImgOpen, setIsImgOpen] = useState(false);
   
@@ -26391,7 +26465,15 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0, isM
           whileInView={{ scale: 1, opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: index * 0.2 + 0.3, type: 'spring' }}
-          className={`flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-white/80 backdrop-blur-md ${isDreamyTheme ? 'bg-rose-500 shadow-rose-300' : isEmerald ? 'bg-[#059669]' : 'bg-[#0ea5e9]'} text-white shadow-md shrink-0 relative z-10 ${!isSplit ? 'md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2' : '-ml-3 sm:-ml-[14px] mt-1 sm:mt-0.5'}`}
+          className={`flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-white/90 backdrop-blur-md ${
+            isMusicianTheme
+              ? 'bg-amber-600 shadow-[0_0_10px_rgba(217,119,6,0.6)]'
+              : isDreamyTheme
+                ? 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.6)]'
+                : isGoldTheme
+                  ? 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.6)]'
+                  : 'bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.6)]'
+          } text-white shadow-md shrink-0 relative z-10 ${!isSplit ? 'md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2' : '-ml-3 sm:-ml-[14px] mt-1 sm:mt-0.5'}`}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 sm:w-3.5 sm:h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             {isEmerald ? (
@@ -26414,15 +26496,17 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0, isM
           <div className={`${hasImages ? 'w-[85%] md:w-[85%] lg:w-[82%] md:pr-6' : 'w-full'} relative z-0`}>
             <div className={`flex flex-col mb-1 ${!isSplit && hasImages ? 'md:group-odd:items-end' : ''}`}>
               <div className="mb-2">
-                <span className={`text-xs sm:text-sm font-bold inline-block px-3 py-1.5 rounded-lg border transition-all duration-300 shadow-sm ${
-                isDreamyTheme 
-                  ? 'text-rose-700 border-rose-200/90 bg-rose-50/90 font-extrabold shadow-xs' 
-                  : isEmerald 
-                    ? (isMusicianTheme ? 'text-emerald-700 border-emerald-300 bg-emerald-50' : 'text-[#34d399] border-[#34d399]/10 bg-[#34d399]/5 group-hover:border-[#34d399]/40 group-hover:bg-[#34d399]/15') 
-                    : (isMusicianTheme ? 'text-sky-700 border-sky-300 bg-sky-50' : 'text-[#38bdf8] border-[#38bdf8]/10 bg-[#38bdf8]/5 group-hover:border-[#38bdf8]/40 group-hover:bg-[#38bdf8]/15')
-              }`}>{item.time}</span>
+                <span className={`text-xs sm:text-sm font-extrabold inline-block px-3 py-1.5 rounded-lg border transition-all duration-300 shadow-sm ${
+                  isMusicianTheme 
+                    ? 'text-amber-300 border-amber-600/40 bg-amber-950/80' 
+                    : isDreamyTheme 
+                      ? 'text-rose-300 border-rose-500/40 bg-rose-950/80 shadow-[0_0_10px_rgba(244,63,94,0.2)]'
+                      : isGoldTheme
+                        ? 'text-amber-300 border-amber-500/40 bg-amber-950/80 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
+                        : 'text-cyan-300 border-cyan-500/40 bg-cyan-950/80 shadow-[0_0_10px_rgba(6,182,212,0.2)]'
+                }`}>{item.time}</span>
               </div>
-              <h3 className={`font-black ${isMusicianTheme || isDreamyTheme ? 'text-stone-950' : 'text-white'} drop-shadow-sm text-base sm:text-lg leading-snug`}>{item.title}</h3>
+              <h3 className="font-black text-white drop-shadow-sm text-base sm:text-lg leading-snug">{item.title}</h3>
             </div>
             {/* Auto-detect bullet points/lists and render with proper indentation */}
             <div className="space-y-2 mt-2">
@@ -26434,8 +26518,12 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0, isM
                   const content = bulletMatch[2];
                   const isNumber = /^\d+/.test(bullet);
                   return (
-                    <div key={`l22334-idx-21-${idx}`} className={`flex items-start gap-2.5 pl-3 ${isMusicianTheme || isDreamyTheme ? 'text-stone-800 font-medium' : 'text-white/85'} text-sm leading-relaxed`}>
-                      <span className={`text-rose-500 shrink-0 select-none ${isNumber ? 'font-bold text-xs mt-0.5' : 'text-base -mt-0.5'}`}>
+                    <div key={`l22334-idx-21-${idx}`} className={`flex items-start gap-2.5 pl-3 text-sm leading-relaxed ${
+                      isMusicianTheme ? 'text-amber-100/90 font-medium' : isDreamyTheme ? 'text-rose-100/90 font-medium' : 'text-slate-200 font-medium'
+                    }`}>
+                      <span className={`shrink-0 select-none ${isNumber ? 'font-bold text-xs mt-0.5' : 'text-base -mt-0.5'} ${
+                        isMusicianTheme ? 'text-amber-400' : isDreamyTheme ? 'text-rose-400' : isGoldTheme ? 'text-amber-400' : 'text-cyan-400'
+                      }`}>
                         {isNumber ? bullet : '•'}
                       </span>
                       <span className="flex-1">{content}</span>
@@ -26443,7 +26531,9 @@ function TimelineItem({ item, isSplit = false, color = "emerald", index = 0, isM
                   );
                 }
                 return (
-                  <p key={`l22343-idx-22-${idx}`} className={`${isMusicianTheme || isDreamyTheme ? 'text-stone-800 font-semibold' : 'text-white/80'} text-sm leading-relaxed min-h-[1rem]`}>
+                  <p key={`l22343-idx-22-${idx}`} className={`text-sm leading-relaxed min-h-[1rem] ${
+                    isMusicianTheme ? 'text-amber-100/90 font-medium' : isDreamyTheme ? 'text-rose-100/90 font-medium' : 'text-slate-200 font-medium'
+                  }`}>
                     {line}
                   </p>
                 );
