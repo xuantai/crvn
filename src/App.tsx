@@ -747,19 +747,19 @@ function DreamySongCard({
 
   return (
     <div 
-      className="relative w-full group pt-24 sm:pt-24 select-none"
+      className="relative w-full group pt-14 sm:pt-24 select-none"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onPointerLeave={handleMouseLeave}
     >
       {/* Halo Glow behind top of vinyl record */}
       <div 
-        className={`absolute left-1/2 -translate-x-1/2 -top-1 sm:top-2 w-60 h-60 sm:w-56 sm:h-56 rounded-full blur-3xl pointer-events-none transition-all duration-700 opacity-70 group-hover:opacity-100 ${theme.halo}`} 
+        className={`absolute left-1/2 -translate-x-1/2 -top-1 sm:top-2 w-[85%] aspect-square rounded-full blur-2xl sm:blur-3xl pointer-events-none transition-all duration-700 opacity-70 group-hover:opacity-100 ${theme.halo}`} 
       />
 
       {/* Vinyl Record (BEHIND card sleeve - Clickable to pop up & preview) */}
       <div 
-        className={`absolute left-1/2 -translate-x-1/2 -top-3.5 sm:top-1 w-[15.5rem] h-[15.5rem] sm:w-52 sm:h-52 pointer-events-auto cursor-pointer transition-all duration-500 ${isElevated ? 'z-20' : 'z-10'}`}
+        className={`absolute left-1/2 -translate-x-1/2 top-1 sm:top-2 w-[78%] sm:w-[74%] aspect-square pointer-events-auto cursor-pointer transition-all duration-500 ${isElevated ? 'z-20' : 'z-10'}`}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -784,7 +784,7 @@ function DreamySongCard({
         )}
 
         <div className={`w-full h-full rounded-full border-4 border-neutral-900/20 shadow-[0_20px_40px_rgba(0,0,0,0.4)] overflow-hidden relative transition-all duration-500 transform ${
-          isElevated ? 'scale-106 sm:scale-110 -translate-y-12 sm:-translate-y-14 shadow-[0_20px_45px_rgba(0,0,0,0.45)]' : 'scale-100'
+          isElevated ? 'scale-104 sm:scale-106 -translate-y-10 sm:-translate-y-16 shadow-[0_20px_45px_rgba(0,0,0,0.45)]' : 'scale-100'
         }`}>
           {/* Shiny Glass Arc Reflection Overlay */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/35 via-transparent to-black/50 pointer-events-none z-20" />
@@ -815,9 +815,9 @@ function DreamySongCard({
             <div className="absolute inset-6 rounded-full border-[1px] border-black/25 pointer-events-none z-10" />
 
             {/* Center Translucent Label Badge */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 sm:w-16 sm:h-16 bg-white/90 sm:bg-white/95 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.4)] flex flex-col items-center justify-between py-1 px-0.5 text-center border-2 border-white z-20 overflow-hidden text-stone-950">
-              {/* Upper Hemisphere: Artists (max 3 lines) */}
-              <div className="flex flex-col items-center justify-center min-h-0 w-full flex-1 pt-0.5 px-0.5">
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-16 sm:h-16 bg-white/90 sm:bg-white/95 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.4)] flex flex-col items-center justify-between py-1 px-0.5 text-center border sm:border-2 border-white z-20 overflow-hidden text-stone-950">
+              {/* Upper Hemisphere: Artists (Hidden on Mobile, visible on PC) */}
+              <div className="hidden sm:flex flex-col items-center justify-center min-h-0 w-full flex-1 pt-0.5 px-0.5">
                 {singersList.length > 0 ? (
                   singersList.map((sName: string, sIdx: number) => {
                     const isSecret = sName.toLowerCase().includes("secret") || sName.toLowerCase().includes("bí mật");
@@ -841,10 +841,10 @@ function DreamySongCard({
               </div>
 
               {/* Spacer for dead-center spindle hole */}
-              <div className="h-3.5 sm:h-4 shrink-0" />
+              <div className="h-2 sm:h-4 shrink-0" />
 
-              {/* Lower Hemisphere: Release Year */}
-              <div className="w-full shrink-0 pb-0.5">
+              {/* Lower Hemisphere: Release Year (Hidden on Mobile, visible on PC) */}
+              <div className="hidden sm:block w-full shrink-0 pb-0.5">
                 <span className="text-[7px] sm:text-[8px] font-black text-stone-950 tracking-wider block leading-none drop-shadow-[0_1px_2px_rgba(255,255,255,0.9)]">
                   {songYear}
                 </span>
@@ -930,8 +930,11 @@ function DreamySongCard({
                 {achievementText}
               </span>
             ) : <div />}
+          </div>
 
-            <span className={`px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black shadow-xs border ${theme.yearBorder} ${theme.yearText} shrink-0 inline-flex items-center gap-0.5 ml-auto`}>
+          {/* Centered Year Badge at Bottom Edge of Card Sleeve (Photo 1) */}
+          <div className="absolute -bottom-3.5 left-1/2 -translate-x-1/2 z-40 pointer-events-none">
+            <span className={`px-3.5 py-0.5 rounded-full text-[10px] sm:text-[11.5px] font-black shadow-md border ${theme.yearBorder} ${theme.yearText} bg-white/95 inline-flex items-center justify-center tracking-wider`}>
               {songYear}
             </span>
           </div>
@@ -1488,7 +1491,7 @@ function MusicianSongCard({
           style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.6), transparent)' }} />
 
         {/* ── TOP SLOT AREA (height 175px) ── */}
-        <div className="relative w-full h-[105px] sm:h-[150px] overflow-visible">
+        <div className="relative w-full h-[55px] sm:h-[80px] overflow-visible">
 
           {/* ── HUGE BLACK VINYL DISC (z-10: peaks out slightly behind cover before hover, pops up smoothly on hover) ── */}
           <motion.div
@@ -1670,9 +1673,9 @@ function MusicianSongCard({
           <div 
             className="w-full h-5.5 sm:h-6.5 relative flex items-center justify-between px-2 sm:px-3 overflow-hidden"
             style={{
-              background: 'linear-gradient(104deg, #3A1A06 0%, #5C2A0F 15%, #3A1A06 30%, #4A2007 45%, #3A1A06 60%, #5C2A0F 75%, #3A1A06 90%)',
-              borderTop: '1.5px solid rgba(170,110,35,0.7)',
-              boxShadow: '0 12px 28px rgba(0,0,0,0.85), inset 0 1px 3px rgba(255,200,80,0.12)',
+              background: 'linear-gradient(104deg, #241003 0%, #3B1B09 15%, #241003 30%, #301404 45%, #241003 60%, #3B1B09 75%, #241003 90%)',
+              borderTop: '1.5px solid rgba(140,85,25,0.65)',
+              boxShadow: '0 12px 28px rgba(0,0,0,0.9), inset 0 1px 3px rgba(255,180,60,0.1)',
             }}
           >
             <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-black/40 pointer-events-none" />
@@ -8009,11 +8012,11 @@ function renderContainedEffect(templateType: string) {
         </div>
       );
 
-    case '8': // Tổ Quốc (Đỏ, Cờ phấp phới) - Patriotism
+    case '8': // Tổ Quốc (Đỏ, Cờ phấp phới) - Patriotism (Vietnam Flag: 1 single center gold star with flag wave & light loop)
       return (
         <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
           {/* Radial Golden Sunbeams pattern */}
-          <svg className="absolute inset-0 w-full h-full opacity-10 text-yellow-300" xmlns="http://www.w3.org/2000/svg">
+          <svg className="absolute inset-0 w-full h-full opacity-15 text-yellow-300" xmlns="http://www.w3.org/2000/svg">
             <g transform="translate(100, 50)">
               {Array.from({ length: 16 }).map((_, i) => (
                 <line 
@@ -8029,27 +8032,28 @@ function renderContainedEffect(templateType: string) {
               ))}
             </g>
           </svg>
-          {/* Large, beautiful glowing 5-point yellow star in center background */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[100px] text-yellow-400/10 select-none font-sans leading-none animate-pulse">⭐</div>
           
-          {/* Glowing yellow stars */}
-          <div className="absolute inset-0 opacity-45">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div 
-                key={`l5759-i-${i}`} 
-                className="absolute text-yellow-300 animate-pulse drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]"
-                style={{
-                  left: `${(i * 22) % 75 + 15}%`,
-                  top: `${(i * 19) % 65 + 15}%`,
-                  fontSize: `${(i % 3) * 3 + 12}px`,
-                  animationDuration: `${1.5 + (i % 2) * 1}s`,
-                  animationDelay: `-${i * 0.4}s`
-                }}
-              >
-                ⭐
-              </div>
-            ))}
-          </div>
+          {/* Flag Waving Light Sweep Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-300/15 to-transparent animate-[shimmer-sweep_4s_easeInOut_infinite] pointer-events-none" />
+
+          {/* EXACT SINGLE 5-POINTED GOLDEN STAR IN DEAD CENTER (Flag Waving & Light Pulse Animation) */}
+          <motion.div 
+            animate={{
+              scale: [1, 1.06, 0.97, 1.04, 1],
+              rotate: [-2, 2, -1, 1.5, -2],
+              opacity: [0.22, 0.38, 0.22]
+            }}
+            transition={{
+              duration: 5,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-yellow-400 select-none pointer-events-none filter drop-shadow-[0_0_25px_rgba(250,204,21,0.7)]"
+          >
+            <svg className="w-32 h-32 sm:w-40 sm:h-40" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
+          </motion.div>
         </div>
       );
 
@@ -10366,19 +10370,19 @@ function Home() {
               className="relative w-full rounded-2xl overflow-visible"
               style={{
                 background: `linear-gradient(160deg,
-                  #4A2208 0%, #5C2A0A 6%, #3E1B06 12%,
-                  #52230A 18%, #3A1804 24%, #4E2009 30%,
-                  #3A1804 36%, #52230A 42%, #3E1B06 48%,
-                  #4A2208 54%, #5C2A0A 60%, #3A1804 66%,
-                  #4E2009 72%, #52230A 78%, #3A1804 84%,
-                  #4A2208 90%, #3E1B06 100%
+                  #321605 0%, #441E07 6%, #2B1103 12%,
+                  #3C1B06 18%, #280E02 24%, #3A1805 30%,
+                  #280E02 36%, #3C1B06 42%, #2B1103 48%,
+                  #321605 54%, #441E07 60%, #280E02 66%,
+                  #3A1805 72%, #3C1B06 78%, #280E02 84%,
+                  #321605 90%, #2B1103 100%
                 )`,
-                border: '2px solid rgba(160,100,30,0.6)',
+                border: '2px solid rgba(135,80,22,0.55)',
                 boxShadow: `
-                  0 30px 60px rgba(0,0,0,0.95),
-                  0 10px 20px rgba(0,0,0,0.7),
-                  inset 0 1px 0 rgba(255,210,100,0.15),
-                  inset 0 -2px 6px rgba(0,0,0,0.8)
+                  0 30px 60px rgba(0,0,0,0.98),
+                  0 10px 20px rgba(0,0,0,0.8),
+                  inset 0 1px 0 rgba(255,200,80,0.12),
+                  inset 0 -2px 6px rgba(0,0,0,0.9)
                 `,
               }}
             >
@@ -11056,7 +11060,7 @@ function Home() {
                     initial="hidden"
                     animate="show"
                     exit="exit"
-                    className={activeListTab === 'albums' ? "grid grid-cols-1 gap-3.5 sm:gap-4 max-w-3xl mx-auto w-full" : isMusicianTheme ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-y-12 sm:gap-y-24 gap-x-3 sm:gap-x-8 max-w-[1400px] mx-auto pt-10 sm:pt-16" : isGold2Theme ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" : (isGoldTheme && !isMobile) ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" : isDreamyTheme ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-[1400px] mx-auto" : "grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[1400px] mx-auto"}
+                    className={activeListTab === 'albums' ? "grid grid-cols-1 gap-3.5 sm:gap-4 max-w-3xl mx-auto w-full" : isMusicianTheme ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-y-12 sm:gap-y-24 gap-x-3 sm:gap-x-8 max-w-[1400px] mx-auto pt-10 sm:pt-16" : isGold2Theme ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" : (isGoldTheme && !isMobile) ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" : isDreamyTheme ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6 max-w-[1400px] mx-auto" : "grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[1400px] mx-auto"}
                   >
                     {activeListTab === 'albums' ? (
                       paginatedItems.map((playlist: any, idx: number) => {
@@ -11093,6 +11097,8 @@ function Home() {
                                       ? 'bg-gradient-to-br from-[#2D180C]/95 via-[#231208]/98 to-[#190C05]/95 border-amber-700/60 hover:border-amber-400 shadow-[0_12px_35px_rgba(0,0,0,0.85)] hover:shadow-[0_18px_45px_rgba(245,158,11,0.3)] backdrop-blur-md' 
                                       : isGoldTheme
                                       ? 'bg-[#FAF5E6] border-[#D4AF37]/35 hover:border-[#D4AF37] hover:shadow-[0_12px_45px_rgba(212,175,55,0.18)]' 
+                                      : isDreamyTheme
+                                      ? 'bg-white/85 border-2 border-pink-200/90 hover:border-pink-400 shadow-[0_10px_30px_rgba(244,63,94,0.12)] hover:shadow-[0_16px_40px_rgba(244,63,94,0.22)] backdrop-blur-md'
                                       : 'bg-neutral-900/50 border-white/5 hover:border-purple-500/50 hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.3)]'
                                   }`}
                                 >
@@ -11167,7 +11173,7 @@ function Home() {
                                     }`}>
                                       {playlist.title}
                                     </h3>
-                                    <p className={`text-xs sm:text-sm mt-1.5 font-bold ${isMusicianTheme ? 'text-amber-200/70' : isGoldTheme ? 'text-stone-500' : 'text-neutral-400'}`}>
+                                    <p className={`text-xs sm:text-sm mt-1.5 font-bold ${isMusicianTheme ? 'text-amber-200/70' : isGoldTheme ? 'text-stone-500' : isDreamyTheme ? 'text-stone-600' : 'text-neutral-400'}`}>
                                       {songsInPlaylist.length} bài hát
                                     </p>
                                   </div>
@@ -15892,7 +15898,7 @@ function SocialCarousel({ data, pushDown = false, isGoldTheme = false, isMusicia
             ? 'bg-gradient-to-b from-[#4A2411] via-[#35180A] to-[#210D04] border-2 border-[#8C4A1C] text-amber-300 shadow-[0_8px_20px_rgba(0,0,0,0.9),inset_0_1px_2px_rgba(255,220,150,0.3)] hover:border-amber-400 hover:scale-110 hover:text-amber-100 hover:shadow-[0_0_20px_rgba(245,158,11,0.6)]' 
             : isGoldTheme 
             ? 'bg-[#1A1303] border-[#D4AF37]/50 text-[#D4AF37] shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:border-[#D4AF37] hover:text-amber-300 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)]' 
-            : 'bg-white/10 border-white/20 text-white hover:bg-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]'
+            : 'bg-[#9C7989]/85 border border-white/50 text-white hover:bg-[#886575] hover:scale-110 shadow-md backdrop-blur-md'
         } backdrop-blur-md border hover:scale-110 shadow-md transition-all cursor-pointer`}
         title="Follow"
       >
@@ -15959,7 +15965,7 @@ function SocialCarousel({ data, pushDown = false, isGoldTheme = false, isMusicia
                       ? 'bg-gradient-to-b from-[#4A2411] via-[#35180A] to-[#210D04] border-2 border-[#8C4A1C] text-amber-300 hover:border-amber-400 hover:text-amber-100 hover:shadow-[0_0_20px_rgba(245,158,11,0.6)] shadow-md' 
                       : isGoldTheme 
                       ? 'bg-[#1A1303] border-[#D4AF37]/40 text-[#D4AF37] ' + social.color.replace('hover:bg-', 'hover:text-white hover:bg-') 
-                      : 'bg-black/40 border-white/10 text-white ' + social.color
+                      : 'bg-[#9C7989]/85 border border-white/50 text-white hover:bg-rose-600 hover:scale-110 shadow-md backdrop-blur-md'
                   }`}
                 >
                   <IconComponent className="w-5 h-5" />
