@@ -7101,26 +7101,27 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
     e.stopPropagation();
     
     if (showThemeDropdown) {
-      // Closing the dropdown!
-      // Check if a theme was previewed and is different from original
-      const currentTheme = artistData?.adminTheme || 'liquid-glass';
-      if (originalTheme && currentTheme !== originalTheme) {
-        // Open confirmation modal for the previewed theme
-        setPendingTheme(currentTheme);
-      } else {
-        // No change or no preview, just close
-        setOriginalTheme(null);
-      }
       setShowThemeDropdown(false);
     } else {
-      // Opening the dropdown
-      // Store the original theme in case they change it
       setOriginalTheme(artistData?.adminTheme || 'liquid-glass');
       setShowThemeDropdown(true);
     }
   };
 
+  const selectThemePreview = (targetTheme: string) => {
+    const currentTheme = artistData?.adminTheme || 'liquid-glass';
+    if (!originalTheme) {
+      setOriginalTheme(currentTheme);
+    }
+    if (typeof (window as any).previewTheme === 'function') {
+      (window as any).previewTheme(targetTheme);
+    }
+    setPendingTheme(targetTheme);
+    setShowThemeDropdown(false);
+  };
+
   const handleConfirmTheme = async () => {
+    if (!pendingTheme) return;
     const themeVipConfig = artistData?.landingConfig?.adminThemesVip || {};
     const isVipTheme = pendingTheme === 'gold' 
       ? themeVipConfig['gold'] !== false 
@@ -7128,9 +7129,21 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
     const roles = artistData?.roles || [];
     const roleId = artistData?.roleId || '';
     const userRole = roles.find((r: any) => String(r.id || r.name).toLowerCase() === String(roleId || '').toLowerCase());
-    const hasVipAccess = !!(String(roleId).toLowerCase() === 'vip' || userRole?.exclusiveUi || artistData?.isSpecial || artistData?.isMasterAdmin);
+    const isVvip = !!(
+      artistData?.isSpecial || 
+      artistData?.username === 'acxuantai' || 
+      String(roleId || '').toLowerCase() === 'vvip' || 
+      String(roleId || '').toLowerCase() === 'v.vip' ||
+      artistData?.isMasterAdmin
+    );
+    const hasVipAccess = isVvip || !!(String(roleId).toLowerCase() === 'vip' || userRole?.exclusiveUi);
 
-    if (isVipTheme && !hasVipAccess) {
+    if (pendingTheme === 'random' && !isVvip) {
+      setThemeError("Giao diện Ngẫu Nhiên chỉ dành riêng cho tài khoản V.VIP!");
+      return;
+    }
+
+    if (pendingTheme !== 'random' && isVipTheme && !hasVipAccess) {
       setThemeError("đây là giao diện dành riêng cho thành viên VIP, nâng cấp gói để trải nghiệm.");
       return;
     }
@@ -7296,14 +7309,7 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
                       disabled={(artistData?.adminTheme || 'liquid-glass') === 'liquid-glass'}
                       onClick={(e) => {
                         e.stopPropagation();
-                        const current = artistData?.adminTheme || 'liquid-glass';
-                        if (!originalTheme) setOriginalTheme(current);
-                        if (typeof (window as any).previewTheme === 'function') {
-                          (window as any).previewTheme('liquid-glass');
-                        }
-                        if (setArtistData) {
-                          setArtistData((p: any) => p ? { ...p, adminTheme: 'liquid-glass' } : p);
-                        }
+                        selectThemePreview('liquid-glass');
                       }}
                       className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs font-bold transition-all ${
                         (artistData?.adminTheme || 'liquid-glass') === 'liquid-glass'
@@ -7330,14 +7336,7 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
                       disabled={artistData?.adminTheme === 'gold'}
                       onClick={(e) => {
                         e.stopPropagation();
-                        const current = artistData?.adminTheme || 'liquid-glass';
-                        if (!originalTheme) setOriginalTheme(current);
-                        if (typeof (window as any).previewTheme === 'function') {
-                          (window as any).previewTheme('gold');
-                        }
-                        if (setArtistData) {
-                          setArtistData((p: any) => p ? { ...p, adminTheme: 'gold' } : p);
-                        }
+                        selectThemePreview('gold');
                       }}
                       className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs font-bold transition-all ${
                         artistData?.adminTheme === 'gold'
@@ -7364,14 +7363,7 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
                       disabled={artistData?.adminTheme === 'musician'}
                       onClick={(e) => {
                         e.stopPropagation();
-                        const current = artistData?.adminTheme || 'liquid-glass';
-                        if (!originalTheme) setOriginalTheme(current);
-                        if (typeof (window as any).previewTheme === 'function') {
-                          (window as any).previewTheme('musician');
-                        }
-                        if (setArtistData) {
-                          setArtistData((p: any) => p ? { ...p, adminTheme: 'musician' } : p);
-                        }
+                        selectThemePreview('musician');
                       }}
                       className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs font-bold transition-all ${
                         artistData?.adminTheme === 'musician'
@@ -7399,14 +7391,7 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
                       disabled={artistData?.adminTheme === 'musician2'}
                       onClick={(e) => {
                         e.stopPropagation();
-                        const current = artistData?.adminTheme || 'liquid-glass';
-                        if (!originalTheme) setOriginalTheme(current);
-                        if (typeof (window as any).previewTheme === 'function') {
-                          (window as any).previewTheme('musician2');
-                        }
-                        if (setArtistData) {
-                          setArtistData((p: any) => p ? { ...p, adminTheme: 'musician2' } : p);
-                        }
+                        selectThemePreview('musician2');
                       }}
                       className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs font-bold transition-all ${
                         artistData?.adminTheme === 'musician2'
@@ -7443,16 +7428,11 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
                         );
                         if (!isVvip) {
                           setThemeError("Giao diện Ngẫu Nhiên chỉ dành riêng cho tài khoản V.VIP!");
+                          setPendingTheme('random');
+                          setShowThemeDropdown(false);
                           return;
                         }
-                        const current = artistData?.adminTheme || 'liquid-glass';
-                        if (!originalTheme) setOriginalTheme(current);
-                        if (typeof (window as any).previewTheme === 'function') {
-                          (window as any).previewTheme('random');
-                        }
-                        if (setArtistData) {
-                          setArtistData((p: any) => p ? { ...p, adminTheme: 'random' } : p);
-                        }
+                        selectThemePreview('random');
                       }}
                       className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs font-bold transition-all ${
                         artistData?.adminTheme === 'random'
@@ -7494,7 +7474,7 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
       <AnimatePresence>
         {pendingTheme && (
           <div key="pending-theme" className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-[99999]">
-                        <motion.div
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
@@ -7509,7 +7489,9 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
                   pendingTheme === 'musician' ? 'Dreamy' :
                   pendingTheme === 'musician2' ? 'Musician' :
                   (pendingTheme === 'gold' || pendingTheme === 'gold2') ? 'Gold Luxury' :
-                  'Liquid Glass'
+                  pendingTheme === 'random' ? 'Ngẫu Nhiên' :
+                  pendingTheme === 'liquid-glass' ? 'Liquid Glass' :
+                  (pendingTheme || 'Liquid Glass')
                 }</strong> không?
               </p>
 
