@@ -764,7 +764,7 @@ function DreamySongCard({
 
       {/* Vinyl Record (BEHIND card sleeve - Clickable to pop up & preview) */}
       <div 
-        className={`absolute left-1/2 -translate-x-1/2 top-1 sm:top-2 w-[78%] sm:w-[74%] aspect-square pointer-events-auto cursor-pointer transition-all duration-500 z-30 ${isElevated ? '-translate-y-10 sm:-translate-y-16' : ''}`}
+        className={`absolute left-1/2 -translate-x-1/2 top-1 sm:top-2 w-[78%] sm:w-[74%] aspect-square pointer-events-auto cursor-pointer transition-all duration-500 z-10 ${isElevated ? '-translate-y-10 sm:-translate-y-16' : ''}`}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -907,7 +907,7 @@ function DreamySongCard({
 
 
       {/* Outer Card Wrapper with Drop Shadow following the concave shape */}
-      <div className={`relative w-full z-20 transition-all duration-300 hover:-translate-y-2 group/card ${
+      <div className={`relative w-full z-20 pointer-events-none transition-all duration-300 hover:-translate-y-2 group/card ${
         isElevated 
           ? 'drop-shadow-[0_0_35px_rgba(244,114,182,0.85)] drop-shadow-[0_0_60px_rgba(251,207,232,0.9)] scale-[1.02]' 
           : theme.dropShadow
@@ -946,7 +946,7 @@ function DreamySongCard({
         <Link
           to={targetLink}
           onClick={handleClick}
-          className={`block w-full ${theme.cardBg} backdrop-blur-2xl transition-all duration-300 relative pt-8 sm:pt-9.5 pb-4.5 px-4 sm:px-5 overflow-hidden`}
+          className={`block w-full pointer-events-auto ${theme.cardBg} backdrop-blur-2xl transition-all duration-300 relative pt-8 sm:pt-9.5 pb-4.5 px-4 sm:px-5 overflow-hidden`}
           style={{ clipPath: 'url(#card-concave-clip)', WebkitClipPath: 'url(#card-concave-clip)' }}
         >
           {/* SVG Curved Border Stroke following the exact concave path */}
