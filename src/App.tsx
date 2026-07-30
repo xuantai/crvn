@@ -746,6 +746,20 @@ function DreamySongCard({
       } else {
         setActiveBioSong(demo);
       }
+      return;
+    }
+    // On mobile: first tap = preview (disc pops up), second tap = navigate
+    if (isTouchMobile && !(activeListTab === 'demos' || isDemoSong)) {
+      if (!isElevated) {
+        // First tap: prevent navigation, trigger preview
+        e.preventDefault();
+        mobilePoppedRef.current = true;
+        setMobilePopped(true);
+        startAudioPreview();
+        return;
+      }
+      // Already elevated: allow navigation but stop audio first
+      stopAudio();
     }
   };
 
@@ -767,24 +781,6 @@ function DreamySongCard({
         className={`absolute left-1/2 -translate-x-1/2 -top-1 sm:top-2 w-[85%] aspect-square rounded-full blur-2xl sm:blur-3xl pointer-events-none transition-all duration-700 ${isElevated ? 'opacity-90' : 'opacity-0 group-hover:opacity-60'} ${theme.halo}`} 
       />
 
-      {/* Mobile tap zone: invisible overlay above card sleeve so touch reaches disc area (z-[30] > sleeve z-20) */}
-      {isTouchMobile && (activeListTab !== 'demos' && !isDemoSong) && (
-        <div
-          className={`absolute left-1/2 -translate-x-1/2 top-0 w-[78%] sm:w-[74%] z-[30] cursor-pointer ${isElevated ? 'pointer-events-none' : 'pointer-events-auto'}`}
-          style={{ height: '56px' }}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (isPlaying || mobilePopped || globalActiveCardId === demo.id) {
-              stopAudio();
-            } else {
-              mobilePoppedRef.current = true;
-              setMobilePopped(true);
-              startAudioPreview();
-            }
-          }}
-        />
-      )}
 
       {/* Vinyl Record (BEHIND card sleeve - Clickable to pop up & preview) */}
       <div 
@@ -970,6 +966,18 @@ function DreamySongCard({
         <Link
           to={targetLink}
           onClick={handleClick}
+          onTouchStart={(e) => {
+            if (!isTouchMobile) return;
+            if (activeListTab === 'demos' || isDemoSong) return;
+            if (!isElevated) {
+              // First tap: block router navigation, pop disc + start preview
+              e.preventDefault();
+              mobilePoppedRef.current = true;
+              setMobilePopped(true);
+              startAudioPreview();
+            }
+            // Second tap (isElevated): let navigation happen naturally via onClick/handleClick
+          }}
           className={`block w-full pointer-events-auto ${theme.cardBg} backdrop-blur-2xl transition-all duration-300 relative pt-8 sm:pt-9.5 pb-4.5 px-4 sm:px-5 overflow-hidden`}
           style={{ clipPath: 'url(#card-concave-clip)', WebkitClipPath: 'url(#card-concave-clip)' }}
         >
