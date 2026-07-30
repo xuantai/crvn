@@ -1722,8 +1722,8 @@ export default function ACPControlPanel() {
                                     </span>
                                   )}
                                   {artist.isSpecial && (
-                                    <span className="bg-amber-500/15 text-amber-400 px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider border border-amber-500/25">
-                                      Đặc biệt
+                                    <span className="bg-gradient-to-r from-amber-400 via-rose-500 to-purple-600 text-white px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider shadow-xs border border-amber-300/40">
+                                      V.VIP
                                     </span>
                                   )}
                                 </div>

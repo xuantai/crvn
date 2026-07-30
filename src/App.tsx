@@ -7429,6 +7429,43 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
                       </span>
                       {artistData?.adminTheme === 'musician2' && <Check className="w-3.5 h-3.5 text-amber-500" />}
                     </button>
+
+                    <button
+                      disabled={artistData?.adminTheme === 'random'}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const isVvip = !!(
+                          artistData?.isSpecial || 
+                          artistData?.username === 'acxuantai' || 
+                          String(artistData?.roleId || '').toLowerCase() === 'vvip' || 
+                          String(artistData?.roleId || '').toLowerCase() === 'v.vip' ||
+                          artistData?.isMasterAdmin
+                        );
+                        if (!isVvip) {
+                          setThemeError("Giao diện Ngẫu Nhiên chỉ dành riêng cho tài khoản V.VIP!");
+                          return;
+                        }
+                        const current = artistData?.adminTheme || 'liquid-glass';
+                        if (!originalTheme) setOriginalTheme(current);
+                        if (typeof (window as any).previewTheme === 'function') {
+                          (window as any).previewTheme('random');
+                        }
+                        if (setArtistData) {
+                          setArtistData((p: any) => p ? { ...p, adminTheme: 'random' } : p);
+                        }
+                      }}
+                      className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs font-bold transition-all ${
+                        artistData?.adminTheme === 'random'
+                          ? 'opacity-50 cursor-not-allowed text-stone-500 bg-black/10'
+                          : 'hover:bg-white/10 text-stone-200 cursor-pointer'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        Ngẫu Nhiên <Shuffle className="w-3 h-3 text-purple-400" />
+                        <span className="px-1.5 py-0.2 text-[8px] font-black bg-gradient-to-r from-amber-400 via-rose-500 to-purple-600 text-white rounded-full shadow-xs">V.VIP</span>
+                      </span>
+                      {artistData?.adminTheme === 'random' && <Check className="w-3.5 h-3.5 text-purple-400" />}
+                    </button>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -9642,10 +9679,20 @@ function Home() {
   }, []);
 
   const [isScrolled, setIsScrolled] = useState(false);
-  const isDreamyTheme = data?.adminTheme === 'musician';
-  const isMusicianTheme = data?.adminTheme === 'musician2';
-  const isGoldTheme = (data?.adminTheme === 'gold' || data?.adminTheme === 'gold2') && !isMusicianTheme && !isDreamyTheme;
-  const isGold2Theme = (data?.adminTheme === 'gold' || data?.adminTheme === 'gold2') && !isMusicianTheme && !isDreamyTheme;
+  const activeTheme = useMemo(() => {
+    const rawTheme = data?.adminTheme;
+    if (rawTheme === 'random') {
+      const availableThemes = ['liquid-glass', 'gold', 'musician', 'musician2'];
+      const randomIndex = Math.floor(Math.random() * availableThemes.length);
+      return availableThemes[randomIndex];
+    }
+    return rawTheme || 'liquid-glass';
+  }, [data?.adminTheme]);
+
+  const isDreamyTheme = activeTheme === 'musician';
+  const isMusicianTheme = activeTheme === 'musician2';
+  const isGoldTheme = (activeTheme === 'gold' || activeTheme === 'gold2') && !isMusicianTheme && !isDreamyTheme;
+  const isGold2Theme = (activeTheme === 'gold' || activeTheme === 'gold2') && !isMusicianTheme && !isDreamyTheme;
 
   useEffect(() => {
     if (!userHasChangedPageSize) {
