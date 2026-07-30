@@ -451,8 +451,9 @@ function DreamySongCard({
   formatShareUrl,
   copyToClipboard,
   setToast,
-  setActiveBioSong
-}: DreamySongCardProps) {
+  setActiveBioSong,
+  hasRowAchievement = true
+}: any) {
   const [isHovered, setIsHovered] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
@@ -928,16 +929,22 @@ function DreamySongCard({
           )}
 
           {/* Top Section: Achievement on Left, Year Badge on Right */}
-          <div className="flex items-center justify-between gap-1.5 w-full h-[32px] mt-1 mb-2 relative z-10">
-            {hasAchievementsArray ? (
-              <AchievementCycle achievements={demo.achievements} align="left" isLightBg={true} />
-            ) : achievementText ? (
-              <span className={`px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${theme.badgeBg} inline-flex items-center gap-1 shrink-0`}>
-                <Award className="w-3 h-3 stroke-[2.5]" />
-                {achievementText}
-              </span>
-            ) : <div />}
-          </div>
+          {hasRowAchievement !== false && (hasAchievementsArray || achievementText) ? (
+            <div className="flex items-center justify-between gap-1.5 w-full h-[28px] sm:h-[32px] mt-0.5 mb-1.5 relative z-10">
+              {hasAchievementsArray ? (
+                <AchievementCycle achievements={demo.achievements} align="left" isLightBg={true} />
+              ) : achievementText ? (
+                <span className={`px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${theme.badgeBg} inline-flex items-center gap-1 shrink-0`}>
+                  <Award className="w-3 h-3 stroke-[2.5]" />
+                  {achievementText}
+                </span>
+              ) : <div />}
+            </div>
+          ) : hasRowAchievement ? (
+            <div className="flex items-center justify-between gap-1.5 w-full h-[28px] sm:h-[32px] mt-0.5 mb-1.5 relative z-10" />
+          ) : (
+            <div className="h-1 w-full" />
+          )}
 
 
 
@@ -11244,19 +11251,20 @@ function Home() {
                                   setActiveBioSong={setActiveBioSong}
                                 />
                               ) : isDreamyTheme ? (
-                                <DreamySongCard 
-                                  key={`dreamy-card-${demo.id || idx}`}
-                                  demo={demo} 
-                                  idx={idx} 
-                                  activeListTab={activeListTab} 
-                                  getArtistLink={getArtistLink} 
-                                  t={t} 
-                                  data={data}
-                                  formatShareUrl={formatShareUrl}
-                                  copyToClipboard={copyToClipboard}
-                                  setToast={setToast}
-                                  setActiveBioSong={setActiveBioSong}
-                                />
+                                 <DreamySongCard 
+                                   key={`dreamy-card-${demo.id || idx}`}
+                                   demo={demo} 
+                                   idx={idx} 
+                                   activeListTab={activeListTab} 
+                                   getArtistLink={getArtistLink} 
+                                   t={t} 
+                                   data={data}
+                                   formatShareUrl={formatShareUrl}
+                                   copyToClipboard={copyToClipboard}
+                                   setToast={setToast}
+                                   setActiveBioSong={setActiveBioSong}
+                                   hasRowAchievement={paginatedItems.slice(Math.floor(idx / ((typeof window !== "undefined" && window.innerWidth < 1024) ? 2 : 3)) * ((typeof window !== "undefined" && window.innerWidth < 1024) ? 2 : 3), Math.floor(idx / ((typeof window !== "undefined" && window.innerWidth < 1024) ? 2 : 3)) * ((typeof window !== "undefined" && window.innerWidth < 1024) ? 2 : 3) + ((typeof window !== "undefined" && window.innerWidth < 1024) ? 2 : 3)).some((item: any) => (item.achievements && item.achievements.length > 0) || item.achievement || item.achievements || item.achievementText || item.award || item.youtubeViews || item.ytViews || item.viewsCount || item.spotifyListens || item.spListens || item.streamsCount)}
+                                 />
                               ) : (isGold2Theme || (isGoldTheme && !isMobile)) ? (
                                 <Link 
                                   to={activeListTab === 'released' ? getArtistLink(`/playlist/released?song=${demo.slug || demo.id}`) : getArtistLink(`/song/${demo.slug || demo.id}`)} 
