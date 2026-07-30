@@ -26013,7 +26013,7 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
           : 'bg-white/10 border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] text-white'
     } backdrop-blur-2xl border rounded-[2.5rem] p-6 sm:p-10 mt-4 sm:mt-8 mb-20 relative z-10 max-w-6xl flex flex-col lg:flex-row gap-10 lg:gap-16 items-center lg:items-start`}>
       {isAdmin && (
-        <a href={getAdminLink('about')} className={`absolute top-6 right-6 p-3 ${isMusicianTheme ? 'bg-stone-200/80 text-stone-700 hover:text-stone-950 hover:bg-stone-300' : 'bg-white/10 text-white/70 hover:text-white hover:bg-white/20'} rounded-full transition-colors z-20`} title={t("Chỉnh sửa")}>
+        <a href={getAdminLink('about')} className={`absolute top-6 right-6 p-3 ${isMusicianTheme || isDreamyTheme ? 'bg-stone-200/80 text-stone-700 hover:text-stone-950 hover:bg-stone-300' : 'bg-white/10 text-white/70 hover:text-white hover:bg-white/20'} rounded-full transition-colors z-20`} title={t("Chỉnh sửa")}>
           <Edit3 className="w-5 h-5 sm:w-6 sm:h-6" />
         </a>
       )}
@@ -26144,7 +26144,7 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme, is
           : 'bg-white/10 border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] text-white'
     } backdrop-blur-2xl border rounded-[2.5rem] py-12 max-w-7xl ${hasEdu && hasExp ? 'grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16' : 'flex flex-col'}`}>
       {isAdmin && (
-        <a href={getAdminLink('bio')} className={`absolute top-6 right-6 p-3 ${isMusicianTheme ? 'bg-stone-200/80 text-stone-700 hover:text-stone-950 hover:bg-stone-300' : 'bg-white/10 text-white/70 hover:text-white hover:bg-white/20'} rounded-full transition-colors z-20`} title={t("Chỉnh sửa")}>
+        <a href={getAdminLink('bio')} className={`absolute top-6 right-6 p-3 ${isMusicianTheme || isDreamyTheme ? 'bg-stone-200/80 text-stone-700 hover:text-stone-950 hover:bg-stone-300' : 'bg-white/10 text-white/70 hover:text-white hover:bg-white/20'} rounded-full transition-colors z-20`} title={t("Chỉnh sửa")}>
           <Edit3 className="w-5 h-5 sm:w-6 sm:h-6" />
         </a>
       )}
@@ -26170,7 +26170,7 @@ function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme, is
       
       {hasExp && (
         <div className="w-full">
-          <h2 className={`text-2xl sm:text-3xl font-black ${isMusicianTheme ? 'text-stone-950' : 'text-white'} drop-shadow-md mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-4 sm:pl-6 lg:pl-8`}>
+          <h2 className={`text-2xl sm:text-3xl font-black ${isMusicianTheme || isDreamyTheme ? 'text-stone-950' : 'text-white'} mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-4 sm:pl-6 lg:pl-8`}>
             {t('Kinh nghiệm') || 'Kinh nghiệm'}
           </h2>
           <div className="space-y-8 relative">
