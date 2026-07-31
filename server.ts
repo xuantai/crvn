@@ -3044,34 +3044,57 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     const isProduction = host.includes('chorus.vn');
 
     if (foundPlaylist) {
-      const editUrl = isProduction 
-        ? `https://${foundArtistExt}.chorus.vn/admin/playlist/${foundPlaylist.id}`
-        : `/${foundArtistExt}/admin/playlist/${foundPlaylist.id}`;
+      const foundArtistData = await loadData(foundArtistExt);
       return res.json({
         success: true,
         type: 'playlist',
         id: foundPlaylist.id,
-        title: foundPlaylist.title,
+        title: foundPlaylist.title || '',
         coverUrl: foundPlaylist.coverUrl || '',
+        description: foundPlaylist.description || '',
+        password: (foundPlaylist.password === true || foundPlaylist.password === 'true') ? '' : (foundPlaylist.password || ''),
+        secretLink: !!foundPlaylist.secretLink,
+        isDraft: !!foundPlaylist.isDraft,
+        demoIds: foundPlaylist.demoIds || [],
         artistExtension: foundArtistExt,
-        artistName: foundArtistName,
-        editUrl
+        artistName: foundArtistName || foundArtistExt,
+        availableDemos: (foundArtistData.demos || []).map((d: any) => ({
+          id: d.id,
+          title: d.title || 'Bài hát chưa đặt tên',
+          coverUrl: d.coverUrl || ''
+        }))
       });
     }
 
     if (foundSong) {
-      const editUrl = isProduction 
-        ? `https://${foundArtistExt}.chorus.vn/admin/edit/${foundSong.id}`
-        : `/${foundArtistExt}/admin/edit/${foundSong.id}`;
+      const effectiveName = foundArtistName || foundArtistExt;
+      const effectiveYear = foundSong.releaseYear || (foundSong.createdAt ? new Date(foundSong.createdAt).getFullYear().toString() : new Date().getFullYear().toString());
       return res.json({
         success: true,
         type: 'song',
         id: foundSong.id,
-        title: foundSong.title,
+        title: foundSong.title || '',
+        slug: foundSong.slug || '',
+        composer: foundSong.composer || effectiveName,
+        musicProducer: foundSong.musicProducer || effectiveName,
+        singer: foundSong.singer || effectiveName,
+        releaseYear: effectiveYear,
+        lyrics: foundSong.lyrics || '',
+        audioUrl: foundSong.audioUrl || '',
         coverUrl: foundSong.coverUrl || '',
+        bgUrl: foundSong.backgroundUrl || foundSong.bgUrl || '',
+        template: foundSong.template || '1',
+        status: foundSong.status || 'public',
+        password: (foundSong.password === true || foundSong.password === 'true') ? '' : (foundSong.password || ''),
+        linkType: foundSong.linkType || 'direct',
+        linkZing: foundSong.linkZing || '',
+        linkSpotify: foundSong.linkSpotify || '',
+        linkApple: foundSong.linkApple || '',
+        linkYoutubeMusic: foundSong.linkYoutubeMusic || '',
+        linkYoutube: foundSong.linkYoutube || '',
+        achievements: foundSong.achievements || [],
         artistExtension: foundArtistExt,
-        artistName: foundArtistName,
-        editUrl
+        artistName: effectiveName
       });
     }
 

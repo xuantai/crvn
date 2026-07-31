@@ -3954,150 +3954,197 @@ export default function ACPControlPanel() {
               )}
 
               {lookupResult && lookupResult.type === 'song' && (
-                <form onSubmit={handleSaveSong} className="mt-6 space-y-6 border-t border-white/10 pt-6">
-                  <div className="flex items-center justify-between bg-purple-950/40 border border-purple-500/30 p-4 rounded-2xl">
-                    <div className="flex items-center gap-3">
+                <form onSubmit={handleSaveSong} className="mt-6 space-y-8 border-t border-white/10 pt-6">
+                  {/* Top Bar */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-purple-950/60 to-neutral-900 border border-purple-500/30 p-5 rounded-2xl shadow-xl">
+                    <div className="flex items-center gap-4">
                       {editSongForm.coverUrl ? (
-                        <img src={editSongForm.coverUrl} alt="" className="w-12 h-12 rounded-xl object-cover border border-white/10" />
+                        <img src={editSongForm.coverUrl} alt="" className="w-16 h-16 rounded-2xl object-cover border border-white/10 shadow-md shrink-0" />
                       ) : (
-                        <div className="w-12 h-12 rounded-xl bg-purple-900/40 flex items-center justify-center text-purple-300">
-                          <Music className="w-6 h-6" />
+                        <div className="w-16 h-16 rounded-2xl bg-purple-900/40 border border-purple-500/30 flex items-center justify-center text-purple-300 shrink-0">
+                          <Music className="w-8 h-8" />
                         </div>
                       )}
                       <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-purple-500/30 text-purple-200">
-                            Chỉnh Sửa Bài Hát (Master)
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-lg bg-purple-500/30 text-purple-200 border border-purple-500/40">
+                            Giao diện chỉnh sửa Master
                           </span>
-                          <span className="text-xs text-neutral-400">Nghệ sĩ: <strong className="text-white">{lookupResult.artistName}</strong> (<code className="text-purple-300">{lookupResult.artistExtension}</code>)</span>
+                          <span className="text-xs text-neutral-400 font-medium">
+                            Nghệ sĩ: <strong className="text-white font-bold">{lookupResult.artistName}</strong> (<code className="text-purple-300">@{lookupResult.artistExtension}</code>)
+                          </span>
                         </div>
-                        <h3 className="text-base font-bold text-white mt-0.5">{editSongForm.title || lookupResult.title}</h3>
+                        <h3 className="text-lg font-black text-white mt-1">{editSongForm.title || lookupResult.title}</h3>
                       </div>
                     </div>
                     <button
                       type="submit"
                       disabled={isSavingEdit}
-                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white font-black text-xs px-6 py-3 rounded-xl transition-all shadow-lg flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-black text-xs px-7 py-3.5 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-95 shrink-0"
                     >
                       {isSavingEdit ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                      <span>{isSavingEdit ? 'Đang Lưu...' : 'Lưu Bài Hát'}</span>
+                      <span>{isSavingEdit ? 'Đang Lưu...' : 'Lưu Thay Đổi Bài Hát'}</span>
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">Tên bài hát *</label>
-                      <input
-                        type="text"
-                        required
-                        value={editSongForm.title}
-                        onChange={(e) => setEditSongForm({ ...editSongForm, title: e.target.value })}
-                        className="w-full bg-neutral-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500"
-                      />
+                  {/* Audio Preview Player */}
+                  {editSongForm.audioUrl && (
+                    <div className="p-4 bg-purple-900/20 border border-purple-500/20 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-300 shrink-0">
+                          <Volume2 className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-white">Nghe thử File Âm Thanh</p>
+                          <p className="text-[11px] text-neutral-400 truncate max-w-xs">{editSongForm.audioUrl}</p>
+                        </div>
+                      </div>
+                      <audio controls src={editSongForm.audioUrl} className="w-full sm:w-64 h-9 rounded-lg" />
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">Link tùy chỉnh (Slug)</label>
-                      <input
-                        type="text"
-                        value={editSongForm.slug}
-                        onChange={(e) => setEditSongForm({ ...editSongForm, slug: e.target.value })}
-                        placeholder="VD: vi-em-chua-bao-gio-khoc"
-                        className="w-full bg-neutral-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">Sáng tác (Composer)</label>
-                      <input
-                        type="text"
-                        value={editSongForm.composer}
-                        onChange={(e) => setEditSongForm({ ...editSongForm, composer: e.target.value })}
-                        className="w-full bg-neutral-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">Hòa âm / Phối khí (Producer)</label>
-                      <input
-                        type="text"
-                        value={editSongForm.musicProducer}
-                        onChange={(e) => setEditSongForm({ ...editSongForm, musicProducer: e.target.value })}
-                        className="w-full bg-neutral-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">Ca sĩ trình bày (Singer)</label>
-                      <input
-                        type="text"
-                        value={editSongForm.singer}
-                        onChange={(e) => setEditSongForm({ ...editSongForm, singer: e.target.value })}
-                        className="w-full bg-neutral-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">Năm phát hành</label>
-                      <input
-                        type="text"
-                        value={editSongForm.releaseYear}
-                        onChange={(e) => setEditSongForm({ ...editSongForm, releaseYear: e.target.value })}
-                        placeholder="VD: 2024"
-                        className="w-full bg-neutral-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500"
-                      />
+                  )}
+
+                  {/* 1. Basic Info Section */}
+                  <div className="bg-neutral-950/60 border border-white/10 rounded-2xl p-6 space-y-4">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-purple-400 flex items-center gap-2">
+                      <Music className="w-4 h-4" /> 1. Thông Tin Cơ Bản Bài Hát
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-300 mb-1.5">Tên bài hát *</label>
+                        <input
+                          type="text"
+                          required
+                          value={editSongForm.title}
+                          onChange={(e) => setEditSongForm({ ...editSongForm, title: e.target.value })}
+                          className="w-full bg-neutral-900 border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-300 mb-1.5">Link tùy chỉnh (Slug)</label>
+                        <input
+                          type="text"
+                          value={editSongForm.slug}
+                          onChange={(e) => setEditSongForm({ ...editSongForm, slug: e.target.value })}
+                          placeholder="VD: vi-em-chua-bao-gio-khoc"
+                          className="w-full bg-neutral-900 border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-300 mb-1.5">Sáng tác (Composer)</label>
+                        <input
+                          type="text"
+                          value={editSongForm.composer}
+                          onChange={(e) => setEditSongForm({ ...editSongForm, composer: e.target.value })}
+                          placeholder={lookupResult.artistName}
+                          className="w-full bg-neutral-900 border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-300 mb-1.5">Hòa âm / Phối khí (Producer)</label>
+                        <input
+                          type="text"
+                          value={editSongForm.musicProducer}
+                          onChange={(e) => setEditSongForm({ ...editSongForm, musicProducer: e.target.value })}
+                          placeholder={lookupResult.artistName}
+                          className="w-full bg-neutral-900 border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-300 mb-1.5">Ca sĩ trình bày (Singer)</label>
+                        <input
+                          type="text"
+                          value={editSongForm.singer}
+                          onChange={(e) => setEditSongForm({ ...editSongForm, singer: e.target.value })}
+                          placeholder={lookupResult.artistName}
+                          className="w-full bg-neutral-900 border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-300 mb-1.5">Năm phát hành</label>
+                        <input
+                          type="text"
+                          value={editSongForm.releaseYear}
+                          onChange={(e) => setEditSongForm({ ...editSongForm, releaseYear: e.target.value })}
+                          placeholder="VD: 2024"
+                          className="w-full bg-neutral-900 border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-white/5 pt-4">
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">File Audio (MP3/WAV)</label>
-                      <input
-                        type="text"
-                        value={editSongForm.audioUrl}
-                        onChange={(e) => setEditSongForm({ ...editSongForm, audioUrl: e.target.value })}
-                        placeholder="Link Audio URL..."
-                        className="w-full bg-neutral-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white mb-2 focus:outline-none focus:border-purple-500"
-                      />
-                      <input
-                        type="file"
-                        accept="audio/*"
-                        onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'audioUrl')}
-                        className="text-xs text-neutral-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-600 file:text-white hover:file:bg-purple-500 cursor-pointer"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">Ảnh bìa (Cover Image)</label>
-                      <input
-                        type="text"
-                        value={editSongForm.coverUrl}
-                        onChange={(e) => setEditSongForm({ ...editSongForm, coverUrl: e.target.value })}
-                        placeholder="Link Ảnh bìa URL..."
-                        className="w-full bg-neutral-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white mb-2 focus:outline-none focus:border-purple-500"
-                      />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'coverUrl')}
-                        className="text-xs text-neutral-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-600 file:text-white hover:file:bg-purple-500 cursor-pointer"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">Ảnh nền (Background Image)</label>
-                      <input
-                        type="text"
-                        value={editSongForm.bgUrl}
-                        onChange={(e) => setEditSongForm({ ...editSongForm, bgUrl: e.target.value })}
-                        placeholder="Link Ảnh nền URL..."
-                        className="w-full bg-neutral-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white mb-2 focus:outline-none focus:border-purple-500"
-                      />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'bgUrl')}
-                        className="text-xs text-neutral-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-600 file:text-white hover:file:bg-purple-500 cursor-pointer"
-                      />
+                  {/* 2. Media Files Upload */}
+                  <div className="bg-neutral-950/60 border border-white/10 rounded-2xl p-6 space-y-4">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-purple-400 flex items-center gap-2">
+                      <Image className="w-4 h-4" /> 2. File Nhạc & Hình Ảnh
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-neutral-300">File Audio (MP3/WAV)</label>
+                        <input
+                          type="text"
+                          value={editSongForm.audioUrl}
+                          onChange={(e) => setEditSongForm({ ...editSongForm, audioUrl: e.target.value })}
+                          placeholder="Dán URL File Audio..."
+                          className="w-full bg-neutral-900 border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                        />
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="file"
+                            accept="audio/*"
+                            onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'audioUrl')}
+                            className="text-xs text-neutral-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-600 file:text-white hover:file:bg-purple-500 cursor-pointer"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-neutral-300">Ảnh Bìa (Cover Image)</label>
+                        {editSongForm.coverUrl && (
+                          <img src={editSongForm.coverUrl} alt="" className="w-full h-24 rounded-xl object-cover border border-white/10 mb-2" />
+                        )}
+                        <input
+                          type="text"
+                          value={editSongForm.coverUrl}
+                          onChange={(e) => setEditSongForm({ ...editSongForm, coverUrl: e.target.value })}
+                          placeholder="Dán URL Ảnh Bìa..."
+                          className="w-full bg-neutral-900 border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                        />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'coverUrl')}
+                          className="text-xs text-neutral-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-600 file:text-white hover:file:bg-purple-500 cursor-pointer"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-neutral-300">Ảnh Nền (Background Image)</label>
+                        {editSongForm.bgUrl && (
+                          <img src={editSongForm.bgUrl} alt="" className="w-full h-24 rounded-xl object-cover border border-white/10 mb-2" />
+                        )}
+                        <input
+                          type="text"
+                          value={editSongForm.bgUrl}
+                          onChange={(e) => setEditSongForm({ ...editSongForm, bgUrl: e.target.value })}
+                          placeholder="Dán URL Ảnh Nền..."
+                          className="w-full bg-neutral-900 border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                        />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'bgUrl')}
+                          className="text-xs text-neutral-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-600 file:text-white hover:file:bg-purple-500 cursor-pointer"
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="border-t border-white/5 pt-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300">Lời bài hát (Lyrics)</label>
+                  {/* 3. Lyrics Section */}
+                  <div className="bg-neutral-950/60 border border-white/10 rounded-2xl p-6 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-purple-400 flex items-center gap-2">
+                        <FileText className="w-4 h-4" /> 3. Lời Bài Hát (Lyrics)
+                      </h4>
                       <div className="flex items-center gap-1.5 flex-wrap">
                         {['Intro', 'Verse 1', 'Verse 2', 'Pre-Chorus', 'Chorus', 'Bridge', 'Outro', 'Drop'].map((tag) => (
                           <button
@@ -4109,7 +4156,7 @@ export default function ACPControlPanel() {
                                 lyrics: (prev.lyrics ? prev.lyrics + '\n\n' : '') + `[${tag}]\n`
                               }));
                             }}
-                            className="text-[10px] font-bold px-2 py-1 rounded bg-white/5 hover:bg-white/15 text-neutral-300 transition-colors cursor-pointer"
+                            className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-purple-500/20 hover:bg-purple-500/40 text-purple-200 border border-purple-500/30 transition-all cursor-pointer"
                           >
                             + {tag}
                           </button>
@@ -4117,100 +4164,162 @@ export default function ACPControlPanel() {
                       </div>
                     </div>
                     <textarea
-                      rows={8}
+                      rows={9}
                       value={editSongForm.lyrics}
                       onChange={(e) => setEditSongForm({ ...editSongForm, lyrics: e.target.value })}
-                      placeholder="Dán lời bài hát tại đây..."
-                      className="w-full bg-neutral-950 border border-white/10 rounded-xl p-4 text-xs font-mono text-white focus:outline-none focus:border-purple-500 leading-relaxed"
+                      placeholder="Dán hoặc nhập lời bài hát tại đây..."
+                      className="w-full bg-neutral-900 border border-white/15 rounded-xl p-4 text-xs font-mono text-white focus:outline-none focus:border-purple-500 leading-relaxed"
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-white/5 pt-4">
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">Giao diện (Template)</label>
-                      <select
-                        value={editSongForm.template}
-                        onChange={(e) => setEditSongForm({ ...editSongForm, template: e.target.value })}
-                        className="w-full bg-neutral-950 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
-                      >
-                        <option value="1">Template 1: Vui vẻ (Ấm áp)</option>
-                        <option value="2">Template 2: Căng Cực (Sôi động)</option>
-                        <option value="3">Template 3: Buồn (Sâu lắng)</option>
-                        <option value="4">Template 4: Thư giãn (Nhẹ nhàng)</option>
-                        <option value="5">Template 5: Đáng yêu (Đỏ, Nhảy múa)</option>
-                        <option value="6">Template 6: Hạnh Phúc (Hồng, Hoa rơi)</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">Trạng thái bài hát</label>
-                      <select
-                        value={editSongForm.status}
-                        onChange={(e) => setEditSongForm({ ...editSongForm, status: e.target.value })}
-                        className="w-full bg-neutral-950 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
-                      >
-                        <option value="public">Công khai (Public)</option>
-                        <option value="hidden">Ẩn bài hát (Private)</option>
-                        <option value="unlisted">Không công khai (Chỉ mở bằng link)</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">Mật khẩu bài hát (Để trống nếu không có)</label>
-                      <input
-                        type="text"
-                        value={editSongForm.password}
-                        onChange={(e) => setEditSongForm({ ...editSongForm, password: e.target.value })}
-                        placeholder="Để trống = Không có mật khẩu"
-                        className="w-full bg-neutral-950 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-purple-500"
-                      />
+                  {/* 4. Template Selector Cards */}
+                  <div className="bg-neutral-950/60 border border-white/10 rounded-2xl p-6 space-y-4">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-purple-400 flex items-center gap-2">
+                      <Layout className="w-4 h-4" /> 4. Chọn Giao Diện Bài Hát (Template)
+                    </h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+                      {[
+                        { id: '1', name: 'Vui vẻ', desc: 'Ấm áp', color: 'from-amber-500 to-orange-600' },
+                        { id: '2', name: 'Căng Cực', desc: 'Sôi động', color: 'from-red-600 to-rose-700' },
+                        { id: '3', name: 'Buồn', desc: 'Sâu lắng', color: 'from-blue-600 to-indigo-800' },
+                        { id: '4', name: 'Thư giãn', desc: 'Nhẹ nhàng', color: 'from-emerald-500 to-teal-700' },
+                        { id: '5', name: 'Đáng yêu', desc: 'Đỏ nhảy múa', color: 'from-pink-500 to-rose-600' },
+                        { id: '6', name: 'Hạnh Phúc', desc: 'Hồng hoa rơi', color: 'from-purple-500 to-fuchsia-600' }
+                      ].map((tCard) => {
+                        const isSelected = String(editSongForm.template) === String(tCard.id);
+                        return (
+                          <button
+                            key={tCard.id}
+                            type="button"
+                            onClick={() => setEditSongForm({ ...editSongForm, template: tCard.id })}
+                            className={`relative p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                              isSelected 
+                                ? 'bg-purple-900/40 border-purple-500 text-white shadow-lg ring-2 ring-purple-500/40' 
+                                : 'bg-neutral-900/80 border-white/10 text-neutral-400 hover:bg-neutral-900 hover:border-white/20'
+                            }`}
+                          >
+                            <div className={`w-full h-8 rounded-lg bg-gradient-to-r ${tCard.color} mb-2.5 shadow-inner opacity-80`}></div>
+                            <p className="text-xs font-bold text-white truncate">Mẫu {tCard.id}: {tCard.name}</p>
+                            <p className="text-[10px] text-neutral-400 truncate">{tCard.desc}</p>
+                            {isSelected && (
+                              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-purple-400 animate-ping"></span>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  <div className="border-t border-white/5 pt-4 space-y-3">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300">Đường link nghe nhạc số khác</label>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <input
-                        type="text"
-                        value={editSongForm.linkZing}
-                        onChange={(e) => setEditSongForm({ ...editSongForm, linkZing: e.target.value })}
-                        placeholder="Link Zing MP3..."
-                        className="bg-neutral-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
-                      />
-                      <input
-                        type="text"
-                        value={editSongForm.linkSpotify}
-                        onChange={(e) => setEditSongForm({ ...editSongForm, linkSpotify: e.target.value })}
-                        placeholder="Link Spotify..."
-                        className="bg-neutral-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
-                      />
-                      <input
-                        type="text"
-                        value={editSongForm.linkApple}
-                        onChange={(e) => setEditSongForm({ ...editSongForm, linkApple: e.target.value })}
-                        placeholder="Link Apple Music..."
-                        className="bg-neutral-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
-                      />
-                      <input
-                        type="text"
-                        value={editSongForm.linkYoutubeMusic}
-                        onChange={(e) => setEditSongForm({ ...editSongForm, linkYoutubeMusic: e.target.value })}
-                        placeholder="Link YouTube Music..."
-                        className="bg-neutral-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
-                      />
-                      <input
-                        type="text"
-                        value={editSongForm.linkYoutube}
-                        onChange={(e) => setEditSongForm({ ...editSongForm, linkYoutube: e.target.value })}
-                        placeholder="Link YouTube Video..."
-                        className="bg-neutral-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500 col-span-1 md:col-span-2"
-                      />
+                  {/* 5. Status & Security */}
+                  <div className="bg-neutral-950/60 border border-white/10 rounded-2xl p-6 space-y-4">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-purple-400 flex items-center gap-2">
+                      <Lock className="w-4 h-4" /> 5. Cài Đặt Trạng Thái & Bảo Mật
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-300 mb-1.5">Trạng thái phát hành</label>
+                        <select
+                          value={editSongForm.status}
+                          onChange={(e) => setEditSongForm({ ...editSongForm, status: e.target.value })}
+                          className="w-full bg-neutral-900 border border-white/15 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
+                        >
+                          <option value="public">🌐 Công khai (Public)</option>
+                          <option value="hidden">🔒 Ẩn bài hát (Private)</option>
+                          <option value="unlisted">🔗 Không công khai (Chỉ mở bằng link)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-300 mb-1.5">Mật khẩu bảo vệ bài hát</label>
+                        <input
+                          type="text"
+                          value={editSongForm.password}
+                          onChange={(e) => setEditSongForm({ ...editSongForm, password: e.target.value })}
+                          placeholder="Để trống nếu không cài mật khẩu"
+                          className="w-full bg-neutral-900 border border-white/15 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-300 mb-1.5">Loại đường link</label>
+                        <select
+                          value={editSongForm.linkType}
+                          onChange={(e) => setEditSongForm({ ...editSongForm, linkType: e.target.value })}
+                          className="w-full bg-neutral-900 border border-white/15 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
+                        >
+                          <option value="direct">Direct Link (Trực tiếp)</option>
+                          <option value="indirect">Indirect Bio Link (Gián tiếp)</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex justify-end border-t border-white/10 pt-4">
+                  {/* 6. Streaming Links */}
+                  <div className="bg-neutral-950/60 border border-white/10 rounded-2xl p-6 space-y-4">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-purple-400 flex items-center gap-2">
+                      <ExternalLink className="w-4 h-4" /> 6. Link Nhạc Số Nền Tảng Khác
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[11px] font-bold text-neutral-400 mb-1">Zing MP3</label>
+                        <input
+                          type="text"
+                          value={editSongForm.linkZing}
+                          onChange={(e) => setEditSongForm({ ...editSongForm, linkZing: e.target.value })}
+                          placeholder="https://zingmp3.vn/bai-hat/..."
+                          className="w-full bg-neutral-900 border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-neutral-400 mb-1">Spotify</label>
+                        <input
+                          type="text"
+                          value={editSongForm.linkSpotify}
+                          onChange={(e) => setEditSongForm({ ...editSongForm, linkSpotify: e.target.value })}
+                          placeholder="https://open.spotify.com/track/..."
+                          className="w-full bg-neutral-900 border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-neutral-400 mb-1">Apple Music</label>
+                        <input
+                          type="text"
+                          value={editSongForm.linkApple}
+                          onChange={(e) => setEditSongForm({ ...editSongForm, linkApple: e.target.value })}
+                          placeholder="https://music.apple.com/..."
+                          className="w-full bg-neutral-900 border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-neutral-400 mb-1">YouTube Music</label>
+                        <input
+                          type="text"
+                          value={editSongForm.linkYoutubeMusic}
+                          onChange={(e) => setEditSongForm({ ...editSongForm, linkYoutubeMusic: e.target.value })}
+                          placeholder="https://music.youtube.com/watch?v=..."
+                          className="w-full bg-neutral-900 border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                      <div className="col-span-1 md:col-span-2">
+                        <label className="block text-[11px] font-bold text-neutral-400 mb-1">YouTube Video / MV</label>
+                        <input
+                          type="text"
+                          value={editSongForm.linkYoutube}
+                          onChange={(e) => setEditSongForm({ ...editSongForm, linkYoutube: e.target.value })}
+                          placeholder="https://www.youtube.com/watch?v=..."
+                          className="w-full bg-neutral-900 border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sticky Footer Save Bar */}
+                  <div className="sticky bottom-4 bg-neutral-900/90 backdrop-blur-md border border-white/15 p-4 rounded-2xl flex items-center justify-between shadow-2xl z-20">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-neutral-300 font-medium">Chỉnh sửa bài hát: <strong className="text-white">{editSongForm.title}</strong></span>
+                    </div>
                     <button
                       type="submit"
                       disabled={isSavingEdit}
-                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white font-black text-sm px-8 py-3.5 rounded-xl transition-all shadow-xl flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-black text-xs px-8 py-3.5 rounded-xl transition-all shadow-xl flex items-center gap-2 cursor-pointer disabled:opacity-50 active:scale-95"
                     >
                       {isSavingEdit ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                       <span>{isSavingEdit ? 'Đang Lưu...' : 'Lưu Thay Đổi Bài Hát'}</span>
@@ -4218,7 +4327,6 @@ export default function ACPControlPanel() {
                   </div>
                 </form>
               )}
-
               {lookupResult && lookupResult.type === 'playlist' && (
                 <form onSubmit={handleSavePlaylist} className="mt-6 space-y-6 border-t border-white/10 pt-6">
                   <div className="flex items-center justify-between bg-amber-950/40 border border-amber-500/30 p-4 rounded-2xl">
