@@ -21,7 +21,7 @@ if (fs.existsSync(envPath)) {
 const r2AccountId = process.env.CF_R2_ACCOUNT_ID || 'ed5771d045bec5ae12373a1dc5bb6985';
 const r2AccessKeyId = process.env.CF_R2_ACCESS_KEY_ID || '8ae592287e83828ec9c5b5aa468500e6';
 const r2SecretAccessKey = process.env.CF_R2_SECRET_ACCESS_KEY || 'd964617b9dd773a720b026987823fa43c6d358dd29d44bf36aeb7ef3c8cb9c59';
-const r2BucketName = process.env.CF_R2_BUCKET_NAME || 'bbb-bz';
+const r2BucketName = process.env.CF_R2_BUCKET_NAME || 'chorus-cdn';
 const r2PublicDomain = (process.env.CF_R2_PUBLIC_DOMAIN || 'https://cdn.chorus.vn').replace(/\/+$/, '');
 
 const r2Client = new S3Client({
@@ -111,9 +111,10 @@ async function main() {
 
   console.log(`\n📋 Found ${filesToScan.length} JSON files to scan.`);
 
-  // Collect all Firebase URLs
+  // Collect all Firebase URLs from JSON files AND from Firebase Storage API
   const urlToContextMap = new Map(); // firebaseURL -> { defaultArtistId, rawUrl }
 
+  // Step A: Scan JSON files
   for (const filePath of filesToScan) {
     const filename = path.basename(filePath);
     const content = fs.readFileSync(filePath, 'utf-8');
@@ -125,7 +126,6 @@ async function main() {
         defaultArtistId = artistMap[username] || username;
       }
       for (const rawUrl of matches) {
-        // Clean trailing escape characters if any
         const cleanUrl = rawUrl.replace(/\\+$/, '').replace(/&amp;/g, '&');
         if (!urlToContextMap.has(cleanUrl)) {
           urlToContextMap.set(cleanUrl, { defaultArtistId, rawUrl: cleanUrl });
@@ -134,11 +134,29 @@ async function main() {
     }
   }
 
-  console.log(`🔍 Found ${urlToContextMap.size} unique Firebase Storage URLs across all JSON files.`);
+  // Step B: Fetch directly from Firebase Storage REST API
+  console.log('\n🌐 Fetching all objects directly from Firebase Storage REST API...');
+  try {
+    const fbApiUrl = 'https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o';
+    const apiResBuf = await downloadBuffer(fbApiUrl);
+    const apiData = JSON.parse(apiResBuf.toString('utf-8'));
+    const items = apiData.items || [];
+    console.log(`  -> Found ${items.length} total items in Firebase Storage API.`);
 
-  if (urlToContextMap.size === 0) {
-    console.log('✅ No Firebase Storage URLs found in JSON files! Verification complete.');
+    for (const item of items) {
+      const encodedName = encodeURIComponent(item.name);
+      const token = item.downloadTokens || '';
+      const publicUrl = `https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/${encodedName}?alt=media${token ? '&token=' + token : ''}`;
+      
+      if (!urlToContextMap.has(publicUrl)) {
+        urlToContextMap.set(publicUrl, { defaultArtistId: 'system', rawUrl: publicUrl, itemName: item.name });
+      }
+    }
+  } catch (e) {
+    console.error('  ⚠️ Warning: Failed to fetch from Firebase Storage REST API:', e.message);
   }
+
+  console.log(`\n🔍 Found total ${urlToContextMap.size} unique Firebase Storage URLs/items to migrate.`);
 
   // Process and migrate each URL
   const replacementMap = new Map(); // firebaseURL -> newCdnUrl

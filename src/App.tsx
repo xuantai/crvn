@@ -14637,9 +14637,14 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const secretKey = searchParams.get('secret');
-  const navigate = useNavigate();
-  const isAdmin = !!getAdminToken();
+  const { activeExt } = getActiveAdminSession();
   const [demo, setDemo] = useState<DemoSong | null>(null);
+  const pageArtistExt = (getArtistExtensionFromUrl() || (demo as any)?.artistExtension || (demo as any)?.extension || '').toLowerCase().trim();
+  const isAdmin = !!getAdminToken() && (
+    !pageArtistExt || 
+    !activeExt || 
+    activeExt.toLowerCase().trim() === pageArtistExt
+  );
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [unlocked, setUnlocked] = useState(false);
@@ -15201,9 +15206,9 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
 
   const finalDisplayCover = resolveCoverUrl(displayCoverUrl) || displayCoverUrl;
 
-  const activeExt = localStorage.getItem('activeAdminExtension');
+  const currentActiveAdminExt = localStorage.getItem('activeAdminExtension');
   const songArtistExt = demo?.artistExtension || getArtistExtensionFromUrl();
-  const isOtherArtistSong = activeExt && songArtistExt && activeExt !== songArtistExt;
+  const isOtherArtistSong = currentActiveAdminExt && songArtistExt && currentActiveAdminExt !== songArtistExt;
 
   if (demo?.linkType === 'indirect') {
     return <IndirectBioCard demo={{...demo, coverUrl: finalDisplayCover}} isStandalone={true} lang={lang} />;
