@@ -777,48 +777,65 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
   const [loginSuccessToast, setLoginSuccessToast] = useState('');
 
   const checkSession = useCallback(() => {
-    const activeExt = localStorage.getItem('activeAdminExtension');
-    const token = activeExt ? localStorage.getItem(`adminToken_${activeExt}`) : localStorage.getItem('adminToken');
-    if (token) {
-      fetch('/api/admin/check', {
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'x-artist-extension': activeExt || ''
-        }
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.isAdmin && data.artist) {
-          const avatar = data.avatarUrl || '';
-          setLoggedInArtist({
-            ...data.artist,
-            avatarUrl: avatar
-          });
-          localStorage.setItem('activeAdminAvatar', avatar);
-          localStorage.setItem('activeAdminExtension', data.artist.extension);
-          localStorage.setItem('activeAdminName', data.artist.artistName || data.artist.username);
-          if (typeof (window as any).syncLoginSession === 'function') {
-            const token = localStorage.getItem('adminToken') || localStorage.getItem(`adminToken_${data.artist.extension}`);
-            if (token) (window as any).syncLoginSession(token, data.artist.extension, data.artist.artistName || data.artist.username, avatar, true);
-          }
-
-          // If URL contains action=register or action=login while logged in, clean URL & close modal
-          const urlParams = new URLSearchParams(window.location.search);
-          const action = urlParams.get('action');
-          if (action === 'register' || action === 'login') {
-            setShowRegisterModal(false);
-            setShowLoginModal(false);
-            const cleanUrl = window.location.pathname + window.location.search.replace(/([?&])action=(register|login)&?/, '$1').replace(/[?&]$/, '');
-            window.history.replaceState({}, document.title, cleanUrl || '/');
-          }
-        } else {
-          setLoggedInArtist(null);
-        }
-      })
-      .catch(() => {});
-    } else {
+    if (typeof window !== 'undefined' && (window as any).__IS_LOGGED_OUT__) {
       setLoggedInArtist(null);
+      return;
     }
+    const session = typeof (window as any).getActiveAdminSession === 'function'
+      ? (window as any).getActiveAdminSession()
+      : { activeExt: localStorage.getItem('activeAdminExtension'), activeToken: localStorage.getItem('adminToken') };
+
+    const activeExt = session?.activeExt;
+    const token = session?.activeToken;
+
+    if (!activeExt || !token) {
+      setLoggedInArtist(null);
+      return;
+    }
+
+    fetch('/api/admin/check', {
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'x-artist-extension': activeExt || ''
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (typeof window !== 'undefined' && (window as any).__IS_LOGGED_OUT__) {
+        setLoggedInArtist(null);
+        return;
+      }
+      const currentSession = typeof (window as any).getActiveAdminSession === 'function' ? (window as any).getActiveAdminSession() : null;
+      if (currentSession && (!currentSession.activeExt || !currentSession.activeToken)) {
+        setLoggedInArtist(null);
+        return;
+      }
+      if (data.isAdmin && data.artist) {
+        const avatar = data.avatarUrl || '';
+        const artistDisplayName = data.artistName || data.aboutMe?.name || data.artist?.artistName || data.artist?.username;
+        setLoggedInArtist({
+          ...data.artist,
+          artistName: artistDisplayName,
+          avatarUrl: avatar
+        });
+        localStorage.setItem('activeAdminAvatar', avatar);
+        localStorage.setItem('activeAdminExtension', data.artist.extension);
+        localStorage.setItem('activeAdminName', artistDisplayName);
+
+        // If URL contains action=register or action=login while logged in, clean URL & close modal
+        const urlParams = new URLSearchParams(window.location.search);
+        const action = urlParams.get('action');
+        if (action === 'register' || action === 'login') {
+          setShowRegisterModal(false);
+          setShowLoginModal(false);
+          const cleanUrl = window.location.pathname + window.location.search.replace(/([?&])action=(register|login)&?/, '$1').replace(/[?&]$/, '');
+          window.history.replaceState({}, document.title, cleanUrl || '/');
+        }
+      } else {
+        setLoggedInArtist(null);
+      }
+    })
+    .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -830,9 +847,15 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
       }
     };
     window.addEventListener('admin-session-change', checkSession);
+    window.addEventListener('storage', checkSession);
+    window.addEventListener('focus', checkSession);
+    document.addEventListener('visibilitychange', checkSession);
     window.addEventListener('sso-toast', handleSsoToast);
     return () => {
       window.removeEventListener('admin-session-change', checkSession);
+      window.removeEventListener('storage', checkSession);
+      window.removeEventListener('focus', checkSession);
+      document.removeEventListener('visibilitychange', checkSession);
       window.removeEventListener('sso-toast', handleSsoToast);
     };
   }, [checkSession]);
@@ -850,7 +873,7 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
       const data = await res.json();
       if (data.success) {
         const avatar = data.avatarUrl || '';
-        const nameToDisplay = data.artist?.artistName || data.artist?.username || data.extension;
+        const nameToDisplay = data.artistName || data.aboutMe?.name || data.artist?.artistName || data.artist?.username || data.extension;
         if ((window as any).syncLoginSession) {
           (window as any).syncLoginSession(
             data.token,
@@ -1854,13 +1877,15 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
               <div className="mt-4 flex items-center justify-center gap-3">
                 <a 
                   href="/admin" 
-                  className="w-[180px] sm:w-[200px] h-12 rounded-full bg-stone-900/90 text-white hover:bg-black font-extrabold text-sm border border-stone-700/50 shadow-lg hover:shadow-xl backdrop-blur-md transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-[180px] sm:w-[200px] h-12 rounded-full bg-stone-900/90 text-white hover:bg-black font-extrabold text-sm border border-stone-700/50 shadow-lg hover:shadow-xl backdrop-blur-md transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden group"
                 >
-                  <Settings className="w-4 h-4 text-amber-400" />
-                  <span>{lang === 'vi' ? 'Bảng Điều Khiển' : 'Dashboard'}</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-sweep pointer-events-none" />
+                  <Settings className="w-4 h-4 text-amber-400 relative z-10" />
+                  <span className="relative z-10">{lang === 'vi' ? 'Bảng Điều Khiển' : 'Dashboard'}</span>
                 </a>
                 <button
                   type="button"
+                  title={lang === 'vi' ? 'Đăng xuất' : 'Logout'}
                   onClick={async () => {
                     setLoginSuccessToast(lang === 'vi' ? 'Đăng xuất thành công!' : 'Logged out successfully!');
                     if (typeof (window as any).clearAllSessions === 'function') {
@@ -1878,10 +1903,10 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
                       window.location.href = '/';
                     }, 600);
                   }}
-                  className="w-[180px] sm:w-[200px] h-12 rounded-full bg-red-950/20 hover:bg-red-900/40 text-red-500 hover:text-red-400 font-extrabold text-sm border border-red-500/30 shadow-md hover:shadow-lg backdrop-blur-md transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+                  className="h-12 w-12 rounded-full bg-red-950/20 hover:bg-red-900/40 text-red-500 hover:text-red-400 font-extrabold border border-red-500/30 shadow-md hover:shadow-lg backdrop-blur-md transition-all flex items-center justify-center cursor-pointer hover:scale-[1.05] active:scale-[0.95] relative overflow-hidden group"
                 >
-                  <LogOut className="w-4 h-4" />
-                  <span>{lang === 'vi' ? 'Đăng xuất' : 'Logout'}</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-shimmer-sweep pointer-events-none" />
+                  <LogOut className="w-5 h-5 relative z-10" />
                 </button>
               </div>
             )

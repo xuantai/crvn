@@ -1787,7 +1787,10 @@ async function startServer() {
       if (!artist || artist.activated === false) {
         return res.status(401).json({ valid: false, error: 'Artist not found or inactive' });
       }
-      return res.json({ valid: true, username: artist.username, artistName: artist.artistName });
+      const data = await loadData(artist.username);
+      const artistDisplayName = data?.aboutMe?.name || data?.artistName || artist.artistName || artist.username;
+      const avatarUrl = data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
+      return res.json({ valid: true, username: artist.username, artistName: artistDisplayName, avatarUrl });
     } catch (err: any) {
       return res.status(500).json({ valid: false, error: err.message });
     }

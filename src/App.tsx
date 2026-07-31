@@ -6226,6 +6226,11 @@ try {
 // Patch localStorage to separate session credentials per artist, while bypassing global synced keys
 const originalGetItem = localStorage.getItem;
 localStorage.getItem = function(key) {
+  if (key && (key.includes('adminToken') || key.includes('activeAdmin') || key.includes('memberToken'))) {
+    if (typeof window !== 'undefined' && (window as any).__IS_LOGGED_OUT__) {
+      return null;
+    }
+  }
   const isGlobalKey = !key || key === 'masterToken' || 
                       key.includes('adminToken') || 
                       key.includes('activeAdmin') || 
@@ -7625,9 +7630,10 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
                   <button
                     onClick={handlePaletteClick}
                     title={t("Đổi giao diện nhanh")}
-                    className="p-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center"
+                    className="p-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center relative overflow-hidden group"
                   >
-                    <Palette className="w-4 h-4 text-amber-400 animate-pulse shrink-0" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-shimmer-sweep pointer-events-none" />
+                    <Palette className="w-4 h-4 text-amber-400 animate-pulse shrink-0 relative z-10" />
                   </button>
                   
                   <AnimatePresence>
