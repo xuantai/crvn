@@ -5985,15 +5985,21 @@ const getGlobalCookie = (name: string) => {
 };
 
 const removeGlobalCookie = (name: string) => {
-  const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
+  const host = typeof window !== 'undefined' ? window.location.hostname.replace(/^www\./, '').toLowerCase().trim() : '';
   const isChorus = host.endsWith('.chorus.vn') || host === 'chorus.vn';
   const expires = 'Thu, 01 Jan 1970 00:00:00 GMT';
-  
+  const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+  const secure = isHttps ? '; Secure' : '';
+
   if (isChorus) {
-    document.cookie = `${name}=; domain=.chorus.vn; path=/; expires=${expires}; max-age=0; SameSite=Lax`;
-    document.cookie = `${name}=; domain=chorus.vn; path=/; expires=${expires}; max-age=0; SameSite=Lax`;
+    document.cookie = `${name}=; domain=.chorus.vn; path=/; expires=${expires}; max-age=0; SameSite=Lax${secure}`;
+    document.cookie = `${name}=; domain=chorus.vn; path=/; expires=${expires}; max-age=0; SameSite=Lax${secure}`;
+    if (host !== 'chorus.vn') {
+      document.cookie = `${name}=; domain=.${host}; path=/; expires=${expires}; max-age=0; SameSite=Lax${secure}`;
+      document.cookie = `${name}=; domain=${host}; path=/; expires=${expires}; max-age=0; SameSite=Lax${secure}`;
+    }
   }
-  document.cookie = `${name}=; path=/; expires=${expires}; max-age=0; SameSite=Lax`;
+  document.cookie = `${name}=; path=/; expires=${expires}; max-age=0; SameSite=Lax${secure}`;
 };
 
 
