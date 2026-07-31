@@ -6328,10 +6328,64 @@ const compressImageToJPG = (file: File, maxWidth = 1200): Promise<File> => {
   });
 };
 
+const compressImageInBrowser = async (file: File, maxWidth: number = 1920, quality: number = 0.85): Promise<File> => {
+  if (!file || !file.type || !file.type.startsWith('image/') || file.type === 'image/gif' || file.type === 'image/svg+xml') {
+    return file;
+  }
+  try {
+    return await new Promise<File>((resolve) => {
+      const img = document.createElement('img');
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          return resolve(file);
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        canvas.toBlob(
+          (blob) => {
+            if (!blob || blob.size >= file.size) {
+              return resolve(file);
+            }
+            const ext = outputType === 'image/png' ? '.png' : '.jpg';
+            const cleanName = file.name.includes('.') ? file.name.substring(0, file.name.lastIndexOf('.')) : file.name;
+            const compressedFile = new File([blob], `${cleanName}${ext}`, {
+              type: outputType,
+              lastModified: Date.now()
+            });
+            resolve(compressedFile);
+          },
+          outputType,
+          quality
+        );
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(file);
+      };
+      img.src = url;
+    });
+  } catch (err) {
+    return file;
+  }
+};
+
 const uploadGlobal = async (file: File, setProgress?: (p: number) => void): Promise<string> => {
+  const fileToUpload = (file.type && file.type.startsWith('image/')) ? await compressImageInBrowser(file) : file;
   return new Promise((resolve, reject) => {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', fileToUpload);
     const xhr = new XMLHttpRequest();
     xhr.open('POST', '/api/upload', true);
     xhr.setRequestHeader('Authorization', `Bearer ${getAdminToken() || ''}`);
@@ -17610,10 +17664,11 @@ function AdminDashboard() {
     return url;
   };
 
-  const uploadWithProgress = (file: File, setProgress: (p: number) => void): Promise<string> => {
+  const uploadWithProgress = async (file: File, setProgress: (p: number) => void): Promise<string> => {
+    const fileToUpload = (file.type && file.type.startsWith('image/')) ? await compressImageInBrowser(file) : file;
     return new Promise((resolve, reject) => {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', fileToUpload);
       const xhr = new XMLHttpRequest();
       xhr.open('POST', '/api/upload', true);
       xhr.setRequestHeader('Authorization', `Bearer ${getAdminToken() || ''}`);
