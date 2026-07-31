@@ -5880,10 +5880,14 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     let playlist = data.playlists?.find((p: any) => p.id === req.params.id);
     if (!playlist) return res.status(404).json({ error: 'Not found' });
     
-    if (req.body.password && playlist.password && playlist.password === req.body.password) {
-       res.json({ success: true, token: playlist.password });
-    } else if (req.body.secretLink && playlist.secretLink && playlist.secretLink === req.body.secretLink) {
-       res.json({ success: true, token: playlist.secretLink });
+    const rawPwd = playlist.password;
+    const cleanPwd = (rawPwd === true || rawPwd === 'true') ? '' : String(rawPwd || '').trim();
+    const secret = String(playlist.secretLink || '').trim();
+
+    if (req.body.password && cleanPwd && cleanPwd === req.body.password) {
+       res.json({ success: true, token: cleanPwd });
+    } else if (req.body.secretLink && secret && secret === req.body.secretLink) {
+       res.json({ success: true, token: secret });
     } else {
        res.status(401).json({ error: 'Wrong password or secret link' });
     }
@@ -5929,8 +5933,9 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
       const rawPwd = playlist.password;
       const cleanPwd = (rawPwd === true || rawPwd === 'true') ? '' : String(rawPwd || '').trim();
       const secret = String(playlist.secretLink || '').trim();
+      const isPublic = !playlist.isDraft || playlist.isDraft === 'false' || playlist.isDraft === 0;
 
-      let authorized = isUserAdmin;
+      let authorized = isUserAdmin || isPublic;
       if (!authorized) {
          const token = req.headers['x-playlist-token'] || req.query.token;
          const hasPwd = cleanPwd.length > 0;
@@ -5944,8 +5949,6 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
              if (token && token === secret) {
                  authorized = true;
              }
-         } else {
-             authorized = true;
          }
       }
 
