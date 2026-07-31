@@ -5920,6 +5920,14 @@ const getArtistLink = (subPath: string = '', customPath?: string) => {
   return normalizedPath || '/';
 };
 
+const getArtistFullUrl = (subPath: string = '', customPath?: string) => {
+  const link = getArtistLink(subPath, customPath);
+  if (link.startsWith('http://') || link.startsWith('https://')) {
+    return link;
+  }
+  return window.location.origin + (link.startsWith('/') ? link : `/${link}`);
+};
+
 const getAdminTokenKey = (customPath?: string) => getArtistExtensionFromUrl(customPath) ? `adminToken_${getArtistExtensionFromUrl(customPath)}` : 'adminToken';
 const getMemberTokenKey = (customPath?: string) => getArtistExtensionFromUrl(customPath) ? `memberToken_${getArtistExtensionFromUrl(customPath)}` : 'memberToken';
 
@@ -9927,7 +9935,7 @@ function Home() {
   const handleSharePlaylist = async (e: React.MouseEvent, playlistId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    let url = window.location.origin + getArtistLink('/playlist/' + playlistId);
+    let url = getArtistFullUrl('/playlist/' + playlistId);
     url = formatShareUrl(url);
     await copyToClipboard(url);
     setToast(t.toastCopy || 'Đã copy link!');
@@ -11295,7 +11303,7 @@ function Home() {
                                     onClick={async (e) => {
                                       e.preventDefault();
                                       e.stopPropagation();
-                                      let url = window.location.origin + getArtistLink(`/playlist/${playlist.id}`);
+                                      let url = getArtistFullUrl(`/playlist/${playlist.id}`);
                                       url = formatShareUrl(url);
                                       await copyToClipboard(url);
                                       setToast('Đã copy link playlist!');
@@ -11502,7 +11510,7 @@ function Home() {
                                         onClick={async (e) => {
                                           e.preventDefault();
                                           e.stopPropagation();
-                                          let url = window.location.origin + getArtistLink(`/playlist/released?song=${demo.slug || demo.id}`);
+                                          let url = getArtistFullUrl(`/playlist/released?song=${demo.slug || demo.id}`);
                                           url = formatShareUrl(url);
                                           await copyToClipboard(url);
                                           setToast('Đã copy link bài hát!');
@@ -15041,7 +15049,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                 if (!demo) return;
                 const baseUrl = '/song/';
                 const dynamicId = demo.slug || demo.id;
-                let url = window.location.origin + getArtistLink(baseUrl + dynamicId);
+                let url = getArtistFullUrl(baseUrl + dynamicId);
                 url = formatShareUrl(url);
                 await copyToClipboard(url);
                 setToast('Đã copy link bài hát!');
@@ -15077,7 +15085,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                   if (!demo) return;
                   const baseUrl = '/song/';
                   const dynamicId = demo.slug || demo.id;
-                  let url = window.location.origin + getArtistLink(baseUrl + dynamicId);
+                  let url = getArtistFullUrl(baseUrl + dynamicId);
                   url = formatShareUrl(url);
                   url += `?secret=${demo.secretKey}`;
                   await copyToClipboard(url);
@@ -17638,7 +17646,7 @@ function AdminDashboard() {
   };
 
   const handleShare = async (slugOrId: string) => {
-    let url = window.location.origin + getArtistLink('/song/' + slugOrId);
+    let url = getArtistFullUrl('/song/' + slugOrId);
     url = formatShareUrl(url);
     await copyToClipboard(url);
     setToast(t("Đã copy link!"));
@@ -17646,11 +17654,19 @@ function AdminDashboard() {
   };
 
   const handleShareSecret = async (demoItem: any) => {
-    let url = window.location.origin + getArtistLink('/song/' + (demoItem.slug || demoItem.id));
+    let url = getArtistFullUrl('/song/' + (demoItem.slug || demoItem.id));
     url = formatShareUrl(url);
     url += `?secret=${demoItem.secretKey}`;
     await copyToClipboard(url);
     setToast(t("Đã copy Secret Link!"));
+    setTimeout(() => setToast(''), 3000);
+  };
+
+  const handleShareAdminPlaylist = async (playlistId: string) => {
+    let url = getArtistFullUrl('/playlist/' + playlistId);
+    url = formatShareUrl(url);
+    await copyToClipboard(url);
+    setToast(t("Đã copy link playlist!"));
     setTimeout(() => setToast(''), 3000);
   };
 
@@ -19838,15 +19854,35 @@ function AdminDashboard() {
                             <div className="flex items-center gap-3 flex-1 min-w-0">
                               <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
                               <div className="flex flex-col flex-1 min-w-0">
-                                <h4 className="font-bold text-stone-850 text-base">{pl.title}</h4>
+                                <a
+                                  href={getArtistFullUrl(`/playlist/${pl.id}`)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="font-bold text-stone-850 hover:text-emerald-600 transition-colors text-base hover:underline block truncate"
+                                  title={t("Mở trang playlist công khai")}
+                                >
+                                  {pl.title}
+                                </a>
                                 <span className="text-xs text-stone-400 mt-0.5">{songCount} {t('bài nhạc')}</span>
                               </div>
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0 self-end md:self-auto">
-                              <Link to={getAdminLink(`/playlist/${pl.id}`)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title={t("Chỉnh sửa playlist")}>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleShareAdminPlaylist(pl.id);
+                                }}
+                                className="text-stone-600 hover:text-stone-900 hover:bg-stone-100 p-2 rounded-lg transition-colors"
+                                title={t("Sao chép link playlist")}
+                              >
+                                <Share2 className="w-4 h-4 text-stone-600" />
+                              </button>
+                              <Link to={getAdminLink(`/playlist/${pl.id}`)} onClick={(e) => e.stopPropagation()} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title={t("Chỉnh sửa playlist")}>
                                 <Edit3 className="w-4 h-4 text-blue-600" />
                               </Link>
-                              <button type="button" onClick={() => handleDeleteClick('playlist', pl.id, pl.title)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold" title={t("Xóa playlist")}>
+                              <button type="button" onClick={(e) => { e.stopPropagation(); handleDeleteClick('playlist', pl.id, pl.title); }} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold" title={t("Xóa playlist")}>
                                 <X className="w-4 h-4 text-red-500 stroke-[3]" />
                               </button>
                             </div>
@@ -24558,7 +24594,7 @@ function AdminEditDemo() {
                       <div className="min-w-0 flex-1 text-center sm:text-left flex flex-col items-center sm:items-start">
                         <div className="font-bold text-stone-800 text-sm tracking-tight">{t("Secret Link (Chia sẻ trực tiếp xem không hỏi mật khẩu)")}</div>
                         <div className="text-xs text-amber-800 font-mono select-all truncate w-full max-w-full mt-1.5 px-3 py-1.5 bg-amber-150/40 rounded-lg border border-amber-200/50">
-                          {formatShareUrl(window.location.origin + getArtistLink('/song/' + (demo.slug || demo.id)) + '?secret=' + demo.secretKey)}
+                          {formatShareUrl(getArtistFullUrl('/song/' + (demo.slug || demo.id)) + '?secret=' + demo.secretKey)}
                         </div>
                       </div>
                     </div>
@@ -24567,7 +24603,7 @@ function AdminEditDemo() {
                       onClick={async () => {
                         const baseUrl = '/song/';
                         const dynamicId = demo.slug || demo.id;
-                        let url = window.location.origin + getArtistLink(baseUrl + dynamicId);
+                        let url = getArtistFullUrl(baseUrl + dynamicId);
                         url = formatShareUrl(url);
                         url += `?secret=${demo.secretKey}`;
                         await copyToClipboard(url);

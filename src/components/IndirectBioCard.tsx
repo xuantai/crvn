@@ -97,6 +97,12 @@ const getArtistLink = (subPath: string = '') => {
   return ext ? `/${ext}${normalizedPath}` : normalizedPath;
 };
 
+const getArtistFullUrl = (subPath: string = '') => {
+  const link = getArtistLink(subPath);
+  if (link.startsWith('http://') || link.startsWith('https://')) return link;
+  return window.location.origin + (link.startsWith('/') ? link : `/${link}`);
+};
+
 const getAdminLink = (subPath: string = '') => {
   const pagePath = subPath ? (subPath.startsWith('/') ? subPath : `/${subPath}`) : '';
   if (typeof window === 'undefined') return `/admin${pagePath}`;
@@ -540,7 +546,7 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false, lang = 'v
     );
   };
 
-  const shareUrl = window.location.origin + getArtistLink(`/song/${demo.slug || demo.id}`);
+  const shareUrl = getArtistFullUrl(`/song/${demo.slug || demo.id}`);
 
   const handleCopyLink = async () => {
     try {

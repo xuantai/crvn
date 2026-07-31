@@ -1788,7 +1788,17 @@ async function startServer() {
       }); 
       let publicPlaylists = data.playlists
           ?.filter((p: any) => !p.isDraft)
-          .map((p: any) => ({ ...p, password: !!p.password, hasSecretLink: !!p.secretLink, secretLink: undefined })) || [];
+          .map((p: any) => {
+             const rawP = p.password;
+             const cleanP = (rawP === true || rawP === 'true') ? '' : String(rawP || '').trim();
+             return {
+                ...p,
+                password: '',
+                hasPassword: cleanP.length > 0,
+                hasSecretLink: !!p.secretLink,
+                secretLink: undefined
+             };
+          }) || [];
       publicDemos = injectCoverUrl(publicDemos, data);
       // We send back both for simplicity, but let's just make it simple
       res.json({ 
@@ -5680,11 +5690,14 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
     }
     const data = await loadData((req as any).artist?.username);
 
+    const rawPwd = req.body.password;
+    const cleanPwd = (rawPwd === true || rawPwd === 'true') ? '' : String(rawPwd || '');
+
     const newPlaylist = {
        id: Date.now().toString(),
        title: req.body.title || 'Untitled Playlist',
        isDraft: req.body.isDraft || false,
-       password: req.body.password || '',
+       password: cleanPwd,
        secretLink: req.body.secretLink || ''
     };
     if (!data.playlists) data.playlists = [];
@@ -5710,7 +5723,10 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         }
        if (req.body.songIds !== undefined) data.playlists[idx].songIds = req.body.songIds;
        if (req.body.isDraft !== undefined) data.playlists[idx].isDraft = req.body.isDraft;
-       if (req.body.password !== undefined) data.playlists[idx].password = req.body.password;
+       if (req.body.password !== undefined) {
+           const rawPwd = req.body.password;
+           data.playlists[idx].password = (rawPwd === true || rawPwd === 'true') ? '' : String(rawPwd || '');
+       }
        if (req.body.secretLink !== undefined) data.playlists[idx].secretLink = req.body.secretLink;
        await saveData(data);
        res.json(data.playlists[idx]);
@@ -5910,13 +5926,25 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
       const isUserAdmin = isRequestAdmin(req);
       const isUserMember = isRequestMember(req);
 
+      const rawPwd = playlist.password;
+      const cleanPwd = (rawPwd === true || rawPwd === 'true') ? '' : String(rawPwd || '').trim();
+      const secret = String(playlist.secretLink || '').trim();
+
       let authorized = isUserAdmin;
       if (!authorized) {
          const token = req.headers['x-playlist-token'] || req.query.token;
-         if ((playlist.password && playlist.password === token) || 
-             (playlist.secretLink && playlist.secretLink === token)) {
-             authorized = true;
-         } else if (!playlist.password && !playlist.secretLink) {
+         const hasPwd = cleanPwd.length > 0;
+         const hasSecret = secret.length > 0;
+
+         if (hasPwd) {
+             if (token && (token === cleanPwd || (hasSecret && token === secret))) {
+                 authorized = true;
+             }
+         } else if (hasSecret) {
+             if (token && token === secret) {
+                 authorized = true;
+             }
+         } else {
              authorized = true;
          }
       }
@@ -5974,9 +6002,10 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
       const formattedPlaylist = {
          ...playlist,
          coverUrl: playlist.coverUrl ? formatUrl(playlist.coverUrl, data.globalBaseUrl) : (songs[0]?.coverUrl || ''),
-         password: !!playlist.password,
+         password: isUserAdmin ? cleanPwd : (cleanPwd.length > 0),
+         hasPassword: cleanPwd.length > 0,
          hasSecretLink: !!playlist.secretLink,
-         secretLink: undefined,
+         secretLink: isUserAdmin ? (playlist.secretLink || '') : undefined,
          artistExtension: (req as any).artist?.username
       };
 
