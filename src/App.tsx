@@ -5934,6 +5934,7 @@ const getAdminTokenKey = (customPath?: string) => getArtistExtensionFromUrl(cust
 const getMemberTokenKey = (customPath?: string) => getArtistExtensionFromUrl(customPath) ? `memberToken_${getArtistExtensionFromUrl(customPath)}` : 'memberToken';
 
 const setGlobalCookie = (name: string, value: string) => {
+  if (typeof window !== 'undefined' && (window as any).__IS_LOGGED_OUT__) return;
   const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
   const domain = (host.endsWith('.chorus.vn') || host === 'chorus.vn') ? 'domain=.chorus.vn;' : '';
   document.cookie = `${name}=${encodeURIComponent(value)}; ${domain} path=/; max-age=31536000; SameSite=Lax`;
@@ -6173,6 +6174,12 @@ localStorage.getItem = function(key) {
 
 const originalSetItem = localStorage.setItem;
 localStorage.setItem = function(key, value) {
+  if (key && (key.includes('adminToken') || key.includes('activeAdmin') || key.includes('memberToken'))) {
+    if (typeof window !== 'undefined' && (window as any).__IS_LOGGED_OUT__) {
+      return;
+    }
+  }
+
   const isGlobalKey = !key || key === 'masterToken' || 
                       key.includes('adminToken') || 
                       key.includes('activeAdmin') || 
@@ -6230,12 +6237,13 @@ localStorage.removeItem = function(key) {
 (window as any).__originalSetItem__ = originalSetItem;
 (window as any).__originalRemoveItem__ = originalRemoveItem;
 
-// Multi-Tab SSO BroadcastChannel initialization
+// Multi-Tab SSO BroadcastChannel initialization (2-Way Login/Logout sync)
 if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
   try {
     const ssoChannel = new BroadcastChannel('chorus_sso_channel');
     ssoChannel.onmessage = (event) => {
       if (event.data && event.data.type === 'LOGOUT_ALL') {
+        (window as any).__IS_LOGGED_OUT__ = true;
         const origRemove = (window as any).__originalRemoveItem__ || localStorage.removeItem;
         const keys = Object.keys(localStorage);
         keys.forEach(k => {
@@ -6252,12 +6260,36 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
 
         window.dispatchEvent(new Event('admin-session-change'));
         window.dispatchEvent(new Event('storage'));
+      } else if (event.data && event.data.type === 'LOGIN_ALL') {
+        delete (window as any).__IS_LOGGED_OUT__;
+        const { token, extension, artistName, avatar, activated } = event.data;
+        if (token && extension) {
+          const origSet = (window as any).__originalSetItem__ || localStorage.setItem;
+          origSet.call(localStorage, 'adminToken', token);
+          origSet.call(localStorage, `adminToken_${extension}`, token);
+          origSet.call(localStorage, 'activeAdminExtension', extension);
+          origSet.call(localStorage, 'activeAdminName', artistName || extension);
+          origSet.call(localStorage, 'activeAdminAvatar', avatar || '');
+          origSet.call(localStorage, 'activeAdminActivated', activated !== false ? 'true' : 'false');
+          
+          setGlobalCookie('adminToken', token);
+          setGlobalCookie(`adminToken_${extension}`, token);
+          setGlobalCookie('activeAdminExtension', extension);
+          setGlobalCookie('activeAdminName', artistName || extension);
+          setGlobalCookie('activeAdminAvatar', avatar || '');
+          setGlobalCookie('activeAdminActivated', activated !== false ? 'true' : 'false');
+
+          window.dispatchEvent(new Event('admin-session-change'));
+          window.dispatchEvent(new Event('storage'));
+        }
       }
     };
   } catch (e) {}
 }
 
 (window as any).clearAllSessions = async () => {
+  (window as any).__IS_LOGGED_OUT__ = true;
+
   // 1. Broadcast LOGOUT_ALL to all other open tabs/subdomains immediately
   if (typeof BroadcastChannel !== 'undefined') {
     try {
@@ -6302,6 +6334,17 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
 };
 
 (window as any).syncLoginSession = (token: string, extension: string, artistName: string, avatar: string, activated?: boolean) => {
+  delete (window as any).__IS_LOGGED_OUT__;
+
+  // Broadcast LOGIN_ALL to all other open tabs/subdomains immediately
+  if (typeof BroadcastChannel !== 'undefined') {
+    try {
+      const bc = new BroadcastChannel('chorus_sso_channel');
+      bc.postMessage({ type: 'LOGIN_ALL', token, extension, artistName, avatar, activated });
+      bc.close();
+    } catch (e) {}
+  }
+
   // Save globally in un-prefixed space
   originalSetItem.call(localStorage, 'adminToken', token);
   originalSetItem.call(localStorage, `adminToken_${extension}`, token);
