@@ -6348,8 +6348,8 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
             window.dispatchEvent(new CustomEvent('sso-toast', {
               detail: {
                 type: 'logout',
-                title: 'Đăng Xuất Thành Công',
-                message: 'Hẹn gặp lại bạn lần sau!'
+                title: 'Đã Đăng Xuất',
+                message: 'Đã đăng xuất'
               }
             }));
           } catch (e) {}
