@@ -5948,8 +5948,14 @@ const getGlobalCookie = (name: string) => {
 
 const removeGlobalCookie = (name: string) => {
   const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
-  const domain = (host.endsWith('.chorus.vn') || host === 'chorus.vn') ? 'domain=.chorus.vn;' : '';
-  document.cookie = `${name}=; ${domain} path=/; max-age=0; SameSite=Lax`;
+  const isChorus = host.endsWith('.chorus.vn') || host === 'chorus.vn';
+  const expires = 'Thu, 01 Jan 1970 00:00:00 GMT';
+  
+  if (isChorus) {
+    document.cookie = `${name}=; domain=.chorus.vn; path=/; expires=${expires}; max-age=0; SameSite=Lax`;
+    document.cookie = `${name}=; domain=chorus.vn; path=/; expires=${expires}; max-age=0; SameSite=Lax`;
+  }
+  document.cookie = `${name}=; path=/; expires=${expires}; max-age=0; SameSite=Lax`;
 };
 
 
@@ -5983,6 +5989,15 @@ const getArtistAdminRedirect = (targetExt: string, toPage = 'admin') => {
 };
 
 const getActiveAdminSession = () => {
+  if (typeof window !== 'undefined' && (window as any).__IS_LOGGED_OUT__) {
+    return {
+      activeExt: '',
+      activeToken: '',
+      activeName: '',
+      activeActivated: false,
+      activeAvatar: ''
+    };
+  }
   const host = typeof window !== 'undefined' ? window.location.hostname.replace(/^www./, '').toLowerCase().trim() : '';
   const isChorusDomain = host.endsWith('.chorus.vn') || host === 'chorus.vn';
 
@@ -6258,6 +6273,15 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
         removeGlobalCookie('activeAdminActivated');
         removeGlobalCookie('memberToken');
 
+        if (typeof document !== 'undefined' && document.cookie) {
+          document.cookie.split(';').forEach(c => {
+            const k = c.split('=')[0].trim();
+            if (k && (k.includes('adminToken') || k.includes('activeAdmin') || k.includes('memberToken'))) {
+              removeGlobalCookie(k);
+            }
+          });
+        }
+
         window.dispatchEvent(new Event('admin-session-change'));
         window.dispatchEvent(new Event('storage'));
       } else if (event.data && event.data.type === 'LOGIN_ALL') {
@@ -6320,6 +6344,15 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
   removeGlobalCookie('activeAdminActivated');
   removeGlobalCookie('memberToken');
 
+  if (typeof document !== 'undefined' && document.cookie) {
+    document.cookie.split(';').forEach(c => {
+      const k = c.split('=')[0].trim();
+      if (k && (k.includes('adminToken') || k.includes('activeAdmin') || k.includes('memberToken'))) {
+        removeGlobalCookie(k);
+      }
+    });
+  }
+
   // 3. Notify client components
   window.dispatchEvent(new Event('admin-session-change'));
   window.dispatchEvent(new Event('storage'));
@@ -6327,8 +6360,8 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
   // 4. Call server logout to issue HTTP Set-Cookie deletion headers across .chorus.vn
   try {
     await Promise.all([
-      fetch('/api/admin/logout', { method: 'POST' }),
-      fetch('/api/member/logout', { method: 'POST' })
+      fetch('/api/admin/logout', { method: 'POST', credentials: 'include' }),
+      fetch('/api/member/logout', { method: 'POST', credentials: 'include' })
     ]);
   } catch (e) {}
 };
