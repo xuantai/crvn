@@ -5982,38 +5982,33 @@ const getArtistAdminRedirect = (targetExt: string, toPage = 'admin') => {
 };
 
 const getActiveAdminSession = () => {
-  // Global cookie on .chorus.vn is the Single Source of Truth for SSO
+  // Single Source of Truth for SSO is the global cookie on .chorus.vn
   let activeExt = getGlobalCookie('activeAdminExtension') || localStorage.getItem('activeAdminExtension');
-  if (activeExt) {
-    localStorage.setItem('activeAdminExtension', activeExt);
-    setGlobalCookie('activeAdminExtension', activeExt);
-  }
   
   let activeToken = activeExt 
-    ? (getGlobalCookie(`adminToken_${activeExt}`) || localStorage.getItem(`adminToken_${activeExt}`) || getGlobalCookie('adminToken') || localStorage.getItem('adminToken')) 
+    ? (getGlobalCookie(`adminToken_${activeExt}`) || getGlobalCookie('adminToken') || localStorage.getItem(`adminToken_${activeExt}`) || localStorage.getItem('adminToken')) 
     : null;
 
-  if (activeExt && activeToken) {
-    localStorage.setItem(`adminToken_${activeExt}`, activeToken);
-    setGlobalCookie(`adminToken_${activeExt}`, activeToken);
+  // If no active extension or no active token exists, session is LOGGED OUT!
+  if (!activeExt || !activeToken) {
+    return {
+      activeExt: '',
+      activeToken: '',
+      activeName: '',
+      activeActivated: false,
+      activeAvatar: ''
+    };
   }
 
-  let activeName = getGlobalCookie('activeAdminName') || localStorage.getItem('activeAdminName');
-  if (activeName) {
-    localStorage.setItem('activeAdminName', activeName);
-  } else if (activeExt) {
-    activeName = activeExt;
-    localStorage.setItem('activeAdminName', activeExt);
-  }
-
+  let activeName = getGlobalCookie('activeAdminName') || localStorage.getItem('activeAdminName') || activeExt;
   const storedActivated = getGlobalCookie('activeAdminActivated') || localStorage.getItem('activeAdminActivated');
   const activeActivated = storedActivated !== 'false';
   const activeAvatar = getGlobalCookie('activeAdminAvatar') || localStorage.getItem('activeAdminAvatar') || '';
 
   return {
-    activeExt: activeExt || '',
-    activeToken: activeToken || '',
-    activeName: activeName || '',
+    activeExt,
+    activeToken,
+    activeName,
     activeActivated,
     activeAvatar
   };
@@ -6220,6 +6215,8 @@ localStorage.removeItem = function(key) {
 (window as any).__originalRemoveItem__ = originalRemoveItem;
 
 (window as any).clearAllSessions = async () => {
+  // 1. Purge all localStorage keys
+  const origRemove = (window as any).__originalRemoveItem__ || localStorage.removeItem;
   const keys = Object.keys(localStorage);
   keys.forEach(key => {
     if (
@@ -6227,19 +6224,23 @@ localStorage.removeItem = function(key) {
       key.includes('activeAdmin') || 
       key.includes('memberToken')
     ) {
-      originalRemoveItem.call(localStorage, key);
+      origRemove.call(localStorage, key);
       removeGlobalCookie(key);
     }
   });
+  
   removeGlobalCookie('adminToken');
   removeGlobalCookie('activeAdminExtension');
   removeGlobalCookie('activeAdminName');
   removeGlobalCookie('activeAdminAvatar');
   removeGlobalCookie('activeAdminActivated');
+  removeGlobalCookie('memberToken');
 
+  // 2. Notify client components
   window.dispatchEvent(new Event('admin-session-change'));
   window.dispatchEvent(new Event('storage'));
   
+  // 3. Call server logout to issue HTTP Set-Cookie deletion headers across .chorus.vn
   try {
     await Promise.all([
       fetch('/api/admin/logout', { method: 'POST' }),

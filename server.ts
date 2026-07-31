@@ -4160,16 +4160,23 @@ ${JSON.stringify(geminiInput, null, 2)}`;
 
   app.post('/api/admin/logout', (req: any, res) => {
     const cookies = req.headers.cookie ? Object.fromEntries(req.headers.cookie.split('; ').map(c => c.split('='))) : {};
-    const cookieHeaders = [
-      'adminToken=; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=0',
-      'adminToken=; Path=/; HttpOnly; Max-Age=0'
-    ];
+    const domains = ['Domain=.chorus.vn; ', ''];
+    const keysToClear = ['adminToken', 'activeAdminExtension', 'activeAdminName', 'activeAdminAvatar', 'activeAdminActivated', 'memberToken'];
+    
     for (const key of Object.keys(cookies)) {
-      if (key.startsWith('adminToken')) {
-        cookieHeaders.push(`${key}=; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=0`);
-        cookieHeaders.push(`${key}=; Path=/; HttpOnly; Max-Age=0`);
+      if (key.startsWith('adminToken') || key.startsWith('activeAdmin') || key.startsWith('memberToken')) {
+        if (!keysToClear.includes(key)) keysToClear.push(key);
       }
     }
+
+    const cookieHeaders: string[] = [];
+    for (const key of keysToClear) {
+      for (const dom of domains) {
+        cookieHeaders.push(`${key}=; ${dom}Path=/; SameSite=Lax; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
+        cookieHeaders.push(`${key}=; ${dom}Path=/; HttpOnly; SameSite=Lax; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
+      }
+    }
+
     res.setHeader('Set-Cookie', cookieHeaders);
     res.json({ success: true });
   });
