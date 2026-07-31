@@ -1855,7 +1855,7 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
             (loggedInArtist as any).activated !== false && (
               <div className="mt-4 flex items-center justify-center gap-3">
                 <div className="flex items-center bg-white rounded-full p-1 border border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
-                  <a href={`/${loggedInArtist.extension}/admin`} className="px-4 py-2 text-sm font-bold text-neutral-800 hover:text-indigo-600 transition-colors flex items-center gap-2">
+                  <a href="/admin" className="px-4 py-2 text-sm font-bold text-neutral-800 hover:text-indigo-600 transition-colors flex items-center gap-2">
                     <Settings className="w-4 h-4" />
                     {lang === 'vi' ? 'Vào Bảng Điều Khiển' : 'Go to Dashboard'}
                   </a>
@@ -1863,6 +1863,7 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
                 <button
                   type="button"
                   onClick={async () => {
+                    setLoginSuccessToast(lang === 'vi' ? 'Đăng xuất thành công!' : 'Logged out successfully!');
                     if (typeof (window as any).clearAllSessions === 'function') {
                       await (window as any).clearAllSessions();
                     } else {
@@ -1874,6 +1875,9 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
                       window.dispatchEvent(new Event('admin-session-change'));
                     }
                     setLoggedInArtist(null);
+                    setTimeout(() => {
+                      window.location.href = '/';
+                    }, 600);
                   }}
                   className="px-4 py-2 text-sm font-bold text-red-600 hover:text-red-700 bg-white hover:bg-red-50 rounded-full border border-red-200 shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
                 >
