@@ -774,7 +774,7 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
   const [publicPricing, setPublicPricing] = useState<any>(null);
   const [publicFeatures, setPublicFeatures] = useState<any[]>([]);
   const [membershipBillingCycle, setMembershipBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
-  const [loginSuccessToast, setLoginSuccessToast] = useState('');
+  const [loginSuccessToast, setLoginSuccessToast] = useState<any>('');
 
   const checkSession = useCallback(() => {
     if (typeof window !== 'undefined' && (window as any).__IS_LOGGED_OUT__) {
@@ -841,8 +841,16 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
   useEffect(() => {
     checkSession();
     const handleSsoToast = (e: any) => {
-      if (e.detail?.message) {
-        setLoginSuccessToast(e.detail.message);
+      if (e.detail) {
+        if (typeof e.detail === 'string') {
+          setLoginSuccessToast(e.detail);
+        } else if (e.detail.message) {
+          setLoginSuccessToast({
+            type: e.detail.type || (e.detail.message.toLowerCase().includes('đăng xuất') ? 'logout' : 'login'),
+            title: e.detail.title,
+            message: e.detail.message
+          });
+        }
         setTimeout(() => setLoginSuccessToast(''), 4000);
       }
     };
@@ -2891,7 +2899,18 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
       {/* Success Toast Notification */}
       <AnimatePresence>
         {loginSuccessToast && (() => {
-          const isLogout = loginSuccessToast.includes('Đăng xuất') || loginSuccessToast.includes('Logged out');
+          const isLogout = typeof loginSuccessToast === 'object' 
+            ? loginSuccessToast.type === 'logout' 
+            : (String(loginSuccessToast).toLowerCase().includes('đăng xuất') || String(loginSuccessToast).toLowerCase().includes('logged out'));
+            
+          const toastTitle = (typeof loginSuccessToast === 'object' && loginSuccessToast.title) 
+            ? loginSuccessToast.title 
+            : (isLogout ? 'Đã Đăng Xuất' : 'Đã Đăng Nhập');
+
+          const toastMessage = typeof loginSuccessToast === 'object' 
+            ? loginSuccessToast.message 
+            : loginSuccessToast;
+
           return (
             <motion.div
               initial={{ opacity: 0, y: -30, scale: 0.95 }}
@@ -2904,9 +2923,9 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
               </div>
               <div className="flex-1 min-w-0">
                 <h4 className={`text-[11px] font-black uppercase tracking-wider ${isLogout ? 'text-amber-400' : 'text-emerald-400'}`}>
-                  {isLogout ? 'Đã Đăng Xuất' : 'Đã Đăng Nhập'}
+                  {toastTitle}
                 </h4>
-                <p className="text-xs sm:text-sm font-semibold text-stone-100 truncate">{loginSuccessToast}</p>
+                <p className="text-xs sm:text-sm font-semibold text-stone-100 truncate">{toastMessage}</p>
               </div>
               <button
                 onClick={() => setLoginSuccessToast('')}
