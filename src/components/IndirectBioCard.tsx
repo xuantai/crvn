@@ -97,10 +97,22 @@ const getArtistLink = (subPath: string = '') => {
   return ext ? `/${ext}${normalizedPath}` : normalizedPath;
 };
 
+const formatShareUrl = (url: string): string => {
+  if (!url) return '';
+  let cleaned = String(url).trim();
+  while (/^https?:\/\/[^\/]+\/?https?:\/\//i.test(cleaned)) {
+    cleaned = cleaned.replace(/^https?:\/\/[^\/]+\/?(?=https?:\/\/)/i, '');
+  }
+  return cleaned;
+};
+
 const getArtistFullUrl = (subPath: string = '') => {
   const link = getArtistLink(subPath);
-  if (link.startsWith('http://') || link.startsWith('https://')) return link;
-  return window.location.origin + (link.startsWith('/') ? link : `/${link}`);
+  let full = link;
+  if (!link.startsWith('http://') && !link.startsWith('https://')) {
+    full = window.location.origin + (link.startsWith('/') ? link : `/${link}`);
+  }
+  return formatShareUrl(full);
 };
 
 const getAdminLink = (subPath: string = '') => {

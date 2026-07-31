@@ -5915,10 +5915,19 @@ const getArtistLink = (subPath: string = '', customPath?: string) => {
 
 const getArtistFullUrl = (subPath: string = '', customPath?: string) => {
   const link = getArtistLink(subPath, customPath);
-  if (link.startsWith('http://') || link.startsWith('https://')) {
-    return link;
+  let full = link;
+  if (!link.startsWith('http://') && !link.startsWith('https://')) {
+    full = window.location.origin + (link.startsWith('/') ? link : `/${link}`);
   }
-  return window.location.origin + (link.startsWith('/') ? link : `/${link}`);
+  return formatShareUrl(full);
+};
+
+const sanitizePlaylistPassword = (pwd: any): string => {
+  if (!pwd || pwd === true || pwd === false || pwd === 1 || pwd === '1') return '';
+  const str = String(pwd).trim();
+  const lower = str.toLowerCase();
+  if (lower === 'true' || lower === 'false' || lower === 'undefined' || lower === 'null') return '';
+  return str;
 };
 
 const getAdminTokenKey = (customPath?: string) => getArtistExtensionFromUrl(customPath) ? `adminToken_${getArtistExtensionFromUrl(customPath)}` : 'adminToken';
@@ -12378,7 +12387,11 @@ const resolveUploadUrl = (url: string | undefined): string => {
 
 const formatShareUrl = (url: string): string => {
   if (!url) return '';
-  return url
+  let cleaned = String(url).trim();
+  while (/^https?:\/\/[^\/]+\/?https?:\/\//i.test(cleaned)) {
+    cleaned = cleaned.replace(/^https?:\/\/[^\/]+\/?(?=https?:\/\/)/i, '');
+  }
+  return cleaned
     .replace(/xn--ti-jia\.com/gi, 'tài.com')
     .replace(/xn--ti-8ja\.com/gi, 'tài.com')
     .replace(/xn--ti-.*\.com/gi, 'tài.com');
@@ -24969,7 +24982,12 @@ function AdminPlaylistEdit() {
             <div>
                <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Hiển Thị")}</label>
                <div className="relative">
-                 <select value={isDraft ? 'true' : 'false'} onChange={e => setIsDraft(e.target.value === 'true')} className="w-full border border-stone-300 rounded-xl pl-4 pr-10 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white appearance-none cursor-pointer hover:border-stone-400 transition-colors font-medium">
+                 <select value={isDraft ? 'true' : 'false'} onChange={e => {
+                      const nextIsDraft = e.target.value === 'true';
+                      setIsDraft(nextIsDraft);
+                      if (!nextIsDraft) { setPassword(''); setSecretLink(''); }
+                      else { setPassword(prev => sanitizePlaylistPassword(prev)); }
+                   }} className="w-full border border-stone-300 rounded-xl pl-4 pr-10 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white appearance-none cursor-pointer hover:border-stone-400 transition-colors font-medium">
                     <option value="false">{t("Công khai (hiện ở trang chủ)")}</option>
                     <option value="true">{t("Riêng tư / Bản nháp (ẩn khỏi trang chủ)")}</option>
                  </select>

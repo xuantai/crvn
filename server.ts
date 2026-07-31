@@ -3058,7 +3058,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
         demoIds: foundPlaylist.demoIds || [],
         artistExtension: foundArtistExt,
         artistName: foundArtistName || foundArtistExt,
-        availableDemos: (foundArtistData.demos || []).map((d: any) => ({
+        availableDemos: (foundArtistData.demos || []).filter((d: any) => !d.deleted).map((d: any) => ({
           id: d.id,
           title: d.title || 'Bài hát chưa đặt tên',
           coverUrl: d.coverUrl || ''
