@@ -1,6 +1,6 @@
 # CHORUS.VN (CRVN) System Architecture & Technical Specification
 
-> **Ghi chú quan trọng cho AI Agent:** Đây là tài liệu master chứa toàn bộ thông tin kiến trúc, cơ sở dữ liệu, lưu trữ R2 Cloudflare, quy trình SSO đa tab, hướng dẫn chi tiết từng mục trong `/admin` và `/master`, phân cấp tài khoản Free/Pro/VIP, quản lý bài hát/vé/vouchers, phân quyền ẩn/hiện & mật khẩu bài hát, đa ngôn ngữ AI và quy trình Backup/Deploy của dự án `chorus.vn`. Đọc file này khi bắt đầu phiên làm việc để hiểu trọn vẹn 100% logic hệ thống mà không cần quét lại toàn bộ mã nguồn.
+> **Ghi chú quan trọng cho AI Agent:** Đây là tài liệu master chứa toàn bộ thông tin kiến trúc, cơ sở dữ liệu, lưu trữ R2 Cloudflare (`cdn.chorus.vn`), quy trình SSO đa tab, hướng dẫn chi tiết từng mục trong `/admin` và `/master`, phân cấp tài khoản Free/Pro/VIP, quản lý bài hát/vé/vouchers, phân quyền ẩn/hiện & mật khẩu bài hát, đa ngôn ngữ AI và quy trình Backup/Deploy của dự án `chorus.vn`. Đọc file này khi bắt đầu phiên làm việc để hiểu trọn vẹn 100% logic hệ thống mà không cần quét lại toàn bộ mã nguồn.
 
 ---
 
@@ -22,12 +22,12 @@ Hệ thống kết hợp 3 lớp lưu trữ linh hoạt với cơ chế tự đ�
 ```
 
 1. **SQLite Database (`bbb_global.db`):**
-   - Lưu trữ có cấu trúc cho hiệu năng truy xuất cao và nhất quán dữ liệu.
+   - File cơ sở dữ liệu SQLite chính của hệ thống `chorus.vn` lưu trữ có cấu trúc cho hiệu năng truy xuất cao và nhất quán dữ liệu.
    - Bảng chính: `artists`, `songs`, `playlists`, `system_configs`.
 2. **File JSON Local (Dự phòng tĩnh & Backup tức thì):**
-   - `artists.json`: Danh sách master toàn bộ nghệ sĩ trên hệ thống.
+   - `artists.json`: Danh sách master toàn bộ nghệ sĩ trên hệ thống `chorus.vn`.
    - `data_<username>.json`: Chi tiết profile, bài hát (demos & released), danh sách phát, cấu hình riêng của từng nghệ sĩ (ví dụ: `data_acxuantai.json`, `data_thong.json`).
-   - `landing_config.json`: Cấu hình giao diện landing page chính của hệ thống.
+   - `landing_config.json`: Cấu hình giao diện landing page chính của hệ thống `chorus.vn`.
    - `tickets.json`: Hệ thống yêu cầu hỗ trợ (Support Tickets).
    - `sent_emails.json`: Lịch sử gửi mail hệ thống.
    - `vouchers.json`: Mã giảm giá / kích hoạt.
@@ -36,15 +36,15 @@ Hệ thống kết hợp 3 lớp lưu trữ linh hoạt với cơ chế tự đ�
 
 ---
 
-## 2. Cloudflare R2 Storage & Xử Lý Media
+## 2. Cloudflare R2 Storage & Xử Lý Media (`cdn.chorus.vn`)
 
-- **Bucket:** `bbb-bz` (hoặc `CF_R2_BUCKET_NAME` từ `.env`).
-- **CDN Public Domain:** `https://cdn.bbb.bz`
+- **Bucket:** `chorus-cdn` (hoặc `CF_R2_BUCKET_NAME` từ `.env`).
+- **CDN Public Domain:** `https://cdn.chorus.vn` (Domain CDN chính thức cho toàn bộ tài nguyên hình ảnh và âm thanh của `chorus.vn`).
 - **Cấu hình S3 Client:** Đơn vị kết nối qua Cloudflare R2 Endpoint `https://<CF_R2_ACCOUNT_ID>.r2.cloudflarestorage.com` (Sử dụng `@aws-sdk/client-s3`).
 - **Quy trình Upload & Tối ưu hóa:**
-  1. **Ảnh (Covers / Avatars):** Đi qua module `sharp` để nén JPEG/PNG tối ưu dung lượng trước khi tải lên.
+  1. **Ảnh (Covers / Avatars):** Đi qua module `sharp` để nén JPEG/PNG tối ưu dung lượng trước khi tải lên Cloudflare R2.
   2. **Audio / Video:** Tải lên trực tiếp hoặc xử lý mã hóa qua `fluent-ffmpeg` / `@ffmpeg-installer/ffmpeg`.
-  3. **Cơ chế Sao lưu Kép (Dual Backup):** Mọi file upload được lưu song song vào thư mục local `/uploads/<artistId>/...` và đưa lên Cloudflare R2. URL R2 được ưu tiên trả về client. Nếu upload R2 bị timeout (>5s) hoặc lỗi, URL local sẽ được dùng làm fallback.
+  3. **Cơ chế Sao lưu Kép (Dual Backup):** Mọi file upload được lưu song song vào thư mục local `/uploads/<artistId>/...` và đưa lên Cloudflare R2. URL R2 (`https://cdn.chorus.vn/...`) được ưu tiên trả về client. Nếu upload R2 bị timeout (>5s) hoặc lỗi, URL local sẽ được dùng làm fallback.
 
 ---
 
@@ -53,7 +53,7 @@ Hệ thống kết hợp 3 lớp lưu trữ linh hoạt với cơ chế tự đ�
 Hệ thống đơn giản hóa quản lý trạng thái bài hát thành **đúng 1 trạng thái Ẩn / Không công khai** và cơ chế mật khẩu chung / riêng linh hoạt:
 
 ### A. Trạng Thái Ẩn / Không Công Khai (Single Hidden State)
-- Trong hệ thống CRVN, **"Ẩn / Không công khai" (`isDraft` / Ẩn bài hát)** là một trạng thái duy nhất (không phân chia rườm rà thành riêng tư hay không công khai).
+- Trong hệ thống `chorus.vn`, **"Ẩn / Không công khai" (`isDraft` / Ẩn bài hát)** là một trạng thái duy nhất (không phân chia rườm rà thành riêng tư hay không công khai).
 - Khi chọn **Ẩn / Không công khai (`isDraft: true`)**:
   - Bài hát hoặc Playlist sẽ ẩn khỏi danh sách trang chủ công khai của nghệ sĩ.
   - Khách chỉ nghe/xem được khi có đường dẫn link bí mật (`secretKey` / `slug` / link trực tiếp).
@@ -133,7 +133,7 @@ Trang `/admin` (hoặc `<artist>.chorus.vn/admin`) là bảng điều khiển ch
 
 ## 5. Chi Tiết Mọi Mục Trong Trang Master Admin (`/master` hoặc `/acp`)
 
-Trang Master Admin (`/master` hoặc `/acp`) do Master Admin tối cao (`acxuantai`) quản lý toàn bộ nền tảng, bao gồm 11 mục chính trong `ACPControlPanel.tsx`:
+Trang Master Admin (`/master` hoặc `/acp`) do Master Admin tối cao (`acxuantai`) quản lý toàn bộ nền tảng `chorus.vn`, bao gồm 11 mục chính trong `ACPControlPanel.tsx`:
 
 1. **`artists` (Quản Lý Danh Sách Nghệ Sĩ Toàn Hệ Thống):**
    - Danh sách bảng điều khiển tất cả nghệ sĩ trên hệ thống.
@@ -159,22 +159,22 @@ Trang Master Admin (`/master` hoặc `/acp`) do Master Admin tối cao (`acxuant
    - Tạo mã Voucher mới (Cấu hình mã code, số bài tặng thêm `increaseSongs`, số mẫu giao diện tặng `increaseTemplates`, số tháng VIP `vipMonths`, phần trăm giảm giá `discountPercent`).
    - Quản lý danh sách nghệ sĩ đã sử dụng mã (`usedBy`), Xóa mã Voucher.
 7. **`templates` (Quản Lý Thư Viện Mẫu Giao Diện):**
-   - Quản lý các mẫu Template công khai trên hệ thống.
+   - Quản lý các mẫu Template công khai trên hệ thống `chorus.vn`.
    - Bật/Tắt template mẫu hoặc gán quyền truy cập mẫu giao diện cho gói Pro/VIP.
 8. **`faq` (Quản Lý Câu Hỏi Thường Gặp):**
    - Thêm/Sửa/Xóa các câu hỏi FAQ hiển thị trên landing page `chorus.vn`.
 9. **`keywords` & `content` (SEO & Bài Viết Blog System):**
-   - Quản lý từ khóa SEO toàn trang, quản lý các bài viết tin tức, bài hướng dẫn, blog trên hệ thống.
+   - Quản lý từ khóa SEO toàn trang, quản lý các bài viết tin tức, bài hướng dẫn, blog trên hệ thống `chorus.vn`.
 10. **`admin_theme` (Chủ Đề Giao Diện Master):**
     - Đổi giao diện hiển thị riêng cho trang quản trị tối cao Master Admin.
 11. **`edit_item` (Trình Chỉnh Sửa Nâng Cao - Raw Editor):**
-    - Trình can thiệp dữ liệu JSON trực tiếp dành cho Master Admin để chỉnh sửa bất kỳ bản ghi hoặc tệp dữ liệu nào trong hệ thống.
+    - Trình can thiệp dữ liệu JSON trực tiếp dành cho Master Admin để chỉnh sửa bất kỳ bản ghi hoặc tệp dữ liệu nào trong hệ thống `chorus.vn`.
 
 ---
 
 ## 6. Phân Cấp Tài Khoản (Account Tier Hierarchy & Voucher System)
 
-Hệ thống phân chia thành 3 cấp độ tài khoản chính với hạn mức và quyền hạn rõ ràng:
+Hệ thống `chorus.vn` phân chia thành 3 cấp độ tài khoản chính với hạn mức và quyền hạn rõ ràng:
 
 | Gói Cước (Role Tier) | Hạn Mức Bài Hát (`maxSongs`) | Quyền Tên Miền Riêng | Quyền Giao Diện | Tính Năng |
 | :--- | :--- | :--- | :--- | :--- |
@@ -209,7 +209,7 @@ Hệ thống phân chia thành 3 cấp độ tài khoản chính với hạn m�
 ## 8. Hệ Thống Vé Hỗ Trợ (Tickets) & Email System
 
 1. **Support Ticket System (`/api/acp/tickets/*` & `/api/admin/tickets/*`):**
-   - Quản lý cuộc hội thoại giữa nghệ sĩ và Quản trị viên hệ thống (Tạo vé, Gửi tin nhắn, Đóng/Giải quyết, Mở lại).
+   - Quản lý cuộc hội thoại giữa nghệ sĩ và Quản trị viên hệ thống `chorus.vn` (Tạo vé, Gửi tin nhắn, Đóng/Giải quyết, Mở lại).
 2. **Chuẩn hóa Email & Gửi Mail Chống Gian Lận (`normalizeEmail`):**
    - Loại bỏ các ký tự gian lận alias Gmail (như loại bỏ dấu `.` và phần mở rộng `+tag`).
    - Gửi mail qua Nodemailer + SMTP Brevo (`smtp-relay.brevo.com`). Lịch sử lưu tại `sent_emails.json`.
@@ -219,7 +219,7 @@ Hệ thống phân chia thành 3 cấp độ tài khoản chính với hạn m�
 ## 9. Động Cơ Đa Ngôn Ngữ AI (Multilingual Engine)
 
 - Module `translate_admin.ts` kết hợp với Google Gemini AI (`@google/genai`).
-- Hỗ trợ dịch tự động nội dung landing page, bài viết và template hệ thống (`/api/acp/landing-config/translate-all`, `translate-templates`).
+- Hỗ trợ dịch tự động nội dung landing page `chorus.vn`, bài viết và template hệ thống (`/api/acp/landing-config/translate-all`, `translate-templates`).
 - Quản lý ngôn ngữ ưu tiên qua `preferredLang` trong `localStorage` và `defaultLanguage` trong profile nghệ sĩ.
 
 ---
@@ -230,8 +230,8 @@ Hệ thống đi kèm bộ công cụ CLI hữu ích nằm trong thư mục `scr
 
 1. **`scripts/migrate_json_to_sqlite.cjs`:** Chuyển đổi dữ liệu JSON sang SQLite `bbb_global.db`.
 2. **`scripts/upload_db_backup_to_r2.cjs`:** Backup tự động `bbb_global.db` lên Cloudflare R2 (`backups/db/bbb_global.db`).
-3. **`scripts/pull_data_from_bbb_to_local_and_chorus.cjs`:** Kéo dữ liệu backup từ VPS 1 về local và đồng bộ sang VPS 2.
-4. **`scripts/dump_all_database_records.cjs` & `read_chorus_vps_data.cjs`:** Xuất báo cáo trạng thái dữ liệu.
+3. **`scripts/pull_data_from_bbb_to_local_and_chorus.cjs`:** Kéo dữ liệu backup từ VPS 1 về local và đồng bộ sang VPS 2 `chorus.vn`.
+4. **`scripts/dump_all_database_records.cjs` & `read_chorus_vps_data.cjs`:** Xuất báo cáo trạng thái dữ liệu `chorus.vn`.
 
 ---
 
