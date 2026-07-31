@@ -22474,7 +22474,7 @@ function AdminCreateDemo() {
     }
   };
 
-  const uploadFileDirectly = (file: File, type: 'audio' | 'cover' | 'background' | 'brandLogo') => {
+  const uploadFileDirectly = async (file: File, type: 'audio' | 'cover' | 'background' | 'brandLogo') => {
     if (type === 'audio') {
       if (file.size > 100 * 1024 * 1024) {
         triggerNotification(t("Dung lượng file nhạc quá lớn (") + (file.size / (1024 * 1024)).toFixed(1) + t("MB). Vui lòng tải lên file nhạc dưới 100MB để đảm bảo tốc độ xử lý của server."), 'warning', t("Tệp quá lớn"));
@@ -22502,8 +22502,9 @@ function AdminCreateDemo() {
       }
     }
 
+    const fileToUpload = (file.type && file.type.startsWith('image/')) ? await compressImageInBrowser(file) : file;
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', fileToUpload);
 
     const xhr = new XMLHttpRequest();
     if (type === 'audio') {
@@ -23706,7 +23707,7 @@ function AdminEditDemo() {
     }
   };
 
-  const uploadFileDirectly = (file: File, type: 'audio' | 'cover' | 'background' | 'brandLogo') => {
+  const uploadFileDirectly = async (file: File, type: 'audio' | 'cover' | 'background' | 'brandLogo') => {
     if (type === 'audio') {
       if (file.size > 100 * 1024 * 1024) {
         triggerNotification(t("Dung lượng file nhạc quá lớn (") + (file.size / (1024 * 1024)).toFixed(1) + t("MB). Vui lòng tải lên file nhạc dưới 100MB để đảm bảo tốc độ xử lý của server."), 'warning', t("Tệp quá lớn"));
@@ -23734,8 +23735,9 @@ function AdminEditDemo() {
       }
     }
 
+    const fileToUpload = (file.type && file.type.startsWith('image/')) ? await compressImageInBrowser(file) : file;
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', fileToUpload);
 
     const xhr = new XMLHttpRequest();
     if (type === 'audio') {
@@ -24844,10 +24846,11 @@ function AdminPlaylistEdit() {
     return url;
   };
 
-  const uploadWithProgress = (file: File, setProgress: (p: number) => void): Promise<string> => {
+  const uploadWithProgress = async (file: File, setProgress: (p: number) => void): Promise<string> => {
+    const fileToUpload = (file.type && file.type.startsWith('image/')) ? await compressImageInBrowser(file) : file;
     return new Promise((resolve, reject) => {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', fileToUpload);
       const xhr = new XMLHttpRequest();
       xhr.open('POST', '/api/upload', true);
       xhr.setRequestHeader('Authorization', `Bearer ${getAdminToken() || ''}`);

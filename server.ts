@@ -5950,7 +5950,9 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
          const hasPwd = cleanPwd.length > 0;
          const hasSecret = secret.length > 0;
 
-         if (hasPwd) {
+         if (!hasPwd && !hasSecret) {
+             authorized = true;
+         } else if (hasPwd) {
              if (token && (token === cleanPwd || (hasSecret && token === secret))) {
                  authorized = true;
              }
