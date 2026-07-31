@@ -6033,13 +6033,17 @@ const getArtistAdminRedirect = (targetExt: string, toPage = 'admin') => {
 };
 
 const getLogoutRedirectUrl = () => {
-  const host = typeof window !== 'undefined' ? window.location.hostname.replace(/^www\./, '').toLowerCase().trim() : '';
+  if (typeof window === 'undefined') return '/';
+  const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
   const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
-  if (isSubdomain || isArtistContext()) {
+  const isCustomDomain = !host.endsWith('.chorus.vn') && host !== 'chorus.vn' && host !== 'localhost' && host !== '127.0.0.1';
+
+  if (isSubdomain || isCustomDomain) {
     return '/';
   }
+
   const ext = getArtistExtensionFromUrl();
-  if (ext && typeof window !== 'undefined' && window.location.pathname.startsWith(`/${ext}`)) {
+  if (ext && window.location.pathname.startsWith(`/${ext}`)) {
     return `/${ext}`;
   }
   return '/';
