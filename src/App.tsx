@@ -7112,12 +7112,12 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
             localStorage.setItem('activeAdminExtension', data.artist.extension);
             setGlobalCookie('activeAdminExtension', data.artist.extension);
           }
-          localStorage.setItem('activeAdminName', data.artist.artistName || data.artist.username || data.artist.extension);
+          const artistDisplayName = data.artistName || data.aboutMe?.name || data.artist.artistName || data.artist.username || data.artist.extension;
+          localStorage.setItem('activeAdminName', artistDisplayName);
+          setGlobalCookie('activeAdminName', artistDisplayName);
           const avatar = data.avatarUrl || '';
           localStorage.setItem('activeAdminAvatar', avatar);
-          if (typeof (window as any).syncLoginSession === 'function') {
-             (window as any).syncLoginSession(token, data.artist.extension, data.artist.artistName || data.artist.username || data.artist.extension, avatar, data.artist.activated !== false);
-          }
+          setGlobalCookie('activeAdminAvatar', avatar);
         }
         if (data.artist && data.artist.activated === false) {
           window.location.href = getArtistAdminRedirect(data.artist.extension || activeExt, 'help');

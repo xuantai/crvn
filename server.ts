@@ -4139,11 +4139,12 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     if (isMatch) {
       const data = await loadData(artist.username);
       const avatarUrl = data.aboutMe?.avatarUrl || data.homeCoverUrl || '';
+      const artistDisplayName = data.aboutMe?.name || data.artistName || artist.artistName || artist.username;
       res.setHeader('Set-Cookie', [
         `adminToken_${artist.username}=${artist.password}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`,
         `adminToken=${artist.password}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=2592000`
       ]);
-      res.json({ success: true, token: artist.password, extension: artist.extension, username: artist.username, artist, avatarUrl });
+      res.json({ success: true, token: artist.password, extension: artist.extension, username: artist.username, artistName: artistDisplayName, artist, avatarUrl });
     } else {
       const loginStr = (username || '').toLowerCase().trim();
       const isEmail = loginStr.includes('@');
@@ -4185,7 +4186,8 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     if (isRequestAdmin(req)) {
       const data = await loadData(req.artist.username);
       const avatarUrl = data.aboutMe?.avatarUrl || data.homeCoverUrl || '';
-      res.json({ isAdmin: true, memberPassword: req.artist?.memberPassword || '', artist: req.artist, avatarUrl, homeCoverUrl: data.homeCoverUrl, aboutMe: data.aboutMe });
+      const artistDisplayName = data.aboutMe?.name || data.artistName || req.artist?.artistName || req.artist?.username;
+      res.json({ isAdmin: true, memberPassword: req.artist?.memberPassword || '', artist: req.artist, artistName: artistDisplayName, avatarUrl, homeCoverUrl: data.homeCoverUrl, aboutMe: data.aboutMe });
     } else {
       res.json({ isAdmin: false });
     }
