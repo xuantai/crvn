@@ -6353,7 +6353,7 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
         }
       } else if (event.data && event.data.type === 'LOGIN_ALL') {
         delete (window as any).__IS_LOGGED_OUT__;
-        const { token, extension, artistName, avatar, activated } = event.data;
+        const { token, extension, artistName, avatar, activated, isSilent } = event.data;
         if (token && extension) {
           const origSet = (window as any).__originalSetItem__ || localStorage.setItem;
           origSet.call(localStorage, 'adminToken', token);
@@ -6370,15 +6370,17 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
           setGlobalCookie('activeAdminAvatar', avatar || '');
           setGlobalCookie('activeAdminActivated', activated !== false ? 'true' : 'false');
 
-          try {
-            window.dispatchEvent(new CustomEvent('sso-toast', {
-              detail: {
-                type: 'login',
-                title: 'Đăng Nhập Thành Công',
-                message: `Chào mừng ${artistName || extension} trải nghiệm Chorus`
-              }
-            }));
-          } catch (e) {}
+          if (!isSilent) {
+            try {
+              window.dispatchEvent(new CustomEvent('sso-toast', {
+                detail: {
+                  type: 'login',
+                  title: 'Đăng Nhập Thành Công',
+                  message: `Chào mừng ${artistName || extension} trải nghiệm Chorus`
+                }
+              }));
+            } catch (e) {}
+          }
 
           window.dispatchEvent(new Event('admin-session-change'));
           window.dispatchEvent(new Event('storage'));
