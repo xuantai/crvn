@@ -5905,7 +5905,43 @@ const getArtistLink = (subPath: string = '', customPath?: string) => {
   const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
   const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
   const ext = getArtistExtensionFromUrl(customPath) || (window as any).__ACTIVE_ARTIST_EXTENSION__ || '';
-  const normalizedPath = subPath ? (subPath.startsWith('/') ? subPath : `/${subPath}`) : '';
+  
+  let cleanPath = subPath ? (subPath.startsWith('/') ? subPath : `/${subPath}`) : '';
+
+  // 1. If cleanPath starts with /<ext>, strip /<ext> because extension is handled via subdomain or context
+  if (ext) {
+    const extPrefix = `/${ext}`;
+    if (cleanPath === extPrefix || cleanPath === `${extPrefix}/`) {
+      cleanPath = '';
+    } else if (cleanPath.startsWith(`${extPrefix}/`)) {
+      cleanPath = cleanPath.substring(extPrefix.length);
+    }
+  }
+
+  // 2. Check if cleanPath contains a firstSegment matching an extension (e.g., /acxuantai/song/123)
+  if (cleanPath.startsWith('/')) {
+    const parts = cleanPath.split('/').filter(Boolean);
+    if (parts.length > 0) {
+      const firstSegment = parts[0].toLowerCase();
+      const RESERVED_EXTS = [
+        'admin', 'master', 'acp', 'verify-email', 'help', 'api', 'assets', 'static', 
+        'favicon.ico', 'robots.txt', 'sitemap.xml', 'mem', 'demo', 'song', 'playlist'
+      ];
+      if (!RESERVED_EXTS.includes(firstSegment)) {
+        const targetExt = firstSegment;
+        const restOfPath = '/' + parts.slice(1).join('/');
+        const normalizedRest = (restOfPath === '/' || restOfPath === '') ? '' : restOfPath;
+
+        if (!isLocal && (host === 'chorus.vn' || host.endsWith('.chorus.vn'))) {
+          return `https://${targetExt}.chorus.vn${normalizedRest}`;
+        } else if (isLocal) {
+          return `http://${targetExt}.localhost:${window.location.port}${normalizedRest}`;
+        }
+      }
+    }
+  }
+
+  const normalizedPath = cleanPath ? (cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`) : '';
 
   if (ext && !isLocal && (host === 'chorus.vn' || host.endsWith('.chorus.vn'))) {
     return `https://${ext}.chorus.vn${normalizedPath}`;
@@ -6891,7 +6927,7 @@ function MemberLogin() {
         const data = await res.json();
         setMemberToken(data.token || pwd);
         const ext = getArtistExtensionFromUrl();
-        window.location.href = ext ? `/${ext}` : '/';
+        window.location.href = ext ? getArtistLink('', ext) : '/';
       } else {
         const data = await res.json();
         setErr(data.error || 'Sai mật khẩu thành viên!');
