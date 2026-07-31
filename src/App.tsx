@@ -12480,16 +12480,6 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
     }
   }, [currentSrc, isPreview]);
 
-  useEffect(() => {
-    const handleTogglePlay = () => {
-      togglePlay();
-    };
-    document.addEventListener('toggle-playlist-play', handleTogglePlay);
-    return () => {
-      document.removeEventListener('toggle-playlist-play', handleTogglePlay);
-    };
-  }, [togglePlay]);
-
   const togglePlay = () => {
     if (audioRef.current) {
       if (isPlaying) {
@@ -12511,6 +12501,16 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
       }
     }
   };
+
+  useEffect(() => {
+    const handleTogglePlay = () => {
+      togglePlay();
+    };
+    document.addEventListener('toggle-playlist-play', handleTogglePlay);
+    return () => {
+      document.removeEventListener('toggle-playlist-play', handleTogglePlay);
+    };
+  }, []);
 
   const handleTimeUpdate = () => {
     if (audioRef.current) {
