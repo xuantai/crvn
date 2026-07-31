@@ -61,7 +61,7 @@ try {
 const r2AccountId = process.env.CF_R2_ACCOUNT_ID;
 const r2AccessKeyId = process.env.CF_R2_ACCESS_KEY_ID;
 const r2SecretAccessKey = process.env.CF_R2_SECRET_ACCESS_KEY;
-const r2BucketName = process.env.CF_R2_BUCKET_NAME || 'chorus-cdn';
+const r2BucketName = process.env.CF_R2_BUCKET_NAME || 'bbb-bz';
 const r2PublicDomain = (process.env.CF_R2_PUBLIC_DOMAIN || 'https://cdn.chorus.vn').replace(/\/+$/, '');
 
 let r2Client: any = null;

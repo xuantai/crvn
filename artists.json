@@ -7,7 +7,7 @@
     "isPublic": true,
     "pageTitle": "Kho nhạc của A.C Xuân Tài",
     "artistBio": "Thiên đường nhạc của A.C Xuân Tài",
-    "homeCoverUrl": "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2F1780614616129-996341897-1782316354444.webp?alt=media&token=40ac0206-8cc6-47df-aa49-6c3d7b54bb57",
+    "homeCoverUrl": "https://cdn.chorus.vn/uploads/system/1780614616129-996341897-1782316354444.webp",
     "avatarUrl": "",
     "demoCount": 13,
     "trackCount": 29,
@@ -43,8 +43,8 @@
     "isPublic": true,
     "pageTitle": "Kho nhạc của Mai Xuân Thứ",
     "artistBio": "Thiên đường nhạc của",
-    "homeCoverUrl": "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Faz60rw7fae8%2F1783113502658-524249644-1783113502663.jpg?alt=media&token=dd688cb4-fe88-408e-98ff-2ca517af66d6",
-    "avatarUrl": "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Faz60rw7fae8%2F1783890921412-291676087-1783890921447.jpg?alt=media&token=407cdaa6-f894-450e-a283-208786837fb5",
+    "homeCoverUrl": "https://cdn.chorus.vn/uploads/az60rw7fae8/1783113502658-524249644-1783113502663.jpg",
+    "avatarUrl": "https://cdn.chorus.vn/uploads/az60rw7fae8/1783890921412-291676087-1783890921447.jpg",
     "demoCount": 1,
     "trackCount": 2,
     "playlistCount": 0,
@@ -52,10 +52,10 @@
     "hasExternalWebsite": false,
     "externalWebsiteUrl": "",
     "slideshowImages": [
-      "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Faz60rw7fae8%2F1783113506421-65233101-1783113506424.jpg?alt=media&token=7ff4be9c-aaa1-46d5-820f-c8f8eb3a77aa",
-      "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Faz60rw7fae8%2F1783113507354-260726233-1783113507355.jpg?alt=media&token=7442b2b3-8299-4560-807f-5cb6a091ad16",
-      "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Faz60rw7fae8%2F1783113508007-557648518-1783113508008.jpg?alt=media&token=5bf88b11-ca9f-4cff-b049-b85a1fa37070",
-      "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Faz60rw7fae8%2F1783113508599-541153570-1783113508602.jpg?alt=media&token=2710af08-d33f-4408-b180-3a25beffe65a"
+      "https://cdn.chorus.vn/uploads/az60rw7fae8/1783113506421-65233101-1783113506424.jpg",
+      "https://cdn.chorus.vn/uploads/az60rw7fae8/1783113507354-260726233-1783113507355.jpg",
+      "https://cdn.chorus.vn/uploads/az60rw7fae8/1783113508007-557648518-1783113508008.jpg",
+      "https://cdn.chorus.vn/uploads/az60rw7fae8/1783113508599-541153570-1783113508602.jpg"
     ],
     "id": "eupz2kr8bhs",
     "activated": true,
@@ -73,7 +73,7 @@
     "isPublic": true,
     "pageTitle": "Kho nhạc của Nguyễn Trung Đức",
     "artistBio": "Thiên đường nhạc của Nguyễn Trung Đức",
-    "homeCoverUrl": "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Fdgkd3tmvxq7%2F1783765687473-126287610-1783765687476.jpg?alt=media&token=b57dced5-3109-49d0-809c-c97eea09f875",
+    "homeCoverUrl": "https://cdn.chorus.vn/uploads/dgkd3tmvxq7/1783765687473-126287610-1783765687476.jpg",
     "avatarUrl": "",
     "demoCount": 4,
     "trackCount": 0,
@@ -98,7 +98,7 @@
     "isPublic": true,
     "pageTitle": "Kho nhạc của Lynk Lee",
     "artistBio": "Ngôi nhà nhỏ của Lynk Lee",
-    "homeCoverUrl": "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Fym3q7whcri%2F1783176934745-961269185-1783176934746.jpg?alt=media&token=4e184309-e47e-4979-b42b-cec24ed25b83",
+    "homeCoverUrl": "https://cdn.chorus.vn/uploads/ym3q7whcri/1783176934745-961269185-1783176934746.jpg",
     "avatarUrl": "",
     "demoCount": 0,
     "trackCount": 2,
@@ -123,7 +123,7 @@
     "isPublic": true,
     "pageTitle": "Kho nhạc của Nhạc sỹ Nguyễn Văn Chung",
     "artistBio": "Ngôi nhà âm nhạc của Nhạc sỹ",
-    "homeCoverUrl": "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Fzyfgs8il7ll%2F1783286676447-822011898-1783286676451.jpg?alt=media&token=b8e2c14c-7808-4b22-a4cc-ff097cc05eee",
+    "homeCoverUrl": "https://cdn.chorus.vn/uploads/zyfgs8il7ll/1783286676447-822011898-1783286676451.jpg",
     "avatarUrl": "",
     "demoCount": 0,
     "trackCount": 0,
@@ -132,8 +132,8 @@
     "hasExternalWebsite": false,
     "externalWebsiteUrl": "",
     "slideshowImages": [
-      "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Fzyfgs8il7ll%2F1783286712650-150346455-1783286712652.jpg?alt=media&token=871e7052-6aee-4a38-a52a-7bf57a65d84e",
-      "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Fzyfgs8il7ll%2F1783286715767-121365871-1783286715768.jpg?alt=media&token=aa80440f-0edc-417a-87bd-f2cf307a1c60"
+      "https://cdn.chorus.vn/uploads/zyfgs8il7ll/1783286712650-150346455-1783286712652.jpg",
+      "https://cdn.chorus.vn/uploads/zyfgs8il7ll/1783286715767-121365871-1783286715768.jpg"
     ],
     "id": "lq9vgu4wf6",
     "activated": true,
@@ -151,7 +151,7 @@
     "isPublic": true,
     "pageTitle": "Kho nhạc của Longg",
     "artistBio": "Thiên đường nhạc của Longg",
-    "homeCoverUrl": "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2F59i831oixqc%2F1783482570516-813539376-1783482570521.jpg?alt=media&token=3a9db306-c31b-45b4-9306-13b4922d3fc8",
+    "homeCoverUrl": "https://cdn.chorus.vn/uploads/59i831oixqc/1783482570516-813539376-1783482570521.jpg",
     "avatarUrl": "",
     "demoCount": 0,
     "trackCount": 5,
@@ -160,9 +160,9 @@
     "hasExternalWebsite": false,
     "externalWebsiteUrl": "",
     "slideshowImages": [
-      "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2F59i831oixqc%2F1783588996993-45213366-1783588996996.jpg?alt=media&token=0fd9474d-b0fb-4964-9847-a68966defd81",
-      "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2F59i831oixqc%2F1783589061641-329218330-1783589061643.jpg?alt=media&token=5172f1cc-de73-4d4c-aab1-47fef0be3501",
-      "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2F59i831oixqc%2F1783587376390-871067420-1783587376392.jpg?alt=media&token=dff61ab1-2fae-4180-b70b-0b3da3b354b0"
+      "https://cdn.chorus.vn/uploads/59i831oixqc/1783588996993-45213366-1783588996996.jpg",
+      "https://cdn.chorus.vn/uploads/59i831oixqc/1783589061641-329218330-1783589061643.jpg",
+      "https://cdn.chorus.vn/uploads/59i831oixqc/1783587376390-871067420-1783587376392.jpg"
     ],
     "id": "6fwg9dyqac5",
     "activated": true,
@@ -180,7 +180,7 @@
     "isPublic": true,
     "pageTitle": "Kho nhạc của THỐNG",
     "artistBio": "Thiên đường nhạc của TH��NG",
-    "homeCoverUrl": "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Fji0bienipuk%2F1783534999777-782913066-1783534999779.jpg?alt=media&token=87c027a7-fd2b-4cad-9893-ca8f3acbee4e",
+    "homeCoverUrl": "https://cdn.chorus.vn/uploads/ji0bienipuk/1783534999777-782913066-1783534999779.jpg",
     "avatarUrl": "",
     "demoCount": 0,
     "trackCount": 0,
@@ -189,7 +189,7 @@
     "hasExternalWebsite": false,
     "externalWebsiteUrl": "",
     "slideshowImages": [
-      "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Fji0bienipuk%2F1783535154395-463412921-1783535154397.jpg?alt=media&token=d32bdd8b-b557-46fd-afe0-d279aaa975d6"
+      "https://cdn.chorus.vn/uploads/ji0bienipuk/1783535154395-463412921-1783535154397.jpg"
     ],
     "id": "ru6ot9rxmv",
     "activated": true,
