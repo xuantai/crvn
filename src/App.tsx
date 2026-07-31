@@ -7290,6 +7290,16 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
       })
       .then(res => res.json())
       .then(data => {
+        if (!data || data.error === 'Artist not found' || data.notFound || data.error === 'inactive') {
+          removeAdminToken(activeExt);
+          removeGlobalCookie('activeAdminExtension');
+          removeGlobalCookie(`adminToken_${activeExt}`);
+          removeGlobalCookie('activeAdminName');
+          removeGlobalCookie('activeAdminAvatar');
+          window.dispatchEvent(new Event('admin-session-change'));
+          setSession(getActiveAdminSession());
+          return;
+        }
         const fetchedAvatar = data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
         if (fetchedAvatar) {
           setAvatar(fetchedAvatar);
