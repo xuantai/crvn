@@ -1,6 +1,6 @@
 # CHORUS.VN (CRVN) System Architecture & Technical Specification
 
-> **Ghi chú quan trọng cho AI Agent:** Đây là tài liệu master chứa toàn bộ thông tin kiến trúc, cơ sở dữ liệu, lưu trữ R2 Cloudflare, quy trình SSO đa tab, quản lý bài hát/vé/vouchers, phân quyền ẩn/hiện & mật khẩu bài hát, đa ngôn ngữ AI và quy trình Backup/Deploy của dự án `chorus.vn`. Đọc file này khi bắt đầu phiên làm việc để hiểu trọn vẹn 100% logic hệ thống mà không cần quét lại toàn bộ mã nguồn.
+> **Ghi chú quan trọng cho AI Agent:** Đây là tài liệu master chứa toàn bộ thông tin kiến trúc, cơ sở dữ liệu, lưu trữ R2 Cloudflare, quy trình SSO đa tab, quản lý trang Master Admin, phân cấp tài khoản Free/Pro/VIP, quản lý bài hát/vé/vouchers, phân quyền ẩn/hiện & mật khẩu bài hát, đa ngôn ngữ AI và quy trình Backup/Deploy của dự án `chorus.vn`. Đọc file này khi bắt đầu phiên làm việc để hiểu trọn vẹn 100% logic hệ thống mà không cần quét lại toàn bộ mã nguồn.
 
 ---
 
@@ -77,7 +77,43 @@ Hệ thống đơn giản hóa quản lý trạng thái bài hát thành **đún
 
 ---
 
-## 4. Quản Lý Giao Diện & Layout (UI & Layout Management)
+## 4. Quản Lý Trang Master Admin & Hệ Thống ACP (Admin Control Panel)
+
+Trang Master Admin dành riêng cho Quản trị viên tối cao của hệ thống (`acxuantai`):
+
+1. **Cơ Chế Xác Thực Master (`isRequestMasterAdmin`):**
+   - Nhận diện quyền tối cao thông qua `masterToken` hoặc token định dạng `master_token_<adminPassword>`.
+   - Tài khoản mặc định chính: Username `acxuantai` (`isSpecial: true`, `isMasterAdmin: true`).
+2. **Quyền Hạn Toàn Diện của Master Panel (`/api/acp/*`):**
+   - **Quản lý Tài khoản Nghệ sĩ (`/api/acp/artists/*`):** Tạo mới, chỉnh sửa thông tin, đổi mật khẩu, ngắt/bật kích hoạt (`activated: true/false`), hoặc xóa tài khoản nghệ sĩ.
+   - **Phân cấp Gói cước & Hạn mức:** Thay đổi trực tiếp `roleId` (`free`, `pro`, `vip`), điều chỉnh số bài đăng tối đa (`maxSongs`), giới hạn giao diện (`maxTemplates`).
+   - **Quản lý Bảng Giá & Ma Trận Tính Năng (`/api/acp/pricing`, `/api/acp/roles-matrix`):** Tùy chỉnh trực tiếp giá các gói cước và quyền hạn tương ứng hiển thị trên trang chủ `chorus.vn`.
+   - **Tạo & Quản Lý Voucher (`/api/acp/vouchers/*`):** Phát hành mã ưu đãi gia hạn hoặc nâng cấp tính năng.
+   - **Quản Lý Vé Hỗ Trợ Toàn Hệ Thống (`/api/acp/tickets/*`):** Tiếp nhận, trả lời tin nhắn, giải quyết hoặc mở lại yêu cầu hỗ trợ từ tất cả nghệ sĩ.
+   - **Quản trị Đám mây Firestore (`/api/acp/artists/firebase-sync`, `firebase-wipe`):** Đồng bộ hoặc dọn dẹp dữ liệu đám mây khi cần.
+
+---
+
+## 5. Phân Cấp Tài Khoản (Account Tier Hierarchy & Voucher System)
+
+Hệ thống phân chia thành 3 cấp độ tài khoản chính với hạn mức và quyền hạn rõ ràng:
+
+| Gói Cước (Role Tier) | Hạn Mức Bài Hát (`maxSongs`) | Quyền Tên Miền Riêng | Quyền Giao Diện | Tính Năng |
+| :--- | :--- | :--- | :--- | :--- |
+| **FREE** | Giới hạn (Mặc định 10 bài) | Subdomain mặc định (`<ext>.chorus.vn`) | Mẫu cơ bản | Nhạc Demo, Mật khẩu bài hát, Ticket hỗ trợ |
+| **PRO** | Mở rộng hạn mức bài | Kết nối Tên miền riêng | Mở rộng mẫu Template | Đầy đủ tính năng Pro, Ưu tiên hỗ trợ |
+| **VIP** | **Không giới hạn** (`-1` / `unlimited`) | **Tên miền riêng cao cấp** | **Toàn bộ Template Premium** | Tất cả tính năng cao cấp + Hỗ trợ 24/7 |
+
+### Cơ Chế Đổi Mã Voucher (`/api/admin/vouchers/redeem`):
+Nghệ sĩ có thể nhập mã Voucher được cấp từ Master Admin để tự động mở rộng quyền hạn:
+- `increaseSongs`: Tăng thêm số lượng bài hát tối đa được đăng.
+- `increaseTemplates`: Mở rộng thêm số mẫu giao diện nghệ sĩ được sử dụng.
+- `vipMonths`: Tự động cộng số tháng sử dụng gói VIP.
+- `discountPercent`: Mã giảm giá khi nâng cấp dịch vụ.
+
+---
+
+## 6. Quản Lý Giao Diện & Layout (UI & Layout Management)
 
 1. **Trang Chủ Hệ Thống (`chorus.vn`):**
    - Cấu hình qua `landing_config.json`.
@@ -93,7 +129,7 @@ Hệ thống đơn giản hóa quản lý trạng thái bài hát thành **đún
 
 ---
 
-## 5. Kiến Trúc SSO & Đăng Xuất Đa Tab (Single Sign-On & Single Logout)
+## 7. Kiến Trúc SSO & Đăng Xuất Đa Tab (Single Sign-On & Single Logout)
 
 ### A. Phạm Vi Cookie Quốc Tế (`.chorus.vn`)
 - Toàn bộ Cookie được ghi với thuộc tính: `Domain=.chorus.vn; Path=/; max-age=31536000; SameSite=Lax`.
@@ -115,19 +151,17 @@ Hệ thống đơn giản hóa quản lý trạng thái bài hát thành **đún
 
 ---
 
-## 6. Hệ Thống Vé Hỗ Trợ (Tickets), Vouchers & Email
+## 8. Hệ Thống Vé Hỗ Trợ (Tickets) & Email System
 
 1. **Support Ticket System (`/api/acp/tickets/*` & `/api/admin/tickets/*`):**
    - Quản lý cuộc hội thoại giữa nghệ sĩ và Quản trị viên hệ thống (Tạo vé, Gửi tin nhắn, Đóng/Giải quyết, Mở lại).
-2. **Hệ Thống Voucher (`/api/acp/vouchers/*` & `/api/admin/vouchers/redeem`):**
-   - Tạo mã ưu đãi kích hoạt tính năng / gia hạn tài khoản cho nghệ sĩ.
-3. **Chuẩn hóa Email & Gửi Mail Chống Gian Lận (`normalizeEmail`):**
+2. **Chuẩn hóa Email & Gửi Mail Chống Gian Lận (`normalizeEmail`):**
    - Loại bỏ các ký tự gian lận alias Gmail (như loại bỏ dấu `.` và phần mở rộng `+tag`).
    - Gửi mail qua Nodemailer + SMTP Brevo (`smtp-relay.brevo.com`). Lịch sử lưu tại `sent_emails.json`.
 
 ---
 
-## 7. Động Cơ Đa Ngôn Ngữ AI (Multilingual Engine)
+## 9. Động Cơ Đa Ngôn Ngữ AI (Multilingual Engine)
 
 - Module `translate_admin.ts` kết hợp với Google Gemini AI (`@google/genai`).
 - Hỗ trợ dịch tự động nội dung landing page, bài viết và template hệ thống (`/api/acp/landing-config/translate-all`, `translate-templates`).
@@ -135,7 +169,7 @@ Hệ thống đơn giản hóa quản lý trạng thái bài hát thành **đún
 
 ---
 
-## 8. Kịch Bản Backup & Phục Hồi Dữ Liệu (Backup & Sync Scripts)
+## 10. Kịch Bản Backup & Phục Hồi Dữ Liệu (Backup & Sync Scripts)
 
 Hệ thống đi kèm bộ công cụ CLI hữu ích nằm trong thư mục `scripts/`:
 
@@ -146,7 +180,7 @@ Hệ thống đi kèm bộ công cụ CLI hữu ích nằm trong thư mục `scr
 
 ---
 
-## 9. Quy Trình Máy Chủ & Deploy (VPS Operations)
+## 11. Quy Trình Máy Chủ & Deploy (VPS Operations)
 
 ### Cấu Hình Máy Chủ:
 - **VPS 1 (Demo / Primary):** IP `36.50.177.253` | PM2 Process `demonhac` | Deploy: `node deploy_now.cjs`
