@@ -1,6 +1,6 @@
 # CHORUS.VN (CRVN) System Architecture & Technical Specification
 
-> **Ghi chú quan trọng cho AI Agent:** Đây là tài liệu master chứa toàn bộ thông tin kiến trúc, cơ sở dữ liệu, lưu trữ R2 Cloudflare, quy trình SSO đa tab, quản lý trang Master Admin, phân cấp tài khoản Free/Pro/VIP, quản lý bài hát/vé/vouchers, phân quyền ẩn/hiện & mật khẩu bài hát, đa ngôn ngữ AI và quy trình Backup/Deploy của dự án `chorus.vn`. Đọc file này khi bắt đầu phiên làm việc để hiểu trọn vẹn 100% logic hệ thống mà không cần quét lại toàn bộ mã nguồn.
+> **Ghi chú quan trọng cho AI Agent:** Đây là tài liệu master chứa toàn bộ thông tin kiến trúc, cơ sở dữ liệu, lưu trữ R2 Cloudflare, quy trình SSO đa tab, hướng dẫn chi tiết từng mục trong `/admin` và `/master`, phân cấp tài khoản Free/Pro/VIP, quản lý bài hát/vé/vouchers, phân quyền ẩn/hiện & mật khẩu bài hát, đa ngôn ngữ AI và quy trình Backup/Deploy của dự án `chorus.vn`. Đọc file này khi bắt đầu phiên làm việc để hiểu trọn vẹn 100% logic hệ thống mà không cần quét lại toàn bộ mã nguồn.
 
 ---
 
@@ -77,24 +77,102 @@ Hệ thống đơn giản hóa quản lý trạng thái bài hát thành **đún
 
 ---
 
-## 4. Quản Lý Trang Master Admin & Hệ Thống ACP (Admin Control Panel)
+## 4. Chi Tiết Mọi Mục Trong Trang Quản Trị Nghệ Sĩ (`/admin`)
 
-Trang Master Admin dành riêng cho Quản trị viên tối cao của hệ thống (`acxuantai`):
+Trang `/admin` (hoặc `<artist>.chorus.vn/admin`) là bảng điều khiển chính cho nghệ sĩ quản lý trang cá nhân của mình, bao gồm 15 mục chính:
 
-1. **Cơ Chế Xác Thực Master (`isRequestMasterAdmin`):**
-   - Nhận diện quyền tối cao thông qua `masterToken` hoặc token định dạng `master_token_<adminPassword>`.
-   - Tài khoản mặc định chính: Username `acxuantai` (`isSpecial: true`, `isMasterAdmin: true`).
-2. **Quyền Hạn Toàn Diện của Master Panel (`/api/acp/*`):**
-   - **Quản lý Tài khoản Nghệ sĩ (`/api/acp/artists/*`):** Tạo mới, chỉnh sửa thông tin, đổi mật khẩu, ngắt/bật kích hoạt (`activated: true/false`), hoặc xóa tài khoản nghệ sĩ.
-   - **Phân cấp Gói cước & Hạn mức:** Thay đổi trực tiếp `roleId` (`free`, `pro`, `vip`), điều chỉnh số bài đăng tối đa (`maxSongs`), giới hạn giao diện (`maxTemplates`).
-   - **Quản lý Bảng Giá & Ma Trận Tính Năng (`/api/acp/pricing`, `/api/acp/roles-matrix`):** Tùy chỉnh trực tiếp giá các gói cước và quyền hạn tương ứng hiển thị trên trang chủ `chorus.vn`.
-   - **Tạo & Quản Lý Voucher (`/api/acp/vouchers/*`):** Phát hành mã ưu đãi gia hạn hoặc nâng cấp tính năng.
-   - **Quản Lý Vé Hỗ Trợ Toàn Hệ Thống (`/api/acp/tickets/*`):** Tiếp nhận, trả lời tin nhắn, giải quyết hoặc mở lại yêu cầu hỗ trợ từ tất cả nghệ sĩ.
-   - **Quản trị Đám mây Firestore (`/api/acp/artists/firebase-sync`, `firebase-wipe`):** Đồng bộ hoặc dọn dẹp dữ liệu đám mây khi cần.
+1. **`demos` (Quản lý Bài Hát & Demos):**
+   - Chứa 3 sub-tabs: *Đã phát hành (`released`)*, *Demo / Thu âm (`demos`)* và *Danh sách phát (`playlists`)*.
+   - Thêm bài mới: Upload audio, tải ảnh bìa/cover, nhập tiêu đề, ca sĩ, nhạc sĩ, lời bài hát (`lyrics`).
+   - Đặt trạng thái **Ẩn / Không công khai (`isDraft: true`)**: Giấu bài khỏi danh sách public, sinh đường dẫn bí mật (`secretKey` / `slug`).
+   - Cài đặt **Mật khẩu riêng (`demo.password`)**: Nếu trống sẽ dùng Mật khẩu chung (`globalPassword`).
+   - Sắp xếp thứ tự ưu tiên bài hát (Reorder) & Xóa bài hát (`deleted: true`).
+2. **`playlists` (Quản lý Danh Sách Phát):**
+   - Tạo Playlist mới, gom chọn các bài hát đi kèm.
+   - Đặt tên, ảnh bìa Playlist, đặt **Mật khẩu Playlist (`playlist.password`)** hoặc tạo link bí mật (`secretLink`).
+3. **`templates` (Mẫu Giao Diện Nghệ Sĩ):**
+   - Lựa chọn hơn 20+ phong cách Template giao diện (Gold Luxury, Neon Club, Cyberpunk, Journal Notebook, Vintage, Ethereal, v.v.).
+   - Tùy chỉnh bảng màu Lời bài hát (`lyricsColor`), Màu sóng nhạc Waveform (`waveColor`) và màu nền.
+4. **`reposts` (Đăng Lại & Nhạc Liên Kết Bên Ngoài):**
+   - Nhúng bài hát từ nền tảng ngoài (YouTube, Spotify, Apple Music, Zing MP3, YouTube Music).
+   - Tự động bóc tách metadata và nhúng Smart Player.
+5. **`profile` (Hồ Sơ Cá Nhân Nghệ Sĩ):**
+   - Thay đổi Tên nghệ sĩ (`artistName`), Subdomain (`extension`), Tiêu đề trang (`pageTitle`).
+   - Tải lên Ảnh đại diện Avatar (`avatarUrl`) và Ảnh bìa chính Hero Cover (`homeCoverUrl`).
+   - Quản lý danh sách Slideshow hình nền động (`slideshowImages`).
+   - Gắn link kênh chính (Spotify Artist URL, YouTube Playlist URL).
+6. **`layout` (Cấu Hình Bố Cục Trang Web):**
+   - Bật/Tắt hiển thị từng khối UI (Header, Floating Bar, Footer, Block Bài hát ra rồi, Block Demo).
+   - Chỉnh chế độ Full Bleed / Xem trước giao diện PC.
+7. **`about` (Giới Thiệu & Liên Hệ Booking):**
+   - Soạn nội dung Giới thiệu bản thân, thông tin liên hệ làm việc, email booking, số điện thoại.
+8. **`bio` (Tiểu Sử Chi Tiết & Thành Tựu):**
+   - Tạo mốc thời gian sự nghiệp (Career Timeline), danh sách giải thưởng, sản phẩm nổi bật, học vấn & kinh nghiệm.
+9. **`menus` (Tùy Chỉnh Thanh Điều Hướng Public Navbar):**
+   - Thêm/Sửa/Xóa các nút menu trên thanh điều hướng trang công khai của nghệ sĩ.
+   - Tạo liên kết tùy chỉnh dẫn sang trang ngoài hoặc tự động cuộn (smooth scroll) tới các section.
+10. **`socials` (Mạng Xã Hội & Liên Kết):**
+    - Cài đặt liên kết các mạng xã hội: Facebook, Instagram, TikTok, YouTube, Spotify, Soundcloud, Apple Music, Threads, X.
+11. **`security` (Bảo Mật Tài Khoản & Mật Khẩu):**
+    - Đổi Mật khẩu Admin (`adminPassword`) dùng truy cập `/admin`.
+    - Đổi Mật khẩu Thành viên VIP (`memberPassword`) cấp cho Fan.
+    - Cài đặt Mật khẩu chung (`globalPassword`) bảo vệ mặc định cho tất cả nhạc demo.
+    - Cập nhật Email cá nhân, gửi yêu cầu đấu nối Tên miền riêng (`customDomain`).
+12. **`tickets` (Trung Tâm Yêu Cầu Hỗ Trợ):**
+    - Tạo vé yêu cầu hỗ trợ kỹ thuật gửi đến Master Admin.
+    - Nhắn tin trao đổi 2 chiều realtime với Master Admin.
+    - Đóng/Mở lại yêu cầu hỗ trợ.
+13. **`database` (Xem Cấu Trúc Dữ Liệu - Dành cho tài khoản cấp cao):**
+    - Cho phép xem nhanh cấu trúc bản ghi JSON dữ liệu của tài khoản nghệ sĩ đang đăng nhập.
+14. **`admin_theme` (Chủ Đề Trang Quản Trị):**
+    - Đổi giao diện Dashboard Admin (Tùy chọn phong cách Dark Glass, Gold Luxury, Minimalist Light, Midnight Purple).
+15. **`vouchers` (Quy Đổi Mã Ưu Đãi):**
+    - Nhập mã Voucher từ Master Admin để tăng thêm hạn mức bài đăng (`increaseSongs`), mở rộng mẫu template (`increaseTemplates`) hoặc nhận tháng VIP (`vipMonths`).
 
 ---
 
-## 5. Phân Cấp Tài Khoản (Account Tier Hierarchy & Voucher System)
+## 5. Chi Tiết Mọi Mục Trong Trang Master Admin (`/master` hoặc `/acp`)
+
+Trang Master Admin (`/master` hoặc `/acp`) do Master Admin tối cao (`acxuantai`) quản lý toàn bộ nền tảng, bao gồm 11 mục chính trong `ACPControlPanel.tsx`:
+
+1. **`artists` (Quản Lý Danh Sách Nghệ Sĩ Toàn Hệ Thống):**
+   - Danh sách bảng điều khiển tất cả nghệ sĩ trên hệ thống.
+   - Khóa / Kích hoạt tài khoản nghệ sĩ (`activated: true/false`).
+   - Phân cấp gói cước (`roleId: 'free' | 'pro' | 'vip'`).
+   - Tạo tài khoản nghệ sĩ mới, Đổi mật khẩu trực tiếp, Sửa username/subdomain.
+   - Tùy chỉnh hạn mức số bài hát tối đa (`maxSongs`), giới hạn mẫu giao diện (`maxTemplates`).
+   - Xóa hoàn toàn tài khoản nghệ sĩ khỏi hệ thống.
+2. **`landing` (Cấu Hình Trang Chủ Hệ Thống `chorus.vn`):**
+   - Chỉnh sửa nội dung Hero Section, Tiêu đề chính, Phụ đề, Nút kêu gọi hành động (CTA).
+   - Tùy chỉnh ảnh Demo mockup, video giới thiệu, cài đặt SEO Meta Description & Favicon.
+   - **Tính năng Dịch Tự Động AI (Translate All):** Gọi Gemini AI dịch tự động toàn bộ trang chủ sang 10+ ngôn ngữ quốc tế.
+3. **`tickets` (Quản Lý Vé Hỗ Trợ Toàn Hệ Thống):**
+   - Tiếp nhận tất cả Yêu cầu hỗ trợ (Support Tickets) gửi từ mọi nghệ sĩ.
+   - Trả lời tin nhắn hỗ trợ realtime, Đóng/Giải quyết (`resolve`), Mở lại (`reopen`).
+   - Xóa trực tiếp các bài hát hoặc dữ liệu vi phạm được đính kèm trong vé hỗ trợ.
+4. **`pricing` (Cấu Hình Bảng Giá Dịch Vụ):**
+   - Tùy chỉnh chi tiết mức giá và thông số các gói cước `Free`, `Pro`, `VIP`.
+   - Cài đặt chu kỳ thanh toán (Tháng / Năm) và phần trăm giảm giá.
+5. **`roles` (Ma Trận Phân Quyền Tính Năng - Roles Matrix):**
+   - Thiết lập bảng so sánh ma trận tính năng giữa các gói Free / Pro / VIP hiển thị công khai ở trang chủ `chorus.vn`.
+6. **`vouchers` (Quản Lý & Phát Hành Mã Ưu Đãi):**
+   - Tạo mã Voucher mới (Cấu hình mã code, số bài tặng thêm `increaseSongs`, số mẫu giao diện tặng `increaseTemplates`, số tháng VIP `vipMonths`, phần trăm giảm giá `discountPercent`).
+   - Quản lý danh sách nghệ sĩ đã sử dụng mã (`usedBy`), Xóa mã Voucher.
+7. **`templates` (Quản Lý Thư Viện Mẫu Giao Diện):**
+   - Quản lý các mẫu Template công khai trên hệ thống.
+   - Bật/Tắt template mẫu hoặc gán quyền truy cập mẫu giao diện cho gói Pro/VIP.
+8. **`faq` (Quản Lý Câu Hỏi Thường Gặp):**
+   - Thêm/Sửa/Xóa các câu hỏi FAQ hiển thị trên landing page `chorus.vn`.
+9. **`keywords` & `content` (SEO & Bài Viết Blog System):**
+   - Quản lý từ khóa SEO toàn trang, quản lý các bài viết tin tức, bài hướng dẫn, blog trên hệ thống.
+10. **`admin_theme` (Chủ Đề Giao Diện Master):**
+    - Đổi giao diện hiển thị riêng cho trang quản trị tối cao Master Admin.
+11. **`edit_item` (Trình Chỉnh Sửa Nâng Cao - Raw Editor):**
+    - Trình can thiệp dữ liệu JSON trực tiếp dành cho Master Admin để chỉnh sửa bất kỳ bản ghi hoặc tệp dữ liệu nào trong hệ thống.
+
+---
+
+## 6. Phân Cấp Tài Khoản (Account Tier Hierarchy & Voucher System)
 
 Hệ thống phân chia thành 3 cấp độ tài khoản chính với hạn mức và quyền hạn rõ ràng:
 
@@ -103,29 +181,6 @@ Hệ thống phân chia thành 3 cấp độ tài khoản chính với hạn m�
 | **FREE** | Giới hạn (Mặc định 10 bài) | Subdomain mặc định (`<ext>.chorus.vn`) | Mẫu cơ bản | Nhạc Demo, Mật khẩu bài hát, Ticket hỗ trợ |
 | **PRO** | Mở rộng hạn mức bài | Kết nối Tên miền riêng | Mở rộng mẫu Template | Đầy đủ tính năng Pro, Ưu tiên hỗ trợ |
 | **VIP** | **Không giới hạn** (`-1` / `unlimited`) | **Tên miền riêng cao cấp** | **Toàn bộ Template Premium** | Tất cả tính năng cao cấp + Hỗ trợ 24/7 |
-
-### Cơ Chế Đổi Mã Voucher (`/api/admin/vouchers/redeem`):
-Nghệ sĩ có thể nhập mã Voucher được cấp từ Master Admin để tự động mở rộng quyền hạn:
-- `increaseSongs`: Tăng thêm số lượng bài hát tối đa được đăng.
-- `increaseTemplates`: Mở rộng thêm số mẫu giao diện nghệ sĩ được sử dụng.
-- `vipMonths`: Tự động cộng số tháng sử dụng gói VIP.
-- `discountPercent`: Mã giảm giá khi nâng cấp dịch vụ.
-
----
-
-## 6. Quản Lý Giao Diện & Layout (UI & Layout Management)
-
-1. **Trang Chủ Hệ Thống (`chorus.vn`):**
-   - Cấu hình qua `landing_config.json`.
-   - Quản lý các block Hero, Bảng giá (Pricing Packages), Danh sách tính năng (Features), Template mẫu (Presets), FAQ và Đánh giá người dùng.
-2. **Trang Cá Nhân Nghệ Sĩ (`<ext>.chorus.vn`):**
-   - Đọc động từ `data_<artist>.json`:
-     - Tùy chỉnh Tiêu đề (`pageTitle`), Tiểu sử (`artistBio`), Ảnh đại diện (`avatarUrl`), Ảnh bìa (`homeCoverUrl`).
-     - Tùy chỉnh Slideshow hình nền (`slideshowImages`).
-     - Liên kết MXH (Spotify, YouTube Playlist, Facebook, Instagram, TikTok).
-3. **Widget Nổi Đồng Bộ Phiên (`UnifiedArtistSessionFloatingWidget`):**
-   - Thanh công cụ nổi thông minh ở góc màn hình.
-   - Cho phép nghệ sĩ nhanh chóng mở trang Admin, chuyển đổi nhanh giữa các subdomain nghệ sĩ khác nhau, xem trạng thái kích hoạt và Đăng xuất SSO toàn hệ thống.
 
 ---
 
