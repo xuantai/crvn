@@ -11876,7 +11876,7 @@ const activeAchievements = hasAchievements;
                                       onClick={async (e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        let url = window.location.origin + getArtistLink(`/song/${demo.slug || demo.id}`);
+                                        let url = getArtistFullUrl(`/song/${demo.slug || demo.id}`);
                                         url = formatShareUrl(url);
                                         await copyToClipboard(url);
                                         setToast('Đã copy link bài hát!');
@@ -24889,7 +24889,7 @@ function AdminPlaylistEdit() {
       setTitle(playlistData.playlist.title);
       setCoverUrlPreview(playlistData.playlist.coverUrl || '');
       setIsDraft(playlistData.playlist.isDraft || false);
-      setPassword(playlistData.playlist.password || '');
+      setPassword(sanitizePlaylistPassword(playlistData.playlist.password));
       setSecretLink(playlistData.playlist.secretLink || '');
       setSongs(playlistData.songs);
       setAppData(data);
@@ -25005,9 +25005,9 @@ function AdminPlaylistEdit() {
                   <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-xl">
                      <p className="text-emerald-800 text-sm font-medium mb-2">{t("Sử dụng link sau để truy cập trực tiếp (không cần nhập mật khẩu playlist):")}</p>
                      <div className="flex items-center gap-2">
-                        <input readOnly value={`${window.location.origin}/playlist/${id}?secret=${secretLink}`} className="flex-1 bg-white border border-emerald-300 rounded-lg px-3 py-2 text-sm text-emerald-900 focus:outline-none" />
+                        <input readOnly value={getArtistFullUrl(`/playlist/${id}?secret=${secretLink}`)} className="flex-1 bg-white border border-emerald-300 rounded-lg px-3 py-2 text-sm text-emerald-900 focus:outline-none" />
                         <button type="button" onClick={async () => {
-                           await navigator.clipboard.writeText(`${window.location.origin}/playlist/${id}?secret=${secretLink}`);
+                           await copyToClipboard(getArtistFullUrl(`/playlist/${id}?secret=${secretLink}`));
                            setToast(t("Đã copy Secret Link!"));
                            setTimeout(() => setToast(''), 3000);
                         }} className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-emerald-700">Copy</button>
