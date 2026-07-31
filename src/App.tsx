@@ -24849,7 +24849,14 @@ function AdminPlaylistEdit() {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${getAdminToken() || ''}` 
       },
-      body: JSON.stringify({ title, coverUrl: coverUrlPreview, songIds, isDraft, password, secretLink })
+      body: JSON.stringify({ 
+        title, 
+        coverUrl: coverUrlPreview, 
+        songIds, 
+        isDraft, 
+        password: isDraft ? password : '', 
+        secretLink: isDraft ? secretLink : '' 
+      })
     });
     setToast(t("Đã lưu thành công!"));
     setTimeout(() => setToast(''), 3000);
@@ -24902,11 +24909,11 @@ function AdminPlaylistEdit() {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-stone-100">
+          <div className={`grid grid-cols-1 ${isDraft ? 'md:grid-cols-2' : ''} gap-6 pt-4 border-t border-stone-100`}>
             <div>
                <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Hiển Thị")}</label>
                <div className="relative">
-                 <select value={isDraft ? 'true' : 'false'} onChange={e => setIsDraft(e.target.value === 'true')} className="w-full border border-stone-300 rounded-xl pl-4 pr-10 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white appearance-none cursor-pointer hover:border-stone-400 transition-colors">
+                 <select value={isDraft ? 'true' : 'false'} onChange={e => setIsDraft(e.target.value === 'true')} className="w-full border border-stone-300 rounded-xl pl-4 pr-10 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white appearance-none cursor-pointer hover:border-stone-400 transition-colors font-medium">
                     <option value="false">{t("Công khai (hiện ở trang chủ)")}</option>
                     <option value="true">{t("Riêng tư / Bản nháp (ẩn khỏi trang chủ)")}</option>
                  </select>
@@ -24915,41 +24922,45 @@ function AdminPlaylistEdit() {
                  </div>
                </div>
             </div>
-            <div>
-               <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Mật khẩu Playlist (tùy chọn)")}</label>
-               <div className="relative">
-                 <Lock className="absolute left-3 top-3.5 w-5 h-5 text-stone-400" />
-                 <input type="text" value={password} onChange={e => setPassword(e.target.value)} placeholder={t("Bỏ trống nếu không cần")} className="w-full border border-stone-300 rounded-xl pl-10 pr-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
-               </div>
-            </div>
+            {isDraft && (
+              <div>
+                 <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Mật khẩu Playlist (tùy chọn)")}</label>
+                 <div className="relative">
+                   <Lock className="absolute left-3 top-3.5 w-5 h-5 text-stone-400" />
+                   <input type="text" value={password} onChange={e => setPassword(e.target.value)} placeholder={t("Bỏ trống nếu không cần")} className="w-full border border-stone-300 rounded-xl pl-10 pr-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+                 </div>
+              </div>
+            )}
           </div>
 
-          <div className="pt-4 border-t border-stone-100">
-             <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-semibold text-stone-700">{t("Secret Link (Link Bí Mật)")}</label>
-                <button type="button" onClick={async () => {
-                   if (!secretLink || (globalShowConfirm && await globalShowConfirm(t("Tạo mới Secret Link? Link cũ sẽ không thể truy cập nữa."), t("Xác nhận tạo mới")))) {
-                      setSecretLink(Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
-                   }
-                }} className="text-xs bg-stone-100 hover:bg-stone-200 text-stone-800 px-3 py-1.5 rounded-lg font-bold transition-colors">{t("Tạo Link Mới")}</button>
-             </div>
-             {secretLink ? (
-                <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-xl">
-                   <p className="text-emerald-800 text-sm font-medium mb-2">{t("Sử dụng link sau để truy cập trực tiếp (không cần nhập mật khẩu playlist):")}</p>
-                   <div className="flex items-center gap-2">
-                      <input readOnly value={`${window.location.origin}/playlist/${id}?secret=${secretLink}`} className="flex-1 bg-white border border-emerald-300 rounded-lg px-3 py-2 text-sm text-emerald-900 focus:outline-none" />
-                      <button type="button" onClick={async () => {
-                         await navigator.clipboard.writeText(`${window.location.origin}/playlist/${id}?secret=${secretLink}`);
-                         setToast(t("Đã copy Secret Link!"));
-                         setTimeout(() => setToast(''), 3000);
-                      }} className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-emerald-700">Copy</button>
-                      <button type="button" onClick={() => setSecretLink('')} className="bg-red-100 text-red-600 px-3 py-2 rounded-lg font-bold text-sm hover:bg-red-200">{t("Xóa")}</button>
-                   </div>
-                </div>
-             ) : (
-                <p className="text-sm text-stone-500 italic">{t("Chưa tạo Secret Link cho Playlist này.")}</p>
-             )}
-          </div>
+          {isDraft && (
+            <div className="pt-4 border-t border-stone-100">
+               <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-semibold text-stone-700">{t("Secret Link (Link Bí Mật)")}</label>
+                  <button type="button" onClick={async () => {
+                     if (!secretLink || (globalShowConfirm && await globalShowConfirm(t("Tạo mới Secret Link? Link cũ sẽ không thể truy cập nữa."), t("Xác nhận tạo mới")))) {
+                        setSecretLink(Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
+                     }
+                  }} className="text-xs bg-stone-100 hover:bg-stone-200 text-stone-800 px-3 py-1.5 rounded-lg font-bold transition-colors">{t("Tạo Link Mới")}</button>
+               </div>
+               {secretLink ? (
+                  <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-xl">
+                     <p className="text-emerald-800 text-sm font-medium mb-2">{t("Sử dụng link sau để truy cập trực tiếp (không cần nhập mật khẩu playlist):")}</p>
+                     <div className="flex items-center gap-2">
+                        <input readOnly value={`${window.location.origin}/playlist/${id}?secret=${secretLink}`} className="flex-1 bg-white border border-emerald-300 rounded-lg px-3 py-2 text-sm text-emerald-900 focus:outline-none" />
+                        <button type="button" onClick={async () => {
+                           await navigator.clipboard.writeText(`${window.location.origin}/playlist/${id}?secret=${secretLink}`);
+                           setToast(t("Đã copy Secret Link!"));
+                           setTimeout(() => setToast(''), 3000);
+                        }} className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-emerald-700">Copy</button>
+                        <button type="button" onClick={() => setSecretLink('')} className="bg-red-100 text-red-600 px-3 py-2 rounded-lg font-bold text-sm hover:bg-red-200">{t("Xóa")}</button>
+                     </div>
+                  </div>
+               ) : (
+                  <p className="text-sm text-stone-500 italic">{t("Chưa tạo Secret Link cho Playlist này.")}</p>
+               )}
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Ảnh bìa Playlist (Kích thước vuông)")}</label>
