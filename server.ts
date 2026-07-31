@@ -6009,7 +6009,6 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
 
       let songs = data.demos.filter((d: any) => {
          if (d.deleted) return false;
-         if (d.status !== 'public' && !isUserAdmin) return false;
          return (d.playlistIds && d.playlistIds.includes(playlist.id)) || (playlist.songIds && playlist.songIds.includes(d.id));
       });
 
@@ -6825,7 +6824,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
               
               let pCover = playlist.coverUrl;
               if (!pCover) {
-                const pSongs = data.demos.filter((d: any) => !d.deleted && d.status === 'public' && d.playlistIds && d.playlistIds.includes(playlist.id));
+                const pSongs = data.demos.filter((d: any) => !d.deleted && ((d.playlistIds && d.playlistIds.includes(playlist.id)) || (playlist.songIds && playlist.songIds.includes(d.id))));
                 if (playlist.songIds && playlist.songIds.length > 0) {
                    pSongs.sort((a: any, b: any) => {
                       const indexA = playlist.songIds.indexOf(a.id);

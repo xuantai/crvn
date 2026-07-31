@@ -9934,11 +9934,11 @@ function Home() {
         .some(d => d.title.toLowerCase().includes(trimmed));
 
       const hasAlbumsMatches = (data?.playlists?.filter((playlist: any) => {
-        const songsInPlaylist = (data?.demos || []).filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id));
+        const songsInPlaylist = (data?.demos || []).filter(d => !d.deleted && ((d.playlistIds && d.playlistIds.includes(playlist.id)) || (playlist.songIds && playlist.songIds.includes(d.id))));
         return songsInPlaylist.length > 0;
       }) || []).some((playlist: any) => {
         if (playlist.title.toLowerCase().includes(trimmed)) return true;
-        const songsInPlaylist = (data?.demos || []).filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id)) || [];
+        const songsInPlaylist = (data?.demos || []).filter(d => !d.deleted && ((d.playlistIds && d.playlistIds.includes(playlist.id)) || (playlist.songIds && playlist.songIds.includes(d.id)))) || [];
         return songsInPlaylist.some(d => d.title.toLowerCase().includes(trimmed));
       });
 
@@ -11164,7 +11164,7 @@ function Home() {
           {(() => {
             let currentListItems = activeListTab === 'albums' 
               ? (data?.playlists?.filter((playlist: any) => {
-                  const songsInPlaylist = (data?.demos || []).filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id));
+                  const songsInPlaylist = (data?.demos || []).filter(d => !d.deleted && ((d.playlistIds && d.playlistIds.includes(playlist.id)) || (playlist.songIds && playlist.songIds.includes(d.id))));
                   return songsInPlaylist.length > 0;
                 }) || [])
               : ((data?.demos || []).filter(d => (d.linkType === 'indirect' || d.status === 'public') && !d.isDraft).filter(d => activeListTab === 'demos' ? (!d.isReleased && d.linkType !== 'indirect') : (d.isReleased || d.linkType === 'indirect')) || []);
@@ -11174,7 +11174,7 @@ function Home() {
               if (activeListTab === 'albums') {
                 currentListItems = currentListItems.filter((playlist: any) => {
                   if (playlist.title.toLowerCase().includes(query)) return true;
-                  const songsInPlaylist = (data?.demos || []).filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id)) || [];
+                  const songsInPlaylist = (data?.demos || []).filter(d => !d.deleted && ((d.playlistIds && d.playlistIds.includes(playlist.id)) || (playlist.songIds && playlist.songIds.includes(d.id)))) || [];
                   return songsInPlaylist.some(d => d.title.toLowerCase().includes(query));
                 });
               } else {
@@ -11238,7 +11238,7 @@ function Home() {
                   >
                     {activeListTab === 'albums' ? (
                       paginatedItems.map((playlist: any, idx: number) => {
-                        const songsInPlaylist = (data?.demos || []).filter(d => d.status === 'public' && !d.isDraft && d.playlistIds && d.playlistIds.includes(playlist.id));
+                        const songsInPlaylist = (data?.demos || []).filter(d => !d.deleted && ((d.playlistIds && d.playlistIds.includes(playlist.id)) || (playlist.songIds && playlist.songIds.includes(d.id))));
                         if (songsInPlaylist.length === 0) return <React.Fragment key={`l8086-${playlist.id || ''}-${idx}`} />;
                         
                         let coverUrl = playlist.coverUrl || '';
