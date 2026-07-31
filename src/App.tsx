@@ -5982,15 +5982,31 @@ const getArtistAdminRedirect = (targetExt: string, toPage = 'admin') => {
 };
 
 const getActiveAdminSession = () => {
-  // Single Source of Truth for SSO is the global cookie on .chorus.vn
-  let activeExt = getGlobalCookie('activeAdminExtension') || localStorage.getItem('activeAdminExtension');
-  
+  const host = typeof window !== 'undefined' ? window.location.hostname.replace(/^www./, '').toLowerCase().trim() : '';
+  const isChorusDomain = host.endsWith('.chorus.vn') || host === 'chorus.vn';
+
+  // On .chorus.vn domains, the Cookie is the strict Single Source of Truth!
+  // If global cookie is empty, the user IS LOGGED OUT across all subdomains and main domain.
+  // We NEVER fall back to local storage if global cookie is absent on .chorus.vn!
+  let activeExt = isChorusDomain 
+    ? getGlobalCookie('activeAdminExtension') 
+    : (getGlobalCookie('activeAdminExtension') || localStorage.getItem('activeAdminExtension'));
+
   let activeToken = activeExt 
-    ? (getGlobalCookie(`adminToken_${activeExt}`) || getGlobalCookie('adminToken') || localStorage.getItem(`adminToken_${activeExt}`) || localStorage.getItem('adminToken')) 
+    ? (getGlobalCookie(`adminToken_${activeExt}`) || getGlobalCookie('adminToken') || (isChorusDomain ? null : (localStorage.getItem(`adminToken_${activeExt}`) || localStorage.getItem('adminToken')))) 
     : null;
 
-  // If no active extension or no active token exists, session is LOGGED OUT!
+  // If no active extension or no active token exists on cookie level, session is LOGGED OUT!
   if (!activeExt || !activeToken) {
+    if (isChorusDomain && typeof localStorage !== 'undefined') {
+      const origRemove = (window as any).__originalRemoveItem__ || localStorage.removeItem;
+      const keys = Object.keys(localStorage);
+      keys.forEach(k => {
+        if (k && (k.includes('adminToken') || k.includes('activeAdmin') || k.includes('memberToken'))) {
+          origRemove.call(localStorage, k);
+        }
+      });
+    }
     return {
       activeExt: '',
       activeToken: '',
