@@ -12480,6 +12480,16 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
     }
   }, [currentSrc, isPreview]);
 
+  useEffect(() => {
+    const handleTogglePlay = () => {
+      togglePlay();
+    };
+    document.addEventListener('toggle-playlist-play', handleTogglePlay);
+    return () => {
+      document.removeEventListener('toggle-playlist-play', handleTogglePlay);
+    };
+  }, [togglePlay]);
+
   const togglePlay = () => {
     if (audioRef.current) {
       if (isPlaying) {
@@ -14134,9 +14144,43 @@ function PlaylistPlayer() {
                               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/10 to-transparent -translate-x-full animate-shimmer-sweep z-0 pointer-events-none skew-x-[-20deg]" />
                             </>
                          )}
-                         <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-neutral-800 flex-shrink-0 overflow-hidden border border-white/5 relative z-10 transition-transform">
-                            {getSongCoverUrl(song.coverUrl) ? <img src={getSongCoverUrl(song.coverUrl)} className="w-full h-full object-cover group-hover:scale-110 transition-transform" /> : <Music className="w-4 h-4 m-3 sm:m-3.5 text-neutral-500" />}
-                         </div>
+                         <div 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (i === currentIndex) {
+                                document.dispatchEvent(new CustomEvent('toggle-playlist-play'));
+                              } else {
+                                setCurrentIndex(i);
+                              }
+                            }}
+                            className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-neutral-800 flex-shrink-0 overflow-hidden border border-white/5 relative z-10 transition-transform cursor-pointer group/cover"
+                            title={i === currentIndex ? (isPlaying ? t("Tạm dừng") : t("Phát nhạc")) : t("Phát bài này")}
+                          >
+                             {getSongCoverUrl(song.coverUrl) ? (
+                               <img src={getSongCoverUrl(song.coverUrl)} className="w-full h-full object-cover group-hover/cover:scale-110 transition-transform" />
+                             ) : (
+                               <Music className="w-4 h-4 m-3 sm:m-3.5 text-neutral-500" />
+                             )}
+
+                             {/* Audio Spectrum when active and playing */}
+                             {i === currentIndex && isPlaying && (
+                               <div className="absolute inset-0 bg-black/50 flex items-center justify-center gap-[2.5px] z-10 group-hover/cover:opacity-0 transition-opacity">
+                                 <div className="w-[3px] h-3 bg-purple-400 rounded-full animate-[bounce_0.6s_infinite_0ms]" />
+                                 <div className="w-[3px] h-4 bg-purple-400 rounded-full animate-[bounce_0.6s_infinite_150ms]" />
+                                 <div className="w-[3px] h-2 bg-purple-400 rounded-full animate-[bounce_0.6s_infinite_300ms]" />
+                                 <div className="w-[3px] h-3.5 bg-purple-400 rounded-full animate-[bounce_0.6s_infinite_450ms]" />
+                               </div>
+                             )}
+
+                             {/* Hover Play/Pause Overlay */}
+                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/cover:opacity-100 flex items-center justify-center z-20 transition-opacity">
+                               {i === currentIndex && isPlaying ? (
+                                 <Pause className="w-4 h-4 text-white fill-white" />
+                               ) : (
+                                 <Play className="w-4 h-4 text-white fill-white ml-0.5" />
+                               )}
+                             </div>
+                          </div>
                          <div className={`flex-1 min-w-0 flex flex-col justify-center relative z-10 ${song.achievements?.length ? 'pr-2' : 'pr-4'}`}>
                             <MarqueeText className={`font-bold transition-colors w-full ${i === currentIndex ? 'text-purple-400' : (song.achievements?.length ? 'text-amber-100 hover:text-amber-300' : 'text-white')} ${song.achievements?.length ? 'text-[10px] sm:text-[11px]' : 'text-xs sm:text-sm'}`}>
                                <HoverTranslate text={song.title} format={true} />
@@ -14150,6 +14194,9 @@ function PlaylistPlayer() {
                             </div>
                          )}
 
+                         {song.requiresPassword && !song.achievements?.length && (
+                           <Lock className="w-3.5 h-3.5 text-yellow-500 flex-shrink-0 relative z-10 mr-0.5" title={t("Bài hát được bảo vệ")} />
+                         )}
                          <button
                            type="button"
                            onClick={async (e) => {
@@ -14165,13 +14212,11 @@ function PlaylistPlayer() {
                              setToast(t("Đã copy link playlist bài hát!"));
                              setTimeout(() => setToast(''), 3000);
                            }}
-                           className="opacity-70 hover:opacity-100 p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-white/80 hover:text-white flex-shrink-0 relative z-10 transition-all active:scale-90 cursor-pointer ml-1"
+                           className="opacity-70 hover:opacity-100 p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-white/80 hover:text-white flex-shrink-0 relative z-10 transition-all active:scale-90 cursor-pointer"
                            title={t("Sao chép link bài hát này trong playlist")}
                          >
                            <Share2 className="w-3.5 h-3.5" />
                          </button>
-                         {song.requiresPassword && !song.achievements?.length && <Lock className="w-3 h-3 text-yellow-500 flex-shrink-0 relative z-10" />}
-                         {i === currentIndex && !song.achievements?.length && <div className="w-2 h-2 rounded-full bg-purple-400 shadow-[0_0_8px_theme(colors.purple.400)] relative z-10" />}
                       </button>
                    ))}
                  </div>
