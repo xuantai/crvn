@@ -4224,8 +4224,7 @@ export default function ACPControlPanel() {
                           className="w-full bg-neutral-900 border border-white/15 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
                         >
                           <option value="public">🌐 Công khai (Public)</option>
-                          <option value="hidden">🔒 Ẩn bài hát (Private)</option>
-                          <option value="unlisted">🔗 Không công khai (Chỉ mở bằng link)</option>
+                          <option value="hidden">🔒 Ẩn (Hidden)</option>
                         </select>
                       </div>
                       <div>
