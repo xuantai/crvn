@@ -5970,7 +5970,9 @@ const getAdminTokenKey = (customPath?: string) => getArtistExtensionFromUrl(cust
 const getMemberTokenKey = (customPath?: string) => getArtistExtensionFromUrl(customPath) ? `memberToken_${getArtistExtensionFromUrl(customPath)}` : 'memberToken';
 
 const setGlobalCookie = (name: string, value: string) => {
-  if (typeof window !== 'undefined' && (window as any).__IS_LOGGED_OUT__) return;
+  if (typeof window !== 'undefined' && (window as any).__IS_LOGGED_OUT__) {
+    return;
+  }
   const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
   const domain = (host.endsWith('.chorus.vn') || host === 'chorus.vn') ? 'domain=.chorus.vn;' : '';
   document.cookie = `${name}=${encodeURIComponent(value)}; ${domain} path=/; max-age=31536000; SameSite=Lax`;
@@ -6050,6 +6052,9 @@ const getActiveAdminSession = () => {
 
   // If no active extension or no active token exists on cookie level, session is LOGGED OUT!
   if (!activeExt || !activeToken) {
+    if (typeof window !== 'undefined') {
+      (window as any).__IS_LOGGED_OUT__ = true;
+    }
     if (isChorusDomain && typeof localStorage !== 'undefined') {
       const origRemove = (window as any).__originalRemoveItem__ || localStorage.removeItem;
       const keys = Object.keys(localStorage);
@@ -6444,8 +6449,8 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
       window.dispatchEvent(new CustomEvent('sso-toast', {
         detail: {
           type: 'logout',
-          title: 'Đăng Xuất Thành Công',
-          message: 'Hẹn gặp lại bạn lần sau!'
+          title: 'Đã Đăng Xuất',
+          message: 'Đã đăng xuất thành công! Hẹn gặp lại bạn.'
         }
       }));
     } catch (e) {}
