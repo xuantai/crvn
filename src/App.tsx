@@ -7325,7 +7325,17 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
   const [showThemeDropdown, setShowThemeDropdown] = useState(false);
   const [originalTheme, setOriginalTheme] = useState<string | null>(null);
   const [pendingTheme, setPendingTheme] = useState<string | null>(null);
-  const [themeError, setThemeError] = useState<string | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogoutClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    setTimeout(() => {
+      onLogout();
+    }, 1200);
+  };
 
   const { activeExt, activeName, activeToken } = session;
   const currentExt = getArtistExtensionFromUrl(location.pathname);
@@ -7515,216 +7525,225 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
           transition={{ duration: 0.3 }}
           className="fixed bottom-6 right-6 z-[99] flex items-center gap-3 bg-black/40 text-white px-4 py-2.5 rounded-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all hover:bg-black/50"
         >
-          <a href={getArtistAdminRedirect(activeExt, '').replace(/\/$/, '') || '/'} className="flex items-center gap-2 group cursor-pointer hover:opacity-80 transition-opacity" title={t("Đến kho nhạc")}>
-            {avatar ? (
-              <img 
-                src={getAvatarUrl(avatar)} 
-                className="w-8 h-8 rounded-full object-cover border border-white/20 shadow-sm shrink-0"
-                alt={activeName}
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                  if (fallback) fallback.style.display = 'flex';
-                }}
-              />
-            ) : null}
-            <div 
-              className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-500 flex items-center justify-center text-xs font-bold text-white shadow-sm animate-pulse shrink-0"
-              style={{ display: avatar ? 'none' : 'flex' }}
-            >
-              {activeName.charAt(0).toUpperCase()}
+          {isLoggingOut ? (
+            <div className="flex items-center gap-2 text-emerald-300 font-bold text-xs py-1 px-2 animate-pulse">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <span>{t("Đăng xuất thành công!")}</span>
             </div>
-            <div className="text-left flex flex-col justify-center leading-none">
-              <span className="text-[10px] text-yellow-300 font-black uppercase tracking-wider leading-none mb-1 shadow-xs">{t("Nghệ sĩ")}</span>
-              <span className="text-[11px] font-black text-white uppercase tracking-wider leading-relaxed pt-1 pb-0.5 max-w-[120px] sm:max-w-[200px] whitespace-normal break-words">{activeName}</span>
-            </div>
-          </a>
-          <div className="w-px h-6 bg-white/10 mx-1"></div>
-          <div className="flex items-center gap-1.5">
-            {/* Theme Selector Icon/Menu */}
-            {isOnOwnArtistHomepage && (
-            <div className="relative">
-              <button
-                onClick={handlePaletteClick}
-                title={t("Đổi giao diện nhanh")}
-                className="p-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center"
-              >
-                <Palette className="w-4 h-4 text-amber-400 animate-pulse shrink-0" />
-              </button>
-              
-              <AnimatePresence>
-                {showThemeDropdown && (
-                  <motion.div key="theme-dropdown"
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute bottom-14 right-0 bg-neutral-900/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2.5 shadow-2xl w-48 flex flex-col gap-1 z-50 text-stone-200"
-                  >
-                    <div className="text-[10px] font-black uppercase text-stone-400 px-2 py-1 border-b border-white/5 mb-1 tracking-wider">
-                      {t("Chọn giao diện")}
-                    </div>
-                    <button
-                      disabled={(artistData?.adminTheme || 'liquid-glass') === 'liquid-glass'}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        selectThemePreview('liquid-glass');
-                      }}
-                      className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs font-bold transition-all ${
-                        (artistData?.adminTheme || 'liquid-glass') === 'liquid-glass'
-                          ? 'opacity-50 cursor-not-allowed text-stone-500 bg-black/10'
-                          : 'hover:bg-white/10 text-stone-200 cursor-pointer'
-                      }`}
-                    >
-                      <span className="flex items-center gap-1.5">
-                        Liquid Glass
-                        {(() => {
-                          const cfg = artistData?.landingConfig?.adminThemesVip?.['liquid-glass'];
-                          let isPro = false; let isVip = false;
-                          if (typeof cfg === 'object' && cfg !== null) { isVip = !!cfg.isVip; isPro = isVip || !!cfg.isPro; }
-                          else if (cfg === true) { isPro = true; isVip = true; }
-                          if (isVip) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-yellow-500 text-stone-950 rounded-full">VIP</span>;
-                          if (isPro) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-blue-500 text-white rounded-full">PRO</span>;
-                          return null;
-                        })()}
-                      </span>
-                      {(artistData?.adminTheme || 'liquid-glass') === 'liquid-glass' && <Check className="w-3.5 h-3.5 text-teal-400" />}
-                    </button>
-                    
-                    <button
-                      disabled={artistData?.adminTheme === 'gold'}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        selectThemePreview('gold');
-                      }}
-                      className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs font-bold transition-all ${
-                        artistData?.adminTheme === 'gold'
-                          ? 'opacity-50 cursor-not-allowed text-stone-500 bg-black/10'
-                          : 'hover:bg-white/10 text-stone-200 cursor-pointer'
-                      }`}
-                    >
-                      <span className="flex items-center gap-1.5">
-                        Gold Luxury <Sparkles className="w-3 h-3 text-yellow-400" />
-                        {(() => {
-                          const cfg = artistData?.landingConfig?.adminThemesVip?.['gold'];
-                          let isPro = true; let isVip = true;
-                          if (typeof cfg === 'object' && cfg !== null) { isVip = !!cfg.isVip; isPro = isVip || !!cfg.isPro; }
-                          else if (cfg === false) { isPro = false; isVip = false; }
-                          if (isVip) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-yellow-500 text-stone-950 rounded-full">VIP</span>;
-                          if (isPro) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-blue-500 text-white rounded-full">PRO</span>;
-                          return null;
-                        })()}
-                      </span>
-                      {artistData?.adminTheme === 'gold' && <Check className="w-3.5 h-3.5 text-yellow-400" />}
-                    </button>
-
-                    <button
-                      disabled={artistData?.adminTheme === 'musician'}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        selectThemePreview('musician');
-                      }}
-                      className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs font-bold transition-all ${
-                        artistData?.adminTheme === 'musician'
-                          ? 'opacity-50 cursor-not-allowed text-stone-500 bg-black/10'
-                          : 'hover:bg-white/10 text-stone-200 cursor-pointer'
-                      }`}
-                    >
-                      <span className="flex items-center gap-1.5">
-                        Dreamy <Music className="w-3 h-3 text-amber-400" />
-                        {(() => {
-                          const cfg = artistData?.landingConfig?.adminThemesVip?.['musician'];
-                          let isPro = true; let isVip = false;
-                          if (typeof cfg === 'object' && cfg !== null) { isVip = !!cfg.isVip; isPro = isVip || !!cfg.isPro; }
-                          else if (cfg === true) { isPro = true; isVip = true; }
-                          else if (cfg === false) { isPro = false; isVip = false; }
-                          if (isVip) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-yellow-500 text-stone-950 rounded-full">VIP</span>;
-                          if (isPro) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-blue-500 text-white rounded-full">PRO</span>;
-                          return null;
-                        })()}
-                      </span>
-                      {artistData?.adminTheme === 'musician' && <Check className="w-3.5 h-3.5 text-amber-400" />}
-                    </button>
-
-                    <button
-                      disabled={artistData?.adminTheme === 'musician2'}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        selectThemePreview('musician2');
-                      }}
-                      className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs font-bold transition-all ${
-                        artistData?.adminTheme === 'musician2'
-                          ? 'opacity-50 cursor-not-allowed text-stone-500 bg-black/10'
-                          : 'hover:bg-white/10 text-stone-200 cursor-pointer'
-                      }`}
-                    >
-                      <span className="flex items-center gap-1.5">
-                        Musician <Disc3 className="w-3 h-3 text-amber-500" />
-                        {(() => {
-                          const cfg = artistData?.landingConfig?.adminThemesVip?.['musician2'];
-                          let isPro = true; let isVip = false;
-                          if (typeof cfg === 'object' && cfg !== null) { isVip = !!cfg.isVip; isPro = isVip || !!cfg.isPro; }
-                          else if (cfg === true) { isPro = true; isVip = true; }
-                          else if (cfg === false) { isPro = false; isVip = false; }
-                          if (isVip) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-yellow-500 text-stone-950 rounded-full">VIP</span>;
-                          if (isPro) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-blue-500 text-white rounded-full">PRO</span>;
-                          return null;
-                        })()}
-                      </span>
-                      {artistData?.adminTheme === 'musician2' && <Check className="w-3.5 h-3.5 text-amber-500" />}
-                    </button>
-
-                    <button
-                      disabled={artistData?.adminTheme === 'random'}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const isVvip = !!(
-                          artistData?.isSpecial || 
-                          artistData?.username === 'acxuantai' || 
-                          String(artistData?.roleId || '').toLowerCase() === 'vvip' || 
-                          String(artistData?.roleId || '').toLowerCase() === 'v.vip' ||
-                          artistData?.isMasterAdmin
-                        );
-                        if (!isVvip) {
-                          setThemeError("Giao diện Ngẫu Nhiên chỉ dành riêng cho tài khoản V.VIP!");
-                          setPendingTheme('random');
-                          setShowThemeDropdown(false);
-                          return;
-                        }
-                        selectThemePreview('random');
-                      }}
-                      className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs font-bold transition-all ${
-                        artistData?.adminTheme === 'random'
-                          ? 'opacity-50 cursor-not-allowed text-stone-500 bg-black/10'
-                          : 'hover:bg-white/10 text-stone-200 cursor-pointer'
-                      }`}
-                    >
-                      <span className="flex items-center gap-1.5">
-                        Ngẫu Nhiên <Shuffle className="w-3 h-3 text-purple-400" />
-                        <span className="px-1.5 py-0.2 text-[8px] font-black bg-gradient-to-r from-amber-400 via-rose-500 to-purple-600 text-white rounded-full shadow-xs">V.VIP</span>
-                      </span>
-                      {artistData?.adminTheme === 'random' && <Check className="w-3.5 h-3.5 text-purple-400" />}
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-            )}
-
-            <a 
-                href={getArtistAdminRedirect(activeExt, 'admin')} 
-                title={t("Quản trị")}
-                className="p-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center"
-              >
-                <Settings className="w-4 h-4" />
+          ) : (
+            <>
+              <a href={getArtistAdminRedirect(activeExt, '').replace(/\/$/, '') || '/'} className="flex items-center gap-2 group cursor-pointer hover:opacity-80 transition-opacity" title={t("Đến kho nhạc")}>
+                {avatar ? (
+                  <img 
+                    src={getAvatarUrl(avatar)} 
+                    className="w-8 h-8 rounded-full object-cover border border-white/20 shadow-sm shrink-0"
+                    alt={activeName}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div 
+                  className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-500 flex items-center justify-center text-xs font-bold text-white shadow-sm animate-pulse shrink-0"
+                  style={{ display: avatar ? 'none' : 'flex' }}
+                >
+                  {activeName.charAt(0).toUpperCase()}
+                </div>
+                <div className="text-left flex flex-col justify-center leading-none">
+                  <span className="text-[10px] text-yellow-300 font-black uppercase tracking-wider leading-none mb-1 shadow-xs">{t("Nghệ sĩ")}</span>
+                  <span className="text-[11px] font-black text-white uppercase tracking-wider leading-relaxed pt-1 pb-0.5 max-w-[120px] sm:max-w-[200px] whitespace-normal break-words">{activeName}</span>
+                </div>
               </a>
-            <button
-              onClick={onLogout}
-              title={t("Đăng xuất")}
-              className="p-2 bg-red-500/10 hover:bg-red-500/25 border border-red-500/30 text-red-400 rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
+              <div className="w-px h-6 bg-white/10 mx-1"></div>
+              <div className="flex items-center gap-1.5">
+                {/* Theme Selector Icon/Menu */}
+                {isOnOwnArtistHomepage && (
+                <div className="relative">
+                  <button
+                    onClick={handlePaletteClick}
+                    title={t("Đổi giao diện nhanh")}
+                    className="p-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center"
+                  >
+                    <Palette className="w-4 h-4 text-amber-400 animate-pulse shrink-0" />
+                  </button>
+                  
+                  <AnimatePresence>
+                    {showThemeDropdown && (
+                      <motion.div key="theme-dropdown"
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute bottom-14 right-0 bg-neutral-900/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2.5 shadow-2xl w-48 flex flex-col gap-1 z-50 text-stone-200"
+                      >
+                        <div className="text-[10px] font-black uppercase text-stone-400 px-2 py-1 border-b border-white/5 mb-1 tracking-wider">
+                          {t("Chọn giao diện")}
+                        </div>
+                        <button
+                          disabled={(artistData?.adminTheme || 'liquid-glass') === 'liquid-glass'}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            selectThemePreview('liquid-glass');
+                          }}
+                          className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs font-bold transition-all ${
+                            (artistData?.adminTheme || 'liquid-glass') === 'liquid-glass'
+                              ? 'opacity-50 cursor-not-allowed text-stone-500 bg-black/10'
+                              : 'hover:bg-white/10 text-stone-200 cursor-pointer'
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            Liquid Glass
+                            {(() => {
+                              const cfg = artistData?.landingConfig?.adminThemesVip?.['liquid-glass'];
+                              let isPro = false; let isVip = false;
+                              if (typeof cfg === 'object' && cfg !== null) { isVip = !!cfg.isVip; isPro = isVip || !!cfg.isPro; }
+                              else if (cfg === true) { isPro = true; isVip = true; }
+                              if (isVip) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-yellow-500 text-stone-950 rounded-full">VIP</span>;
+                              if (isPro) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-blue-500 text-white rounded-full">PRO</span>;
+                              return null;
+                            })()}
+                          </span>
+                          {(artistData?.adminTheme || 'liquid-glass') === 'liquid-glass' && <Check className="w-3.5 h-3.5 text-teal-400" />}
+                        </button>
+                        
+                        <button
+                          disabled={artistData?.adminTheme === 'gold'}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            selectThemePreview('gold');
+                          }}
+                          className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs font-bold transition-all ${
+                            artistData?.adminTheme === 'gold'
+                              ? 'opacity-50 cursor-not-allowed text-stone-500 bg-black/10'
+                              : 'hover:bg-white/10 text-stone-200 cursor-pointer'
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            Gold Luxury <Sparkles className="w-3 h-3 text-yellow-400" />
+                            {(() => {
+                              const cfg = artistData?.landingConfig?.adminThemesVip?.['gold'];
+                              let isPro = true; let isVip = true;
+                              if (typeof cfg === 'object' && cfg !== null) { isVip = !!cfg.isVip; isPro = isVip || !!cfg.isPro; }
+                              else if (cfg === false) { isPro = false; isVip = false; }
+                              if (isVip) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-yellow-500 text-stone-950 rounded-full">VIP</span>;
+                              if (isPro) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-blue-500 text-white rounded-full">PRO</span>;
+                              return null;
+                            })()}
+                          </span>
+                          {artistData?.adminTheme === 'gold' && <Check className="w-3.5 h-3.5 text-yellow-400" />}
+                        </button>
+
+                        <button
+                          disabled={artistData?.adminTheme === 'musician'}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            selectThemePreview('musician');
+                          }}
+                          className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs font-bold transition-all ${
+                            artistData?.adminTheme === 'musician'
+                              ? 'opacity-50 cursor-not-allowed text-stone-500 bg-black/10'
+                              : 'hover:bg-white/10 text-stone-200 cursor-pointer'
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            Dreamy <Music className="w-3 h-3 text-amber-400" />
+                            {(() => {
+                              const cfg = artistData?.landingConfig?.adminThemesVip?.['musician'];
+                              let isPro = true; let isVip = false;
+                              if (typeof cfg === 'object' && cfg !== null) { isVip = !!cfg.isVip; isPro = isVip || !!cfg.isPro; }
+                              else if (cfg === true) { isPro = true; isVip = true; }
+                              else if (cfg === false) { isPro = false; isVip = false; }
+                              if (isVip) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-yellow-500 text-stone-950 rounded-full">VIP</span>;
+                              if (isPro) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-blue-500 text-white rounded-full">PRO</span>;
+                              return null;
+                            })()}
+                          </span>
+                          {artistData?.adminTheme === 'musician' && <Check className="w-3.5 h-3.5 text-amber-400" />}
+                        </button>
+
+                        <button
+                          disabled={artistData?.adminTheme === 'musician2'}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            selectThemePreview('musician2');
+                          }}
+                          className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs font-bold transition-all ${
+                            artistData?.adminTheme === 'musician2'
+                              ? 'opacity-50 cursor-not-allowed text-stone-500 bg-black/10'
+                              : 'hover:bg-white/10 text-stone-200 cursor-pointer'
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            Musician <Disc3 className="w-3 h-3 text-amber-500" />
+                            {(() => {
+                              const cfg = artistData?.landingConfig?.adminThemesVip?.['musician2'];
+                              let isPro = true; let isVip = false;
+                              if (typeof cfg === 'object' && cfg !== null) { isVip = !!cfg.isVip; isPro = isVip || !!cfg.isPro; }
+                              else if (cfg === true) { isPro = true; isVip = true; }
+                              else if (cfg === false) { isPro = false; isVip = false; }
+                              if (isVip) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-yellow-500 text-stone-950 rounded-full">VIP</span>;
+                              if (isPro) return <span className="px-1.5 py-0.2 text-[8px] font-black bg-blue-500 text-white rounded-full">PRO</span>;
+                              return null;
+                            })()}
+                          </span>
+                          {artistData?.adminTheme === 'musician2' && <Check className="w-3.5 h-3.5 text-amber-500" />}
+                        </button>
+
+                        <button
+                          disabled={artistData?.adminTheme === 'random'}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const isVvip = !!(
+                              artistData?.isSpecial || 
+                              artistData?.username === 'acxuantai' || 
+                              String(artistData?.roleId || '').toLowerCase() === 'vvip' || 
+                              String(artistData?.roleId || '').toLowerCase() === 'v.vip' ||
+                              artistData?.isMasterAdmin
+                            );
+                            if (!isVvip) {
+                              setThemeError("Giao diện Ngẫu Nhiên chỉ dành riêng cho tài khoản V.VIP!");
+                              setPendingTheme('random');
+                              setShowThemeDropdown(false);
+                              return;
+                            }
+                            selectThemePreview('random');
+                          }}
+                          className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs font-bold transition-all ${
+                            artistData?.adminTheme === 'random'
+                              ? 'opacity-50 cursor-not-allowed text-stone-500 bg-black/10'
+                              : 'hover:bg-white/10 text-stone-200 cursor-pointer'
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            Ngẫu Nhiên <Shuffle className="w-3 h-3 text-purple-400" />
+                            <span className="px-1.5 py-0.2 text-[8px] font-black bg-gradient-to-r from-amber-400 via-rose-500 to-purple-600 text-white rounded-full shadow-xs">V.VIP</span>
+                          </span>
+                          {artistData?.adminTheme === 'random' && <Check className="w-3.5 h-3.5 text-purple-400" />}
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+                )}
+
+                <a 
+                    href={getArtistAdminRedirect(activeExt, 'admin')} 
+                    title={t("Quản trị")}
+                    className="p-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center"
+                  >
+                    <Settings className="w-4 h-4" />
+                  </a>
+                <button
+                  onClick={handleLogoutClick}
+                  title={t("Đăng xuất")}
+                  className="p-2 bg-red-500/10 hover:bg-red-500/25 border border-red-500/30 text-red-400 rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            </>
+          )}
         </motion.div>
       )}
 
