@@ -1,6 +1,6 @@
 # CHORUS.VN (CRVN) System Architecture & Technical Specification
 
-> **Ghi chú quan trọng cho AI Agent:** Đây là tài liệu master chứa toàn bộ thông tin kiến trúc, cơ sở dữ liệu, lưu trữ R2 Cloudflare, quy trình SSO đa tab, quản lý bài hát/vé/vouchers, đa ngôn ngữ AI và quy trình Backup/Deploy của dự án `chorus.vn`. Đọc file này khi bắt đầu phiên làm việc để hiểu trọn vẹn 100% logic hệ thống mà không cần quét lại toàn bộ mã nguồn.
+> **Ghi chú quan trọng cho AI Agent:** Đây là tài liệu master chứa toàn bộ thông tin kiến trúc, cơ sở dữ liệu, lưu trữ R2 Cloudflare, quy trình SSO đa tab, quản lý bài hát/vé/vouchers, phân quyền ẩn/hiện & mật khẩu bài hát, đa ngôn ngữ AI và quy trình Backup/Deploy của dự án `chorus.vn`. Đọc file này khi bắt đầu phiên làm việc để hiểu trọn vẹn 100% logic hệ thống mà không cần quét lại toàn bộ mã nguồn.
 
 ---
 
@@ -48,31 +48,58 @@ Hệ thống kết hợp 3 lớp lưu trữ linh hoạt với cơ chế tự đ�
 
 ---
 
-## 3. Quản Lý Bài Hát, Profile & Nội Dung Nghệ Sĩ
+## 3. Phân Quyền Bảo Vệ & Mật Khẩu Bài Hát / Playlist
 
-### A. Cấu Trúc Dữ Liệu Bài Hát (`songs` table / JSON array):
-Mỗi bài hát (Demo hoặc Released) chứa các trường dữ liệu tiêu chuẩn:
-- `id`: Mã định danh duy nhất (UUID string / timestamp).
-- `artist_username`: Username sở hữu bài hát.
-- `title`, `singer`, `composer`, `releaseYear`: Thông tin cơ bản.
-- `isReleased`: Khác biệt giữa nhạc phát hành (true) và bài thu âm/demo (false).
-- `audioUrl`: Đường dẫn file nhạc chính (R2 CDN URL).
-- `backupAudioUrl`: Đường dẫn nhạc dự phòng.
-- `coverUrl` & `backgroundUrl`: Ảnh bìa & hình nền.
-- `lyrics`: Lời bài hát.
-- `slug` & `secretKey`: Đường dẫn riêng tư / link mã hóa bảo vệ.
-- `status`: Trạng thái (`public`, `private`, `unlisted`).
-- `password`: Cài đặt mật khẩu truy cập (nếu có).
-- `isDraft`: Nháp chưa công bố.
+Hệ thống có cơ chế phân cấp mật khẩu và kiểm soát quyền truy cập âm nhạc cực kỳ chặt chẽ:
 
-### B. Tên Miền Riêng & Mối Liên Kết Tên Miền Con (Custom Domains & Subdomains):
-- Thuộc tính `customDomain` trong profile nghệ sĩ cho phép kết nối tên miền riêng (ví dụ: `acxuantai.com`).
-- `externalWebsiteUrl` & `hasExternalWebsite`: Tự động chuyển hướng khách truy cập nếu nghệ sĩ đăng ký website bên ngoài.
-- Hàm `syncArtistsCustomDomains()` định kỳ quét và đồng bộ cấu hình tên miền riêng giữa Firestore, SQLite và `artists.json`.
+### A. Cơ Chế Mật Khẩu Bài Hát (Mật Khẩu Chung vs Mật Khẩu Riêng)
+1. **Mật Khẩu Chung (`globalPassword`):**
+   - Được thiết lập ở cấp độ profile nghệ sĩ (`data_<artist>.json`).
+   - Nếu bài hát demo không cài mật khẩu riêng, hệ thống tự động áp dụng `globalPassword` làm mật khẩu bảo vệ bài hát đó.
+2. **Mật Khẩu Riêng Bài Hát (`demo.password`):**
+   - Có độ ưu tiên cao nhất, đè lên `globalPassword`.
+   - Người nghe phải nhập đúng `demo.password` thì mới giải mã được URL bài hát.
+3. **Mật Khẩu Playlist (`playlist.password` & `secretLink`):**
+   - Mật khẩu bảo vệ nguyên danh sách phát.
+   - Khi người dùng mở khóa Playlist (hoặc truy cập qua link bí mật `secretLink`), hệ thống cấp `playlistToken`. Tất cả các bài hát thuộc playlist đó sẽ tự động được bypass mở khóa mà không cần nhập lại mật khẩu từng bài.
+4. **Mật Khẩu Admin & Member (`adminPassword`, `memberPassword`):**
+   - `adminPassword`: Dùng để đăng nhập quản trị nghệ sĩ `/admin`.
+   - `memberPassword`: Mật khẩu dành cho thành viên VIP / Fan đặc biệt. Khi đăng nhập bằng Member Token, người dùng nghe được toàn bộ nhạc demo/chưa phát hành mà không cần nhập bất kỳ mật khẩu bài hát nào.
+
+### B. Logic Ẩn / Hiện Bài Hát & Playlist (`status`, `isReleased`, `isDraft`, `deleted`)
+- **Nhạc Đã Phát Hành (`isReleased = true`):**
+  - Mặc định là công khai (Public). Không yêu cầu mật khẩu, hiển thị công khai `audioUrl` cho toàn bộ khách truy cập.
+- **Nhạc Demo / Thu Âm (`isReleased = false`):**
+  - Mặc định giấu URL âm thanh (`audioUrl: ''`, `backupAudioUrl: ''`) đối với người dùng vãng lai (`shouldHideAudio = true`).
+  - Chỉ giải mã và trả về `audioUrl` khi:
+    - Người dùng đã đăng nhập Admin hoặc Member (`isAuthUser = true`).
+    - Hoặc xác thực thành công mật khẩu qua API POST `/api/demos/:id/verify`.
+- **Trạng Thái Bài Hát (`status`):**
+  - `public`: Hiển thị trên danh sách chính của nghệ sĩ.
+  - `unlisted` (Không công khai): Ẩn khỏi danh sách chính. Chỉ truy cập được khi có đường dẫn trực tiếp (Link / Slug / SecretKey).
+  - `private` (Riêng tư): Chỉ Admin sở hữu mới xem và nghe được.
+- **Bản Nháp (`isDraft: true`):** Lọc bỏ hoàn toàn khỏi các response API công khai.
+- **Đã Xóa Tạm (`deleted: true`):** Lọc bỏ khỏi toàn bộ danh sách truy xuất.
 
 ---
 
-## 4. Kiến Trúc SSO & Đăng Xuất Đa Tab (Single Sign-On & Single Logout)
+## 4. Quản Lý Giao Diện & Layout (UI & Layout Management)
+
+1. **Trang Chủ Hệ Thống (`chorus.vn`):**
+   - Cấu hình qua `landing_config.json`.
+   - Quản lý các block Hero, Bảng giá (Pricing Packages), Danh sách tính năng (Features), Template mẫu (Presets), FAQ và Đánh giá người dùng.
+2. **Trang Cá Nhân Nghệ Sĩ (`<ext>.chorus.vn`):**
+   - Đọc động từ `data_<artist>.json`:
+     - Tùy chỉnh Tiêu đề (`pageTitle`), Tiểu sử (`artistBio`), Ảnh đại diện (`avatarUrl`), Ảnh bìa (`homeCoverUrl`).
+     - Tùy chỉnh Slideshow hình nền (`slideshowImages`).
+     - Liên kết MXH (Spotify, YouTube Playlist, Facebook, Instagram, TikTok).
+3. **Widget Nổi Đồng Bộ Phiên (`UnifiedArtistSessionFloatingWidget`):**
+   - Thanh công cụ nổi thông minh ở góc màn hình.
+   - Cho phép nghệ sĩ nhanh chóng mở trang Admin, chuyển đổi nhanh giữa các subdomain nghệ sĩ khác nhau, xem trạng thái kích hoạt và Đăng xuất SSO toàn hệ thống.
+
+---
+
+## 5. Kiến Trúc SSO & Đăng Xuất Đa Tab (Single Sign-On & Single Logout)
 
 ### A. Phạm Vi Cookie Quốc Tế (`.chorus.vn`)
 - Toàn bộ Cookie được ghi với thuộc tính: `Domain=.chorus.vn; Path=/; max-age=31536000; SameSite=Lax`.
@@ -94,21 +121,19 @@ Mỗi bài hát (Demo hoặc Released) chứa các trường dữ liệu tiêu c
 
 ---
 
-## 5. Hệ Thống Vé Hỗ Trợ (Tickets), Vouchers & Email
+## 6. Hệ Thống Vé Hỗ Trợ (Tickets), Vouchers & Email
 
 1. **Support Ticket System (`/api/acp/tickets/*` & `/api/admin/tickets/*`):**
-   - Quản lý cuộc hội thoại giữa nghệ sĩ và Quản trị viên hệ thống.
-   - Các chức năng: Tạo vé (`create`), Trả lời tin nhắn (`message`), Đóng/Giải quyết (`resolve`), Mở lại (`reopen`), Xóa bài hát gắn kèm (`remove-song`).
+   - Quản lý cuộc hội thoại giữa nghệ sĩ và Quản trị viên hệ thống (Tạo vé, Gửi tin nhắn, Đóng/Giải quyết, Mở lại).
 2. **Hệ Thống Voucher (`/api/acp/vouchers/*` & `/api/admin/vouchers/redeem`):**
    - Tạo mã ưu đãi kích hoạt tính năng / gia hạn tài khoản cho nghệ sĩ.
-   - Lưu vết lịch sử quy đổi.
 3. **Chuẩn hóa Email & Gửi Mail Chống Gian Lận (`normalizeEmail`):**
    - Loại bỏ các ký tự gian lận alias Gmail (như loại bỏ dấu `.` và phần mở rộng `+tag`).
-   - Gửi mail thông báo qua Nodemailer + SMTP Brevo (`smtp-relay.brevo.com`). Lịch sử lưu tại `sent_emails.json`.
+   - Gửi mail qua Nodemailer + SMTP Brevo (`smtp-relay.brevo.com`). Lịch sử lưu tại `sent_emails.json`.
 
 ---
 
-## 6. Động Cơ Đa Ngôn Ngữ AI (Multilingual Engine)
+## 7. Động Cơ Đa Ngôn Ngữ AI (Multilingual Engine)
 
 - Module `translate_admin.ts` kết hợp với Google Gemini AI (`@google/genai`).
 - Hỗ trợ dịch tự động nội dung landing page, bài viết và template hệ thống (`/api/acp/landing-config/translate-all`, `translate-templates`).
@@ -116,22 +141,18 @@ Mỗi bài hát (Demo hoặc Released) chứa các trường dữ liệu tiêu c
 
 ---
 
-## 7. Kịch Bản Backup & Phôi Phục Dữ Liệu (Backup & Sync Scripts)
+## 8. Kịch Bản Backup & Phục Hồi Dữ Liệu (Backup & Sync Scripts)
 
 Hệ thống đi kèm bộ công cụ CLI hữu ích nằm trong thư mục `scripts/`:
 
-1. **`scripts/migrate_json_to_sqlite.cjs`:**
-   - Chuyển đổi toàn bộ dữ liệu từ các tệp JSON local sang cơ sở dữ liệu SQLite `bbb_global.db`.
-2. **`scripts/upload_db_backup_to_r2.cjs`:**
-   - Tự động nén và tải bản sao lưu `bbb_global.db` lên Cloudflare R2 tại đường dẫn `backups/db/bbb_global.db`.
-3. **`scripts/pull_data_from_bbb_to_local_and_chorus.cjs`:**
-   - Đồng bộ và kéo dữ liệu sao lưu mới nhất từ VPS 1 về máy cục bộ và đẩy sang VPS 2.
-4. **`scripts/dump_all_database_records.cjs` & `read_chorus_vps_data.cjs`:**
-   - Kiểm tra và xuất báo cáo trạng thái dữ liệu trên máy chủ.
+1. **`scripts/migrate_json_to_sqlite.cjs`:** Chuyển đổi dữ liệu JSON sang SQLite `bbb_global.db`.
+2. **`scripts/upload_db_backup_to_r2.cjs`:** Backup tự động `bbb_global.db` lên Cloudflare R2 (`backups/db/bbb_global.db`).
+3. **`scripts/pull_data_from_bbb_to_local_and_chorus.cjs`:** Kéo dữ liệu backup từ VPS 1 về local và đồng bộ sang VPS 2.
+4. **`scripts/dump_all_database_records.cjs` & `read_chorus_vps_data.cjs`:** Xuất báo cáo trạng thái dữ liệu.
 
 ---
 
-## 8. Quy Trình Máy Chủ & Deploy (VPS Operations)
+## 9. Quy Trình Máy Chủ & Deploy (VPS Operations)
 
 ### Cấu Hình Máy Chủ:
 - **VPS 1 (Demo / Primary):** IP `36.50.177.253` | PM2 Process `demonhac` | Deploy: `node deploy_now.cjs`
