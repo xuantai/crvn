@@ -6230,8 +6230,44 @@ localStorage.removeItem = function(key) {
 (window as any).__originalSetItem__ = originalSetItem;
 (window as any).__originalRemoveItem__ = originalRemoveItem;
 
+// Multi-Tab SSO BroadcastChannel initialization
+if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
+  try {
+    const ssoChannel = new BroadcastChannel('chorus_sso_channel');
+    ssoChannel.onmessage = (event) => {
+      if (event.data && event.data.type === 'LOGOUT_ALL') {
+        const origRemove = (window as any).__originalRemoveItem__ || localStorage.removeItem;
+        const keys = Object.keys(localStorage);
+        keys.forEach(k => {
+          if (k && (k.includes('adminToken') || k.includes('activeAdmin') || k.includes('memberToken'))) {
+            origRemove.call(localStorage, k);
+          }
+        });
+        removeGlobalCookie('adminToken');
+        removeGlobalCookie('activeAdminExtension');
+        removeGlobalCookie('activeAdminName');
+        removeGlobalCookie('activeAdminAvatar');
+        removeGlobalCookie('activeAdminActivated');
+        removeGlobalCookie('memberToken');
+
+        window.dispatchEvent(new Event('admin-session-change'));
+        window.dispatchEvent(new Event('storage'));
+      }
+    };
+  } catch (e) {}
+}
+
 (window as any).clearAllSessions = async () => {
-  // 1. Purge all localStorage keys
+  // 1. Broadcast LOGOUT_ALL to all other open tabs/subdomains immediately
+  if (typeof BroadcastChannel !== 'undefined') {
+    try {
+      const bc = new BroadcastChannel('chorus_sso_channel');
+      bc.postMessage({ type: 'LOGOUT_ALL' });
+      bc.close();
+    } catch (e) {}
+  }
+
+  // 2. Purge all localStorage keys on this tab
   const origRemove = (window as any).__originalRemoveItem__ || localStorage.removeItem;
   const keys = Object.keys(localStorage);
   keys.forEach(key => {
@@ -6252,11 +6288,11 @@ localStorage.removeItem = function(key) {
   removeGlobalCookie('activeAdminActivated');
   removeGlobalCookie('memberToken');
 
-  // 2. Notify client components
+  // 3. Notify client components
   window.dispatchEvent(new Event('admin-session-change'));
   window.dispatchEvent(new Event('storage'));
   
-  // 3. Call server logout to issue HTTP Set-Cookie deletion headers across .chorus.vn
+  // 4. Call server logout to issue HTTP Set-Cookie deletion headers across .chorus.vn
   try {
     await Promise.all([
       fetch('/api/admin/logout', { method: 'POST' }),
@@ -6918,6 +6954,16 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
     .then(res => res.json())
     .then(data => {
       if (data.isAdmin) {
+        // If Cookie session was deleted (user logged out from another tab), do NOT resurrect!
+        const currentActive = getActiveAdminSession();
+        if (!currentActive.activeExt || !currentActive.activeToken) {
+          removeAdminToken();
+          localStorage.removeItem('activeAdminExtension');
+          removeGlobalCookie('activeAdminExtension');
+          setIsValidated(false);
+          return;
+        }
+
         if (data.artist) {
           localStorage.setItem('activeAdminActivated', data.artist.activated !== false ? 'true' : 'false');
           if (data.artist.extension) {
@@ -7286,9 +7332,13 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
     };
     window.addEventListener('admin-session-change', handleUpdate);
     window.addEventListener('storage', handleUpdate);
+    window.addEventListener('focus', handleUpdate);
+    document.addEventListener('visibilitychange', handleUpdate);
     return () => {
       window.removeEventListener('admin-session-change', handleUpdate);
       window.removeEventListener('storage', handleUpdate);
+      window.removeEventListener('focus', handleUpdate);
+      document.removeEventListener('visibilitychange', handleUpdate);
     };
   }, []);
 
