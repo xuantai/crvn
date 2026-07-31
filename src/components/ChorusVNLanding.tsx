@@ -774,6 +774,7 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
   const [publicPricing, setPublicPricing] = useState<any>(null);
   const [publicFeatures, setPublicFeatures] = useState<any[]>([]);
   const [membershipBillingCycle, setMembershipBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [loginSuccessToast, setLoginSuccessToast] = useState('');
 
   const checkSession = useCallback(() => {
     const activeExt = localStorage.getItem('activeAdminExtension');
@@ -851,11 +852,12 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
       const data = await res.json();
       if (data.success) {
         const avatar = data.avatarUrl || '';
+        const nameToDisplay = data.artist?.artistName || data.artist?.username || data.extension;
         if ((window as any).syncLoginSession) {
           (window as any).syncLoginSession(
             data.token,
             data.extension,
-            data.artist?.artistName || data.artist?.username || data.extension,
+            nameToDisplay,
             avatar,
             data.artist && data.artist.activated !== false
           );
@@ -863,7 +865,7 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
           localStorage.setItem('adminToken', data.token);
           localStorage.setItem(`adminToken_${data.extension}`, data.token);
           localStorage.setItem('activeAdminExtension', data.extension);
-          localStorage.setItem('activeAdminName', data.artist?.artistName || data.artist?.username || data.extension);
+          localStorage.setItem('activeAdminName', nameToDisplay);
           localStorage.setItem('activeAdminAvatar', avatar);
         }
         setLoggedInArtist({
@@ -873,6 +875,8 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
         setShowLoginModal(false);
         setLoginUsername('');
         setLoginPassword('');
+        setLoginSuccessToast(`Đăng nhập thành công! Chào mừng nghệ sĩ ${nameToDisplay}`);
+        setTimeout(() => setLoginSuccessToast(''), 4000);
         window.dispatchEvent(new Event('admin-session-change'));
       } else {
         setLoginError(data.error || 'Login failed');
@@ -955,11 +959,13 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
               localStorage.setItem('activeAdminName', data.artistName || data.username || extension);
               localStorage.setItem('activeAdminAvatar', avatar);
             }
+            const nameToDisplay = data.artistName || data.username || extension;
             setLoggedInArtist(data.artist);
+            setLoginSuccessToast(`Đăng nhập Google thành công! Chào mừng ${nameToDisplay}`);
+            setTimeout(() => setLoginSuccessToast(''), 4000);
             window.dispatchEvent(new Event('admin-session-change'));
             setShowRegisterModal(false);
             setShowLoginModal(false);
-            window.location.href = `/${extension}`;
             return;
           } else {
             const email = data.user?.email || payload.email || '';
@@ -2851,6 +2857,32 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Success Toast Notification */}
+      <AnimatePresence>
+        {loginSuccessToast && (
+          <motion.div
+            initial={{ opacity: 0, y: -30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -30, scale: 0.95 }}
+            className="fixed top-6 right-6 z-[9999] bg-stone-900/95 text-white px-5 py-4 rounded-2xl shadow-2xl border border-emerald-500/40 flex items-center gap-3.5 backdrop-blur-xl max-w-sm sm:max-w-md"
+          >
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+              <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="text-[11px] font-black uppercase tracking-wider text-emerald-400">Đã Đăng Nhập</h4>
+              <p className="text-xs sm:text-sm font-semibold text-stone-100 truncate">{loginSuccessToast}</p>
+            </div>
+            <button
+              onClick={() => setLoginSuccessToast('')}
+              className="text-stone-400 hover:text-white p-1 rounded-lg hover:bg-stone-800 transition-colors shrink-0"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
         )}
       </AnimatePresence>
 
