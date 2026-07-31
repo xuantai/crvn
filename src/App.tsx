@@ -6083,7 +6083,17 @@ const getActiveAdminSession = () => {
 };
 
 const getAdminToken = (customPath?: string) => {
+  if (typeof window !== 'undefined' && (window as any).__IS_LOGGED_OUT__) return '';
+  const host = typeof window !== 'undefined' ? window.location.hostname.replace(/^www\./, '').toLowerCase().trim() : '';
+  const isChorusDomain = host.endsWith('.chorus.vn') || host === 'chorus.vn';
   const key = getAdminTokenKey(customPath);
+
+  if (isChorusDomain) {
+    const cookieToken = getGlobalCookie(key) || getGlobalCookie('adminToken');
+    if (!cookieToken) return '';
+    return cookieToken;
+  }
+
   let val = localStorage.getItem(key);
   if (!val && typeof getGlobalCookie === 'function') {
     val = getGlobalCookie(key);
@@ -6121,7 +6131,16 @@ const removeAdminToken = (customPath?: string) => {
   }
 };
 
-const getMemberToken = (customPath?: string) => localStorage.getItem(getMemberTokenKey(customPath));
+const getMemberToken = (customPath?: string) => {
+  if (typeof window !== 'undefined' && (window as any).__IS_LOGGED_OUT__) return '';
+  const host = typeof window !== 'undefined' ? window.location.hostname.replace(/^www\./, '').toLowerCase().trim() : '';
+  const isChorusDomain = host.endsWith('.chorus.vn') || host === 'chorus.vn';
+  const key = getMemberTokenKey(customPath);
+  if (isChorusDomain) {
+    return getGlobalCookie(key) || getGlobalCookie('memberToken') || '';
+  }
+  return localStorage.getItem(key) || '';
+};
 const setMemberToken = (token: string, customPath?: string) => localStorage.setItem(getMemberTokenKey(customPath), token);
 const removeMemberToken = (customPath?: string) => {
   const origRemove = (window as any).__originalRemoveItem__ || localStorage.removeItem;
@@ -6294,6 +6313,7 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
     const ssoChannel = new BroadcastChannel('chorus_sso_channel');
     ssoChannel.onmessage = (event) => {
       if (event.data && event.data.type === 'LOGOUT_ALL') {
+        const wasAlreadyLoggedOut = !!(window as any).__IS_LOGGED_OUT__;
         (window as any).__IS_LOGGED_OUT__ = true;
         const origRemove = (window as any).__originalRemoveItem__ || localStorage.removeItem;
         const keys = Object.keys(localStorage);
@@ -6318,17 +6338,19 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
           });
         }
 
-        try {
-          window.dispatchEvent(new CustomEvent('sso-toast', {
-            detail: {
-              type: 'logout',
-              title: 'Đăng Xuất Thành Công',
-              message: 'Hẹn gặp lại bạn lần sau!'
-            }
-          }));
-        } catch (e) {}
-        window.dispatchEvent(new Event('admin-session-change'));
-        window.dispatchEvent(new Event('storage'));
+        if (!wasAlreadyLoggedOut) {
+          try {
+            window.dispatchEvent(new CustomEvent('sso-toast', {
+              detail: {
+                type: 'logout',
+                title: 'Đăng Xuất Thành Công',
+                message: 'Hẹn gặp lại bạn lần sau!'
+              }
+            }));
+          } catch (e) {}
+          window.dispatchEvent(new Event('admin-session-change'));
+          window.dispatchEvent(new Event('storage'));
+        }
       } else if (event.data && event.data.type === 'LOGIN_ALL') {
         delete (window as any).__IS_LOGGED_OUT__;
         const { token, extension, artistName, avatar, activated } = event.data;
@@ -6367,10 +6389,11 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
 }
 
 (window as any).clearAllSessions = async (showToast: boolean = false) => {
+  const wasAlreadyLoggedOut = !!(window as any).__IS_LOGGED_OUT__;
   (window as any).__IS_LOGGED_OUT__ = true;
 
   // 1. Broadcast LOGOUT_ALL to all other open tabs/subdomains immediately
-  if (typeof BroadcastChannel !== 'undefined') {
+  if (!wasAlreadyLoggedOut && typeof BroadcastChannel !== 'undefined') {
     try {
       const bc = new BroadcastChannel('chorus_sso_channel');
       bc.postMessage({ type: 'LOGOUT_ALL' });
@@ -6409,7 +6432,7 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
   }
 
   // 3. Notify client components
-  if (showToast) {
+  if (showToast && !wasAlreadyLoggedOut) {
     try {
       window.dispatchEvent(new CustomEvent('sso-toast', {
         detail: {
@@ -6420,8 +6443,10 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
       }));
     } catch (e) {}
   }
-  window.dispatchEvent(new Event('admin-session-change'));
-  window.dispatchEvent(new Event('storage'));
+  if (!wasAlreadyLoggedOut) {
+    window.dispatchEvent(new Event('admin-session-change'));
+    window.dispatchEvent(new Event('storage'));
+  }
   
   // 4. Call server logout to issue HTTP Set-Cookie deletion headers across .chorus.vn
   try {

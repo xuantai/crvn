@@ -813,16 +813,6 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
           }
         } else {
           setLoggedInArtist(null);
-          if (typeof (window as any).clearAllSessions === 'function') {
-            (window as any).clearAllSessions();
-          } else {
-            localStorage.removeItem('adminToken');
-            localStorage.removeItem('activeAdminExtension');
-            localStorage.removeItem('activeAdminName');
-            localStorage.removeItem('activeAdminAvatar');
-            localStorage.removeItem('activeAdminActivated');
-            window.dispatchEvent(new Event('admin-session-change'));
-          }
         }
       })
       .catch(() => {});
