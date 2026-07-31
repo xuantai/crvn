@@ -48,38 +48,32 @@ Hệ thống kết hợp 3 lớp lưu trữ linh hoạt với cơ chế tự đ�
 
 ---
 
-## 3. Phân Quyền Bảo Vệ & Mật Khẩu Bài Hát / Playlist
+## 3. Phân Quyền Bảo Vệ, Trạng Thái Ẩn/Hiện & Mật Khẩu Bài Hát
 
-Hệ thống có cơ chế phân cấp mật khẩu và kiểm soát quyền truy cập âm nhạc cực kỳ chặt chẽ:
+Hệ thống đơn giản hóa quản lý trạng thái bài hát thành **đúng 1 trạng thái Ẩn / Không công khai** và cơ chế mật khẩu chung / riêng linh hoạt:
 
-### A. Cơ Chế Mật Khẩu Bài Hát (Mật Khẩu Chung vs Mật Khẩu Riêng)
+### A. Trạng Thái Ẩn / Không Công Khai (Single Hidden State)
+- Trong hệ thống CRVN, **"Ẩn / Không công khai" (`isDraft` / Ẩn bài hát)** là một trạng thái duy nhất (không phân chia rườm rà thành riêng tư hay không công khai).
+- Khi chọn **Ẩn / Không công khai (`isDraft: true`)**:
+  - Bài hát hoặc Playlist sẽ ẩn khỏi danh sách trang chủ công khai của nghệ sĩ.
+  - Khách chỉ nghe/xem được khi có đường dẫn link bí mật (`secretKey` / `slug` / link trực tiếp).
+- **Phân loại Nhạc phát hành vs Demo (`isReleased`):**
+  - **Bài hát đã phát hành (`isReleased: true`)**: Mặc định hiển thị công khai ở tab *Đã phát hành*, mở công khai `audioUrl`, không cần mật khẩu.
+  - **Nhạc Demo / Thu âm (`isReleased: false`)**: Thuộc tab *Demo/Thu âm*, mặc định ẩn `audioUrl` đối với khách vãng lai và bắt buộc mở khóa mật khẩu.
+
+### B. Logic Mật Khẩu Bài Hát & Playlist (Mật Khẩu Chung vs Mật Khẩu Riêng)
 1. **Mật Khẩu Chung (`globalPassword`):**
-   - Được thiết lập ở cấp độ profile nghệ sĩ (`data_<artist>.json`).
-   - Nếu bài hát demo không cài mật khẩu riêng, hệ thống tự động áp dụng `globalPassword` làm mật khẩu bảo vệ bài hát đó.
+   - Thiết lập một lần trong cấu hình trang cá nhân của nghệ sĩ (`data_<artist>.json`).
+   - Tự động áp dụng bảo vệ cho **tất cả các bài Demo/Thu âm** mà nghệ sĩ không cài mật khẩu riêng.
 2. **Mật Khẩu Riêng Bài Hát (`demo.password`):**
-   - Có độ ưu tiên cao nhất, đè lên `globalPassword`.
-   - Người nghe phải nhập đúng `demo.password` thì mới giải mã được URL bài hát.
+   - Đặt riêng cho từng bài hát cụ thể trong form chỉnh sửa bài hát.
+   - Có ưu tiên cao nhất: Nếu bài có `demo.password`, hệ thống sẽ yêu cầu đúng mật khẩu này thay vì `globalPassword`.
 3. **Mật Khẩu Playlist (`playlist.password` & `secretLink`):**
-   - Mật khẩu bảo vệ nguyên danh sách phát.
-   - Khi người dùng mở khóa Playlist (hoặc truy cập qua link bí mật `secretLink`), hệ thống cấp `playlistToken`. Tất cả các bài hát thuộc playlist đó sẽ tự động được bypass mở khóa mà không cần nhập lại mật khẩu từng bài.
-4. **Mật Khẩu Admin & Member (`adminPassword`, `memberPassword`):**
-   - `adminPassword`: Dùng để đăng nhập quản trị nghệ sĩ `/admin`.
-   - `memberPassword`: Mật khẩu dành cho thành viên VIP / Fan đặc biệt. Khi đăng nhập bằng Member Token, người dùng nghe được toàn bộ nhạc demo/chưa phát hành mà không cần nhập bất kỳ mật khẩu bài hát nào.
-
-### B. Logic Ẩn / Hiện Bài Hát & Playlist (`status`, `isReleased`, `isDraft`, `deleted`)
-- **Nhạc Đã Phát Hành (`isReleased = true`):**
-  - Mặc định là công khai (Public). Không yêu cầu mật khẩu, hiển thị công khai `audioUrl` cho toàn bộ khách truy cập.
-- **Nhạc Demo / Thu Âm (`isReleased = false`):**
-  - Mặc định giấu URL âm thanh (`audioUrl: ''`, `backupAudioUrl: ''`) đối với người dùng vãng lai (`shouldHideAudio = true`).
-  - Chỉ giải mã và trả về `audioUrl` khi:
-    - Người dùng đã đăng nhập Admin hoặc Member (`isAuthUser = true`).
-    - Hoặc xác thực thành công mật khẩu qua API POST `/api/demos/:id/verify`.
-- **Trạng Thái Bài Hát (`status`):**
-  - `public`: Hiển thị trên danh sách chính của nghệ sĩ.
-  - `unlisted` (Không công khai): Ẩn khỏi danh sách chính. Chỉ truy cập được khi có đường dẫn trực tiếp (Link / Slug / SecretKey).
-  - `private` (Riêng tư): Chỉ Admin sở hữu mới xem và nghe được.
-- **Bản Nháp (`isDraft: true`):** Lọc bỏ hoàn toàn khỏi các response API công khai.
-- **Đã Xóa Tạm (`deleted: true`):** Lọc bỏ khỏi toàn bộ danh sách truy xuất.
+   - Đặt mật khẩu bảo vệ nguyên một danh sách phát.
+   - Khi người dùng nhập đúng mật khẩu Playlist (hoặc truy cập qua link bí mật `secretLink`), hệ thống cấp `playlistToken` tự động mở khóa hàng loạt tất cả các bài hát con bên trong playlist đó mà không cần nhập mật khẩu từng bài.
+4. **Quyền Bypass cho Admin & Thành Viên VIP (`adminPassword`, `memberPassword`):**
+   - `adminPassword`: Đăng nhập trang quản trị nghệ sĩ `/admin`.
+   - `memberPassword`: Mật khẩu thành viên/Fan đặc biệt. Đăng nhập xong sẽ xem/nghe toàn bộ nhạc Demo/Ẩn mà không bao giờ bị hỏi mật khẩu bài hát.
 
 ---
 
