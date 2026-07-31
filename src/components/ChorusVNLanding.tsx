@@ -2866,28 +2866,33 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
 
       {/* Success Toast Notification */}
       <AnimatePresence>
-        {loginSuccessToast && (
-          <motion.div
-            initial={{ opacity: 0, y: -30, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -30, scale: 0.95 }}
-            className="fixed top-6 right-6 z-[9999] bg-stone-900/95 text-white px-5 py-4 rounded-2xl shadow-2xl border border-emerald-500/40 flex items-center gap-3.5 backdrop-blur-xl max-w-sm sm:max-w-md"
-          >
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
-              <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="text-[11px] font-black uppercase tracking-wider text-emerald-400">Đã Đăng Nhập</h4>
-              <p className="text-xs sm:text-sm font-semibold text-stone-100 truncate">{loginSuccessToast}</p>
-            </div>
-            <button
-              onClick={() => setLoginSuccessToast('')}
-              className="text-stone-400 hover:text-white p-1 rounded-lg hover:bg-stone-800 transition-colors shrink-0"
+        {loginSuccessToast && (() => {
+          const isLogout = loginSuccessToast.includes('Đăng xuất') || loginSuccessToast.includes('Logged out');
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: -30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -30, scale: 0.95 }}
+              className={`fixed top-6 right-6 z-[9999] bg-stone-900/95 text-white px-5 py-4 rounded-2xl shadow-2xl border ${isLogout ? 'border-amber-500/40' : 'border-emerald-500/40'} flex items-center gap-3.5 backdrop-blur-xl max-w-sm sm:max-w-md`}
             >
-              <X className="w-4 h-4" />
-            </button>
-          </motion.div>
-        )}
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${isLogout ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'}`}>
+                {isLogout ? <LogOut className="w-5 h-5 stroke-[2.5]" /> : <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className={`text-[11px] font-black uppercase tracking-wider ${isLogout ? 'text-amber-400' : 'text-emerald-400'}`}>
+                  {isLogout ? 'Đã Đăng Xuất' : 'Đã Đăng Nhập'}
+                </h4>
+                <p className="text-xs sm:text-sm font-semibold text-stone-100 truncate">{loginSuccessToast}</p>
+              </div>
+              <button
+                onClick={() => setLoginSuccessToast('')}
+                className="text-stone-400 hover:text-white p-1 rounded-lg hover:bg-stone-800 transition-colors shrink-0"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </motion.div>
+          );
+        })()}
       </AnimatePresence>
 
       {/* Login Modal */}
