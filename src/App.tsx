@@ -6032,6 +6032,19 @@ const getArtistAdminRedirect = (targetExt: string, toPage = 'admin') => {
   }
 };
 
+const getLogoutRedirectUrl = () => {
+  const host = typeof window !== 'undefined' ? window.location.hostname.replace(/^www\./, '').toLowerCase().trim() : '';
+  const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
+  if (isSubdomain || isArtistContext()) {
+    return '/';
+  }
+  const ext = getArtistExtensionFromUrl();
+  if (ext && typeof window !== 'undefined' && window.location.pathname.startsWith(`/${ext}`)) {
+    return `/${ext}`;
+  }
+  return '/';
+};
+
 const getActiveAdminSession = () => {
   if (typeof window !== 'undefined' && (window as any).__IS_LOGGED_OUT__) {
     return {
