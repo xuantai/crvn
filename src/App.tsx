@@ -5982,42 +5982,34 @@ const getArtistAdminRedirect = (targetExt: string, toPage = 'admin') => {
 };
 
 const getActiveAdminSession = () => {
-  let activeExt = localStorage.getItem('activeAdminExtension') || getGlobalCookie('activeAdminExtension');
-  if (activeExt && (!localStorage.getItem('activeAdminExtension') || !getGlobalCookie('activeAdminExtension'))) localStorage.setItem('activeAdminExtension', activeExt);
-  
-  let activeToken = activeExt ? (localStorage.getItem(`adminToken_${activeExt}`) || getGlobalCookie(`adminToken_${activeExt}`)) : null;
-  if (activeExt && activeToken && (!localStorage.getItem(`adminToken_${activeExt}`) || !getGlobalCookie(`adminToken_${activeExt}`))) localStorage.setItem(`adminToken_${activeExt}`, activeToken);
-  
-  if (!activeExt || !activeToken) {
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('adminToken_')) {
-        const ext = key.replace('adminToken_', '');
-        const token = localStorage.getItem(key);
-        if (ext && token) {
-          activeExt = ext;
-          activeToken = token;
-          localStorage.setItem('activeAdminExtension', ext);
-          break;
-        }
-      }
-    }
+  // Global cookie on .chorus.vn is the Single Source of Truth for SSO
+  let activeExt = getGlobalCookie('activeAdminExtension') || localStorage.getItem('activeAdminExtension');
+  if (activeExt) {
+    localStorage.setItem('activeAdminExtension', activeExt);
+    setGlobalCookie('activeAdminExtension', activeExt);
   }
   
-  if (!activeExt && (localStorage.getItem('adminToken') || getGlobalCookie('adminToken'))) {
-    activeToken = localStorage.getItem('adminToken') || getGlobalCookie('adminToken');
+  let activeToken = activeExt 
+    ? (getGlobalCookie(`adminToken_${activeExt}`) || localStorage.getItem(`adminToken_${activeExt}`) || getGlobalCookie('adminToken') || localStorage.getItem('adminToken')) 
+    : null;
+
+  if (activeExt && activeToken) {
+    localStorage.setItem(`adminToken_${activeExt}`, activeToken);
+    setGlobalCookie(`adminToken_${activeExt}`, activeToken);
   }
-  
-  let activeName = localStorage.getItem('activeAdminName') || getGlobalCookie('activeAdminName');
-  if (!activeName && activeExt) {
+
+  let activeName = getGlobalCookie('activeAdminName') || localStorage.getItem('activeAdminName');
+  if (activeName) {
+    localStorage.setItem('activeAdminName', activeName);
+  } else if (activeExt) {
     activeName = activeExt;
     localStorage.setItem('activeAdminName', activeExt);
   }
-  
-  const storedActivated = localStorage.getItem('activeAdminActivated') || getGlobalCookie('activeAdminActivated');
+
+  const storedActivated = getGlobalCookie('activeAdminActivated') || localStorage.getItem('activeAdminActivated');
   const activeActivated = storedActivated !== 'false';
-  const activeAvatar = localStorage.getItem('activeAdminAvatar') || getGlobalCookie('activeAdminAvatar') || '';
-  
+  const activeAvatar = getGlobalCookie('activeAdminAvatar') || localStorage.getItem('activeAdminAvatar') || '';
+
   return {
     activeExt: activeExt || '',
     activeToken: activeToken || '',
