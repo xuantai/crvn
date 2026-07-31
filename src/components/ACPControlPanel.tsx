@@ -4496,7 +4496,58 @@ export default function ACPControlPanel() {
                               />
                               <span className="text-xs font-semibold truncate">{demo.title}</span>
                             </div>
-                            <span className="text-[10px] text-neutral-500 font-mono">ID: {demo.id}</span>
+                            <div className="flex items-center gap-2 shrink-0">
+                               <button
+                                 type="button"
+                                 onClick={async (e) => {
+                                   e.preventDefault();
+                                   e.stopPropagation();
+                                   setEditLookupQuery(String(demo.id));
+                                   setIsLookingUp(true);
+                                   setLookupError('');
+                                   setLookupResult(null);
+                                   try {
+                                     const res = await fetch(`/api/acp/lookup-item?query=${encodeURIComponent(String(demo.id))}`, {
+                                       headers: { 'Authorization': `Bearer ${token || ''}` }
+                                     });
+                                     const data = await res.json();
+                                     if (res.ok && data.type === 'song') {
+                                       setLookupResult(data);
+                                       setEditSongForm({
+                                         title: data.title || '',
+                                         slug: data.slug || '',
+                                         composer: data.composer || '',
+                                         musicProducer: data.musicProducer || '',
+                                         singer: data.singer || '',
+                                         releaseYear: data.releaseYear || '',
+                                         lyrics: data.lyrics || '',
+                                         audioUrl: data.audioUrl || '',
+                                         coverUrl: data.coverUrl || '',
+                                         bgUrl: data.bgUrl || '',
+                                         template: data.template || '1',
+                                         status: data.status || 'public',
+                                         password: data.password || '',
+                                         linkType: data.linkType || 'direct',
+                                         linkZing: data.linkZing || '',
+                                         linkSpotify: data.linkSpotify || '',
+                                         linkApple: data.linkApple || '',
+                                         linkYoutubeMusic: data.linkYoutubeMusic || '',
+                                         linkYoutube: data.linkYoutube || ''
+                                       });
+                                     }
+                                   } catch (err: any) {
+                                     setLookupError(err.message || 'Lỗi tìm kiếm');
+                                   } finally {
+                                     setIsLookingUp(false);
+                                   }
+                                 }}
+                                 className="p-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 transition-colors"
+                                 title="Chỉnh sửa bài hát này (Master ACP)"
+                               >
+                                 <Edit3 className="w-3.5 h-3.5" />
+                               </button>
+                               <span className="text-[10px] text-neutral-500 font-mono">ID: {demo.id}</span>
+                             </div>
                           </label>
                         );
                       })}

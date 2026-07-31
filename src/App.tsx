@@ -25152,18 +25152,30 @@ function AdminPlaylistEdit() {
                           <h4 className="font-bold text-stone-800 truncate">{song.title}</h4>
                           <MarqueeText className="text-xs text-stone-500 w-full">{song.singer || song.author}</MarqueeText>
                        </div>
-                       <button
-                         type="button"
-                         onClick={(e) => {
-                           e.stopPropagation();
-                           e.preventDefault();
-                           setSongs(songs.filter(s => s.id !== song.id));
-                         }}
-                         className="w-8 h-8 rounded-full flex items-center justify-center text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors shrink-0"
-                         title={t("Xóa khỏi playlist")}
-                       >
-                         <X className="w-4 h-4" />
-                       </button>
+                       <div className="flex items-center gap-1 shrink-0">
+                         <Link
+                           to={getAdminLink(`/edit/${song.id}`)}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           onClick={(e) => e.stopPropagation()}
+                           className="w-8 h-8 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-50 transition-colors"
+                           title={t("Chỉnh sửa bài hát (Admin)")}
+                         >
+                           <Edit3 className="w-4 h-4" />
+                         </Link>
+                         <button
+                           type="button"
+                           onClick={(e) => {
+                             e.stopPropagation();
+                             e.preventDefault();
+                             setSongs(songs.filter(s => s.id !== song.id));
+                           }}
+                           className="w-8 h-8 rounded-full flex items-center justify-center text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors"
+                           title={t("Xóa khỏi playlist")}
+                         >
+                           <X className="w-4 h-4" />
+                         </button>
+                       </div>
                     </div>
                  ))}
                </div>
