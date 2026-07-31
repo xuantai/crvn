@@ -12482,7 +12482,7 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
 
   const togglePlay = () => {
     if (audioRef.current) {
-      if (isPlaying) {
+      if (!audioRef.current.paused) {
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
