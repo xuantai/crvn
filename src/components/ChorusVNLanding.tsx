@@ -38,6 +38,7 @@ interface LandingConfig {
   statusBadge?: string;
   featuresTitle?: string;
   featuresSub?: string;
+  showArtistsSection?: boolean;
   roles?: any[];
 }
 
@@ -1884,7 +1885,8 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
       </section>
 
       {/* Main Content & Activated Music Stores Showcase List */}
-      <section id="artist-showcase" className="py-12 md:py-24 px-6 sm:px-10 max-w-7xl mx-auto border-t border-neutral-200/40">
+      {config.showArtistsSection !== false && (
+        <section id="artist-showcase" className="py-12 md:py-24 px-6 sm:px-10 max-w-7xl mx-auto border-t border-neutral-200/40">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-16 gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-rose-500 text-xs font-black uppercase tracking-widest">
@@ -2029,6 +2031,8 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
           </div>
         )}
       </section>
+
+      )}
 
       {/* Features Showcase Grid */}
       <section id="features" className="py-12 md:py-24 bg-white/40 border-t border-b border-neutral-200/40 relative">

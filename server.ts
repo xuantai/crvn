@@ -2580,7 +2580,7 @@ function generateCaptchaSvg(text: string) {
       adminUsername, adminPassword,
       menuVaultVi, menuAboutVi, menuBioVi,
       templateNames, templateVip, adminThemesVip, defaultAdminTheme, demoSongInfo,
-      globalLayoutSections,
+      globalLayoutSections, showArtistsSection,
       faq, forbiddenKeywords, roles
     } = req.body;
 
@@ -2591,6 +2591,7 @@ function generateCaptchaSvg(text: string) {
       featuresTitle: featuresTitle || '',
       featuresSub: featuresSub || '',
       cloudSyncEnabled: cloudSyncEnabled !== false,
+      showArtistsSection: showArtistsSection !== false,
       defaultAdminTheme: defaultAdminTheme || 'liquid-glass',
       systemIp: systemIp || '',
       pageTitle: pageTitle || '',
