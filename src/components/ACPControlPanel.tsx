@@ -3745,6 +3745,84 @@ export default function ACPControlPanel() {
               </table>
             </div>
           </div>
+        ) : activeTab === 'edit_item' ? (
+          <div className="max-w-4xl mx-auto space-y-6">
+            <div className="bg-neutral-900/40 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl">
+              <div className="flex items-center gap-3 mb-4 text-purple-400">
+                <Edit2 className="w-6 h-6" />
+                <h2 className="text-xl sm:text-2xl font-black text-white">Chỉnh Sửa Bài Hát / Playlist Của Mọi Nghệ Sĩ</h2>
+              </div>
+              <p className="text-neutral-400 text-xs sm:text-sm leading-relaxed mb-6">
+                Master chỉ cần dán đường link bài hát hoặc playlist của bất kỳ nghệ sĩ nào (ví dụ: <code className="bg-white/10 px-2 py-0.5 rounded text-purple-300">https://acxuantai.chorus.vn/song/vi-em-chua-bao-gio-khoc</code> hoặc <code className="bg-white/10 px-2 py-0.5 rounded text-purple-300">https://thong.chorus.vn/playlist/1785496364457</code>) hoặc nhập ID/Tiêu đề. Hệ thống sẽ tự động nhận diện và chuyển sang trang chỉnh sửa tương ứng.
+              </p>
+
+              <form onSubmit={handleLookupSubmit} className="space-y-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={editLookupQuery}
+                    onChange={(e) => setEditLookupQuery(e.target.value)}
+                    placeholder="Dán link bài hát / playlist hoặc nhập ID / Tiêu đề..."
+                    className="w-full bg-neutral-950 border border-white/15 rounded-2xl pl-4 pr-32 py-4 text-sm font-medium text-white placeholder-neutral-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 shadow-inner transition-all"
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                    {detectedType && (
+                      <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-lg uppercase tracking-wider ${
+                        detectedType === 'playlist' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                      }`}>
+                        {detectedType === 'playlist' ? '📜 Playlist' : '🎵 Bài Hát'}
+                      </span>
+                    )}
+                    <button
+                      type="submit"
+                      disabled={isLookingUp}
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white font-black text-xs px-5 py-2.5 rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+                    >
+                      {isLookingUp ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                      <span>OK</span>
+                    </button>
+                  </div>
+                </div>
+              </form>
+
+              {lookupError && (
+                <div className="mt-4 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-300 text-xs font-semibold flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  <span>{lookupError}</span>
+                </div>
+              )}
+
+              {lookupResult && (
+                <div className="mt-6 p-5 bg-white/5 border border-white/10 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-4 min-w-0">
+                    {lookupResult.coverUrl ? (
+                      <img src={lookupResult.coverUrl} alt="" className="w-14 h-14 rounded-xl object-cover border border-white/10 shrink-0" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-xl bg-purple-900/30 border border-purple-500/20 flex items-center justify-center text-purple-400 shrink-0">
+                        {lookupResult.type === 'playlist' ? <Disc3 className="w-7 h-7" /> : <Music className="w-7 h-7" />}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                          {lookupResult.type === 'playlist' ? 'Playlist' : 'Bài Hát'}
+                        </span>
+                        <span className="text-xs text-neutral-400 font-medium">Nghệ sĩ: <strong className="text-white">{lookupResult.artistName || lookupResult.artistExtension}</strong></span>
+                      </div>
+                      <h4 className="text-base font-bold text-white truncate mt-1">{lookupResult.title}</h4>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => window.open(lookupResult.editUrl, '_blank')}
+                    className="w-full sm:w-auto bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-6 py-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+                  >
+                    <span>Mở Trang Chỉnh Sửa</span>
+                    <ExternalLink className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         ) : activeTab === 'pricing' ? (
           <div className="bg-neutral-900/30 border border-white/5 rounded-3xl p-6 sm:p-8 backdrop-blur-md space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-5">
