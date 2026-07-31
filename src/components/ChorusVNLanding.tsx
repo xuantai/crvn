@@ -833,9 +833,17 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
 
   useEffect(() => {
     checkSession();
+    const handleSsoToast = (e: any) => {
+      if (e.detail?.message) {
+        setLoginSuccessToast(e.detail.message);
+        setTimeout(() => setLoginSuccessToast(''), 4000);
+      }
+    };
     window.addEventListener('admin-session-change', checkSession);
+    window.addEventListener('sso-toast', handleSsoToast);
     return () => {
       window.removeEventListener('admin-session-change', checkSession);
+      window.removeEventListener('sso-toast', handleSsoToast);
     };
   }, [checkSession]);
 
@@ -1854,12 +1862,13 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
           {loggedInArtist ? (
             (loggedInArtist as any).activated !== false && (
               <div className="mt-4 flex items-center justify-center gap-3">
-                <div className="flex items-center bg-white rounded-full p-1 border border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
-                  <a href="/admin" className="px-4 py-2 text-sm font-bold text-neutral-800 hover:text-indigo-600 transition-colors flex items-center gap-2">
-                    <Settings className="w-4 h-4" />
-                    {lang === 'vi' ? 'Vào Bảng Điều Khiển' : 'Go to Dashboard'}
-                  </a>
-                </div>
+                <a 
+                  href="/admin" 
+                  className="w-[180px] sm:w-[200px] h-12 rounded-full bg-stone-900/90 text-white hover:bg-black font-extrabold text-sm border border-stone-700/50 shadow-lg hover:shadow-xl backdrop-blur-md transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <Settings className="w-4 h-4 text-amber-400" />
+                  <span>{lang === 'vi' ? 'Bảng Điều Khiển' : 'Dashboard'}</span>
+                </a>
                 <button
                   type="button"
                   onClick={async () => {
@@ -1879,10 +1888,10 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
                       window.location.href = '/';
                     }, 600);
                   }}
-                  className="px-4 py-2 text-sm font-bold text-red-600 hover:text-red-700 bg-white hover:bg-red-50 rounded-full border border-red-200 shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="w-[180px] sm:w-[200px] h-12 rounded-full bg-red-950/20 hover:bg-red-900/40 text-red-500 hover:text-red-400 font-extrabold text-sm border border-red-500/30 shadow-md hover:shadow-lg backdrop-blur-md transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <LogOut className="w-4 h-4" />
-                  {lang === 'vi' ? 'Đăng xuất' : 'Logout'}
+                  <span>{lang === 'vi' ? 'Đăng xuất' : 'Logout'}</span>
                 </button>
               </div>
             )

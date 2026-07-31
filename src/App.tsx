@@ -6390,6 +6390,9 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
   }
 
   // 3. Notify client components
+  try {
+    window.dispatchEvent(new CustomEvent('sso-toast', { detail: { message: 'Đăng xuất thành công!', type: 'logout' } }));
+  } catch (e) {}
   window.dispatchEvent(new Event('admin-session-change'));
   window.dispatchEvent(new Event('storage'));
   
@@ -6437,6 +6440,9 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
   originalSetItem.call(localStorage, `${extension}_activeAdminAvatar`, avatar);
   originalSetItem.call(localStorage, `${extension}_activeAdminActivated`, activated !== false ? 'true' : 'false');
 
+  try {
+    window.dispatchEvent(new CustomEvent('sso-toast', { detail: { message: `Đăng nhập thành công! Chào mừng nghệ sĩ ${artistName}`, type: 'login' } }));
+  } catch (e) {}
   window.dispatchEvent(new Event('admin-session-change'));
   window.dispatchEvent(new Event('storage'));
 };
@@ -7327,14 +7333,18 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
   const [pendingTheme, setPendingTheme] = useState<string | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleLogoutClick = (e: React.MouseEvent) => {
+  const handleLogoutClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (isLoggingOut) return;
     setIsLoggingOut(true);
+    if (typeof (window as any).clearAllSessions === 'function') {
+      await (window as any).clearAllSessions();
+    }
+    onLogout();
     setTimeout(() => {
-      onLogout();
-    }, 1200);
+      window.location.href = '/';
+    }, 600);
   };
 
   const { activeExt, activeName, activeToken } = session;
