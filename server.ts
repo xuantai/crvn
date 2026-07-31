@@ -3080,6 +3080,123 @@ ${JSON.stringify(geminiInput, null, 2)}`;
 
   
   // Public Pricing API
+  
+  app.post('/api/acp/song/update', async (req, res) => {
+    if (!isRequestAdmin(req)) return res.status(401).json({ error: 'Unauthorized' });
+
+    const {
+      artistExtension,
+      songId,
+      title,
+      slug,
+      composer,
+      musicProducer,
+      singer,
+      releaseYear,
+      lyrics,
+      audioUrl,
+      coverUrl,
+      bgUrl,
+      template,
+      status,
+      password,
+      linkType,
+      linkZing,
+      linkSpotify,
+      linkApple,
+      linkYoutubeMusic,
+      linkYoutube,
+      achievements
+    } = req.body;
+
+    if (!artistExtension || !songId) {
+      return res.status(400).json({ error: 'Thiếu artistExtension hoặc songId' });
+    }
+
+    const data = await loadData(artistExtension);
+    if (!data.demos) data.demos = [];
+
+    const songIndex = data.demos.findIndex((d: any) => String(d.id) === String(songId));
+    if (songIndex === -1) {
+      return res.status(404).json({ error: 'Không tìm thấy bài hát để cập nhật' });
+    }
+
+    const cleanPassword = (password === true || password === 'true') ? '' : String(password || '').trim();
+
+    data.demos[songIndex] = {
+      ...data.demos[songIndex],
+      title: title !== undefined ? title : data.demos[songIndex].title,
+      slug: slug !== undefined ? slug : data.demos[songIndex].slug,
+      composer: composer !== undefined ? composer : data.demos[songIndex].composer,
+      musicProducer: musicProducer !== undefined ? musicProducer : data.demos[songIndex].musicProducer,
+      singer: singer !== undefined ? singer : data.demos[songIndex].singer,
+      releaseYear: releaseYear !== undefined ? releaseYear : data.demos[songIndex].releaseYear,
+      lyrics: lyrics !== undefined ? lyrics : data.demos[songIndex].lyrics,
+      audioUrl: audioUrl !== undefined ? audioUrl : data.demos[songIndex].audioUrl,
+      coverUrl: coverUrl !== undefined ? coverUrl : data.demos[songIndex].coverUrl,
+      bgUrl: bgUrl !== undefined ? bgUrl : data.demos[songIndex].bgUrl,
+      template: template !== undefined ? template : data.demos[songIndex].template,
+      status: status !== undefined ? status : data.demos[songIndex].status,
+      password: cleanPassword,
+      linkType: linkType !== undefined ? linkType : data.demos[songIndex].linkType,
+      linkZing: linkZing !== undefined ? linkZing : data.demos[songIndex].linkZing,
+      linkSpotify: linkSpotify !== undefined ? linkSpotify : data.demos[songIndex].linkSpotify,
+      linkApple: linkApple !== undefined ? linkApple : data.demos[songIndex].linkApple,
+      linkYoutubeMusic: linkYoutubeMusic !== undefined ? linkYoutubeMusic : data.demos[songIndex].linkYoutubeMusic,
+      linkYoutube: linkYoutube !== undefined ? linkYoutube : data.demos[songIndex].linkYoutube,
+      achievements: achievements !== undefined ? achievements : data.demos[songIndex].achievements,
+      updatedAt: new Date().toISOString()
+    };
+
+    await saveData(artistExtension, data);
+    res.json({ success: true, message: 'Cập nhật bài hát thành công!' });
+  });
+
+  app.post('/api/acp/playlist/update', async (req, res) => {
+    if (!isRequestAdmin(req)) return res.status(401).json({ error: 'Unauthorized' });
+
+    const {
+      artistExtension,
+      playlistId,
+      title,
+      coverUrl,
+      description,
+      password,
+      secretLink,
+      isDraft,
+      demoIds
+    } = req.body;
+
+    if (!artistExtension || !playlistId) {
+      return res.status(400).json({ error: 'Thiếu artistExtension hoặc playlistId' });
+    }
+
+    const data = await loadData(artistExtension);
+    if (!data.playlists) data.playlists = [];
+
+    const plIndex = data.playlists.findIndex((p: any) => String(p.id) === String(playlistId));
+    if (plIndex === -1) {
+      return res.status(404).json({ error: 'Không tìm thấy playlist để cập nhật' });
+    }
+
+    const cleanPassword = (password === true || password === 'true') ? '' : String(password || '').trim();
+
+    data.playlists[plIndex] = {
+      ...data.playlists[plIndex],
+      title: title !== undefined ? title : data.playlists[plIndex].title,
+      coverUrl: coverUrl !== undefined ? coverUrl : data.playlists[plIndex].coverUrl,
+      description: description !== undefined ? description : data.playlists[plIndex].description,
+      password: cleanPassword,
+      secretLink: secretLink !== undefined ? !!secretLink : data.playlists[plIndex].secretLink,
+      isDraft: isDraft !== undefined ? !!isDraft : data.playlists[plIndex].isDraft,
+      demoIds: demoIds !== undefined ? demoIds : data.playlists[plIndex].demoIds,
+      updatedAt: new Date().toISOString()
+    };
+
+    await saveData(artistExtension, data);
+    res.json({ success: true, message: 'Cập nhật playlist thành công!' });
+  });
+
   app.get('/api/public/pricing', (req, res) => {
     res.json(pricingSettings);
   });
