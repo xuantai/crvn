@@ -1097,16 +1097,7 @@ function MusicianWallFrames({
         }
       });
     }
-    // Fallback photos ONLY if no slideshow images have been uploaded yet
-    if (imgs.length === 0) {
-      const fallbacks = [
-        'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80',
-        'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=600&q=80',
-        'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80',
-        'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=600&q=80'
-      ];
-      fallbacks.forEach(f => imgs.push(f));
-    }
+    // Do not show default wall frames if artist has not uploaded slideshow images
     return imgs;
   }, [data?.slideshowImages]);
 
@@ -1129,6 +1120,8 @@ function MusicianWallFrames({
     { top: '1450px', left: '0.5%', right: 'auto', border: 'border-[#482411]', bgMat: 'bg-[#FDFCF9]' },
     { top: '1850px', left: 'auto', right: '0.5%', border: 'border-[#2A1308]', bgMat: 'bg-[#F5F2EB]' },
   ];
+
+  if (wallImages.length === 0) return null;
 
   return (
     <div className="hidden sm:block absolute inset-0 overflow-hidden pointer-events-none z-[1]">
@@ -6032,6 +6025,9 @@ const getAdminToken = (customPath?: string) => {
     val = getGlobalCookie(key);
     if (val) localStorage.setItem(key, val);
   }
+  if (!val) {
+    val = localStorage.getItem('masterToken') || localStorage.getItem('adminToken') || '';
+  }
   return val;
 };
 const setAdminToken = (token: string, customPath?: string) => localStorage.setItem(getAdminTokenKey(customPath), token);
@@ -7129,6 +7125,8 @@ function AnimatedRoutes() {
         <Route path="/:artistExtension/demo/:id" element={<DemoPlayer />} />
         <Route path="/:artistExtension/song/:id" element={<DemoPlayer />} />
         <Route path="/:artistExtension/playlist/:id" element={<PlaylistPlayer />} />
+        <Route path="/:artistExtension/admin/edit/:id" element={<RequireAdmin><AdminEditDemo /></RequireAdmin>} />
+        <Route path="/:artistExtension/admin/playlist/:id" element={<RequireAdmin><AdminPlaylistEdit /></RequireAdmin>} />
         <Route path="/:artistExtension/admin/*" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
         <Route path="/:artistExtension/admin" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
       </Routes>

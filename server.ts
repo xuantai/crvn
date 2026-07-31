@@ -2931,6 +2931,153 @@ ${JSON.stringify(geminiInput, null, 2)}`;
     res.json({ isMaster: isRequestMasterAdmin(req) });
   });
 
+  app.get('/api/acp/lookup-item', async (req, res) => {
+    if (!isRequestAdmin(req)) return res.status(401).json({ error: 'Unauthorized' });
+
+    const rawQuery = String(req.query.query || '').trim();
+    if (!rawQuery) return res.status(400).json({ error: 'Vui lòng nhập link hoặc ID/tiêu đề cần sửa' });
+
+    let parsedUrl: URL | null = null;
+    try {
+      if (rawQuery.startsWith('http://') || rawQuery.startsWith('https://')) {
+        parsedUrl = new URL(rawQuery);
+      }
+    } catch (e) {}
+
+    let targetExtension = '';
+    let targetPath = rawQuery;
+
+    if (parsedUrl) {
+      targetPath = parsedUrl.pathname + parsedUrl.search;
+      const hostname = parsedUrl.hostname.toLowerCase();
+      if (hostname.endsWith('.chorus.vn') && hostname !== 'chorus.vn') {
+        targetExtension = hostname.replace('.chorus.vn', '');
+      }
+    }
+
+    const pathSegments = targetPath.split('/').filter(Boolean);
+    const isExplicitPlaylist = targetPath.includes('/playlist/');
+    const isExplicitSong = targetPath.includes('/song/') || targetPath.includes('/demo/');
+
+    let identifier = '';
+    if (isExplicitPlaylist || isExplicitSong) {
+      const idx = pathSegments.findIndex(s => s === 'playlist' || s === 'song' || s === 'demo');
+      if (idx !== -1 && pathSegments[idx + 1]) {
+        identifier = decodeURIComponent(pathSegments[idx + 1]);
+        if (idx > 0 && !targetExtension) {
+          const potentialExt = pathSegments[0];
+          const reserved = ['admin', 'acp', 'master', 'mem', 'demo', 'song', 'playlist', 'verify-email', 'help'];
+          if (!reserved.includes(potentialExt)) {
+            targetExtension = potentialExt;
+          }
+        }
+      }
+    } else {
+      identifier = rawQuery;
+    }
+
+    let foundSong: any = null;
+    let foundPlaylist: any = null;
+    let foundArtistExt = '';
+    let foundArtistName = '';
+
+    const searchList = targetExtension 
+      ? artists.filter(a => a.username === targetExtension || a.extension === targetExtension)
+      : artists;
+
+    const listToIterate = searchList.length > 0 ? searchList : artists;
+
+    for (const art of listToIterate) {
+      const artistExt = art.username || art.extension;
+      const artData = await loadData(artistExt);
+
+      if (isExplicitPlaylist || !isExplicitSong) {
+        const pl = (artData.playlists || []).find((p: any) => 
+          !p.deleted && (String(p.id) === identifier || String(p.slug || '') === identifier || p.title?.toLowerCase() === identifier.toLowerCase())
+        );
+        if (pl) {
+          foundPlaylist = pl;
+          foundArtistExt = artistExt;
+          foundArtistName = artData.artistName || art.artistName || artistExt;
+          break;
+        }
+      }
+
+      if (isExplicitSong || !isExplicitPlaylist) {
+        const song = (artData.demos || []).find((d: any) => 
+          !d.deleted && (String(d.id) === identifier || String(d.slug || '') === identifier || d.title?.toLowerCase() === identifier.toLowerCase())
+        );
+        if (song) {
+          foundSong = song;
+          foundArtistExt = artistExt;
+          foundArtistName = artData.artistName || art.artistName || artistExt;
+          break;
+        }
+      }
+    }
+
+    if (!foundSong && !foundPlaylist) {
+      const qLower = identifier.toLowerCase();
+      for (const art of artists) {
+        const artistExt = art.username || art.extension;
+        const artData = await loadData(artistExt);
+
+        const pl = (artData.playlists || []).find((p: any) => !p.deleted && p.title?.toLowerCase().includes(qLower));
+        if (pl) {
+          foundPlaylist = pl;
+          foundArtistExt = artistExt;
+          foundArtistName = artData.artistName || art.artistName || artistExt;
+          break;
+        }
+
+        const song = (artData.demos || []).find((d: any) => !d.deleted && d.title?.toLowerCase().includes(qLower));
+        if (song) {
+          foundSong = song;
+          foundArtistExt = artistExt;
+          foundArtistName = artData.artistName || art.artistName || artistExt;
+          break;
+        }
+      }
+    }
+
+    const host = (req.headers.host || '').toLowerCase();
+    const isProduction = host.includes('chorus.vn');
+
+    if (foundPlaylist) {
+      const editUrl = isProduction 
+        ? `https://${foundArtistExt}.chorus.vn/admin/playlist/${foundPlaylist.id}`
+        : `/${foundArtistExt}/admin/playlist/${foundPlaylist.id}`;
+      return res.json({
+        success: true,
+        type: 'playlist',
+        id: foundPlaylist.id,
+        title: foundPlaylist.title,
+        coverUrl: foundPlaylist.coverUrl || '',
+        artistExtension: foundArtistExt,
+        artistName: foundArtistName,
+        editUrl
+      });
+    }
+
+    if (foundSong) {
+      const editUrl = isProduction 
+        ? `https://${foundArtistExt}.chorus.vn/admin/edit/${foundSong.id}`
+        : `/${foundArtistExt}/admin/edit/${foundSong.id}`;
+      return res.json({
+        success: true,
+        type: 'song',
+        id: foundSong.id,
+        title: foundSong.title,
+        coverUrl: foundSong.coverUrl || '',
+        artistExtension: foundArtistExt,
+        artistName: foundArtistName,
+        editUrl
+      });
+    }
+
+    return res.status(404).json({ error: 'Không tìm thấy bài hát hoặc playlist phù hợp!' });
+  });
+
   
   // Public Pricing API
   app.get('/api/public/pricing', (req, res) => {

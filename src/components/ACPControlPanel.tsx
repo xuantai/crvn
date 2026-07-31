@@ -106,7 +106,7 @@ export default function ACPControlPanel() {
     });
   };
 
-  const [activeTab, setActiveTab] = useState<'artists' | 'landing' | 'tickets' | 'templates' | 'faq' | 'keywords' | 'content' | 'roles' | 'vouchers' | 'pricing' | 'admin_theme'>('artists');
+  const [activeTab, setActiveTab] = useState<'artists' | 'landing' | 'tickets' | 'templates' | 'faq' | 'keywords' | 'content' | 'roles' | 'vouchers' | 'pricing' | 'admin_theme' | 'edit_item'>('artists');
   const [showComposeModal, setShowComposeModal] = useState(false);
   const [artistCurrentPage, setArtistCurrentPage] = useState(0);
   const [artistPageSize, setArtistPageSize] = useState<number>(20); // 20, 50, 100
@@ -136,7 +136,49 @@ export default function ACPControlPanel() {
   const [isHandlingTicketAction, setIsHandlingTicketAction] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Pricing state
+    // Edit item lookup states
+  const [editLookupQuery, setEditLookupQuery] = useState('');
+  const [isLookingUp, setIsLookingUp] = useState(false);
+  const [lookupError, setLookupError] = useState('');
+  const [lookupResult, setLookupResult] = useState<any>(null);
+
+  const detectedType = useMemo(() => {
+    const q = editLookupQuery.trim().toLowerCase();
+    if (q.includes('/playlist/')) return 'playlist';
+    if (q.includes('/song/') || q.includes('/demo/')) return 'song';
+    return null;
+  }, [editLookupQuery]);
+
+  const handleLookupSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editLookupQuery.trim()) return;
+
+    setIsLookingUp(true);
+    setLookupError('');
+    setLookupResult(null);
+
+    try {
+      const res = await fetch(`/api/acp/lookup-item?query=${encodeURIComponent(editLookupQuery.trim())}`, {
+        headers: {
+          'Authorization': `Bearer ${token || ''}`
+        }
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Không tìm thấy bài hát hoặc playlist');
+      }
+      setLookupResult(data);
+      if (data.editUrl) {
+        window.open(data.editUrl, '_blank');
+      }
+    } catch (err: any) {
+      setLookupError(err.message || 'Lỗi tìm kiếm');
+    } finally {
+      setIsLookingUp(false);
+    }
+  };
+
+// Pricing state
   const [pricingSettings, setPricingSettings] = useState<any>({
     free: { monthlyOriginalPrice: 0, monthlySalePrice: 0, yearlyOriginalPrice: 0, yearlySalePrice: 0, features: [] },
     pro: { monthlyOriginalPrice: 150000, monthlySalePrice: 99000, yearlyOriginalPrice: 1800000, yearlySalePrice: 890000, features: [] },
@@ -1512,6 +1554,17 @@ export default function ACPControlPanel() {
           >
             <Users className="w-4.5 h-4.5" />
             <span>Nghệ Sĩ & Thành Viên</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('edit_item')}
+            className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+              activeTab === 'edit_item'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Edit2 className="w-4.5 h-4.5" />
+            <span>Sửa Bài / Playlist</span>
           </button>
           <button
             onClick={() => setActiveTab('landing')}
