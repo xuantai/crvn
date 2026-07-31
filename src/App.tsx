@@ -13909,6 +13909,7 @@ function PlaylistPlayer() {
     } else {
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('secret') || urlParams.get('token') || sessionStorage.getItem(`playlist_token_${id}`) || '';
+      const targetSongId = urlParams.get('song');
       fetch(`/api/playlists/${id}${token ? `?token=${encodeURIComponent(token)}` : ''}`, {
         headers: {
         'x-artist-extension': getArtistExtensionFromUrl(),
