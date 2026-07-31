@@ -1774,6 +1774,25 @@ async function startServer() {
     return cloned;
   };
 
+  app.get('/api/verify-admin-session', async (req, res) => {
+    try {
+      const ext = (req.query.ext || req.query.artist || req.headers['x-artist-extension']) as string;
+      if (!ext) {
+        return res.status(400).json({ valid: false, error: 'Missing artist extension' });
+      }
+      const artist = artists.find(a => 
+        (a.username || '').toLowerCase() === ext.toLowerCase() || 
+        (a.extension || '').toLowerCase() === ext.toLowerCase()
+      );
+      if (!artist || artist.activated === false) {
+        return res.status(401).json({ valid: false, error: 'Artist not found or inactive' });
+      }
+      return res.json({ valid: true, username: artist.username, artistName: artist.artistName });
+    } catch (err: any) {
+      return res.status(500).json({ valid: false, error: err.message });
+    }
+  });
+
   app.get('/api/data', async (req, res) => {
     console.log('API DATA REQUEST URL:', req.originalUrl, 'RESOLVED ARTIST:', (req as any).artist?.username);
     try {

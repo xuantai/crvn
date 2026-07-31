@@ -7285,12 +7285,15 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
 
   useEffect(() => {
     if (activeExt) {
-      fetch(`/api/data?artist=${activeExt}`, { cache: 'no-store',
-        headers: { 'x-artist-extension': activeExt }
+      fetch(`/api/verify-admin-session?ext=${encodeURIComponent(activeExt)}`, {
+        cache: 'no-store',
+        headers: {
+          'Authorization': `Bearer ${activeToken || ''}`
+        }
       })
       .then(res => res.json())
       .then(data => {
-        if (!data || data.error === 'Artist not found' || data.notFound || data.error === 'inactive') {
+        if (!data || !data.valid) {
           removeAdminToken(activeExt);
           removeGlobalCookie('activeAdminExtension');
           removeGlobalCookie(`adminToken_${activeExt}`);
@@ -7300,15 +7303,20 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
           setSession(getActiveAdminSession());
           return;
         }
-        const fetchedAvatar = data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
-        if (fetchedAvatar) {
-          setAvatar(fetchedAvatar);
-          localStorage.setItem('activeAdminAvatar', fetchedAvatar);
-        }
+        fetch(`/api/data?artist=${encodeURIComponent(activeExt)}`, { cache: 'no-store' })
+          .then(r => r.json())
+          .then(d => {
+            const fetchedAvatar = d?.aboutMe?.avatarUrl || d?.homeCoverUrl || '';
+            if (fetchedAvatar) {
+              setAvatar(fetchedAvatar);
+              localStorage.setItem('activeAdminAvatar', fetchedAvatar);
+            }
+          })
+          .catch(() => {});
       })
       .catch(() => {});
     }
-  }, [activeExt]);
+  }, [activeExt, activeToken]);
 
   if (!activeExt || !activeName || !activeToken) return null;
 
