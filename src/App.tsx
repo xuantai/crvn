@@ -13808,6 +13808,7 @@ function PlaylistPlayer() {
   const [repeat, setRepeat] = useState<0 | 1 | 2>(0); // 0: off, 1: playlist, 2: one
   const [error, setError] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
+  const [toast, setToast] = useState('');
   
   const [isMinimized, setIsMinimized] = useState(() => id === 'released');
   
@@ -13927,6 +13928,14 @@ function PlaylistPlayer() {
         }
         setPlaylist(data.playlist);
         setSongs(data.songs);
+        let startIdx = 0;
+        if (targetSongId && data.songs && data.songs.length > 0) {
+          const matchedIdx = data.songs.findIndex((d: any) => String(d.id) === targetSongId || d.slug === targetSongId);
+          if (matchedIdx !== -1) {
+            startIdx = matchedIdx;
+          }
+        }
+        setCurrentIndex(startIdx);
         setLoading(false);
       })
       .catch(err => {
@@ -14016,10 +14025,16 @@ function PlaylistPlayer() {
   const currentSong = songs[currentIndex];
 
   useEffect(() => {
-     if (id === 'released' && currentSong) {
+     if (id && currentSong) {
        const searchParams = new URLSearchParams(window.location.search);
-       if (searchParams.get('song') !== (currentSong.slug || currentSong.id)) {
-         window.history.replaceState(null, '', getArtistLink(`/playlist/released?song=${currentSong.slug || currentSong.id}`));
+       const songSlugOrId = currentSong.slug || currentSong.id;
+       if (searchParams.get('song') !== songSlugOrId) {
+         const secret = searchParams.get('secret');
+         const token = searchParams.get('token');
+         let sub = id === 'released' ? `/playlist/released?song=${songSlugOrId}` : `/playlist/${id}?song=${songSlugOrId}`;
+         if (secret) sub += `&secret=${encodeURIComponent(secret)}`;
+         if (token) sub += `&token=${encodeURIComponent(token)}`;
+         window.history.replaceState(null, '', getArtistLink(sub));
        }
      }
   }, [id, currentSong]);
@@ -14122,9 +14137,9 @@ function PlaylistPlayer() {
                             {getSongCoverUrl(song.coverUrl) ? <img src={getSongCoverUrl(song.coverUrl)} className="w-full h-full object-cover group-hover:scale-110 transition-transform" /> : <Music className="w-4 h-4 m-3 sm:m-3.5 text-neutral-500" />}
                          </div>
                          <div className={`flex-1 min-w-0 flex flex-col justify-center relative z-10 ${song.achievements?.length ? 'pr-2' : 'pr-4'}`}>
-                            <p className={`font-bold transition-colors ${i === currentIndex ? 'text-purple-400' : (song.achievements?.length ? 'text-amber-100 hover:text-amber-300' : 'text-white')} ${song.achievements?.length ? 'text-[10px] sm:text-[11px] leading-[1.15] whitespace-normal break-words' : `${(song.title?.length || 0) > 35 ? 'text-xs sm:text-[13px]' : 'text-sm'} whitespace-normal break-words leading-tight`}`}>
-                              <HoverTranslate text={song.title} format={true} />
-                            </p>
+                            <MarqueeText className={`font-bold transition-colors w-full ${i === currentIndex ? 'text-purple-400' : (song.achievements?.length ? 'text-amber-100 hover:text-amber-300' : 'text-white')} ${song.achievements?.length ? 'text-[10px] sm:text-[11px]' : 'text-xs sm:text-sm'}`}>
+                               <HoverTranslate text={song.title} format={true} />
+                             </MarqueeText>
                             <MarqueeText className={`text-neutral-400 mt-0.5 ${song.achievements?.length ? 'text-[8.5px] sm:text-[9px] leading-tight opacity-90' : 'text-xs'} w-full`}>{formatText(song.singer || song.composer || 'Đang cập nhật', true, false)}</MarqueeText>
                          </div>
                          
@@ -14134,6 +14149,26 @@ function PlaylistPlayer() {
                             </div>
                          )}
 
+                         <button
+                           type="button"
+                           onClick={async (e) => {
+                             e.stopPropagation();
+                             const songSlugOrId = song.slug || song.id;
+                             let shareUrl = getArtistFullUrl(`/playlist/${id}?song=${songSlugOrId}`);
+                             const searchParams = new URLSearchParams(window.location.search);
+                             const secret = searchParams.get('secret');
+                             const token = searchParams.get('token');
+                             if (secret) shareUrl += `&secret=${encodeURIComponent(secret)}`;
+                             if (token) shareUrl += `&token=${encodeURIComponent(token)}`;
+                             await copyToClipboard(shareUrl);
+                             setToast(t("Đã copy link playlist bài hát!"));
+                             setTimeout(() => setToast(''), 3000);
+                           }}
+                           className="opacity-70 hover:opacity-100 p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-white/80 hover:text-white flex-shrink-0 relative z-10 transition-all active:scale-90 cursor-pointer ml-1"
+                           title={t("Sao chép link bài hát này trong playlist")}
+                         >
+                           <Share2 className="w-3.5 h-3.5" />
+                         </button>
                          {song.requiresPassword && !song.achievements?.length && <Lock className="w-3 h-3 text-yellow-500 flex-shrink-0 relative z-10" />}
                          {i === currentIndex && !song.achievements?.length && <div className="w-2 h-2 rounded-full bg-purple-400 shadow-[0_0_8px_theme(colors.purple.400)] relative z-10" />}
                       </button>
@@ -14144,7 +14179,12 @@ function PlaylistPlayer() {
          )}
       </AnimatePresence>
 
-      <AnimatePresence>
+      {toast && (
+        <div className="fixed top-6 right-6 z-[200] bg-emerald-500 text-white font-bold px-4 py-2.5 rounded-xl shadow-2xl text-sm animate-bounce flex items-center gap-2">
+          <span>✓</span> {toast}
+        </div>
+      )}
+    <AnimatePresence>
          {isMinimized && (
             <motion.div key="minimized"
                initial={{ opacity: 0, scale: 0.5, y: -20, x: 20 }}
