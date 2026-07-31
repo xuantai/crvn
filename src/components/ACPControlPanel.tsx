@@ -316,8 +316,8 @@ export default function ACPControlPanel() {
           title: data.title || '',
           coverUrl: data.coverUrl || '',
           description: data.description || '',
-          password: data.password || '',
-          secretLink: !!data.secretLink,
+          password: (data.password === true || data.password === 'true') ? '' : (data.password || ''),
+          secretLink: typeof data.secretLink === 'string' ? data.secretLink : '',
           isDraft: !!data.isDraft,
           demoIds: data.demoIds || [],
           availableDemos: data.availableDemos || []
@@ -4369,16 +4369,72 @@ export default function ACPControlPanel() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">Mật khẩu Playlist (Để trống nếu không có)</label>
-                      <input
-                        type="text"
-                        value={editPlaylistForm.password}
-                        onChange={(e) => setEditPlaylistForm({ ...editPlaylistForm, password: e.target.value })}
-                        placeholder="Để trống = Không có mật khẩu"
-                        className="w-full bg-neutral-950 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-500"
-                      />
+                      <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">Trạng Thái Hiển Thị *</label>
+                      <select
+                        value={editPlaylistForm.isDraft ? 'true' : 'false'}
+                        onChange={(e) => {
+                          const isDraftVal = e.target.value === 'true';
+                          setEditPlaylistForm({
+                            ...editPlaylistForm,
+                            isDraft: isDraftVal,
+                            password: isDraftVal ? editPlaylistForm.password : ''
+                          });
+                        }}
+                        className="w-full bg-neutral-950 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-500 cursor-pointer font-medium"
+                      >
+                        <option value="false">🌐 Công khai (Hiện ở trang chủ nghệ sĩ)</option>
+                        <option value="true">🔒 Ẩn / Riêng tư (Bản nháp - Chỉ mở bằng link/mật khẩu)</option>
+                      </select>
                     </div>
                   </div>
+
+                  {editPlaylistForm.isDraft && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl bg-amber-950/20 border border-amber-500/30 animate-fade-in">
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-amber-300 mb-1.5">Mật Khẩu Playlist (Tùy chọn)</label>
+                        <input
+                          type="text"
+                          value={editPlaylistForm.password}
+                          onChange={(e) => setEditPlaylistForm({ ...editPlaylistForm, password: e.target.value })}
+                          placeholder="Để trống = Không có mật khẩu"
+                          className="w-full bg-neutral-950 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-500"
+                        />
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <label className="block text-xs font-bold uppercase tracking-wider text-amber-300">Secret Link (Link Bí Mật)</label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newSecret = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                              setEditPlaylistForm({ ...editPlaylistForm, secretLink: newSecret });
+                            }}
+                            className="text-[10px] bg-amber-500/30 hover:bg-amber-500/50 text-amber-200 px-2.5 py-1 rounded-lg font-bold transition-colors cursor-pointer"
+                          >
+                            ⚡ Tạo Link Mới
+                          </button>
+                        </div>
+                        {editPlaylistForm.secretLink ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              readOnly
+                              value={editPlaylistForm.secretLink}
+                              className="flex-1 bg-neutral-950 border border-emerald-500/40 rounded-xl px-3 py-2 text-xs text-emerald-300 focus:outline-none font-mono"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setEditPlaylistForm({ ...editPlaylistForm, secretLink: '' })}
+                              className="text-xs bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 px-3 py-2 rounded-xl font-bold transition-colors cursor-pointer"
+                            >
+                              Xóa
+                            </button>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-neutral-400 italic py-2">Chưa tạo Secret Link cho Playlist này.</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5">Ảnh bìa Playlist (Cover Image)</label>
