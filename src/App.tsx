@@ -6318,6 +6318,15 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
           });
         }
 
+        try {
+          window.dispatchEvent(new CustomEvent('sso-toast', {
+            detail: {
+              type: 'logout',
+              title: 'Đăng Xuất Thành Công',
+              message: 'Hẹn gặp lại bạn lần sau!'
+            }
+          }));
+        } catch (e) {}
         window.dispatchEvent(new Event('admin-session-change'));
         window.dispatchEvent(new Event('storage'));
       } else if (event.data && event.data.type === 'LOGIN_ALL') {
@@ -6339,6 +6348,16 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
           setGlobalCookie('activeAdminAvatar', avatar || '');
           setGlobalCookie('activeAdminActivated', activated !== false ? 'true' : 'false');
 
+          try {
+            window.dispatchEvent(new CustomEvent('sso-toast', {
+              detail: {
+                type: 'login',
+                title: 'Đăng Nhập Thành Công',
+                message: `Chào mừng ${artistName || extension} trải nghiệm Chorus`
+              }
+            }));
+          } catch (e) {}
+
           window.dispatchEvent(new Event('admin-session-change'));
           window.dispatchEvent(new Event('storage'));
         }
@@ -6347,7 +6366,7 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
   } catch (e) {}
 }
 
-(window as any).clearAllSessions = async () => {
+(window as any).clearAllSessions = async (showToast: boolean = false) => {
   (window as any).__IS_LOGGED_OUT__ = true;
 
   // 1. Broadcast LOGOUT_ALL to all other open tabs/subdomains immediately
@@ -6390,9 +6409,17 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
   }
 
   // 3. Notify client components
-  try {
-    window.dispatchEvent(new CustomEvent('sso-toast', { detail: { message: 'Đăng xuất thành công!', type: 'logout' } }));
-  } catch (e) {}
+  if (showToast) {
+    try {
+      window.dispatchEvent(new CustomEvent('sso-toast', {
+        detail: {
+          type: 'logout',
+          title: 'Đăng Xuất Thành Công',
+          message: 'Hẹn gặp lại bạn lần sau!'
+        }
+      }));
+    } catch (e) {}
+  }
   window.dispatchEvent(new Event('admin-session-change'));
   window.dispatchEvent(new Event('storage'));
   
@@ -6440,9 +6467,6 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
   originalSetItem.call(localStorage, `${extension}_activeAdminAvatar`, avatar);
   originalSetItem.call(localStorage, `${extension}_activeAdminActivated`, activated !== false ? 'true' : 'false');
 
-  try {
-    window.dispatchEvent(new CustomEvent('sso-toast', { detail: { message: `Đăng nhập thành công! Chào mừng nghệ sĩ ${artistName}`, type: 'login' } }));
-  } catch (e) {}
   window.dispatchEvent(new Event('admin-session-change'));
   window.dispatchEvent(new Event('storage'));
 };
@@ -7339,7 +7363,7 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
     if (isLoggingOut) return;
     setIsLoggingOut(true);
     if (typeof (window as any).clearAllSessions === 'function') {
-      await (window as any).clearAllSessions();
+      await (window as any).clearAllSessions(true);
     }
     onLogout();
     setTimeout(() => {
