@@ -50,6 +50,55 @@ const mailTransporter = nodemailer.createTransport({
 });
 
 if (ffmpeg && ffmpegInstaller?.path) ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+
+let S3Client: any, PutObjectCommand: any;
+try {
+  const s3Module = require('@aws-sdk/client-s3');
+  S3Client = s3Module.S3Client;
+  PutObjectCommand = s3Module.PutObjectCommand;
+} catch (e) {}
+
+const r2AccountId = process.env.CF_R2_ACCOUNT_ID;
+const r2AccessKeyId = process.env.CF_R2_ACCESS_KEY_ID;
+const r2SecretAccessKey = process.env.CF_R2_SECRET_ACCESS_KEY;
+const r2BucketName = process.env.CF_R2_BUCKET_NAME || 'bbb-bz';
+const r2PublicDomain = (process.env.CF_R2_PUBLIC_DOMAIN || 'https://cdn.bbb.bz').replace(/\/+$/, '');
+
+let r2Client: any = null;
+if (S3Client && r2AccountId && r2AccessKeyId && r2SecretAccessKey) {
+  r2Client = new S3Client({
+    region: 'auto',
+    endpoint: `https://${r2AccountId}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId: r2AccessKeyId,
+      secretAccessKey: r2SecretAccessKey
+    }
+  });
+}
+
+async function uploadToR2(key: string, body: Buffer, contentType: string): Promise<string | null> {
+  if (!r2Client || !PutObjectCommand) return null;
+  try {
+    const cleanKey = key.startsWith('/') ? key.substring(1) : key;
+    const uploadPromise = r2Client.send(new PutObjectCommand({
+      Bucket: r2BucketName,
+      Key: cleanKey,
+      Body: body,
+      ContentType: contentType
+    }));
+
+    const timeoutPromise = new Promise<null>((_, reject) =>
+      setTimeout(() => reject(new Error('R2 Upload Timeout')), 5000)
+    );
+
+    await Promise.race([uploadPromise, timeoutPromise]);
+    console.log(`[Cloudflare R2] Successfully uploaded: ${cleanKey}`);
+    return `${r2PublicDomain}/${cleanKey}`;
+  } catch (err: any) {
+    console.error("[Cloudflare R2] Upload skipped or failed:", err?.message || err);
+    return null;
+  }
+}
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
@@ -735,12 +784,11 @@ async function ensureUploadsDir() {
 }
 
 async function uploadLocalToCloud(localPath: string, filename: string, mimetype: string, artistId: string = 'common'): Promise<string> {
-  // If it's a music file, do NOT upload to Firebase Storage, return the local server URL
+  const localUrl = `/uploads/${artistId}/${filename}`;
   if (mimetype.startsWith('audio/') || filename.endsWith('.mp3') || filename.endsWith('.wav')) {
-    return `/uploads/${artistId}/${filename}`;
+    return localUrl;
   }
 
-  // If it's an image file, compress and upload to Firebase Storage
   if (mimetype.startsWith('image/')) {
     try {
       const isPng = mimetype === 'image/png' || filename.toLowerCase().endsWith('.png');
@@ -758,46 +806,21 @@ async function uploadLocalToCloud(localPath: string, filename: string, mimetype:
         sharpInstance = sharpInstance.jpeg({ quality: 80, progressive: true });
       }
       await sharpInstance.toFile(optimizedPath);
+      await fs.unlink(localPath).catch(() => {});
 
-      // Now we have the optimized image locally. Try to upload it to Firebase.
-      if (isFirestoreDisabled) {
-        await fs.unlink(localPath).catch(() => {});
-        return `/uploads/${artistId}/${optimizedFilename}`;
-      }
-      try {
-        const fileBuffer = await fs.readFile(optimizedPath);
-        const storageRef = ref(firebaseStorage, `uploads/${artistId}/${optimizedFilename}`);
-        await uploadBytes(storageRef, fileBuffer, { contentType: isPng ? 'image/png' : 'image/jpeg' });
-        const cloudUrl = await getDownloadURL(storageRef);
+      const optLocalUrl = `/uploads/${artistId}/${optimizedFilename}`;
+      const fileBuffer = await fs.readFile(optimizedPath);
+      const r2Url = await uploadToR2(`uploads/${artistId}/${optimizedFilename}`, fileBuffer, isPng ? 'image/png' : 'image/jpeg');
 
-        // Success! Clean up both local files.
-        await fs.unlink(localPath).catch(() => {});
-        await fs.unlink(optimizedPath).catch(() => {});
-        return cloudUrl;
-      } catch (uploadErr: any) {
-        console.log("[Firebase Storage] Upload skipped or failed. Keeping optimized image locally.");
-        // Clean up raw original, keep the optimized local file
-        await fs.unlink(localPath).catch(() => {});
-        return `/uploads/${artistId}/${optimizedFilename}`;
-      }
+      // Return Cloudflare R2 URL if available, otherwise return local server URL. Keep file on server as backup!
+      return r2Url || optLocalUrl;
     } catch (error) {
       console.error("Lỗi nén/upload image in uploadLocalToCloud:", error);
-      // Fallback: if sharp failed completely, keep original raw image and return its local URL
-      return `/uploads/${artistId}/${filename}`;
+      return localUrl;
     }
   }
 
-  // Non-image, non-audio files (fallback)
-  try {
-    const fileBuffer = await fs.readFile(localPath);
-    const storageRef = ref(firebaseStorage, `uploads/${artistId}/${filename}`);
-    await uploadBytes(storageRef, fileBuffer, { contentType: mimetype });
-    const cloudUrl = await getDownloadURL(storageRef);
-    await fs.unlink(localPath).catch(() => {});
-    return cloudUrl;
-  } catch (error) {
-    return `/uploads/${artistId}/${filename}`;
-  }
+  return localUrl;
 }
 
 async function deleteFileByUrl(url: string) {
@@ -986,30 +1009,16 @@ async function uploadUrlOrFileToCloud(urlOrPath: string, globalBaseUrl?: string)
         }
         const optimizedBuffer = await sharpInstance.toBuffer();
 
-        if (isFirestoreDisabled) {
-          await fs.writeFile(optimizedPath, optimizedBuffer);
-          if (localSourceFullPath && localSourceFullPath !== optimizedPath) {
-            await fs.unlink(localSourceFullPath).catch(() => {});
-          }
-          return `/uploads/${optimizedFilename}`;
+        // Always save optimized image to server local disk as backup
+        await fs.writeFile(optimizedPath, optimizedBuffer);
+        if (localSourceFullPath && localSourceFullPath !== optimizedPath) {
+          await fs.unlink(localSourceFullPath).catch(() => {});
         }
-        try {
-          const storageRef = ref(firebaseStorage, `uploads/${optimizedFilename}`);
-          await uploadBytes(storageRef, optimizedBuffer, { contentType: isPng ? 'image/png' : 'image/jpeg' });
-          const cloudUrl = await getDownloadURL(storageRef);
+        const optLocalUrl = `/uploads/${optimizedFilename}`;
 
-          if (localSourceFullPath) {
-            await fs.unlink(localSourceFullPath).catch(() => {});
-          }
-          return cloudUrl;
-        } catch (storageErr: any) {
-          console.log("[Firebase Storage] Upload skipped or failed. Storing image locally instead.");
-          await fs.writeFile(optimizedPath, optimizedBuffer);
-          if (localSourceFullPath && localSourceFullPath !== optimizedPath) {
-            await fs.unlink(localSourceFullPath).catch(() => {});
-          }
-          return `/uploads/${optimizedFilename}`;
-        }
+        // Upload to Cloudflare R2 if available, or fallback to local URL
+        const r2Url = await uploadToR2(`uploads/${optimizedFilename}`, optimizedBuffer, isPng ? 'image/png' : 'image/jpeg');
+        return r2Url || optLocalUrl;
       } catch (sharpErr) {
         console.error(`[Đồng bộ hóa] sharp compression error:`, sharpErr);
       }
@@ -6118,6 +6127,9 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
            const optimizedFilename = `${req.file.filename.split('.')[0]}-${Date.now()}.${ext}`;
            const optimizedPath = path.join(process.cwd(), 'public', 'uploads', artistId, optimizedFilename);
            
+           // Ensure directory exists
+           await fs.mkdir(path.dirname(optimizedPath), { recursive: true }).catch(() => {});
+
            let sharpInstance = sharp(req.file.path).resize({ width: 1600, withoutEnlargement: true });
            if (isPng) {
              sharpInstance = sharpInstance.png({ palette: true, quality: 85 });
@@ -6126,45 +6138,24 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
            }
            await sharpInstance.toFile(optimizedPath);
            
-           // Xóa file raw gốc chưa qua tối ưu hóa
+           // Delete raw un-optimized temporary upload file
            await fs.unlink(req.file.path).catch(() => {});
            
-           // Upload to Firebase Storage
-           if (isFirestoreDisabled) {
-              res.json({ url: `/uploads/${artistId}/${optimizedFilename}` });
-           } else {
-              try {
-                 const fileBuffer = await fs.readFile(optimizedPath);
-                 const storageRef = ref(firebaseStorage, `uploads/${artistId}/${optimizedFilename}`);
-                 await uploadBytes(storageRef, fileBuffer, { contentType: isPng ? 'image/png' : 'image/jpeg' });
-                 const cloudUrl = await getDownloadURL(storageRef);
-                 
-                 // Xóa file optimized cục bộ để gọn dung lượng server, chỉ lưu trên Firebase
-                 await fs.unlink(optimizedPath).catch(() => {});
-                 res.json({ url: cloudUrl });
-              } catch (firebaseErr: any) {
-                 console.log("[Firebase Storage] Upload skipped or failed. Storing image locally instead.");
-                 res.json({ url: `/uploads/${artistId}/${optimizedFilename}` });
-              }
-           }
+           const localUrl = `/uploads/${artistId}/${optimizedFilename}`;
+           const fileBuffer = await fs.readFile(optimizedPath);
+           const r2Url = await uploadToR2(`uploads/${artistId}/${optimizedFilename}`, fileBuffer, isPng ? 'image/png' : 'image/jpeg');
+
+           // Always keep optimized file locally on server as backup!
+           res.json({ url: r2Url || localUrl });
         } catch (error) {
            console.error("Lỗi nén ảnh:", error);
-           if (isFirestoreDisabled) {
-              res.json({ url: `/uploads/${artistId}/${req.file.filename}` });
-           } else {
-              try {
-                 const fileBuffer = await fs.readFile(req.file.path);
-                 const storageRef = ref(firebaseStorage, `uploads/${artistId}/${req.file.filename}`);
-                 await uploadBytes(storageRef, fileBuffer, { contentType: req.file.mimetype });
-                 const cloudUrl = await getDownloadURL(storageRef);
-                 
-                 // Xóa file gốc cục bộ
-                 await fs.unlink(req.file.path).catch(() => {});
-                 res.json({ url: cloudUrl });
-              } catch (firebaseErr: any) {
-                 console.log("[Firebase Storage] Original upload skipped or failed. Storing image locally instead.");
-                 res.json({ url: `/uploads/${artistId}/${req.file.filename}` });
-              }
+           const localUrl = `/uploads/${artistId}/${req.file.filename}`;
+           try {
+              const fileBuffer = await fs.readFile(req.file.path);
+              const r2Url = await uploadToR2(`uploads/${artistId}/${req.file.filename}`, fileBuffer, req.file.mimetype);
+              res.json({ url: r2Url || localUrl });
+           } catch (fallbackErr) {
+              res.json({ url: localUrl });
            }
         }
       } else {
@@ -6209,14 +6200,13 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
               console.error(`Không thể xóa file ${isWavFile ? 'WAV' : 'M4A'} tạm:`, unlinkErr);
             }
 
-            // Theo thông số mới: file nhạc chỉ lưu lên server, không lưu lên firebase
             res.json({ url: `/uploads/${artistId}/${mp3Filename}` });
           } catch (convertErr: any) {
             console.error(`Lỗi chuyển đổi (${isWav ? '.wav' : '.m4a'} -> .mp3): Khôi phục cơ chế mặc định.`, convertErr);
             res.json({ url: `/uploads/${artistId}/${req.file.filename}` });
           }
         } else {
-          // File nhạc MP3 hoặc các định dạng khác: chỉ lưu lên server, không lưu lên firebase
+          // File nhạc MP3 hoặc các định dạng khác: chỉ lưu lên server
           res.json({ url: `/uploads/${artistId}/${req.file.filename}` });
         }
       }
@@ -6249,26 +6239,14 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         .resize({ width: 1600, withoutEnlargement: true })
         .toBuffer();
       
-      // Lưu file cục bộ tạm thời
+      // Lưu file cục bộ server làm backup
       await fs.writeFile(filepath, optimizedBuffer);
       
-      // Upload to Firebase Storage
-      if (isFirestoreDisabled) {
-         res.json({ url: `/uploads/${artistId}/${filename}` });
-      } else {
-         try {
-            const storageRef = ref(firebaseStorage, `uploads/${artistId}/${filename}`);
-            await uploadBytes(storageRef, optimizedBuffer, { contentType: 'image/jpeg' });
-            const cloudUrl = await getDownloadURL(storageRef);
-            
-            // Xóa file cục bộ sau khi đã upload lên cloud thành công để tiết kiệm dung lượng
-            await fs.unlink(filepath).catch(() => {});
-            res.json({ url: cloudUrl });
-         } catch (firebaseErr) {
-            console.log("[Firebase Storage] Base64 upload skipped or failed. Storing locally instead.");
-            res.json({ url: `/uploads/${artistId}/${filename}` });
-         }
-      }
+      const localUrl = `/uploads/${artistId}/${filename}`;
+      const r2Url = await uploadToR2(`uploads/${artistId}/${filename}`, optimizedBuffer, 'image/jpeg');
+
+      // Tra ve R2 URL neu thanh cong, hoac local server URL. Giu file backup tren server local!
+      res.json({ url: r2Url || localUrl });
     } catch (e) {
       console.error(e);
       res.status(500).json({ error: 'Failed to upload image' });
