@@ -6555,41 +6555,23 @@ const formatFileName = (name: string, maxLen = 22) => {
   return `${start}...${end}${ext}`;
 };
 
-const compressImageToJPG = (file: File, maxWidth = 1200): Promise<File> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (e) => {
-      const img = new window.Image();
-      img.src = e.target?.result as string;
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
-        if (width > maxWidth) {
-          height = Math.round((height * maxWidth) / width);
-          width = maxWidth;
-        }
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return resolve(file);
-        ctx.drawImage(img, 0, 0, width, height);
-        canvas.toBlob((blob) => {
-          if (!blob) return resolve(file);
-          resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: 'image/jpeg' }));
-        }, 'image/jpeg', 0.85);
-      };
-      img.onerror = () => resolve(file);
-    };
-    reader.onerror = () => resolve(file);
-  });
-};
-
 const compressImageInBrowser = async (file: File, maxWidth: number = 1920, quality: number = 0.85): Promise<File> => {
-  if (!file || !file.type || !file.type.startsWith('image/') || file.type === 'image/gif' || file.type === 'image/svg+xml') {
+  if (!file || !file.type || !file.type.startsWith('image/')) {
     return file;
   }
+
+  const mimeLower = (file.type || '').toLowerCase();
+  const nameLower = (file.name || '').toLowerCase();
+
+  // Skip vector, animated, or favicon icon formats where canvas conversion breaks them
+  const skipTypes = ['image/gif', 'image/svg+xml', 'image/x-icon', 'image/vnd.microsoft.icon', 'image/ico'];
+  if (skipTypes.includes(mimeLower) || nameLower.endsWith('.ico') || nameLower.endsWith('.svg') || nameLower.endsWith('.gif')) {
+    return file;
+  }
+
+  const isPng = mimeLower === 'image/png' || mimeLower === 'image/x-png' || nameLower.endsWith('.png');
+  const isWebp = mimeLower === 'image/webp' || nameLower.endsWith('.webp');
+
   try {
     return await new Promise<File>((resolve) => {
       const img = document.createElement('img');
@@ -6602,6 +6584,7 @@ const compressImageInBrowser = async (file: File, maxWidth: number = 1920, quali
           height = Math.round((height * maxWidth) / width);
           width = maxWidth;
         }
+
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
@@ -6609,31 +6592,39 @@ const compressImageInBrowser = async (file: File, maxWidth: number = 1920, quali
         if (!ctx) {
           return resolve(file);
         }
+
+        // Clear canvas so transparent pixels remain 100% transparent (RGBA 0,0,0,0)
+        ctx.clearRect(0, 0, width, height);
         ctx.drawImage(img, 0, 0, width, height);
-        const outputType = file.type === 'image/png' ? 'image/webp' : 'image/jpeg';
+
+        const cleanName = file.name.includes('.') ? file.name.substring(0, file.name.lastIndexOf('.')) : file.name;
+
+        if (isPng || isWebp) {
+          // For transparent formats (PNG/WebP), export to PNG (or WebP) to preserve 100% alpha transparency
+          const targetType = isWebp ? 'image/webp' : 'image/png';
+          const targetExt = isWebp ? '.webp' : '.png';
+          canvas.toBlob(
+            (blob) => {
+              if (!blob || blob.size >= file.size) {
+                return resolve(file);
+              }
+              return resolve(new File([blob], `${cleanName}${targetExt}`, { type: targetType, lastModified: Date.now() }));
+            },
+            targetType,
+            quality
+          );
+          return;
+        }
+
+        // For JPEG or non-transparent formats:
         canvas.toBlob(
           (blob) => {
             if (!blob || blob.size >= file.size) {
-              // If webp/jpeg blob is still larger or null, try jpeg fallback for PNGs without transparency
-              if (file.type === 'image/png') {
-                canvas.toBlob((jpegBlob) => {
-                  if (!jpegBlob || jpegBlob.size >= file.size) return resolve(file);
-                  const cleanName = file.name.includes('.') ? file.name.substring(0, file.name.lastIndexOf('.')) : file.name;
-                  return resolve(new File([jpegBlob], `${cleanName}.jpg`, { type: 'image/jpeg', lastModified: Date.now() }));
-                }, 'image/jpeg', quality);
-                return;
-              }
               return resolve(file);
             }
-            const ext = outputType === 'image/webp' ? '.webp' : '.jpg';
-            const cleanName = file.name.includes('.') ? file.name.substring(0, file.name.lastIndexOf('.')) : file.name;
-            const compressedFile = new File([blob], `${cleanName}${ext}`, {
-              type: outputType,
-              lastModified: Date.now()
-            });
-            resolve(compressedFile);
+            return resolve(new File([blob], `${cleanName}.jpg`, { type: 'image/jpeg', lastModified: Date.now() }));
           },
-          outputType,
+          'image/jpeg',
           quality
         );
       };
@@ -6644,8 +6635,13 @@ const compressImageInBrowser = async (file: File, maxWidth: number = 1920, quali
       img.src = url;
     });
   } catch (err) {
+    console.error('Image compression error:', err);
     return file;
   }
+};
+
+const compressImageToJPG = (file: File, maxWidth = 1200): Promise<File> => {
+  return compressImageInBrowser(file, maxWidth);
 };
 
 const uploadGlobal = async (file: File, setProgress?: (p: number) => void): Promise<string> => {
