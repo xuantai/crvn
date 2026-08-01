@@ -7,7 +7,7 @@
     "dev": "tsx server.ts",
     "build": "vite build && esbuild server.ts --bundle --target=node12 --platform=node --format=cjs --alias:fs/promises=./scratch/fs_promises_polyfill.cjs --alias:stream/promises=./scratch/stream_promises_polyfill.cjs --external:better-sqlite3 --external:sharp --external:ffmpeg-static --external:vite --sourcemap --outfile=dist/server.cjs",
     "start": "node dist/server.cjs",
-    "clean": "rm -rf dist server.js",
+    "clean": "powershell -Command \"Remove-Item -Recurse -Force dist -ErrorAction SilentlyContinue\"",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

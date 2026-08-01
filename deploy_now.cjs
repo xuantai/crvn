@@ -1,6 +1,6 @@
 const { Client } = require('ssh2');
-const fs = require('fs');
 const path = require('path');
+const fs = require('fs');
 
 const ROOT = __dirname; // f:/code/git/crvn
 
@@ -8,11 +8,11 @@ const SSH_CONFIG = {
   host: '36.50.177.253',
   port: 22,
   username: 'root',
-  password: 'MatKhauDay123',
+  password: 'MatKhauDay123@',
   readyTimeout: 30000
 };
 
-const REMOTE_DIR = '/home/bbb/htdocs/bbb.bz';
+const REMOTE_DIR = '/home/chorus/htdocs/bbb.bz';
 
 async function main() {
   console.log('=== Connecting to VPS 36.50.177.253 ===');
@@ -47,23 +47,26 @@ async function main() {
     });
   });
 
+  // Clean remote dist directory first to purge old assets
+  console.log('=== Cleaning remote dist directory ===');
+  await execCmd(`rm -rf ${REMOTE_DIR}/dist && mkdir -p ${REMOTE_DIR}/dist/assets`);
+
   // 1. Upload dist/index.html
-  console.log('=== Uploading dist/index.html ===');
+  console.log('\n=== Uploading dist/index.html ===');
   await uploadFile(path.join(ROOT, 'dist', 'index.html'), `${REMOTE_DIR}/dist/index.html`);
 
   // 2. Upload dist/assets/*
   console.log('\n=== Uploading dist/assets/ ===');
-  await execCmd(`mkdir -p ${REMOTE_DIR}/dist/assets`);
   const assets = fs.readdirSync(path.join(ROOT, 'dist', 'assets'));
   for (const f of assets) {
     await uploadFile(path.join(ROOT, 'dist', 'assets', f), `${REMOTE_DIR}/dist/assets/${f}`);
   }
 
-  // 3. Upload dist/server.cjs (backend)
+  // 3. Upload dist/server.cjs
   console.log('\n=== Uploading dist/server.cjs ===');
   await uploadFile(path.join(ROOT, 'dist', 'server.cjs'), `${REMOTE_DIR}/dist/server.cjs`);
 
-  // 4. Upload Data JSONs & SQLite DB
+  // 4. Upload Data Files & SQLite DB
   console.log('\n=== Uploading Data JSONs & SQLite DB ===');
   const files = fs.readdirSync(ROOT);
   for (const f of files) {
@@ -75,9 +78,9 @@ async function main() {
     }
   }
 
-  // 5. Restart PM2
+  // 5. Restart PM2 on bbb.bz (demonhac)
   console.log('\n=== Restarting PM2 (demonhac) ===');
-  await execCmd('pm2 restart demonhac && pm2 save');
+  await execCmd(`cd ${REMOTE_DIR} && (pm2 restart demonhac || PORT=3000 NODE_ENV=production pm2 start dist/server.cjs --name "demonhac" --update-env) && pm2 save`);
 
   conn.end();
   console.log('\n🎉 Deploy hoàn tất! Site đã được cập nhật đầy đủ mã nguồn và dữ liệu.');

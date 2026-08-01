@@ -6997,6 +6997,14 @@ ${JSON.stringify(geminiInput, null, 2)}`;
   } else {
     // Serve static files but DON'T serve index.html by default
     const distPath = path.join(process.cwd(), 'dist');
+    app.use((req, res, next) => {
+      if (req.path === '/' || req.path.endsWith('.html') || !req.path.includes('.')) {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+      }
+      next();
+    });
     app.use(express.static(distPath, { index: false }));
   }
 
