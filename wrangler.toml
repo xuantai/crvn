@@ -1,0 +1,12 @@
+name = "bbb-bz"
+pages_build_output_dir = "dist"
+compatibility_date = "2024-08-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "bbb-db"
+database_id = "379490cf-8ef8-4b1e-99f9-57985f46effa"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "bbb-bz"
