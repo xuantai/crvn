@@ -150,7 +150,7 @@ import mockupMacbook from '../assets/mockups/fr-macbook.webp';
 function IPhoneMockup({ imageUrl }: { imageUrl: string }) {
   return (
     <div className="relative w-full max-w-[280px] mx-auto filter drop-shadow-2xl flex items-center justify-center">
-      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '3%', left: '6.5%', width: '87%', height: '94%', borderRadius: '24px' }}>
+      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '8.5%', left: '6.9%', width: '86.2%', height: '88.5%', borderRadius: '32px' }}>
         {imageUrl ? (
           <img src={imageUrl} alt="" className="w-full h-full object-cover" />
         ) : (
@@ -167,7 +167,7 @@ function IPhoneMockup({ imageUrl }: { imageUrl: string }) {
 function IPadMockup({ imageUrl }: { imageUrl: string }) {
   return (
     <div className="relative w-full max-w-[480px] mx-auto filter drop-shadow-2xl flex items-center justify-center">
-      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '4.5%', left: '4.5%', width: '91%', height: '91%', borderRadius: '16px' }}>
+      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '5.1%', left: '3.5%', width: '93%', height: '90%', borderRadius: '12px' }}>
         {imageUrl ? (
           <img src={imageUrl} alt="" className="w-full h-full object-cover" />
         ) : (
@@ -184,7 +184,7 @@ function IPadMockup({ imageUrl }: { imageUrl: string }) {
 function MacbookMockup({ imageUrl }: { imageUrl: string }) {
   return (
     <div className="relative w-full max-w-[640px] mx-auto filter drop-shadow-2xl flex flex-col items-center justify-center">
-      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '11%', left: '12%', width: '76%', height: '66%', borderRadius: '4px' }}>
+      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '14%', left: '11.5%', width: '77%', height: '75%', borderRadius: '4px' }}>
         {imageUrl ? (
           <img src={imageUrl} alt="" className="w-full h-full object-cover" />
         ) : (
