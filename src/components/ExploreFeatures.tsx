@@ -149,9 +149,8 @@ import mockupMacbook from '../assets/mockups/fr-macbook.webp';
 
 function IPhoneMockup({ imageUrl }: { imageUrl: string }) {
   return (
-    <div className="relative w-full max-w-[280px] mx-auto filter drop-shadow-2xl">
-      <img src={mockupIphone} alt="iPhone Frame" className="relative z-10 w-full h-auto pointer-events-none" />
-      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '2%', left: '5%', width: '90%', height: '96%', borderRadius: '24px' }}>
+    <div className="relative w-full max-w-[280px] mx-auto filter drop-shadow-2xl flex items-center justify-center">
+      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '3%', left: '6.5%', width: '87%', height: '94%', borderRadius: '24px' }}>
         {imageUrl ? (
           <img src={imageUrl} alt="" className="w-full h-full object-cover" />
         ) : (
@@ -160,15 +159,15 @@ function IPhoneMockup({ imageUrl }: { imageUrl: string }) {
           </div>
         )}
       </div>
+      <img src={mockupIphone} alt="iPhone Frame" className="relative z-10 w-full h-auto pointer-events-none" />
     </div>
   );
 }
 
 function IPadMockup({ imageUrl }: { imageUrl: string }) {
   return (
-    <div className="relative w-full max-w-[480px] mx-auto filter drop-shadow-2xl">
-      <img src={mockupIpad} alt="iPad Frame" className="relative z-10 w-full h-auto pointer-events-none" />
-      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '3.5%', left: '3.2%', width: '93.6%', height: '93%', borderRadius: '16px' }}>
+    <div className="relative w-full max-w-[480px] mx-auto filter drop-shadow-2xl flex items-center justify-center">
+      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '4.5%', left: '4.5%', width: '91%', height: '91%', borderRadius: '16px' }}>
         {imageUrl ? (
           <img src={imageUrl} alt="" className="w-full h-full object-cover" />
         ) : (
@@ -177,15 +176,15 @@ function IPadMockup({ imageUrl }: { imageUrl: string }) {
           </div>
         )}
       </div>
+      <img src={mockupIpad} alt="iPad Frame" className="relative z-10 w-full h-auto pointer-events-none" />
     </div>
   );
 }
 
 function MacbookMockup({ imageUrl }: { imageUrl: string }) {
   return (
-    <div className="relative w-full max-w-[640px] mx-auto filter drop-shadow-2xl">
-      <img src={mockupMacbook} alt="Macbook Frame" className="relative z-10 w-full h-auto pointer-events-none" />
-      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '6.5%', left: '11.8%', width: '76.4%', height: '77%', borderRadius: '4px' }}>
+    <div className="relative w-full max-w-[640px] mx-auto filter drop-shadow-2xl flex flex-col items-center justify-center">
+      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '11%', left: '12%', width: '76%', height: '66%', borderRadius: '4px' }}>
         {imageUrl ? (
           <img src={imageUrl} alt="" className="w-full h-full object-cover" />
         ) : (
@@ -194,6 +193,7 @@ function MacbookMockup({ imageUrl }: { imageUrl: string }) {
           </div>
         )}
       </div>
+      <img src={mockupMacbook} alt="Macbook Frame" className="relative z-10 w-full h-auto pointer-events-none" />
     </div>
   );
 }
