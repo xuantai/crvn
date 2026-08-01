@@ -5931,7 +5931,8 @@ const getArtistLink = (subPath: string = '', customPath?: string) => {
       const firstSegment = parts[0].toLowerCase();
       const RESERVED_EXTS = [
         'admin', 'master', 'acp', 'verify-email', 'help', 'api', 'assets', 'static', 
-        'favicon.ico', 'robots.txt', 'sitemap.xml', 'mem', 'demo', 'song', 'playlist'
+        'favicon.ico', 'robots.txt', 'sitemap.xml', 'mem', 'demo', 'song', 'playlist',
+        'explore', 'kham-pha'
       ];
       if (!RESERVED_EXTS.includes(firstSegment)) {
         const targetExt = firstSegment;
@@ -7318,7 +7319,8 @@ function AnimatedRoutes() {
 
     const RESERVED_EXTS = [
       'admin', 'master', 'acp', 'verify-email', 'help', 'api', 'assets', 'static', 
-      'favicon.ico', 'robots.txt', 'sitemap.xml', 'mem', 'demo', 'song', 'playlist'
+      'favicon.ico', 'robots.txt', 'sitemap.xml', 'mem', 'demo', 'song', 'playlist',
+      'explore', 'kham-pha'
     ];
 
     const isAdminPage = location.pathname.endsWith('/admin') || location.pathname.includes('/admin/');
