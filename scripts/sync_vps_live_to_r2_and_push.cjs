@@ -204,8 +204,8 @@ async function main() {
   await execCmd(`cp ${REMOTE_DIR_VPS2}/bbb_global.db ${REMOTE_DIR_VPS2}/bbb_global.db.bak_${ts} || true`);
   console.log(`✅ VPS 2 SQLite DB backed up to bbb_global.db.bak_${ts}\n`);
 
-  // Step 2: Download bbb_global.db and data_*.json to local scratch folder
-  console.log('=== Step 2: Fetching live DB & JSONs from VPS 2 ===');
+  // Step 2: Download bbb_global.db, data_*.json, and ALL remote uploads from VPS 2 to local
+  console.log('=== Step 2: Fetching live DB, JSONs & public/uploads/ from VPS 2 ===');
   const tempDir = path.join(__dirname, '..', 'scratch', 'vps_live_data');
   fs.mkdirSync(tempDir, { recursive: true });
 
@@ -222,6 +222,27 @@ async function main() {
     await getFile(remoteFile, path.join(tempDir, filename));
     console.log(`  ✅ Downloaded ${filename}`);
   }
+
+  // Fetch all uploads from VPS 2 to local public/uploads/
+  console.log('  📥 Fetching remote public/uploads/ files from VPS 2...');
+  const remoteUploadsRaw = await execCmd(`find ${REMOTE_DIR_VPS2}/public/uploads -type f 2>/dev/null || true`);
+  const remoteUploadsList = remoteUploadsRaw.split('\n').map(s => s.trim()).filter(Boolean);
+
+  const rootDir = path.join(__dirname, '..');
+  let downloadedUploadsCount = 0;
+
+  for (const remoteUploadPath of remoteUploadsList) {
+    const relPath = remoteUploadPath.replace(`${REMOTE_DIR_VPS2}/public/`, '');
+    const localPath = path.join(rootDir, 'public', relPath);
+    if (!fs.existsSync(localPath)) {
+      fs.mkdirSync(path.dirname(localPath), { recursive: true });
+      try {
+        await getFile(remoteUploadPath, localPath);
+        downloadedUploadsCount++;
+      } catch (e) {}
+    }
+  }
+  console.log(`  ✅ Synced ${downloadedUploadsCount} new upload files from VPS 2 to local public/uploads/\n`);
 
   // Populate artistMap
   if (fs.existsSync(path.join(tempDir, 'artists.json'))) {

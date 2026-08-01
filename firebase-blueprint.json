@@ -12,7 +12,10 @@
           "type": "string"
         }
       },
-      "required": ["question", "answer"]
+      "required": [
+        "question",
+        "answer"
+      ]
     },
     "ProhibitedKeyword": {
       "title": "ProhibitedKeyword",
@@ -23,7 +26,9 @@
           "type": "string"
         }
       },
-      "required": ["keyword"]
+      "required": [
+        "keyword"
+      ]
     },
     "Role": {
       "title": "Role",
@@ -38,19 +43,33 @@
         },
         "allowedFeatures": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         },
         "pricing": {
           "type": "object",
           "properties": {
-            "monthlyOriginal": { "type": "number" },
-            "monthlyPromo": { "type": "number" },
-            "yearlyOriginal": { "type": "number" },
-            "yearlyPromo": { "type": "number" }
+            "monthlyOriginal": {
+              "type": "number"
+            },
+            "monthlyPromo": {
+              "type": "number"
+            },
+            "yearlyOriginal": {
+              "type": "number"
+            },
+            "yearlyPromo": {
+              "type": "number"
+            }
           }
         }
       },
-      "required": ["roleName", "maxPosts", "allowedFeatures"]
+      "required": [
+        "roleName",
+        "maxPosts",
+        "allowedFeatures"
+      ]
     },
     "AppData": {
       "title": "AppData",

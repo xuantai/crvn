@@ -49,7 +49,7 @@ const mailTransporter = nodemailer.createTransport({
   }
 });
 
-if (ffmpeg && ffmpegInstaller?.path) ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+if (ffmpeg && ffmpegInstaller && ffmpegInstaller.path) ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 let S3Client: any, PutObjectCommand: any;
 try {

@@ -6,7 +6,7 @@
     "email": "hi@acxuantai.com",
     "customOptions": [
       {
-        "url": "https://tài.vn",
+        "url": "https://cdn.chorus.vn/uploads/sw69l6795go/tài.vn",
         "desc": "tài.vn",
         "title": "Kho nhạc & Demo"
       }
@@ -45,7 +45,7 @@
       "desc": "Tham gia chương trình trao đổi sinh viên tại trường ĐH Bunkyo ở Tokyo, Nhật Bản."
     }
   ],
-  "logoWhiteUrl": "https://acxuantai.com/img/logo/logo-white.png",
+  "logoWhiteUrl": "https://cdn.chorus.vn/uploads/system/logo-white.png",
   "roles": [
     "Ca nhạc sĩ",
     "Music Producer",
@@ -53,55 +53,55 @@
     "Content Creator",
     "KOL"
   ],
-  "logoUrl": "https://acxuantai.com/img/logo/logo-black.png",
+  "logoUrl": "https://cdn.chorus.vn/uploads/system/logo-black.png",
   "portfolio": [
     {
-      "url": "https://www.youtube.com/watch?v=W0_x5xqWI-E",
-      "imageUrl": "https://acxuantai.com/img/portfolio/01.jpg",
+      "url": "https://cdn.chorus.vn/uploads/sw69l6795go/watch",
+      "imageUrl": "https://cdn.chorus.vn/uploads/sw69l6795go/01.jpg",
       "role": "Người Chơi",
       "title": "Đấu Trường Âm Nhạc"
     },
     {
-      "imageUrl": "https://acxuantai.com/img/portfolio/02.jpg",
+      "imageUrl": "https://cdn.chorus.vn/uploads/sw69l6795go/02.jpg",
       "title": "Trai Đẹp vào Bếp",
       "role": "Khách Mời",
-      "url": "https://www.youtube.com/watch?v=3seFVv1Obic"
+      "url": "https://cdn.chorus.vn/uploads/sw69l6795go/watch"
     },
     {
       "role": "Ca Sĩ Biểu Diễn",
       "title": "Ký Ức Vui Vẻ",
-      "imageUrl": "https://acxuantai.com/img/portfolio/03.jpg",
-      "url": "https://www.youtube.com/watch?v=bs5UOaPj0wA"
+      "imageUrl": "https://cdn.chorus.vn/uploads/sw69l6795go/03.jpg",
+      "url": "https://cdn.chorus.vn/uploads/sw69l6795go/watch"
     },
     {
       "role": "Người Chơi",
-      "imageUrl": "https://acxuantai.com/img/portfolio/04.jpg",
+      "imageUrl": "https://cdn.chorus.vn/uploads/sw69l6795go/04.jpg",
       "title": "Sàn Đấu Ca Từ",
-      "url": "https://www.youtube.com/watch?v=nLsgBN0qyqk"
+      "url": "https://cdn.chorus.vn/uploads/sw69l6795go/watch"
     },
     {
-      "url": "https://www.youtube.com/watch?v=5sfkgT-_LD8",
+      "url": "https://cdn.chorus.vn/uploads/sw69l6795go/watch",
       "role": "Giám Đốc Sản Xuất, Đạo Diễn, Diễn Viên, Ca Sĩ, Nhạc Sĩ",
       "title": "MV Sau 30",
-      "imageUrl": "https://acxuantai.com/img/portfolio/08.jpg"
+      "imageUrl": "https://cdn.chorus.vn/uploads/sw69l6795go/08.jpg"
     },
     {
-      "url": "https://youtu.be/QFiSU0f-pbc?t=1078",
-      "imageUrl": "https://acxuantai.com/img/portfolio/06.jpg",
+      "url": "https://cdn.chorus.vn/uploads/sw69l6795go/qfisu0f-pbc",
+      "imageUrl": "https://cdn.chorus.vn/uploads/sw69l6795go/06.jpg",
       "role": "Diễn Viên",
       "title": "La La School"
     },
     {
-      "imageUrl": "https://acxuantai.com/img/portfolio/05.jpg",
+      "imageUrl": "https://cdn.chorus.vn/uploads/sw69l6795go/05.jpg",
       "title": "Hoàng Quý Muội",
       "role": "Giám Đốc Âm Nhạc, Diễn Viên",
-      "url": "https://pops.vn/series/hoang-quy-muoi-5fae5a102b1bd200354e4c88"
+      "url": "https://cdn.chorus.vn/uploads/sw69l6795go/hoang-quy-muoi-5fae5a102b1bd200354e4c88"
     },
     {
-      "imageUrl": "https://acxuantai.com/img/portfolio/07.jpg",
+      "imageUrl": "https://cdn.chorus.vn/uploads/sw69l6795go/07.jpg",
       "role": "Ca Sĩ Biểu Diễn",
       "title": "Ca Sĩ Bí Ẩn",
-      "url": "https://www.youtube.com/watch?v=WPQSWe1cFxY&t=285s"
+      "url": "https://cdn.chorus.vn/uploads/sw69l6795go/watch"
     }
   ],
   "services": [
@@ -142,7 +142,7 @@
       "desc": "Đạo tạo sản xuất âm nhạc và thanh họa."
     }
   ],
-  "coverImageUrl": "https://acxuantai.com/img/about-img4.png",
+  "coverImageUrl": "https://cdn.chorus.vn/uploads/sw69l6795go/about-img4.png",
   "bio1": "Singer-songwriter, Music Producer",
   "games": {
     "game2048Name": "2048",
@@ -152,7 +152,7 @@
   },
   "floatingButton": {
     "text": "Kho Nhạc của A.C Xuân Tài",
-    "url": "https://tài.vn",
+    "url": "https://cdn.chorus.vn/uploads/sw69l6795go/tài.vn",
     "icon": "music"
   },
   "coverImageTransparent": "",
@@ -208,5 +208,5 @@
       "title": "Sản Xuất Nhạc Quảng Cáo, Nhạc Thương Hiệu"
     }
   ],
-  "faviconUrl": "https://acxuantai.com/favicon.ico"
+  "faviconUrl": "https://cdn.chorus.vn/uploads/system/favicon.ico"
 }

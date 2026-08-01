@@ -1,0 +1,45 @@
+{
+  "free": {
+    "name": "Gói Miễn Phí",
+    "monthlyOriginalPrice": 0,
+    "monthlySalePrice": 0,
+    "yearlyOriginalPrice": 0,
+    "yearlySalePrice": 0,
+    "features": [
+      "Số Bài Hát Tối Đa: 5",
+      "Giao Diện Kho Nhạc: 1",
+      "Template Chủ Đề Tiêu Chuẩn",
+      "Backup 24/7"
+    ]
+  },
+  "pro": {
+    "name": "Gói Pro",
+    "monthlyOriginalPrice": 50000,
+    "monthlySalePrice": 30000,
+    "yearlyOriginalPrice": 500000,
+    "yearlySalePrice": 300000,
+    "features": [
+      "Số Bài Hát Tối Đa: 50 bài",
+      "Giao Diện Kho Nhạc: Đầy đủ Pro",
+      "Trang tiểu sử nghệ sĩ (Bio)",
+      "Mật khẩu bảo vệ Demo & Kho nhạc",
+      "Tạo đường dẫn chia sẻ bí mật",
+      "Backup 24/7"
+    ]
+  },
+  "vip": {
+    "name": "Gói VIP",
+    "monthlyOriginalPrice": 90000,
+    "monthlySalePrice": 50000,
+    "yearlyOriginalPrice": 900000,
+    "yearlySalePrice": 500000,
+    "features": [
+      "Số Bài Hát: KHÔNG GIỚI HẠN",
+      "Giao Diện Kho Nhạc: Không giới hạn",
+      "Tùy chỉnh tên miền riêng (.com, .vn)",
+      "Template Độc Quyền VIP",
+      "Tạo đường dẫn chia sẻ bí mật",
+      "Hỗ trợ ưu tiên 1:1 chuyên sâu"
+    ]
+  }
+}
