@@ -145,22 +145,16 @@ function ShootingStars() {
 
 function IPhoneMockup({ imageUrl }: { imageUrl: string }) {
   return (
-    <div className="iphone-mockup">
-      <div className="iphone-frame">
-        {/* Notch / Dynamic Island */}
-        <div className="iphone-notch" />
-        {/* Screen */}
-        <div className="iphone-screen">
-          {imageUrl ? (
-            <img src={imageUrl} alt="" className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-indigo-900/50 to-purple-900/50 flex items-center justify-center">
-              <span className="text-white/20 text-sm">No Image</span>
-            </div>
-          )}
-        </div>
-        {/* Home indicator */}
-        <div className="iphone-home-indicator" />
+    <div className="relative w-full max-w-[280px] mx-auto filter drop-shadow-2xl">
+      <img src="/mockups/fr-iphone.webp" alt="iPhone Frame" className="relative z-10 w-full h-auto pointer-events-none" />
+      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '2%', left: '5%', width: '90%', height: '96%', borderRadius: '24px' }}>
+        {imageUrl ? (
+          <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-indigo-900/50 to-purple-900/50 flex items-center justify-center">
+            <span className="text-white/20 text-sm">No Image</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -168,20 +162,16 @@ function IPhoneMockup({ imageUrl }: { imageUrl: string }) {
 
 function IPadMockup({ imageUrl }: { imageUrl: string }) {
   return (
-    <div className="ipad-mockup">
-      <div className="ipad-frame">
-        {/* Camera */}
-        <div className="ipad-camera" />
-        {/* Screen */}
-        <div className="ipad-screen">
-          {imageUrl ? (
-            <img src={imageUrl} alt="" className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-indigo-900/50 to-purple-900/50 flex items-center justify-center">
-              <span className="text-white/20 text-sm">No Image</span>
-            </div>
-          )}
-        </div>
+    <div className="relative w-full max-w-[480px] mx-auto filter drop-shadow-2xl">
+      <img src="/mockups/fr-ipad.webp" alt="iPad Frame" className="relative z-10 w-full h-auto pointer-events-none" />
+      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '3.5%', left: '3.2%', width: '93.6%', height: '93%', borderRadius: '16px' }}>
+        {imageUrl ? (
+          <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-indigo-900/50 to-purple-900/50 flex items-center justify-center">
+            <span className="text-white/20 text-sm">No Image</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -189,24 +179,16 @@ function IPadMockup({ imageUrl }: { imageUrl: string }) {
 
 function MacbookMockup({ imageUrl }: { imageUrl: string }) {
   return (
-    <div className="macbook-mockup">
-      <div className="macbook-lid">
-        {/* Camera */}
-        <div className="macbook-camera" />
-        {/* Screen */}
-        <div className="macbook-screen">
-          {imageUrl ? (
-            <img src={imageUrl} alt="" className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-indigo-900/50 to-purple-900/50 flex items-center justify-center">
-              <span className="text-white/20 text-sm">No Image</span>
-            </div>
-          )}
-        </div>
-      </div>
-      {/* Base / Hinge */}
-      <div className="macbook-base">
-        <div className="macbook-notch-bottom" />
+    <div className="relative w-full max-w-[640px] mx-auto filter drop-shadow-2xl">
+      <img src="/mockups/fr-macbook.webp" alt="Macbook Frame" className="relative z-10 w-full h-auto pointer-events-none" />
+      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '6.5%', left: '11.8%', width: '76.4%', height: '77%', borderRadius: '4px' }}>
+        {imageUrl ? (
+          <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-indigo-900/50 to-purple-900/50 flex items-center justify-center">
+            <span className="text-white/20 text-sm">No Image</span>
+          </div>
+        )}
       </div>
     </div>
   );
