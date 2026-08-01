@@ -63,12 +63,24 @@ async function main() {
   console.log('\n=== Step 3: Uploading dist/server.cjs ===');
   await uploadFile(path.join(ROOT, 'dist', 'server.cjs'), `${REMOTE_DIR}/dist/server.cjs`);
 
-  // 4. Restart PM2 on chorus.vn
-  console.log('\n=== Step 4: Restarting PM2 process (chorusvn) ===');
+  // 4. Upload Data Files & SQLite DB
+  console.log('\n=== Step 4: Uploading Data JSONs & SQLite DB ===');
+  const files = fs.readdirSync(ROOT);
+  for (const f of files) {
+    if (f.endsWith('.json') || f.endsWith('.db')) {
+      const fullPath = path.join(ROOT, f);
+      if (fs.statSync(fullPath).isFile()) {
+        await uploadFile(fullPath, `${REMOTE_DIR}/${f}`);
+      }
+    }
+  }
+
+  // 5. Restart PM2 on chorus.vn
+  console.log('\n=== Step 5: Restarting PM2 process (chorusvn) ===');
   await execCmd(`cd ${REMOTE_DIR} && (pm2 restart chorusvn || PORT=3000 NODE_ENV=production pm2 start dist/server.cjs --name "chorusvn" --update-env) && pm2 save`);
 
   conn.end();
-  console.log('\n🎉 Deploy CHORUS.VN hoàn tất! Site đã được cập nhật.');
+  console.log('\n🎉 Deploy CHORUS.VN hoàn tất! Site đã được cập nhật đầy đủ mã nguồn và dữ liệu.');
 }
 
 main().catch(err => {

@@ -63,12 +63,24 @@ async function main() {
   console.log('\n=== Uploading dist/server.cjs ===');
   await uploadFile(path.join(ROOT, 'dist', 'server.cjs'), `${REMOTE_DIR}/dist/server.cjs`);
 
-  // 4. Restart PM2
+  // 4. Upload Data JSONs & SQLite DB
+  console.log('\n=== Uploading Data JSONs & SQLite DB ===');
+  const files = fs.readdirSync(ROOT);
+  for (const f of files) {
+    if (f.endsWith('.json') || f.endsWith('.db')) {
+      const fullPath = path.join(ROOT, f);
+      if (fs.statSync(fullPath).isFile()) {
+        await uploadFile(fullPath, `${REMOTE_DIR}/${f}`);
+      }
+    }
+  }
+
+  // 5. Restart PM2
   console.log('\n=== Restarting PM2 (demonhac) ===');
   await execCmd('pm2 restart demonhac && pm2 save');
 
   conn.end();
-  console.log('\n🎉 Deploy hoàn tất! Site đã được cập nhật.');
+  console.log('\n🎉 Deploy hoàn tất! Site đã được cập nhật đầy đủ mã nguồn và dữ liệu.');
 }
 
 main().catch(err => {
