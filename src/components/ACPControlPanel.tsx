@@ -5998,8 +5998,8 @@ function ExploreTabContent({ token, exploreFeatures, setExploreFeatures, explore
     setExploreFeatures(copy);
   };
 
-  const uploadImage = async (id: string, file: File) => {
-    setUploadingId(id);
+  const uploadImage = async (id: string, file: File, deviceIndex?: number) => {
+    setUploadingId(`${id}_${deviceIndex ?? 'main'}`);
     try {
       const formData = new FormData();
       formData.append('image', file);
@@ -6010,7 +6010,23 @@ function ExploreTabContent({ token, exploreFeatures, setExploreFeatures, explore
       });
       const data = await res.json();
       if (data.success && data.url) {
-        updateFeature(id, 'imageUrl', data.url);
+        if (deviceIndex !== undefined) {
+          const feature = exploreFeatures.find(f => f.id === id);
+          if (feature) {
+            const currentDevices = feature.devices && feature.devices.length > 0 
+              ? [...feature.devices] 
+              : (feature.imageUrl ? [{ type: feature.deviceType || 'iphone', imageUrl: feature.imageUrl }] : []);
+            
+            if (currentDevices[deviceIndex]) {
+              currentDevices[deviceIndex].imageUrl = data.url;
+            } else {
+              currentDevices[deviceIndex] = { type: 'iphone', imageUrl: data.url };
+            }
+            updateFeature(id, 'devices', currentDevices);
+          }
+        } else {
+          updateFeature(id, 'imageUrl', data.url);
+        }
         showToast('Upload ảnh thành công!');
       } else {
         alert('Upload thất bại: ' + (data.error || 'Unknown error'));
@@ -6095,8 +6111,19 @@ function ExploreTabContent({ token, exploreFeatures, setExploreFeatures, explore
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-neutral-500 text-xs font-mono">#{idx + 1}</span>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 text-[10px] font-bold text-neutral-300 uppercase tracking-wider">
-                {deviceIcons[feature.deviceType]}
+              {feature.devices && feature.devices.length > 0 ? (
+                feature.devices.map((dev: any, i: number) => (
+                  <div key={i} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 text-[10px] font-bold text-neutral-300 uppercase tracking-wider">
+                    {deviceIcons[dev.type]}
+                    {dev.type}
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 text-[10px] font-bold text-neutral-300 uppercase tracking-wider">
+                  {deviceIcons[feature.deviceType || 'iphone']}
+                  {feature.deviceType || 'iphone'}
+                </div>
+              )}
                 {feature.deviceType}
               </div>
             </div>
@@ -6165,22 +6192,10 @@ function ExploreTabContent({ token, exploreFeatures, setExploreFeatures, explore
                 />
               </div>
 
-              {/* Device Type + Layout */}
-              <div className="grid grid-cols-2 gap-3">
+              {/* Layout */}
+              <div className="grid grid-cols-1 gap-3">
                 <div>
-                  <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider mb-1.5 block">Thiết bị</label>
-                  <select
-                    value={feature.deviceType}
-                    onChange={e => updateFeature(feature.id, 'deviceType', e.target.value)}
-                    className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:border-purple-500/40 focus:outline-none transition-all cursor-pointer"
-                  >
-                    <option value="iphone">📱 iPhone</option>
-                    <option value="ipad">📟 iPad</option>
-                    <option value="macbook">💻 MacBook</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider mb-1.5 block">Bố cục</label>
+                  <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider mb-1.5 block">Bố cục màn hình</label>
                   <select
                     value={feature.layout}
                     onChange={e => updateFeature(feature.id, 'layout', e.target.value)}
@@ -6194,59 +6209,123 @@ function ExploreTabContent({ token, exploreFeatures, setExploreFeatures, explore
               </div>
             </div>
 
-            {/* Right: Image Upload + Preview */}
+            {/* Right: Devices List */}
             <div className="space-y-4">
-              <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider mb-1.5 block">Ảnh trong thiết bị</label>
-              
-              {/* Upload area */}
-              <div
-                onClick={() => exploreFileInputRefs.current[feature.id]?.click()}
-                className="relative border-2 border-dashed border-white/10 hover:border-purple-500/40 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all min-h-[200px] group"
-              >
-                {uploadingId === feature.id ? (
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="w-8 h-8 border-2 border-white/20 border-t-purple-400 rounded-full animate-spin" />
-                    <span className="text-neutral-400 text-xs">Đang upload...</span>
-                  </div>
-                ) : feature.imageUrl ? (
-                  <div className="relative w-full">
-                    <img src={feature.imageUrl} alt="" className="w-full max-h-[240px] object-contain rounded-xl" />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all rounded-xl flex items-center justify-center">
-                      <span className="text-white text-xs font-bold bg-purple-600/80 px-3 py-1.5 rounded-lg">Đổi ảnh</span>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <Upload className="w-8 h-8 text-neutral-500 group-hover:text-purple-400 transition-all" />
-                    <span className="text-neutral-500 text-xs font-medium">Click để upload ảnh</span>
-                    <span className="text-neutral-600 text-[10px]">PNG, JPG — Tối đa 5MB</span>
-                  </>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider block">Các thiết bị (Tối đa 3)</label>
+                {(feature.devices?.length || (feature.imageUrl ? 1 : 0)) < 3 && (
+                  <button 
+                    onClick={() => {
+                      const currentDevices = feature.devices && feature.devices.length > 0 
+                        ? [...feature.devices] 
+                        : (feature.imageUrl ? [{ type: feature.deviceType || 'iphone', imageUrl: feature.imageUrl }] : []);
+                      updateFeature(feature.id, 'devices', [...currentDevices, { type: 'iphone', imageUrl: '' }]);
+                    }}
+                    className="text-[10px] font-bold text-purple-400 hover:text-purple-300 bg-purple-500/10 px-2 py-1 rounded"
+                  >
+                    + Thêm thiết bị
+                  </button>
                 )}
-                <input
-                  ref={el => { exploreFileInputRefs.current[feature.id] = el; }}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) uploadImage(feature.id, file);
-                    e.target.value = '';
-                  }}
-                />
               </div>
+              
+              {(() => {
+                const currentDevices = feature.devices && feature.devices.length > 0 
+                  ? feature.devices 
+                  : (feature.imageUrl ? [{ type: feature.deviceType || 'iphone', imageUrl: feature.imageUrl }] : []);
+                  
+                if (currentDevices.length === 0) {
+                  return (
+                    <div className="text-center p-6 border border-dashed border-white/10 rounded-xl">
+                      <p className="text-xs text-neutral-500 mb-2">Chưa có thiết bị nào</p>
+                      <button 
+                        onClick={() => updateFeature(feature.id, 'devices', [{ type: 'iphone', imageUrl: '' }])}
+                        className="text-xs font-bold text-purple-400 hover:text-purple-300 bg-purple-500/10 px-3 py-1.5 rounded-lg"
+                      >
+                        + Thêm thiết bị đầu tiên
+                      </button>
+                    </div>
+                  );
+                }
 
-              {/* Image URL manual input */}
-              <div>
-                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1 block">Hoặc dán URL ảnh</label>
-                <input
-                  type="text"
-                  value={feature.imageUrl || ''}
-                  onChange={e => updateFeature(feature.id, 'imageUrl', e.target.value)}
-                  className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white/60 placeholder-neutral-600 focus:border-purple-500/40 focus:outline-none transition-all"
-                  placeholder="https://..."
-                />
-              </div>
+                return currentDevices.map((dev: any, dIndex: number) => (
+                  <div key={dIndex} className="bg-black/20 border border-white/5 rounded-xl p-3 relative group/dev">
+                    <button 
+                      onClick={() => {
+                        const newDevices = [...currentDevices];
+                        newDevices.splice(dIndex, 1);
+                        updateFeature(feature.id, 'devices', newDevices);
+                      }}
+                      className="absolute -top-2 -right-2 bg-red-500/20 text-red-400 hover:bg-red-500/40 hover:text-red-300 p-1 rounded-full opacity-0 group-hover/dev:opacity-100 transition-all"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                    
+                    <div className="flex gap-3">
+                      <div className="w-1/3">
+                        <label className="text-[9px] font-bold text-neutral-500 uppercase block mb-1">Loại thiết bị</label>
+                        <select
+                          value={dev.type}
+                          onChange={e => {
+                            const newDevices = [...currentDevices];
+                            newDevices[dIndex].type = e.target.value;
+                            updateFeature(feature.id, 'devices', newDevices);
+                          }}
+                          className="w-full bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white focus:border-purple-500/40 focus:outline-none"
+                        >
+                          <option value="iphone">iPhone</option>
+                          <option value="ipad">iPad</option>
+                          <option value="macbook">MacBook</option>
+                        </select>
+                      </div>
+                      
+                      <div className="w-2/3">
+                        <label className="text-[9px] font-bold text-neutral-500 uppercase block mb-1">Ảnh màn hình</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={dev.imageUrl || ''}
+                            onChange={e => {
+                              const newDevices = [...currentDevices];
+                              newDevices[dIndex].imageUrl = e.target.value;
+                              updateFeature(feature.id, 'devices', newDevices);
+                            }}
+                            className="flex-1 bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white/60 focus:border-purple-500/40 focus:outline-none"
+                            placeholder="URL..."
+                          />
+                          <button
+                            onClick={() => exploreFileInputRefs.current[`${feature.id}_${dIndex}`]?.click()}
+                            className="bg-white/10 hover:bg-white/20 p-1.5 rounded-lg flex items-center justify-center shrink-0"
+                          >
+                            {uploadingId === `${feature.id}_${dIndex}` ? (
+                              <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white/80 rounded-full animate-spin" />
+                            ) : (
+                              <Upload className="w-3.5 h-3.5 text-neutral-400" />
+                            )}
+                          </button>
+                          <input
+                            ref={el => { exploreFileInputRefs.current[`${feature.id}_${dIndex}`] = el; }}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={e => {
+                              const file = e.target.files?.[0];
+                              if (file) uploadImage(feature.id, file, dIndex);
+                              e.target.value = '';
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    {dev.imageUrl && (
+                      <div className="mt-2 border border-white/5 rounded-lg overflow-hidden bg-black/50 p-1">
+                        <img src={dev.imageUrl} className="h-20 object-contain mx-auto" />
+                      </div>
+                    )}
+                  </div>
+                ));
+              })()}
             </div>
+          </div>
           </div>
         </div>
       ))}

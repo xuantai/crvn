@@ -3,14 +3,20 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, ChevronDown } from 'lucide-react';
 
 // ─── Types ──────────────────────────────────────────────────────────
+interface ExploreDevice {
+  type: 'iphone' | 'ipad' | 'macbook';
+  imageUrl: string;
+}
+
 interface ExploreFeature {
   id: string;
   badge: string;
   title: string;
   description: string;
   descriptionExtra?: string;
-  deviceType: 'iphone' | 'ipad' | 'macbook';
-  imageUrl: string;
+  deviceType?: 'iphone' | 'ipad' | 'macbook';
+  imageUrl?: string;
+  devices?: ExploreDevice[];
   layout: 'left' | 'right' | 'center';
   order: number;
 }
@@ -207,6 +213,45 @@ function DeviceMockup({ type, imageUrl }: { type: 'iphone' | 'ipad' | 'macbook';
   }
 }
 
+function DeviceComposition({ devices }: { devices: ExploreDevice[] }) {
+  if (!devices || devices.length === 0) return null;
+
+  if (devices.length === 1) {
+    return (
+      <div className="explore-float-1">
+        <DeviceMockup type={devices[0].type} imageUrl={devices[0].imageUrl} />
+      </div>
+    );
+  }
+
+  if (devices.length === 2) {
+    return (
+      <div className="relative w-full max-w-[800px] mx-auto h-[350px] sm:h-[450px] md:h-[550px]">
+        <div className="absolute w-[80%] left-[5%] top-[5%] explore-float-1">
+          <DeviceMockup type={devices[0].type} imageUrl={devices[0].imageUrl} />
+        </div>
+        <div className="absolute w-[35%] right-[5%] bottom-[10%] explore-float-2 z-20">
+          <DeviceMockup type={devices[1].type} imageUrl={devices[1].imageUrl} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-full max-w-[900px] mx-auto h-[400px] sm:h-[500px] md:h-[650px]">
+      <div className="absolute w-[70%] left-[15%] top-[5%] explore-float-1 z-10">
+        <DeviceMockup type={devices[0].type} imageUrl={devices[0].imageUrl} />
+      </div>
+      <div className="absolute w-[50%] left-[0%] bottom-[15%] explore-float-2 z-20">
+        <DeviceMockup type={devices[1].type} imageUrl={devices[1].imageUrl} />
+      </div>
+      <div className="absolute w-[25%] right-[5%] bottom-[5%] explore-float-3 z-30">
+        <DeviceMockup type={devices[2].type} imageUrl={devices[2].imageUrl} />
+      </div>
+    </div>
+  );
+}
+
 // ─── Scroll Reveal Hook ─────────────────────────────────────────────
 function useScrollReveal() {
   const ref = useRef<HTMLDivElement>(null);
@@ -237,6 +282,10 @@ function FeatureSection({ feature, index }: { feature: ExploreFeature; index: nu
   const isReversed = feature.layout === 'right' || (feature.layout !== 'center' && index % 2 === 1);
   const isCentered = feature.layout === 'center';
 
+  const devices = feature.devices && feature.devices.length > 0
+    ? feature.devices
+    : (feature.imageUrl ? [{ type: feature.deviceType || 'iphone', imageUrl: feature.imageUrl }] : []);
+
   if (isCentered) {
     return (
       <div
@@ -265,9 +314,9 @@ function FeatureSection({ feature, index }: { feature: ExploreFeature; index: nu
           </p>
         )}
         {/* Device */}
-        {feature.imageUrl && (
+        {devices.length > 0 && (
           <div className="explore-device-center mt-10">
-            <DeviceMockup type={feature.deviceType} imageUrl={feature.imageUrl} />
+            <DeviceComposition devices={devices} />
           </div>
         )}
       </div>
@@ -306,7 +355,7 @@ function FeatureSection({ feature, index }: { feature: ExploreFeature; index: nu
 
       {/* Device side */}
       <div className={`explore-device ${isReversed ? 'explore-device-left' : 'explore-device-right'}`}>
-        <DeviceMockup type={feature.deviceType} imageUrl={feature.imageUrl} />
+        <DeviceComposition devices={devices} />
       </div>
     </div>
   );
@@ -446,6 +495,30 @@ export default function ExploreFeatures() {
           0%, 100% { transform: translate(0, 0) scale(1); }
           33% { transform: translate(30px, -20px) scale(1.1); }
           66% { transform: translate(-20px, 30px) scale(0.95); }
+        }
+
+        /* ── Floating Animations ── */
+        .explore-float-1 {
+          animation: device-float-1 6s ease-in-out infinite;
+        }
+        .explore-float-2 {
+          animation: device-float-2 7s ease-in-out infinite;
+        }
+        .explore-float-3 {
+          animation: device-float-3 5s ease-in-out infinite;
+        }
+
+        @keyframes device-float-1 {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-15px); }
+        }
+        @keyframes device-float-2 {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(-1deg); }
+        }
+        @keyframes device-float-3 {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-10px) rotate(1.5deg); }
         }
 
         /* ── Shooting Stars ── */
