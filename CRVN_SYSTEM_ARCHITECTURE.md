@@ -4,7 +4,7 @@
 
 ---
 
-## 1. Kiến Trúc Lưu Trữ Dữ Liệu 3 Lớp (Tri-Storage Model)
+## 1. Kiến Trúc Lưu Trữ Dữ Liệu 3 Lớp (Tri-Storage Model) & Nguyên Tắc Database Backup
 
 Hệ thống kết hợp 3 lớp lưu trữ linh hoạt với cơ chế tự động chuyển đổi dự phòng (Automatic Fallback):
 
@@ -34,6 +34,12 @@ Hệ thống kết hợp 3 lớp lưu trữ linh hoạt với cơ chế tự đ�
 3. **Cloud Firestore (Cloud Sync):**
    - Đồng bộ dữ liệu lên đám mây khi `cloudSyncEnabled !== false`. Nếu Firestore bị lỗi quyền hạn hoặc thiếu cấu hình, server tự động ngắt và hoạt động 100% trên SQLite + Local JSON mà không làm gián đoạn hệ thống.
 
+### ⚠️ NGUYÊN TẮC DATABASE BACKUP & THAO TÁC DỮ LIỆU CHUẨN:
+- **VPS là Single Source of Truth:** Cơ sở dữ liệu SQLite (`bbb_global.db`) và các file `data_<username>.json` nằm trực tiếp trên VPS mới là dữ liệu gốc, mới nhất do nghệ sĩ và người dùng liên tục cập nhật/đăng bài trên web.
+- **Tải Backup từ VPS về trước khi tác động:** Mỗi khi cần thao tác dữ liệu hay chạy migration, nguyên tắc là phải **tải (fetch/download) bản backup DB từ VPS về trước**, không bao giờ dùng DB cũ dưới máy local rồi đẩy ngược lên vì sẽ gây mất dữ liệu mới của người dùng.
+- **Tạo Backup trước khi sửa đổi (Pre-migration Backup):** Trước khi thực thi bất kỳ script thay đổi hay làm sạch dữ liệu lớn nào, luôn tạo 1 file sao lưu an toàn ngay tại server (ví dụ: `bbb_global.db.bak_<timestamp>`).
+- **Cách ly quy trình Deploy & Dữ liệu:** Lệnh deploy (`deploy_chorus_now.cjs` / `deploy_now.cjs`) chỉ được phép tải các tệp mã nguồn đã biên dịch (`dist/`), tuyệt đối **không ghi đè file DB/JSON** để bảo vệ 100% dữ liệu sống của nghệ sĩ.
+
 ---
 
 ## 2. Cloudflare R2 Storage & Xử Lý Media (`cdn.chorus.vn` & `bbb.bz`)
@@ -44,6 +50,16 @@ Hệ thống kết hợp 3 lớp lưu trữ linh hoạt với cơ chế tự đ�
 - **Nạp động từ biến môi trường (`server.ts`):**
   - Server nạp trực tiếp `process.env.CF_R2_BUCKET_NAME` và `process.env.CF_R2_PUBLIC_DOMAIN` từ file `.env` của từng host, không hardcode cố định bucket, giúp 2 môi trường hoạt động độc lập tuyệt đối.
 - **Cấu hình S3 Client:** Đơn vị kết nối qua Cloudflare R2 Endpoint `https://<CF_R2_ACCOUNT_ID>.r2.cloudflarestorage.com` (Sử dụng `@aws-sdk/client-s3`).
+
+### 🎵 NGUYÊN TẮC DUAL-BACKUP & TỰ ĐỘNG FALLBACK KHI PHÁT MEDIA:
+- **Lưu trữ Kép (Dual Backup):** Mọi tài nguyên media (bài hát, ảnh bìa, ảnh nền, avatar, ảnh tiểu sử) đều được lưu ở **2 nơi**:
+  1. **Link chính (Primary URL):** Tải lên Cloudflare R2 CDN (`https://cdn.chorus.vn/uploads/<artistId>/...` lưu tại `audioUrl` / `coverUrl`).
+  2. **Link dự phòng (Backup URL):** Lưu 1 bản sao lưu vật lý trên đĩa SSD của VPS (`/uploads/<artistId>/...` lưu tại `backupAudioUrl` / local backup link).
+- **Thư mục bảo mật:** Thư mục lưu trữ trên đĩa & R2 lấy theo `artist.id` ngẫu nhiên (ví dụ `/uploads/rqysd31ojop/...`) để bảo mật đường dẫn.
+- **Tự động Chuyển đổi Dự phòng khi Phát (Playback Fallback):**
+  - Trình phát nhạc và thẻ hiển thị hình ảnh trên giao diện ưu tiên tải từ **Cloudflare R2 CDN** (`audioUrl` / `coverUrl`).
+  - Nếu CDN gặp sự cố (lỗi mạng, timeout, 404 hoặc thẻ HTML5 `<audio>` báo lỗi `onError`), trình nghe nhạc **tự động fallback chuyển ngay sang `backupAudioUrl`** (link server local `/uploads/...`).
+  - Nhờ đó, người nghe nhạc sẽ không bao giờ bị gián đoạn hay ngắt bài hát ngay cả khi Cloudflare CDN có sự cố.
 - **Quy trình Upload & Tối ưu hóa:**
   1. **Ảnh (Covers / Avatars):** Đi qua module `sharp` để nén JPEG/PNG tối ưu dung lượng trước khi tải lên Cloudflare R2.
   2. **Audio / Video:** Tải lên trực tiếp hoặc xử lý mã hóa qua `fluent-ffmpeg` / `@ffmpeg-installer/ffmpeg`.
