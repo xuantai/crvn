@@ -36,10 +36,13 @@ Hệ thống kết hợp 3 lớp lưu trữ linh hoạt với cơ chế tự đ�
 
 ---
 
-## 2. Cloudflare R2 Storage & Xử Lý Media (`cdn.chorus.vn`)
+## 2. Cloudflare R2 Storage & Xử Lý Media (`cdn.chorus.vn` & `bbb.bz`)
 
-- **Bucket:** `chorus-cdn` (hoặc `CF_R2_BUCKET_NAME` từ `.env`).
-- **CDN Public Domain:** `https://cdn.chorus.vn` (Domain CDN chính thức cho toàn bộ tài nguyên hình ảnh và âm thanh của `chorus.vn`).
+- **Tách biệt Bucket cho 2 Site:**
+  - **Site Production (`chorus.vn` - VPS 2):** Sử dụng R2 Bucket `chorus-vn` / `chorus-cdn` (Cấu hình qua `CF_R2_BUCKET_NAME` trong `.env` trên VPS Chorus) và domain CDN `https://cdn.chorus.vn`.
+  - **Site Demo / Staging (`bbb.bz` - VPS 1):** Sử dụng R2 Bucket riêng `bbb-bz` / `bbb-cdn` (Cấu hình qua `CF_R2_BUCKET_NAME` trong `.env` trên VPS Demo) để đảm bảo cô lập dữ liệu hoàn toàn giữa 2 môi trường.
+- **Nạp động từ biến môi trường (`server.ts`):**
+  - Server nạp trực tiếp `process.env.CF_R2_BUCKET_NAME` và `process.env.CF_R2_PUBLIC_DOMAIN` từ file `.env` của từng host, không hardcode cố định bucket, giúp 2 môi trường hoạt động độc lập tuyệt đối.
 - **Cấu hình S3 Client:** Đơn vị kết nối qua Cloudflare R2 Endpoint `https://<CF_R2_ACCOUNT_ID>.r2.cloudflarestorage.com` (Sử dụng `@aws-sdk/client-s3`).
 - **Quy trình Upload & Tối ưu hóa:**
   1. **Ảnh (Covers / Avatars):** Đi qua module `sharp` để nén JPEG/PNG tối ưu dung lượng trước khi tải lên Cloudflare R2.
