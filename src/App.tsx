@@ -6604,13 +6604,22 @@ const compressImageInBrowser = async (file: File, maxWidth: number = 1920, quali
           return resolve(file);
         }
         ctx.drawImage(img, 0, 0, width, height);
-        const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        const outputType = file.type === 'image/png' ? 'image/webp' : 'image/jpeg';
         canvas.toBlob(
           (blob) => {
             if (!blob || blob.size >= file.size) {
+              // If webp/jpeg blob is still larger or null, try jpeg fallback for PNGs without transparency
+              if (file.type === 'image/png') {
+                canvas.toBlob((jpegBlob) => {
+                  if (!jpegBlob || jpegBlob.size >= file.size) return resolve(file);
+                  const cleanName = file.name.includes('.') ? file.name.substring(0, file.name.lastIndexOf('.')) : file.name;
+                  return resolve(new File([jpegBlob], `${cleanName}.jpg`, { type: 'image/jpeg', lastModified: Date.now() }));
+                }, 'image/jpeg', quality);
+                return;
+              }
               return resolve(file);
             }
-            const ext = outputType === 'image/png' ? '.png' : '.jpg';
+            const ext = outputType === 'image/webp' ? '.webp' : '.jpg';
             const cleanName = file.name.includes('.') ? file.name.substring(0, file.name.lastIndexOf('.')) : file.name;
             const compressedFile = new File([blob], `${cleanName}${ext}`, {
               type: outputType,
@@ -14113,6 +14122,7 @@ function PlaylistPlayer() {
   }, [lang, landingConfig, artistData]);
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [playlist, setPlaylist] = useState<any>(null);
   const [songs, setSongs] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -14284,11 +14294,19 @@ function PlaylistPlayer() {
 
   const handleBackPlaylist = (e: React.MouseEvent) => {
     e.preventDefault();
-    const ext = getArtistExtensionFromUrl() || protectedInfo?.artistExtension || playlist?.artistExtension;
-    if (ext) {
-      navigate(`/${ext}`);
+    if (location.state?.fromAdmin) {
+      navigate(-1);
+      return;
+    }
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1);
     } else {
-      navigate('/');
+      const ext = protectedInfo?.artistExtension || playlist?.artistExtension || (playlist as any)?.extension || getArtistExtensionFromUrl();
+      if (ext) {
+        navigate(`/${ext}`);
+      } else {
+        navigate('/');
+      }
     }
   };
 
@@ -14635,6 +14653,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
   const paramsId = useParams().id;
   const id = songIdP || paramsId;
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const secretKey = searchParams.get('secret');
   const { activeExt } = getActiveAdminSession();
@@ -15149,8 +15168,12 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
     e.preventDefault();
     if (location.state?.fromAdmin) {
       navigate(-1);
+      return;
+    }
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1);
     } else {
-      const ext = getArtistExtensionFromUrl() || (demo as any)?.artistExtension;
+      const ext = (demo as any)?.artistExtension || (demo as any)?.extension || (demo as any)?.artist_extension || (demo as any)?.artistId || getArtistExtensionFromUrl();
       if (ext) {
         navigate(`/${ext}`);
       } else {

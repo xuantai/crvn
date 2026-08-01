@@ -6970,18 +6970,15 @@ ${JSON.stringify(geminiInput, null, 2)}`;
   const uploadsPath = path.join(process.cwd(), 'public', 'uploads');
   app.use('/uploads', express.static(uploadsPath));
   
-  // Fallback for missing uploads: redirect to the production domain
+  // Fallback for missing uploads: redirect to Cloudflare R2 CDN
   app.use('/uploads', async (req, res, next) => {
      try {
-        const data = await loadData((req as any).artist?.username);
-
-        if (data.globalBaseUrl) {
-           const base = data.globalBaseUrl.startsWith('http') ? data.globalBaseUrl : `https://${data.globalBaseUrl}`;
-           const cleanBase = base.replace(/\/$/, "");
-           return res.redirect(`${cleanBase}/uploads${req.path}`);
-        }
-     } catch (e) {}
-     next();
+        const cdnDomain = process.env.CF_R2_PUBLIC_DOMAIN || 'https://cdn.chorus.vn';
+        const cleanBase = cdnDomain.replace(/\/$/, "");
+        return res.redirect(302, `${cleanBase}/uploads${req.path}`);
+     } catch (e) {
+        next();
+     }
   });
 
   let vite: any;
