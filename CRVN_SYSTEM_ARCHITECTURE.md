@@ -277,3 +277,27 @@ node deploy_chorus_now.cjs
 # 5. Backup DB lên Cloudflare R2
 node scripts/upload_db_backup_to_r2.cjs
 ```
+
+---
+
+### 🚨 BẮT BUỘC: QUY TRÌNH CHỐNG LỖI MẤT CẬP NHẬT / SERVE CACHE CŨ KHI DEPLOY
+
+Để đảm bảo 100% mọi chỉnh sửa mã nguồn khi deploy lên server `chorus.vn` được áp dụng ngay lập tức mà không bao giờ bị tình trạng "trở về phiên bản cũ" hay "bị nuốt mất thay đổi", hệ thống tuân thủ 5 nguyên tắc bắt buộc:
+
+1. **Mặc Định Mode Production Trên Server (`server.ts`):**
+   - Điều kiện khởi tạo Vite Dev Middleware trong `server.ts` phải kiểm tra tuyệt đối: `if (process.env.NODE_ENV === "development")`.
+   - Nếu `NODE_ENV` không phải là `"development"`, Express **bắt buộc chạy 100% Production Mode**, đọc file tĩnh nén `dist/index.html` và `dist/assets/index-*.js`, không bao giờ dùng Vite Dev Server tự render động lại code cũ.
+
+2. **Purge Sạch File Build Cũ Trên VPS Trước Khi Upload:**
+   - Kịch bản deploy (`deploy_chorus_now.cjs` & `deploy_now.cjs`) phải luôn chạy lệnh `rm -rf <REMOTE_DIR>/dist && mkdir -p <REMOTE_DIR>/dist/assets` để xóa toàn bộ các file JS/CSS bundle cũ trên server VPS trước khi tải các file build mới lên.
+
+3. **Ép PM2 Chạy Môi Trường `NODE_ENV=production` & Node.js v18 LTS:**
+   - Khi khởi động lại PM2 tiến trình `chorusvn`, phải truyền rõ ràng `NODE_ENV=production` cùng cờ `--update-env` và chỉ định đường dẫn Node.js v18 LTS (`--interpreter /root/.nvm/versions/node/v18.20.8/bin/node`) để tránh PM2 dùng nhầm Node.js v12 mặc định của hệ thống.
+
+4. **HTTP Header Chống Cache Dữ Liệu (`Cache-Control`):**
+   - Server Node.js tự động gán HTTP Header `Cache-Control: no-cache, no-store, must-revalidate` và `Pragma: no-cache` cho các trang HTML để buộc trình duyệt và Cloudflare CDN luôn nạp phiên bản mới nhất ngay khi refresh.
+
+5. **Quy Trình Git & Build Chuẩn:**
+   - Luôn chạy `cmd /c "npm run clean && npm run build"` để tạo ra mã nén production mới nhất.
+   - Commit và push đầy đủ lên Git với `git push origin main` sau mỗi đợt chỉnh sửa.
+
