@@ -1723,16 +1723,12 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
             >
               {lang === 'vi' ? 'Bảng giá' : (lang === 'ko' ? '요금제' : 'Pricing')}
             </a>
-            <a 
-              href="#artist-showcase" 
-              onClick={(e) => { 
-                e.preventDefault(); 
-                document.getElementById('artist-showcase')?.scrollIntoView({ behavior: 'smooth' }); 
-              }} 
+            <Link 
+              to="/explore" 
               className="hover:text-black transition-colors cursor-pointer"
             >
               {lang === 'vi' ? 'Khám Phá' : (lang === 'ko' ? '탐색' : 'Discover')}
-            </a>
+            </Link>
           </nav>
 
           {/* Action Header: Status Badge & Language Segmented Toggler */}

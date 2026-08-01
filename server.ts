@@ -2649,7 +2649,7 @@ function generateCaptchaSvg(text: string) {
       } else {
         // Fallback to local
         const localPath = `/uploads/${optimizedFilename}`;
-        const localDir = path.join(process.cwd(), 'uploads');
+        const localDir = path.join(process.cwd(), 'public', 'uploads');
         if (!fsSync.existsSync(localDir)) fsSync.mkdirSync(localDir, { recursive: true });
         await fs.writeFile(path.join(localDir, optimizedFilename), finalBuffer);
         res.json({ success: true, url: localPath });
