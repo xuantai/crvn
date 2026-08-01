@@ -2588,6 +2588,77 @@ function generateCaptchaSvg(text: string) {
     res.json(list);
   });
 
+  // ─── Explore Features (Khám Phá) API ─────────────────────────────
+  app.get('/api/public/explore-features', async (_req, res) => {
+    try {
+      const features = (landingConfig as any).exploreFeatures || [];
+      res.json(features);
+    } catch (e) {
+      res.json([]);
+    }
+  });
+
+  app.post('/api/master/explore-features', async (req, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    try {
+      const { features } = req.body;
+      if (!Array.isArray(features)) {
+        return res.status(400).json({ error: 'features must be an array' });
+      }
+      await saveLandingConfig({ exploreFeatures: features });
+      res.json({ success: true });
+    } catch (e: any) {
+      res.status(500).json({ error: e?.message || 'Failed to save' });
+    }
+  });
+
+  app.post('/api/master/explore-features/upload', upload.single('image'), async (req, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
+      const fileBuffer = await fs.readFile(req.file.path);
+      const isPng = req.file.mimetype === 'image/png';
+      const ext = isPng ? '.png' : '.jpg';
+      const optimizedFilename = `explore_${Date.now()}${ext}`;
+      
+      // Try optimize with sharp
+      let finalBuffer = fileBuffer;
+      if (sharp) {
+        try {
+          if (isPng) {
+            finalBuffer = await sharp(fileBuffer).resize({ width: 1600, withoutEnlargement: true }).png({ quality: 85 }).toBuffer();
+          } else {
+            finalBuffer = await sharp(fileBuffer).resize({ width: 1600, withoutEnlargement: true }).jpeg({ quality: 85 }).toBuffer();
+          }
+        } catch (e) { /* fallback to original */ }
+      }
+      
+      const r2Url = await uploadToR2(`uploads/explore/${optimizedFilename}`, finalBuffer, isPng ? 'image/png' : 'image/jpeg');
+      
+      // Cleanup temp file
+      try { await fs.unlink(req.file.path); } catch (e) {}
+      
+      if (r2Url) {
+        res.json({ success: true, url: r2Url });
+      } else {
+        // Fallback to local
+        const localPath = `/uploads/${optimizedFilename}`;
+        const localDir = path.join(process.cwd(), 'uploads');
+        if (!fsSync.existsSync(localDir)) fsSync.mkdirSync(localDir, { recursive: true });
+        await fs.writeFile(path.join(localDir, optimizedFilename), finalBuffer);
+        res.json({ success: true, url: localPath });
+      }
+    } catch (e: any) {
+      res.status(500).json({ error: e?.message || 'Upload failed' });
+    }
+  });
+
   app.post('/api/acp/landing-config', async (req, res) => {
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });

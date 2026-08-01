@@ -6675,6 +6675,7 @@ const uploadGlobal = async (file: File, setProgress?: (p: number) => void): Prom
 
 import ACPControlPanel from './components/ACPControlPanel';
 import ChorusVNLanding from './components/ChorusVNLanding';
+import ExploreFeatures from './components/ExploreFeatures';
 import HelpPage from './components/HelpPage';
 
 // ---- ADMIN LOGIN & REQUIRE ADMIN ----
@@ -7382,6 +7383,8 @@ function AnimatedRoutes() {
         {/* Core Root Routes */}
         <Route path="/" element={isSubdomain ? <Home /> : <ChorusVNLanding />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/explore" element={<ExploreFeatures />} />
+        <Route path="/kham-pha" element={<ExploreFeatures />} />
                         <Route path="/help" element={<HelpPage DemoPlayer={DemoPlayer} />} />
         <Route path="/:artistExtension/help" element={<HelpPage DemoPlayer={DemoPlayer} />} />
         <Route path="/acp" element={<ACPControlPanel />} />
@@ -14659,7 +14662,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const secretKey = searchParams.get('secret');
-  const { activeExt } = getActiveAdminSession();
+  const { activeExt, activeToken } = getActiveAdminSession();
   const [demo, setDemo] = useState<DemoSong | null>(null);
   const pageArtistExt = (getArtistExtensionFromUrl() || (demo as any)?.artistExtension || (demo as any)?.extension || '').toLowerCase().trim();
   const isAdmin = !!getAdminToken() && (
@@ -14667,6 +14670,24 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
     !activeExt || 
     activeExt.toLowerCase().trim() === pageArtistExt
   );
+
+  const songArtistExt = (
+    (demo as any)?.artistExtension || 
+    (demo as any)?.extension || 
+    (demo as any)?.artist_extension || 
+    (demo as any)?.artistId || 
+    pageArtistExt || 
+    ''
+  ).toLowerCase().trim();
+
+  const isArtistOwner = !!activeToken && !!activeExt && !!songArtistExt && (
+    activeExt.toLowerCase().trim() === songArtistExt
+  );
+  const memberTokenForArtist = songArtistExt ? getMemberToken(songArtistExt) : null;
+  const isOwnerMember = !!memberTokenForArtist && !!songArtistExt && (
+    !activeExt || activeExt.toLowerCase().trim() === songArtistExt
+  );
+  const canDownloadSong = isArtistOwner || isOwnerMember;
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [unlocked, setUnlocked] = useState(false);
@@ -15233,11 +15254,10 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
   const finalDisplayCover = resolveCoverUrl(displayCoverUrl) || displayCoverUrl;
 
   const currentActiveAdminExt = localStorage.getItem('activeAdminExtension');
-  const songArtistExt = demo?.artistExtension || getArtistExtensionFromUrl();
   const isOtherArtistSong = currentActiveAdminExt && songArtistExt && currentActiveAdminExt !== songArtistExt;
 
   if (demo?.linkType === 'indirect') {
-    return <IndirectBioCard demo={{...demo, coverUrl: finalDisplayCover}} isStandalone={true} lang={lang} />;
+    return <IndirectBioCard demo={{...demo, coverUrl: finalDisplayCover}} isStandalone={true} lang={lang} canDownload={canDownloadSong} />;
   }
 
   // Templates
@@ -16047,7 +16067,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
               )}
             </div>
             <div className="relative z-10 px-4 pt-2 pb-3 md:px-5 md:pt-3 md:pb-4">
-               <CustomAudioPlayer src={demo.audioUrl} backupAudioUrl={demo.backupAudioUrl} template={templateType} onEnded={onEnd} onAlmostEnded={onAlmostEnded} playlistContext={playlistContext} isPreview={isPreview} lyricsColor={customConfig?.lyricsColor} waveColor={customConfig?.waveColor} showDownload={!!getAdminToken() || !!getMemberToken()} title={demo.title} singer={demo.singer || demo.composer} isReleased={demo.isReleased} />
+               <CustomAudioPlayer src={demo.audioUrl} backupAudioUrl={demo.backupAudioUrl} template={templateType} onEnded={onEnd} onAlmostEnded={onAlmostEnded} playlistContext={playlistContext} isPreview={isPreview} lyricsColor={customConfig?.lyricsColor} waveColor={customConfig?.waveColor} showDownload={canDownloadSong} title={demo.title} singer={demo.singer || demo.composer} isReleased={demo.isReleased} />
             </div>
           </div>
           </div>
@@ -16110,7 +16130,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
                   Copy
                 </button>
               )}
-              {demo.linkDrive && (
+              {canDownloadSong && demo.linkDrive && (
                 <a
                   href={demo.linkDrive}
                   target="_blank"

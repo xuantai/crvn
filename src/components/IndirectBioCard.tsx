@@ -31,6 +31,7 @@ interface IndirectBioCardProps {
   onClose?: () => void;
   isStandalone?: boolean;
   lang?: string;
+  canDownload?: boolean;
 }
 
 const SpotifyIcon = ({className}: {className?: string}) => (
@@ -397,7 +398,7 @@ const useBrandLogoColors = (logoUrl: string | undefined, brandName: string | und
   return colors;
 };
 
-export function IndirectBioCard({ demo, onClose, isStandalone = false, lang = 'vi' }: IndirectBioCardProps) {
+export function IndirectBioCard({ demo, onClose, isStandalone = false, lang = 'vi', canDownload = false }: IndirectBioCardProps) {
   const [copied, setCopied] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [publicArtists, setPublicArtists] = useState<any[]>([]);
@@ -631,7 +632,7 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false, lang = 'v
       color: 'bg-[#FF0000]/10 hover:bg-[#FF0000]/20 border border-[#FF0000]/30 text-[#FF0000]',
       description: 'Xem MV chính thức trên YouTube',
     },
-    {
+    ...(canDownload ? [{
       id: 'drive',
       name: 'Google Drive',
       url: demo.linkDrive,
@@ -642,8 +643,8 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false, lang = 'v
       ),
       color: 'bg-white/10 hover:bg-white/20 border border-white/30 text-white',
       description: 'Tải nhạc gốc từ Google Drive',
-    },
-  ].filter(l => !!l.url);
+    }] : []),
+  ].filter(l => !!l && !!l.url);
 
   useEffect(() => {
     if (isStandalone && links.length === 1 && links[0].url) {

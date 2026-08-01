@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ChorusLogo } from './ChorusLogo';
-import { Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X, LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home, Upload, MessageSquare, Send, AlertTriangle, Disc3, Bell, ChevronLeft, Mail, Palette, LayoutTemplate, GripVertical, Type, Eye, EyeOff, DollarSign, ChevronUp, ChevronDown, Volume2, Image, FileText } from 'lucide-react';
+import { Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X, LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home, Upload, MessageSquare, Send, AlertTriangle, Disc3, Bell, ChevronLeft, Mail, Palette, LayoutTemplate, GripVertical, Type, Eye, EyeOff, DollarSign, ChevronUp, ChevronDown, Volume2, Image, FileText, Compass, Smartphone, Tablet, Monitor, ArrowUp, ArrowDown } from 'lucide-react';
 import { getPlatformDomain, getPlatformBrandName, getArtistSubdomainUrl } from '../utils/platform';
 
 
@@ -106,7 +106,13 @@ export default function ACPControlPanel() {
     });
   };
 
-  const [activeTab, setActiveTab] = useState<'artists' | 'landing' | 'tickets' | 'templates' | 'faq' | 'keywords' | 'content' | 'roles' | 'vouchers' | 'pricing' | 'admin_theme' | 'edit_item'>('artists');
+  const [activeTab, setActiveTab] = useState<'artists' | 'landing' | 'tickets' | 'templates' | 'faq' | 'keywords' | 'content' | 'roles' | 'vouchers' | 'pricing' | 'admin_theme' | 'edit_item' | 'explore'>('artists');
+
+  // ─── Explore Features State ──────────────────────────────────
+  const [exploreFeatures, setExploreFeatures] = useState<any[]>([]);
+  const [exploreSaving, setExploreSaving] = useState(false);
+  const [exploreLoaded, setExploreLoaded] = useState(false);
+  const exploreFileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [showComposeModal, setShowComposeModal] = useState(false);
   const [artistCurrentPage, setArtistCurrentPage] = useState(0);
   const [artistPageSize, setArtistPageSize] = useState<number>(20); // 20, 50, 100
@@ -1835,6 +1841,17 @@ export default function ACPControlPanel() {
             >
               <DollarSign className="w-4.5 h-4.5" />
               <span>Bảng Giá & Gói Cước</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('explore')}
+              className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+                activeTab === 'explore'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <Compass className="w-4.5 h-4.5" />
+              <span>Khám Phá</span>
             </button>
         </div>
       </aside>
@@ -4982,6 +4999,18 @@ export default function ACPControlPanel() {
               )}
             </div>
           </div>
+        ) : activeTab === 'explore' ? (
+          <ExploreTabContent
+            token={token}
+            exploreFeatures={exploreFeatures}
+            setExploreFeatures={setExploreFeatures}
+            exploreSaving={exploreSaving}
+            setExploreSaving={setExploreSaving}
+            exploreLoaded={exploreLoaded}
+            setExploreLoaded={setExploreLoaded}
+            exploreFileInputRefs={exploreFileInputRefs}
+            showToast={(msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000); }}
+          />
         ) : null}
       </main>
 
@@ -5901,6 +5930,340 @@ Admin Password: ${newArtistCreatedInfo.password}`;
         <div className="fixed bottom-4 right-4 bg-emerald-500 text-white px-6 py-3 rounded-xl shadow-2xl font-medium animate-in slide-in-from-bottom-5 z-50 flex items-center gap-2">
           <CheckCircle2 className="w-5 h-5" />
           {toast}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Explore Tab Content Component ──────────────────────────────────
+function ExploreTabContent({ token, exploreFeatures, setExploreFeatures, exploreSaving, setExploreSaving, exploreLoaded, setExploreLoaded, exploreFileInputRefs, showToast }: {
+  token: string;
+  exploreFeatures: any[];
+  setExploreFeatures: (f: any[]) => void;
+  exploreSaving: boolean;
+  setExploreSaving: (b: boolean) => void;
+  exploreLoaded: boolean;
+  setExploreLoaded: (b: boolean) => void;
+  exploreFileInputRefs: React.MutableRefObject<Record<string, HTMLInputElement | null>>;
+  showToast: (msg: string) => void;
+}) {
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+
+  // Load features on mount
+  useEffect(() => {
+    if (!exploreLoaded && token) {
+      fetch('/api/public/explore-features')
+        .then(r => r.json())
+        .then(data => {
+          if (Array.isArray(data)) setExploreFeatures(data);
+          setExploreLoaded(true);
+        })
+        .catch(() => setExploreLoaded(true));
+    }
+  }, [token, exploreLoaded]);
+
+  const addFeature = () => {
+    const newFeature = {
+      id: `ef_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      badge: '✦ Tính Năng',
+      title: 'Tiêu đề tính năng mới',
+      description: 'Mô tả chi tiết về tính năng này...',
+      descriptionExtra: '',
+      deviceType: 'iphone' as const,
+      imageUrl: '',
+      layout: 'left' as const,
+      order: exploreFeatures.length,
+    };
+    setExploreFeatures([...exploreFeatures, newFeature]);
+  };
+
+  const updateFeature = (id: string, field: string, value: any) => {
+    setExploreFeatures(exploreFeatures.map(f => f.id === id ? { ...f, [field]: value } : f));
+  };
+
+  const removeFeature = (id: string) => {
+    if (!confirm('Xoá tính năng này?')) return;
+    setExploreFeatures(exploreFeatures.filter(f => f.id !== id));
+  };
+
+  const moveFeature = (id: string, direction: 'up' | 'down') => {
+    const idx = exploreFeatures.findIndex(f => f.id === id);
+    if (idx < 0) return;
+    const newIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (newIdx < 0 || newIdx >= exploreFeatures.length) return;
+    const copy = [...exploreFeatures];
+    [copy[idx], copy[newIdx]] = [copy[newIdx], copy[idx]];
+    copy.forEach((f, i) => f.order = i);
+    setExploreFeatures(copy);
+  };
+
+  const uploadImage = async (id: string, file: File) => {
+    setUploadingId(id);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const res = await fetch('/api/master/explore-features/upload', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success && data.url) {
+        updateFeature(id, 'imageUrl', data.url);
+        showToast('Upload ảnh thành công!');
+      } else {
+        alert('Upload thất bại: ' + (data.error || 'Unknown error'));
+      }
+    } catch (e: any) {
+      alert('Upload lỗi: ' + e.message);
+    }
+    setUploadingId(null);
+  };
+
+  const saveAll = async () => {
+    setExploreSaving(true);
+    try {
+      const orderedFeatures = exploreFeatures.map((f, i) => ({ ...f, order: i }));
+      const res = await fetch('/api/master/explore-features', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ features: orderedFeatures }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('Đã lưu trang Khám Phá!');
+      } else {
+        alert('Lưu thất bại: ' + (data.error || 'Unknown'));
+      }
+    } catch (e: any) {
+      alert('Lỗi: ' + e.message);
+    }
+    setExploreSaving(false);
+  };
+
+  const deviceIcons: Record<string, React.ReactNode> = {
+    iphone: <Smartphone className="w-4 h-4" />,
+    ipad: <Tablet className="w-4 h-4" />,
+    macbook: <Monitor className="w-4 h-4" />,
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-neutral-900/30 border border-white/5 rounded-3xl p-6 sm:p-8 backdrop-blur-md">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-5 mb-6">
+          <div>
+            <h2 className="text-xl font-black flex items-center gap-2">
+              <Compass className="w-5 h-5 text-purple-400" />
+              Trang Khám Phá (Features)
+            </h2>
+            <p className="text-neutral-400 text-sm mt-1">
+              Quản lý nội dung trang <a href="/explore" target="_blank" className="text-purple-400 hover:underline">chorus.vn/explore</a> — phong cách giống remio.net/features
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <a href="/explore" target="_blank" className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-all text-xs font-bold">
+              <Eye className="w-3.5 h-3.5" />
+              Xem Trang
+            </a>
+            <button
+              onClick={saveAll}
+              disabled={exploreSaving}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-xs shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 transition-all disabled:opacity-50 cursor-pointer"
+            >
+              <Save className="w-3.5 h-3.5" />
+              {exploreSaving ? 'Đang lưu...' : 'Lưu Tất Cả'}
+            </button>
+          </div>
+        </div>
+
+        {/* Add button */}
+        <button
+          onClick={addFeature}
+          className="w-full flex items-center justify-center gap-2 px-4 py-4 rounded-2xl border-2 border-dashed border-white/10 hover:border-purple-500/40 text-neutral-400 hover:text-purple-300 transition-all text-sm font-bold cursor-pointer"
+        >
+          <Plus className="w-4.5 h-4.5" />
+          Thêm Tính Năng Mới
+        </button>
+      </div>
+
+      {/* Feature Cards */}
+      {exploreFeatures.map((feature, idx) => (
+        <div key={feature.id} className="bg-neutral-900/30 border border-white/5 rounded-3xl p-6 sm:p-8 backdrop-blur-md space-y-5">
+          {/* Card Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-neutral-500 text-xs font-mono">#{idx + 1}</span>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 text-[10px] font-bold text-neutral-300 uppercase tracking-wider">
+                {deviceIcons[feature.deviceType]}
+                {feature.deviceType}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={() => moveFeature(feature.id, 'up')} disabled={idx === 0} className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-400 hover:text-white transition-all disabled:opacity-20 cursor-pointer">
+                <ChevronUp className="w-4 h-4" />
+              </button>
+              <button onClick={() => moveFeature(feature.id, 'down')} disabled={idx === exploreFeatures.length - 1} className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-400 hover:text-white transition-all disabled:opacity-20 cursor-pointer">
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              <button onClick={() => removeFeature(feature.id)} className="p-1.5 rounded-lg hover:bg-red-500/20 text-neutral-400 hover:text-red-400 transition-all cursor-pointer">
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Form Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Left: Form fields */}
+            <div className="space-y-4">
+              {/* Badge */}
+              <div>
+                <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider mb-1.5 block">Badge</label>
+                <input
+                  type="text"
+                  value={feature.badge}
+                  onChange={e => updateFeature(feature.id, 'badge', e.target.value)}
+                  className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-neutral-600 focus:border-purple-500/40 focus:outline-none transition-all"
+                  placeholder="✦ Tốc Độ"
+                />
+              </div>
+
+              {/* Title */}
+              <div>
+                <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider mb-1.5 block">Tiêu đề</label>
+                <textarea
+                  value={feature.title}
+                  onChange={e => updateFeature(feature.id, 'title', e.target.value)}
+                  rows={2}
+                  className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-neutral-600 focus:border-purple-500/40 focus:outline-none transition-all resize-none"
+                  placeholder="Tiêu đề lớn, bold"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider mb-1.5 block">Mô tả</label>
+                <textarea
+                  value={feature.description}
+                  onChange={e => updateFeature(feature.id, 'description', e.target.value)}
+                  rows={3}
+                  className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-neutral-600 focus:border-purple-500/40 focus:outline-none transition-all resize-none"
+                  placeholder="Mô tả chi tiết..."
+                />
+              </div>
+
+              {/* Description Extra */}
+              <div>
+                <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider mb-1.5 block">Mô tả phụ (optional, nhạt hơn)</label>
+                <textarea
+                  value={feature.descriptionExtra || ''}
+                  onChange={e => updateFeature(feature.id, 'descriptionExtra', e.target.value)}
+                  rows={2}
+                  className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white/60 placeholder-neutral-600 focus:border-purple-500/40 focus:outline-none transition-all resize-none"
+                  placeholder="Thông tin bổ sung..."
+                />
+              </div>
+
+              {/* Device Type + Layout */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider mb-1.5 block">Thiết bị</label>
+                  <select
+                    value={feature.deviceType}
+                    onChange={e => updateFeature(feature.id, 'deviceType', e.target.value)}
+                    className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:border-purple-500/40 focus:outline-none transition-all cursor-pointer"
+                  >
+                    <option value="iphone">📱 iPhone</option>
+                    <option value="ipad">📟 iPad</option>
+                    <option value="macbook">💻 MacBook</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider mb-1.5 block">Bố cục</label>
+                  <select
+                    value={feature.layout}
+                    onChange={e => updateFeature(feature.id, 'layout', e.target.value)}
+                    className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:border-purple-500/40 focus:outline-none transition-all cursor-pointer"
+                  >
+                    <option value="left">← Text trái, Device phải</option>
+                    <option value="right">→ Text phải, Device trái</option>
+                    <option value="center">↕ Canh giữa</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Image Upload + Preview */}
+            <div className="space-y-4">
+              <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider mb-1.5 block">Ảnh trong thiết bị</label>
+              
+              {/* Upload area */}
+              <div
+                onClick={() => exploreFileInputRefs.current[feature.id]?.click()}
+                className="relative border-2 border-dashed border-white/10 hover:border-purple-500/40 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all min-h-[200px] group"
+              >
+                {uploadingId === feature.id ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-8 h-8 border-2 border-white/20 border-t-purple-400 rounded-full animate-spin" />
+                    <span className="text-neutral-400 text-xs">Đang upload...</span>
+                  </div>
+                ) : feature.imageUrl ? (
+                  <div className="relative w-full">
+                    <img src={feature.imageUrl} alt="" className="w-full max-h-[240px] object-contain rounded-xl" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all rounded-xl flex items-center justify-center">
+                      <span className="text-white text-xs font-bold bg-purple-600/80 px-3 py-1.5 rounded-lg">Đổi ảnh</span>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <Upload className="w-8 h-8 text-neutral-500 group-hover:text-purple-400 transition-all" />
+                    <span className="text-neutral-500 text-xs font-medium">Click để upload ảnh</span>
+                    <span className="text-neutral-600 text-[10px]">PNG, JPG — Tối đa 5MB</span>
+                  </>
+                )}
+                <input
+                  ref={el => { exploreFileInputRefs.current[feature.id] = el; }}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) uploadImage(feature.id, file);
+                    e.target.value = '';
+                  }}
+                />
+              </div>
+
+              {/* Image URL manual input */}
+              <div>
+                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1 block">Hoặc dán URL ảnh</label>
+                <input
+                  type="text"
+                  value={feature.imageUrl || ''}
+                  onChange={e => updateFeature(feature.id, 'imageUrl', e.target.value)}
+                  className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white/60 placeholder-neutral-600 focus:border-purple-500/40 focus:outline-none transition-all"
+                  placeholder="https://..."
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {/* Empty State */}
+      {exploreFeatures.length === 0 && exploreLoaded && (
+        <div className="bg-neutral-900/20 border border-white/5 rounded-3xl p-12 text-center">
+          <Compass className="w-12 h-12 mx-auto mb-4 text-neutral-700" />
+          <h3 className="text-lg font-bold text-neutral-400 mb-2">Chưa có tính năng nào</h3>
+          <p className="text-neutral-500 text-sm mb-6">Bấm nút "Thêm Tính Năng Mới" ở trên để bắt đầu tạo trang Khám Phá.</p>
+          <button
+            onClick={addFeature}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-xs shadow-lg cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Thêm Tính Năng Đầu Tiên
+          </button>
         </div>
       )}
     </div>
