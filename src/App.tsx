@@ -1060,6 +1060,7 @@ function MusicianWallFrames({
   t: (key: string) => string;
 }) {
   const [orientations, setOrientations] = useState<Record<string, 'landscape' | 'portrait'>>({});
+  const [failedImgs, setFailedImgs] = useState<Record<string, boolean>>({});
   const [swayAngle, setSwayAngle] = useState(0);
   const lastYRef = useRef(typeof window !== 'undefined' ? window.scrollY : 0);
   const swayTimerRef = useRef<any>(null);
@@ -1092,14 +1093,14 @@ function MusicianWallFrames({
     const imgs: string[] = [];
     if (data?.slideshowImages && Array.isArray(data.slideshowImages) && data.slideshowImages.length > 0) {
       data.slideshowImages.forEach((img: string) => {
-        if (img && typeof img === 'string' && !imgs.includes(img)) {
+        if (img && typeof img === 'string' && !imgs.includes(img) && !failedImgs[img]) {
           imgs.push(img);
         }
       });
     }
     // Do not show default wall frames if artist has not uploaded slideshow images
     return imgs;
-  }, [data?.slideshowImages]);
+  }, [data?.slideshowImages, failedImgs]);
 
   const handleImgLoad = (url: string, e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
@@ -1110,6 +1111,10 @@ function MusicianWallFrames({
         return { ...prev, [url]: isLandscape ? 'landscape' : 'portrait' };
       });
     }
+  };
+
+  const handleImgError = (url: string) => {
+    setFailedImgs(prev => ({ ...prev, [url]: true }));
   };
 
   const positions = [
@@ -1172,6 +1177,7 @@ function MusicianWallFrames({
                   src={imgUrl} 
                   alt={`Khung ảnh ${idx + 1}`} 
                   onLoad={(e) => handleImgLoad(imgUrl, e)}
+                  onError={() => handleImgError(imgUrl)}
                   className="w-full h-full object-cover filter brightness-[0.94] contrast-[1.06] group-hover/wallframe:brightness-100 group-hover/wallframe:scale-105 transition-all duration-700" 
                   referrerPolicy="no-referrer"
                 />
@@ -7424,6 +7430,7 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
   const [showThemeDropdown, setShowThemeDropdown] = useState(false);
   const [originalTheme, setOriginalTheme] = useState<string | null>(null);
   const [pendingTheme, setPendingTheme] = useState<string | null>(null);
+  const [themeError, setThemeError] = useState<string | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogoutClick = async (e: React.MouseEvent) => {
