@@ -78,9 +78,10 @@ async function main() {
     }
   }
 
-  // 5. Restart PM2 on chorus.vn
-  console.log('\n=== Step 5: Restarting PM2 process (chorusvn) ===');
-  await execCmd(`cd ${REMOTE_DIR} && (pm2 restart chorusvn || PORT=3000 NODE_ENV=production pm2 start dist/server.cjs --name "chorusvn" --update-env) && pm2 save`);
+  // 5. Restart PM2 on chorus.vn using Node.js v18 interpreter explicitly
+  console.log('\n=== Step 5: Restarting PM2 process (chorusvn) with Node.js v18 ===');
+  await execCmd('pm2 delete chorusvn || true');
+  await execCmd(`cd ${REMOTE_DIR} && PORT=3000 NODE_ENV=production pm2 start dist/server.cjs --name "chorusvn" --interpreter /root/.nvm/versions/node/v18.20.8/bin/node --update-env && pm2 save`);
 
   conn.end();
   console.log('\n🎉 Deploy CHORUS.VN hoàn tất!');

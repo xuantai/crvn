@@ -6985,8 +6985,8 @@ ${JSON.stringify(geminiInput, null, 2)}`;
   });
 
   let vite: any;
-  // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
+  // Vite middleware for development (only when NODE_ENV is explicitly 'development')
+  if (process.env.NODE_ENV === "development") {
     const viteModule = await import('vite');
     createViteServer = viteModule.createServer;
     vite = await createViteServer({
