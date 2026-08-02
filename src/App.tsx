@@ -7390,7 +7390,7 @@ function AnimatedRoutes() {
                         <Route path="/help" element={<HelpPage DemoPlayer={DemoPlayer} />} />
         <Route path="/:artistExtension/help" element={<HelpPage DemoPlayer={DemoPlayer} />} />
         <Route path="/acp" element={<ACPControlPanel />} />
-        <Route path="/master" element={<ACPControlPanel />} />
+        <Route path="/master/*" element={<ACPControlPanel />} />
         <Route path="/mem" element={<MemberLogin />} />
         <Route path="/demo/:id" element={<DemoPlayer />} />
         <Route path="/song/:id" element={<DemoPlayer />} />

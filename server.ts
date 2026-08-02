@@ -7111,7 +7111,7 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       const cleanPath = url.split('?')[0];
       const segments = cleanPath.split('/').filter(Boolean);
       const firstSegment = segments[0];
-      const reserved = ['admin', 'acp', 'master', 'mem', 'demo', 'song', 'playlist', 'api', 'uploads', 'verify-email', 'help'];
+      const reserved = ['admin', 'acp', 'master', 'mem', 'demo', 'song', 'playlist', 'api', 'uploads', 'verify-email', 'help', 'explore', 'kham-pha'];
 
       if (!isSubdomain && !isCustomDomain && firstSegment && !reserved.includes(firstSegment.toLowerCase())) {
         const artistExists = artists.some(a => {

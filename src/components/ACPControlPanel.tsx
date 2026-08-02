@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChorusLogo } from './ChorusLogo';
 import { Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X, LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home, Upload, MessageSquare, Send, AlertTriangle, Disc3, Bell, ChevronLeft, Mail, Palette, LayoutTemplate, GripVertical, Type, Eye, EyeOff, DollarSign, ChevronUp, ChevronDown, Volume2, Image, FileText, Compass, Smartphone, Tablet, Monitor, ArrowUp, ArrowDown } from 'lucide-react';
 import { getPlatformDomain, getPlatformBrandName, getArtistSubdomainUrl } from '../utils/platform';
@@ -106,7 +106,26 @@ export default function ACPControlPanel() {
     });
   };
 
-  const [activeTab, setActiveTab] = useState<'artists' | 'landing' | 'tickets' | 'templates' | 'faq' | 'keywords' | 'content' | 'roles' | 'vouchers' | 'pricing' | 'admin_theme' | 'edit_item' | 'explore'>('artists');
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const validTabs = ['artists', 'landing', 'tickets', 'templates', 'faq', 'keywords', 'content', 'roles', 'vouchers', 'pricing', 'admin_theme', 'edit_item', 'explore'];
+  const urlTab = location.pathname.split('/').filter(Boolean)[1];
+  const initialTab = validTabs.includes(urlTab) ? urlTab : 'artists';
+
+  const [activeTab, setActiveTabState] = useState<any>(initialTab);
+
+  const setActiveTab = (tab: string) => {
+    setActiveTabState(tab);
+    navigate(`/master/${tab}`);
+  };
+
+  useEffect(() => {
+    const pTab = location.pathname.split('/').filter(Boolean)[1];
+    if (pTab && validTabs.includes(pTab) && pTab !== activeTab) {
+      setActiveTabState(pTab);
+    }
+  }, [location.pathname, activeTab]);
 
   // ─── Explore Features State ──────────────────────────────────
   const [exploreFeatures, setExploreFeatures] = useState<any[]>([]);
