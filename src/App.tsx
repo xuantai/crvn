@@ -7389,10 +7389,16 @@ function AnimatedRoutes() {
     }
   }, [location.pathname]);
 
+  const getRouteKey = (pathname: string) => {
+    if (pathname.includes('/admin')) return 'admin-root';
+    if (pathname.includes('/master') || pathname === '/acp') return 'master-root';
+    return pathname;
+  };
+
   return (
     <AnimatePresence>
       {/* @ts-ignore */}
-      <Routes location={location} key={location.pathname}>
+      <Routes location={location} key={getRouteKey(location.pathname)}>
         {/* Core Root Routes */}
         <Route path="/" element={isSubdomain ? <Home /> : <ChorusVNLanding />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
@@ -17431,11 +17437,11 @@ function AdminDashboard() {
   // Sync state when location changes (e.g. Browser Back/Forward navigation)
   useEffect(() => {
     const { tab, subtab } = getAdminTabAndSubtabFromPath(location.pathname, location.search, location.hash);
-    if (tab !== activeTab) setActiveTab(tab as any);
-    if (subtab !== demosSubTab) setDemosSubTab(subtab as any);
+    if (tab && tab !== activeTab) setActiveTab(tab as any);
+    if (subtab && subtab !== demosSubTab) setDemosSubTab(subtab as any);
   }, [location.pathname, location.search, location.hash]);
 
-  // Sync browser URL with activeTab & demosSubTab state using navigate (replace)
+  // Sync browser URL with activeTab & demosSubTab state without reloading component
   useEffect(() => {
     let targetPath = '/admin/songs';
     if (activeTab === 'demos') {
@@ -17450,10 +17456,10 @@ function AdminDashboard() {
       targetPath = `/admin/${activeTab}`;
     }
 
-    if (location.pathname !== targetPath) {
-      navigate(targetPath, { replace: true });
+    if (window.location.pathname !== targetPath) {
+      window.history.replaceState(null, '', targetPath);
     }
-  }, [activeTab, demosSubTab, location.pathname, navigate]);
+  }, [activeTab, demosSubTab]);
   
   // Chorus Repost & Ticket States
   const [showMembershipModal, setShowMembershipModal] = useState(false);
