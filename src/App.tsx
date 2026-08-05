@@ -19907,9 +19907,9 @@ function AdminDashboard() {
                 isGoldTheme ? 'md:border-amber-200/60' : 'md:border-stone-200'
               }`
         }`}>
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
           {activeTab === 'demos' && (
-            <motion.div key="demos" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+            <motion.div key="demos" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15, ease: 'easeOut' }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
             <div>
               {/* Header with Sub-tabs and Create button */}
               <div className="flex flex-col gap-4 mb-6 border-b border-stone-100 pb-4">
@@ -20137,8 +20137,8 @@ function AdminDashboard() {
 
               {/* Action area for selected subtab */}
               <div className="overflow-x-auto min-h-[300px]">
-<AnimatePresence>
-                {demosSubTab === 'landing_pages' && (<motion.div key="landing_pages" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
+<AnimatePresence mode="wait">
+                {demosSubTab === 'landing_pages' && (<motion.div key="landing_pages" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15, ease: 'easeOut' }} className="w-full">{(() => {
                   let landingList = data.demos?.filter(d => d.linkType === 'indirect' && !d.deleted) || [];
                   if (adminSearchQuery.trim()) {
                     landingList = landingList.filter(d => d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase()));
@@ -20191,7 +20191,7 @@ function AdminDashboard() {
                   );
                 })()}</motion.div>)}
 
-                {demosSubTab === 'released' && (<motion.div key="released" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
+                {demosSubTab === 'released' && (<motion.div key="released" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15, ease: 'easeOut' }} className="w-full">{(() => {
                   let releasedList = data.demos?.filter(d => d.isReleased && !d.deleted && !d.isDraft && d.linkType !== 'indirect') || [];
                   if (adminSearchQuery.trim()) {
                     releasedList = releasedList.filter(d => d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase()));
@@ -20304,7 +20304,7 @@ function AdminDashboard() {
                   );
                 })()}</motion.div>)}
 
-                {demosSubTab === 'demos' && (<motion.div key="sub-demos" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
+                {demosSubTab === 'demos' && (<motion.div key="sub-demos" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15, ease: 'easeOut' }} className="w-full">{(() => {
                   let demoList = data.demos?.filter(d => !d.isReleased && !d.deleted && !d.isDraft && d.linkType !== 'indirect') || [];
                   if (adminSearchQuery.trim()) {
                     demoList = demoList.filter(d => d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase()));
@@ -20420,7 +20420,7 @@ function AdminDashboard() {
                   );
                 })()}</motion.div>)}
 
-                {demosSubTab === 'brands' && (<motion.div key="brands" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
+                {demosSubTab === 'brands' && (<motion.div key="brands" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15, ease: 'easeOut' }} className="w-full">{(() => {
                   let brandList = data.demos?.filter(d => d.isBrand && !d.deleted) || [];
                   if (adminSearchQuery.trim()) {
                     brandList = brandList.filter(d => d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase()));
@@ -20796,7 +20796,7 @@ function AdminDashboard() {
 
           
           {activeTab === 'about' && (
-            <motion.div key="about" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+            <motion.div key="about" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15, ease: 'easeOut' }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
              <AdminAboutEdit 
   data={data} 
   t={t} 
@@ -20808,13 +20808,13 @@ function AdminDashboard() {
             </motion.div>
           )}
           {activeTab === 'bio' && (
-            <motion.div key="bio" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+            <motion.div key="bio" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15, ease: 'easeOut' }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
              <AdminBioEdit key="bio" data={data} t={t} onSave={handleCustomSave} />
             </motion.div>
           )}
 
           {activeTab === 'menus' && (
-            <motion.div key="menus" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+            <motion.div key="menus" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15, ease: 'easeOut' }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
               <div className="max-w-2xl py-1">
                 <AdminMenuEdit data={data} t={t} onSave={handleCustomSave} />
               </div>
@@ -20822,7 +20822,7 @@ function AdminDashboard() {
           )}
 
           {activeTab === 'layout' && (
-            <motion.div key="layout" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+            <motion.div key="layout" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15, ease: 'easeOut' }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
               <div className="max-w-2xl py-1">
                 <AdminLayoutEdit data={data} t={t} onSave={handleCustomSave} />
               </div>
@@ -20830,7 +20830,7 @@ function AdminDashboard() {
           )}
 
           {activeTab === 'admin_theme' && (
-            <motion.div key="admin_theme" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+            <motion.div key="admin_theme" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15, ease: 'easeOut' }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
               <div className="max-w-3xl pb-10">
                 <div className="flex flex-col gap-1 mb-6 border-b border-stone-100 pb-4">
                   <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
@@ -21111,7 +21111,7 @@ function AdminDashboard() {
           )}
 
           {activeTab === 'vouchers' && (
-            <motion.div key="vouchers" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+            <motion.div key="vouchers" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15, ease: 'easeOut' }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
               <div className="max-w-xl bg-stone-50 rounded-3xl p-6 sm:p-8 shadow-sm border border-stone-200 mt-2">
                 <h2 className="text-2xl font-black mb-2 flex items-center gap-3 text-stone-900">
                   <Award className="w-8 h-8 text-yellow-500 animate-pulse" /> {t("Sử dụng mã Voucher")}
@@ -21154,7 +21154,7 @@ function AdminDashboard() {
           )}
 
           {activeTab === 'profile' && (
-            <motion.div key="profile" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+            <motion.div key="profile" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15, ease: 'easeOut' }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
             <div className="max-w-2xl pb-10">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-stone-100 pb-4">
                 <div>
@@ -21566,7 +21566,7 @@ function AdminDashboard() {
 
 
           {activeTab === 'socials' && (
-            <motion.div key="socials" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+            <motion.div key="socials" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15, ease: 'easeOut' }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
             <div className="max-w-2xl pb-10">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-stone-100 pb-4">
                 <div>
@@ -21604,13 +21604,13 @@ function AdminDashboard() {
           )}
 
           {activeTab === 'templates' && (
-            <motion.div key="templates" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+            <motion.div key="templates" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15, ease: 'easeOut' }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
             <AdminTemplatesSettings isPCPreviewMode={isPCPreviewMode} setIsPCPreviewMode={setIsPCPreviewMode} />
             </motion.div>
           )}
 
           {activeTab === 'security' && (
-            <motion.div key="security" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+            <motion.div key="security" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15, ease: 'easeOut' }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
             <div className="max-w-2xl space-y-12 pb-10">
               <div>
                 <div className="flex flex-col gap-1 mb-6 border-b border-stone-100 pb-4">
@@ -21788,7 +21788,7 @@ function AdminDashboard() {
           )}
 
           {activeTab === 'database' && (
-            <motion.div key="database" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+            <motion.div key="database" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15, ease: 'easeOut' }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
             <AdminDatabaseSettings artistUsername={data?.username} />
             </motion.div>
           )}
@@ -21796,7 +21796,7 @@ function AdminDashboard() {
 
 
           {activeTab === 'reposts' && (
-            <motion.div key="reposts" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+            <motion.div key="reposts" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15, ease: 'easeOut' }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
             <div className="space-y-6 py-1">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
@@ -21954,7 +21954,7 @@ function AdminDashboard() {
           )}
 
           {activeTab === 'tickets' && (
-            <motion.div key="tickets" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
+            <motion.div key="tickets" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15, ease: 'easeOut' }} className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
             <div className="space-y-6 py-1">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-stone-100 pb-4">
                 <div>
