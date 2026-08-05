@@ -17434,6 +17434,19 @@ function AdminDashboard() {
 
   const navigate = useNavigate();
 
+  const isDemosActive = activeTab === 'demos' && demosSubTab !== 'playlists';
+  const isPlaylistActive = activeTab === 'demos' && demosSubTab === 'playlists';
+  const isTemplatesActive = activeTab === 'templates';
+  const isRepostsActive = activeTab === 'reposts';
+  const isTicketsActive = activeTab === 'tickets';
+  const isProfileActive = activeTab === 'profile';
+  const isSocialsActive = activeTab === 'socials';
+  const isSecurityActive = activeTab === 'security';
+  const isAboutActive = activeTab === 'about';
+  const isBioActive = activeTab === 'bio';
+  const isMenusActive = activeTab === 'menus';
+  const isLayoutActive = activeTab === 'layout';
+
   // Sync state when location changes (e.g. Browser Back/Forward navigation)
   useEffect(() => {
     const { tab, subtab } = getAdminTabAndSubtabFromPath(location.pathname, location.search, location.hash);
@@ -19386,22 +19399,7 @@ function AdminDashboard() {
              </button>
           )}
           
-          {(() => {
-            const isDemosActive = activeTab === 'demos' && demosSubTab !== 'playlists';
-            const isPlaylistActive = activeTab === 'demos' && demosSubTab === 'playlists';
-            const isTemplatesActive = activeTab === 'templates';
-            const isRepostsActive = activeTab === 'reposts';
-            const isTicketsActive = activeTab === 'tickets';
-            const isProfileActive = activeTab === 'profile';
-            const isSocialsActive = activeTab === 'socials';
-            const isSecurityActive = activeTab === 'security';
-            const isAboutActive = activeTab === 'about';
-            const isBioActive = activeTab === 'bio';
-            const isMenusActive = activeTab === 'menus';
-            const isLayoutActive = activeTab === 'layout';
-
-            return (
-              <LayoutGroup id="adminSidebarNav">
+          <LayoutGroup id="adminSidebarNav" layoutDependency={activeTab}>
                 <div className={`${effectiveSidebarCollapsed ? 'flex flex-col gap-2 w-full px-2' : 'mb-3 flex flex-col gap-1'}`}>
                   <button
                     onClick={() => { setActiveTab('demos'); setDemosSubTab('released'); }}
@@ -19891,8 +19889,6 @@ function AdminDashboard() {
                   </button>
                 </div>
               </LayoutGroup>
-            );
-          })()}
           </div>
         </aside>
 

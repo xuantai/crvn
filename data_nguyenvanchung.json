@@ -1,27 +1,40 @@
 {
+  "artistBio": "Ngôi nhà âm nhạc của Nhạc sỹ",
+  "releasedSongs": [],
+  "hideFromHomepage": false,
+  "demos": [],
+  "tab3Name": "",
+  "spotifyUrl": "https://open.spotify.com/artist/1uXHYAZLyOQY5qaM1crBNK",
+  "playlists": [],
+  "tab2Name": "",
+  "slideshowImages": [
+    "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Fzyfgs8il7ll%2F1783286712650-150346455-1783286712652.jpg?alt=media&token=871e7052-6aee-4a38-a52a-7bf57a65d84e",
+    "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Fzyfgs8il7ll%2F1783286715767-121365871-1783286715768.jpg?alt=media&token=aa80440f-0edc-417a-87bd-f2cf307a1c60"
+  ],
+  "faviconUrl": "",
+  "memberPassword": "",
+  "autoSwitchTabs": false,
   "menus": [
     {
       "id": "m1",
+      "title": "Kho Nhạc",
       "type": "vault",
-      "isVisible": true,
-      "title": "Kho Nhạc"
+      "isVisible": true
     },
     {
-      "id": "m2",
+      "isVisible": true,
       "type": "about",
-      "isVisible": true,
-      "title": "Về Tôi"
+      "title": "Về Tôi",
+      "id": "m2"
     },
     {
+      "type": "bio",
       "id": "m3",
-      "isVisible": true,
       "title": "Tiểu Sử",
-      "type": "bio"
+      "isVisible": true
     }
   ],
-  "tab2Name": "",
-  "memberPassword": "",
-  "autoSwitchTabs": false,
+  "globalPassword": "",
   "layoutSections": [
     "title",
     "random_song",
@@ -31,27 +44,14 @@
     "mv",
     "spotify"
   ],
+  "youtubePlaylistUrl": "",
+  "username": "nguyenvanchung",
+  "artistName": "Nguyễn Văn Chung",
+  "tab1Name": "",
+  "defaultLanguage": "vi",
+  "ogImageUrl": "",
   "pageTitle": "Kho nhạc của Nhạc sỹ Nguyễn Văn Chung",
   "customDomain": "",
-  "adminPassword": "NSNguyenVanChung",
-  "hideFromHomepage": false,
-  "faviconUrl": "",
-  "artistName": "Nguyễn Văn Chung",
-  "spotifyUrl": "https://open.spotify.com/artist/1uXHYAZLyOQY5qaM1crBNK",
-  "username": "nguyenvanchung",
-  "youtubePlaylistUrl": "",
-  "tab3Name": "",
-  "playlists": [],
-  "demos": [],
-  "tab1Name": "",
-  "slideshowImages": [
-    "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Fzyfgs8il7ll%2F1783286712650-150346455-1783286712652.jpg?alt=media&token=871e7052-6aee-4a38-a52a-7bf57a65d84e",
-    "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Fzyfgs8il7ll%2F1783286715767-121365871-1783286715768.jpg?alt=media&token=aa80440f-0edc-417a-87bd-f2cf307a1c60"
-  ],
-  "artistBio": "Ngôi nhà âm nhạc của Nhạc sỹ",
-  "ogImageUrl": "",
   "homeCoverUrl": "https://cdn.chorus.vn/uploads/nguyenvanchung/synced_1784985098156_6998.jpg",
-  "globalPassword": "",
-  "releasedSongs": [],
-  "defaultLanguage": "vi"
+  "adminPassword": "NSNguyenVanChung"
 }
