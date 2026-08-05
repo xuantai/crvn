@@ -9887,10 +9887,10 @@ function RandomSongCard({
           {/* Song Cover Image Container (Left side) */}
           <div className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-xl overflow-hidden relative border border-[#D4AF37]/25 group-hover:border-[#D4AF37] transition-colors select-none shadow-md bg-stone-900/10">
             {/* Previous cover */}
-            {prevSong && getSongCoverUrl(prevSong.coverUrl) && (
+            {prevSong && getSongCoverUrl(prevSong.thumbUrl || prevSong.coverUrl) && (
               <img 
                 key={`${prevKey}_cover_prev`}
-                src={getSongCoverUrl(prevSong.coverUrl)} 
+                src={getSongCoverUrl(prevSong.thumbUrl || prevSong.coverUrl)} 
                 className="absolute inset-0 w-full h-full object-cover" 
                 alt=""
                 referrerPolicy="no-referrer"
@@ -9899,7 +9899,7 @@ function RandomSongCard({
             {/* Current cover with fade-in */}
             <motion.img 
               key={`${currKey}_cover`}
-              src={getSongCoverUrl(displaySong.coverUrl) || ''} 
+              src={getSongCoverUrl(displaySong.thumbUrl || displaySong.coverUrl) || ''} 
               initial={prevSong ? { opacity: 0 } : { opacity: 1 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 1.0, ease: "easeInOut" }}
@@ -24276,6 +24276,9 @@ function AdminEditDemo() {
   const [isDraft, setIsDraft] = useState(false);
   const [isDraggingCover, setIsDraggingCover] = useState(false);
   const [isDraggingBg, setIsDraggingBg] = useState(false);
+  const [isDraggingAudio, setIsDraggingAudio] = useState(false);
+  const [isDraggingBrandLogo, setIsDraggingBrandLogo] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -25364,7 +25367,17 @@ function AdminEditDemo() {
 
             <div className="flex flex-col gap-4 mt-6">
               {demo.isDraft ? (
-                <div className="flex flex-col sm:flex-row gap-3 w-full sm:justify-end">
+                <div className="flex flex-wrap items-center gap-3 w-full justify-between sm:justify-end">
+                  <button 
+                    disabled={loading} 
+                    type="button" 
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 border border-rose-200/80 text-sm sm:text-base font-bold py-2.5 px-4 sm:px-5 rounded-xl transition-all duration-300 disabled:opacity-80 flex justify-center items-center gap-2 active:scale-[0.98] shadow-xs cursor-pointer mr-auto sm:mr-0"
+                  >
+                    <Trash2 className="w-4 h-4 text-rose-500" />
+                    {t("Xóa Bài Hát")}
+                  </button>
+
                   <button 
                     disabled={loading} 
                     type="button" 
@@ -25386,7 +25399,17 @@ function AdminEditDemo() {
                   </button>
                 </div>
               ) : (
-                <div className="flex flex-col sm:flex-row gap-3 w-full sm:justify-end">
+                <div className="flex flex-wrap items-center gap-3 w-full justify-between sm:justify-end">
+                  <button 
+                    disabled={loading} 
+                    type="button" 
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 border border-rose-200/80 text-sm sm:text-base font-bold py-2.5 px-4 sm:px-5 rounded-xl transition-all duration-300 disabled:opacity-80 flex justify-center items-center gap-2 active:scale-[0.98] shadow-xs cursor-pointer mr-auto sm:mr-0"
+                  >
+                    <Trash2 className="w-4 h-4 text-rose-500" />
+                    {t("Xóa Bài Hát")}
+                  </button>
+
                   <button 
                     disabled={loading} 
                     type="button" 
@@ -25405,8 +25428,7 @@ function AdminEditDemo() {
                         const res = await fetch(`/api/demos/${demo.id}/reset-secret`, {
                           method: 'POST',
                           headers: {
-        'x-artist-extension': getArtistExtensionFromUrl(),
-
+                            'x-artist-extension': getArtistExtensionFromUrl(),
                             'Authorization': `Bearer ${getAdminToken() || ''}`
                           }
                         });
@@ -25460,6 +25482,69 @@ function AdminEditDemo() {
             }} 
             onClose={() => setShowTemplatePicker(false)}
          />
+      )}
+
+      {/* CUSTOM UI CONFIRMATION POPUP FOR DELETING SONG */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="bg-stone-950/95 border border-stone-800 p-6 sm:p-8 rounded-[2rem] shadow-2xl flex flex-col items-center max-w-sm w-full text-center"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 mb-4 shadow-inner">
+              <AlertTriangle className="w-7 h-7" />
+            </div>
+            <h3 className="text-white font-black text-lg sm:text-xl mb-2 tracking-tight">
+              {t("Xóa bài hát này?")}
+            </h3>
+            <p className="text-stone-400 text-xs sm:text-sm leading-relaxed mb-6">
+              {t("Bài hát \"")}<strong className="text-stone-200">{title || demo?.title}</strong>{t("\" sẽ được chuyển vào Thùng Rác. Bạn có thể khôi phục lại bất cứ lúc nào.")}
+            </p>
+            <div className="flex items-center gap-3 w-full">
+              <button 
+                type="button" 
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 bg-stone-800 hover:bg-stone-700 text-stone-300 font-bold py-3 px-4 rounded-xl transition-colors text-sm cursor-pointer"
+              >
+                {t("Hủy")}
+              </button>
+              <button 
+                type="button" 
+                disabled={loading}
+                onClick={async () => {
+                  setShowDeleteConfirm(false);
+                  if (!demo?.id) return;
+                  setLoading(true);
+                  setLoadingText(t("Đang chuyển vào Thùng rác..."));
+                  try {
+                    const res = await fetch(`/api/demos/${demo.id}/delete`, {
+                      method: 'POST',
+                      headers: {
+                        'x-artist-extension': getArtistExtensionFromUrl(),
+                        'Authorization': `Bearer ${getAdminToken() || ''}`
+                      }
+                    });
+                    if (res.ok) {
+                      navigate('/admin/songs/trash');
+                    } else {
+                      triggerNotification(t("Không thể xóa bài hát. Vui lòng thử lại."), 'error');
+                    }
+                  } catch (err) {
+                    triggerNotification(t("Lỗi kết nối khi xóa bài hát."), 'error');
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                className="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-black py-3 px-4 rounded-xl transition-all shadow-md text-sm flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+                {t("Xóa bài hát")}
+              </button>
+            </div>
+          </motion.div>
+        </div>
       )}
 
       {loading && (
