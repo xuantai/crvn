@@ -69,5 +69,6 @@ All image upload controls across the application (Avatar, Favicon, OG Image / Th
 - **Singer & Composer Display Rules**:
   - **Mobile**: Remove `"Ca sĩ:"` text prefix label, render only the singer/artist names using `MarqueeText` (e.g. `A.C Xuân Tài, Changg`).
   - **PC View**: Display `Tác giả: [Composer] • Ca sĩ: [Singer]`.
-
-
+- **Admin Active Pill Sliding Animation (`adminSidebarActiveBg` & `adminSubTabActiveBg`)**:
+  - Both vertical sidebar menu pills (`layoutId="adminSidebarActiveBg"`) and horizontal subtab pills (`layoutId="adminSubTabActiveBg"`) MUST use identical spring animation parameters: `transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}`.
+  - Active pill elements MUST include `style={{ transition: 'none' }}` to prevent CSS `transition: all` rules (such as from `.btn-black-gradient-blur`) from interfering with Framer Motion 60fps layout interpolation.
