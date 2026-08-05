@@ -24204,6 +24204,12 @@ function AdminEditDemo() {
     onClose?: () => void;
   } | null>(null);
 
+  const getPreviewUrl = (url: string | undefined) => {
+    if (!url) return '';
+    if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) return url;
+    return url;
+  };
+
   const triggerNotification = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info', title?: string, onClose?: () => void) => {
     setNotification({ message, type, title, onClose });
   };

@@ -1,5 +1,50 @@
 {
+  "tab2Name": "",
+  "spotifyUrl": "https://open.spotify.com/artist/1uXHYAZLyOQY5qaM1crBNK",
+  "defaultLanguage": "vi",
+  "globalPassword": "",
+  "tab1Name": "",
+  "menus": [
+    {
+      "title": "Kho Nhạc",
+      "isVisible": true,
+      "id": "m1",
+      "type": "vault"
+    },
+    {
+      "isVisible": true,
+      "id": "m2",
+      "type": "about",
+      "title": "Về Tôi"
+    },
+    {
+      "id": "m3",
+      "type": "bio",
+      "isVisible": true,
+      "title": "Tiểu Sử"
+    }
+  ],
+  "artistBio": "Ngôi nhà âm nhạc của Nhạc sỹ",
+  "tab3Name": "",
+  "homeCoverUrl": "https://cdn.chorus.vn/uploads/nguyenvanchung/synced_1784985098156_6998.jpg",
+  "releasedSongs": [],
+  "youtubePlaylistUrl": "",
+  "customDomain": "",
+  "autoSwitchTabs": false,
+  "username": "nguyenvanchung",
+  "slideshowImages": [
+    "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Fzyfgs8il7ll%2F1783286712650-150346455-1783286712652.jpg?alt=media&token=871e7052-6aee-4a38-a52a-7bf57a65d84e",
+    "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Fzyfgs8il7ll%2F1783286715767-121365871-1783286715768.jpg?alt=media&token=aa80440f-0edc-417a-87bd-f2cf307a1c60"
+  ],
+  "pageTitle": "Kho nhạc của Nhạc sỹ Nguyễn Văn Chung",
+  "playlists": [],
+  "hideFromHomepage": false,
+  "memberPassword": "",
   "demos": [],
+  "artistName": "Nguyễn Văn Chung",
+  "faviconUrl": "",
+  "ogImageUrl": "",
+  "adminPassword": "NSNguyenVanChung",
   "layoutSections": [
     "title",
     "random_song",
@@ -8,50 +53,5 @@
     "vault",
     "mv",
     "spotify"
-  ],
-  "releasedSongs": [],
-  "youtubePlaylistUrl": "",
-  "tab1Name": "",
-  "tab3Name": "",
-  "slideshowImages": [
-    "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Fzyfgs8il7ll%2F1783286712650-150346455-1783286712652.jpg?alt=media&token=871e7052-6aee-4a38-a52a-7bf57a65d84e",
-    "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Fzyfgs8il7ll%2F1783286715767-121365871-1783286715768.jpg?alt=media&token=aa80440f-0edc-417a-87bd-f2cf307a1c60"
-  ],
-  "defaultLanguage": "vi",
-  "customDomain": "",
-  "playlists": [],
-  "ogImageUrl": "",
-  "pageTitle": "Kho nhạc của Nhạc sỹ Nguyễn Văn Chung",
-  "hideFromHomepage": false,
-  "artistBio": "Ngôi nhà âm nhạc của Nhạc sỹ",
-  "username": "nguyenvanchung",
-  "homeCoverUrl": "https://cdn.chorus.vn/uploads/nguyenvanchung/synced_1784985098156_6998.jpg",
-  "menus": [
-    {
-      "id": "m1",
-      "title": "Kho Nhạc",
-      "type": "vault",
-      "isVisible": true
-    },
-    {
-      "isVisible": true,
-      "title": "Về Tôi",
-      "type": "about",
-      "id": "m2"
-    },
-    {
-      "type": "bio",
-      "isVisible": true,
-      "id": "m3",
-      "title": "Tiểu Sử"
-    }
-  ],
-  "adminPassword": "NSNguyenVanChung",
-  "artistName": "Nguyễn Văn Chung",
-  "memberPassword": "",
-  "faviconUrl": "",
-  "globalPassword": "",
-  "autoSwitchTabs": false,
-  "spotifyUrl": "https://open.spotify.com/artist/1uXHYAZLyOQY5qaM1crBNK",
-  "tab2Name": ""
+  ]
 }
