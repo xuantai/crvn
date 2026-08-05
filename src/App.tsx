@@ -18998,11 +18998,9 @@ function AdminDashboard() {
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="flex items-center gap-2.5 bg-stone-900 hover:bg-stone-850 text-white px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-md transition-all cursor-pointer select-none flex-1 justify-between min-w-0"
+                className="flex items-center gap-2 bg-stone-900 hover:bg-stone-850 text-white px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-md transition-all cursor-pointer select-none shrink-0 min-w-0"
               >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <Menu className="w-4 h-4 text-stone-300 shrink-0" />
-                  
+                <div className="flex items-center gap-2 min-w-0">
                   {/* Dynamic Active Section Animated Icon */}
                   <div className="shrink-0 flex items-center justify-center">
                     {activeTab === 'demos' && demosSubTab !== 'playlists' && (
@@ -19069,7 +19067,7 @@ function AdminDashboard() {
                   </div>
 
                   {/* Main section title - strictly main category name */}
-                  <span className="truncate text-white font-black text-sm">
+                  <span className="truncate text-white font-black text-xs sm:text-sm">
                     {activeTab === 'demos' && demosSubTab !== 'playlists' ? t("Kho Nhạc") :
                      activeTab === 'demos' && demosSubTab === 'playlists' ? t("Playlist") :
                      activeTab === 'templates' ? t("Chủ Đề") :
@@ -19087,12 +19085,12 @@ function AdminDashboard() {
                   </span>
                 </div>
 
-                <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform duration-200 shrink-0 ml-1 ${isMobileMenuOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-3.5 h-3.5 text-stone-400 transition-transform duration-200 shrink-0 ml-0.5 ${isMobileMenuOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {/* Right: Compact Artist Profile Header */}
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-xs font-black text-stone-850 truncate max-w-[100px] sm:max-w-[140px]">
+              <div className="flex items-center gap-2 shrink-0 min-w-0">
+                <span className="text-xs sm:text-sm font-black text-stone-850 truncate max-w-[130px] xs:max-w-[180px] sm:max-w-[260px]">
                   {data?.artistName || 'Nghệ Sĩ'}
                 </span>
                 <button
@@ -20213,7 +20211,7 @@ function AdminDashboard() {
                           className="border border-stone-100 rounded-xl p-3 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white hover:bg-stone-50/50 transition-all shadow-sm"
                         >
                           <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
+                            <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight hidden sm:flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
                             <div className="flex flex-col gap-1 flex-1 min-w-0">
                               <Link to={getArtistLink(`/song/${demo.slug || demo.id}`)} state={{ fromAdmin: true }} className="hover:text-pink-600 font-bold text-stone-850 text-sm md:text-base block truncate max-w-[150px] xs:max-w-[240px] sm:max-w-[320px] md:max-w-[280px] lg:max-w-[420px] xl:max-w-[580px]">
                                 {demo.title}
@@ -20295,7 +20293,7 @@ function AdminDashboard() {
                           className={`border border-stone-100 rounded-xl p-2.5 sm:p-3 flex items-center justify-between gap-2.5 bg-white hover:bg-stone-50/50 transition-all cursor-move select-none ${draggedItemIdx === idx ? 'opacity-40 border-dashed border-stone-300 bg-stone-50' : 'shadow-sm'}`}
                         >
                           <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
-                            <span className="text-stone-500 font-mono font-bold text-xs sm:text-sm w-6 sm:w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-6 sm:h-7 shrink-0">#{idx + 1}</span>
+                            <span className="text-stone-500 font-mono font-bold text-xs sm:text-sm w-6 sm:w-7 tracking-tight hidden sm:flex items-center justify-center bg-stone-100/80 rounded-md h-6 sm:h-7 shrink-0">#{idx + 1}</span>
                             {(demo.thumbUrl || demo.coverUrl || demo.imageUrl) ? (
                               <img src={getPreviewUrl(demo.thumbUrl || demo.coverUrl || demo.imageUrl)} className="w-10 h-10 rounded-xl object-cover shrink-0 border border-stone-200 shadow-2xs" alt="" />
                             ) : (
@@ -20408,7 +20406,7 @@ function AdminDashboard() {
                           className={`border border-stone-100 rounded-xl p-2.5 sm:p-3 flex items-center justify-between gap-2.5 bg-white hover:bg-stone-50/50 transition-all cursor-move select-none ${draggedItemIdx === idx ? 'opacity-40 border-dashed border-stone-300 bg-stone-50' : 'shadow-sm'}`}
                         >
                           <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
-                            <span className="text-stone-500 font-mono font-bold text-xs sm:text-sm w-6 sm:w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-6 sm:h-7 shrink-0">#{idx + 1}</span>
+                            <span className="text-stone-500 font-mono font-bold text-xs sm:text-sm w-6 sm:w-7 tracking-tight hidden sm:flex items-center justify-center bg-stone-100/80 rounded-md h-6 sm:h-7 shrink-0">#{idx + 1}</span>
                             {(demo.thumbUrl || demo.coverUrl || demo.imageUrl) ? (
                               <img src={getPreviewUrl(demo.thumbUrl || demo.coverUrl || demo.imageUrl)} className="w-10 h-10 rounded-xl object-cover shrink-0 border border-stone-200 shadow-2xs" alt="" />
                             ) : (
@@ -20623,7 +20621,7 @@ function AdminDashboard() {
                           className={`border border-stone-100 rounded-xl p-3 flex items-center justify-between gap-3 bg-white hover:bg-stone-50/50 transition-all cursor-move select-none ${draggedItemIdx === idx ? 'opacity-40 border-dashed border-stone-300 bg-stone-50' : 'shadow-sm'}`}
                         >
                           <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
+                            <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight hidden sm:flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
                             {(demo.thumbUrl || demo.coverUrl || demo.imageUrl) ? (
                               <img src={getPreviewUrl(demo.thumbUrl || demo.coverUrl || demo.imageUrl)} className="w-10 h-10 rounded-xl object-cover shrink-0 border border-stone-200 shadow-2xs" alt="" />
                             ) : (
@@ -20729,7 +20727,7 @@ function AdminDashboard() {
                             className={`border border-stone-100 rounded-xl p-3 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white hover:bg-stone-50/50 transition-all cursor-move select-none ${draggedItemIdx === idx ? 'opacity-40 border-dashed border-stone-300 bg-stone-50' : 'shadow-sm'}`}
                           >
                             <div className="flex items-center gap-3 flex-1 min-w-0">
-                              <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
+                              <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight hidden sm:flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
                               <div className="flex flex-col flex-1 min-w-0">
                                 <a
                                   href={getArtistFullUrl(`/playlist/${pl.id}`)}

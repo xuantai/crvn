@@ -59,12 +59,15 @@ All image upload controls across the application (Avatar, Favicon, OG Image / Th
   - Sub-tab navigation updates address bar cleanly: `/admin/songs/released`, `/admin/songs/demos`, `/admin/songs/brands`, `/admin/songs/drafts`, `/admin/songs/playlists`, `/admin/songs/trash`.
 - **Mobile Dropdown Navigation**:
   - Main button title on mobile MUST always display `"Kho Nhạc"` (never infected by subtab names like `"bản nháp"` or `"đã ra mắt"`).
-- **Mobile Song Card 1-Row Layout**:
-  - On mobile screens (`sm:` and smaller), song card elements (index, thumbnail, title/artist info, actions) MUST be arranged in 1 compact horizontal row (`flex flex-row items-center justify-between gap-2.5 p-2.5 sm:p-3`).
+  - Hide 3-line hamburger menu icon inside dropdown button to optimize horizontal width and maximize space for long artist names.
+- **Mobile Song Card 1-Row Layout & Index Badge**:
+  - On mobile screens (`sm:` and smaller), song card elements (thumbnail, title/artist info, actions) MUST be arranged in 1 compact horizontal row (`flex flex-row items-center justify-between gap-2.5 p-2.5 sm:p-3`).
+  - Index badges (`#1`, `#2`...) MUST be hidden on mobile (`hidden sm:flex`) to keep cards clean and compact.
 - **Marquee Overflow Text Scrolling (Yoyo / Bounce)**:
   - Long song titles or artist names that exceed container width MUST use `MarqueeText` with auto overflow calculation.
   - When text overflows, it smoothly scrolls left until the end of text is visible, pauses, and reverses back to start (left-right bounce).
 - **Singer & Composer Display Rules**:
   - **Mobile**: Remove `"Ca sĩ:"` text prefix label, render only the singer/artist names using `MarqueeText` (e.g. `A.C Xuân Tài, Changg`).
   - **PC View**: Display `Tác giả: [Composer] • Ca sĩ: [Singer]`.
+
 
