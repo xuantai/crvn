@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChorusLogo } from './ChorusLogo';
 import { Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X, LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home, Upload, MessageSquare, Send, AlertTriangle, Disc3, Bell, ChevronLeft, Mail, Palette, LayoutTemplate, GripVertical, Type, Eye, EyeOff, DollarSign, ChevronUp, ChevronDown, Volume2, Image, FileText, Compass, Smartphone, Tablet, Monitor, ArrowUp, ArrowDown } from 'lucide-react';
 import { getPlatformDomain, getPlatformBrandName, getArtistSubdomainUrl } from '../utils/platform';
+import { compressImageInBrowser } from '../utils/imageCompressor';
 
 
 interface Artist {
@@ -213,8 +214,12 @@ export default function ACPControlPanel() {
     if (!file) return;
     setIsUploadingFile(true);
     try {
+      let fileToUpload = file;
+      if (file.type && file.type.startsWith('image/')) {
+        fileToUpload = await compressImageInBrowser(file);
+      }
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', fileToUpload);
       const res = await fetch('/api/upload', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token || ''}` },
@@ -223,10 +228,15 @@ export default function ACPControlPanel() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Tải file thất bại');
       const fileUrl = data.url || data.path || '';
+      const thumbUrl = data.thumbUrl || fileUrl;
       if (fieldName === 'playlistCoverUrl') {
-        setEditPlaylistForm((prev: any) => ({ ...prev, coverUrl: fileUrl }));
+        setEditPlaylistForm((prev: any) => ({ ...prev, coverUrl: fileUrl, thumbUrl: thumbUrl }));
       } else {
-        setEditSongForm((prev: any) => ({ ...prev, [fieldName]: fileUrl }));
+        setEditSongForm((prev: any) => ({
+          ...prev,
+          [fieldName]: fileUrl,
+          ...(fieldName === 'coverUrl' ? { thumbUrl: thumbUrl } : {})
+        }));
       }
     } catch (err: any) {
       alert(err.message || 'Lỗi tải file');
@@ -6143,8 +6153,6 @@ function ExploreTabContent({ token, exploreFeatures, setExploreFeatures, explore
                   {feature.deviceType || 'iphone'}
                 </div>
               )}
-                {feature.deviceType}
-              </div>
             </div>
             <div className="flex items-center gap-2">
               <button onClick={() => moveFeature(feature.id, 'up')} disabled={idx === 0} className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-400 hover:text-white transition-all disabled:opacity-20 cursor-pointer">
@@ -6294,6 +6302,7 @@ function ExploreTabContent({ token, exploreFeatures, setExploreFeatures, explore
                           <option value="iphone">iPhone</option>
                           <option value="ipad">iPad</option>
                           <option value="macbook">MacBook</option>
+                          <option value="frame">Khung ảnh trơn</option>
                         </select>
                       </div>
                       
@@ -6324,7 +6333,7 @@ function ExploreTabContent({ token, exploreFeatures, setExploreFeatures, explore
                           <input
                             ref={el => { exploreFileInputRefs.current[`${feature.id}_${dIndex}`] = el; }}
                             type="file"
-                            accept="image/*"
+                            accept="image/*,video/mp4,video/quicktime"
                             className="hidden"
                             onChange={e => {
                               const file = e.target.files?.[0];
@@ -6344,7 +6353,6 @@ function ExploreTabContent({ token, exploreFeatures, setExploreFeatures, explore
                 ));
               })()}
             </div>
-          </div>
           </div>
         </div>
       ))}

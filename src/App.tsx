@@ -17380,14 +17380,17 @@ const getAdminTabAndSubtabFromPath = (pathname: string, search: string, hash: st
   if (tab === 'playlists') {
     return { tab: 'demos', subtab: 'playlists' };
   }
+  if (tab === 'kho-nhac' || tab === 'songs') {
+    return { tab: 'demos', subtab: sub || 'released' };
+  }
   if (['released', 'demos', 'drafts', 'trash', 'landing_pages', 'brands'].includes(tab)) {
     return { tab: 'demos', subtab: tab };
   }
 
-  const validTabs = ['demos', 'profile', 'about', 'bio', 'menus', 'socials', 'security', 'templates', 'database', 'reposts', 'tickets', 'layout', 'vouchers', 'admin_theme'];
+  const validTabs = ['demos', 'profile', 'about', 'bio', 'menus', 'socials', 'security', 'templates', 'database', 'reposts', 'tickets', 'layout', 'vouchers', 'admin_theme', 'kho-nhac', 'songs'];
   const validSubtabs = ['released', 'demos', 'drafts', 'playlists', 'trash', 'landing_pages', 'brands'];
 
-  const finalTab = validTabs.includes(tab) ? tab : 'demos';
+  const finalTab = validTabs.includes(tab) ? (tab === 'kho-nhac' || tab === 'songs' ? 'demos' : tab) : 'demos';
   const finalSub = validSubtabs.includes(sub) ? sub : (searchParams.get('subtab') || 'released');
 
   return { tab: finalTab, subtab: finalSub };
@@ -17400,6 +17403,7 @@ function AdminDashboard() {
   const [dataError, setDataError] = useState<string | null>(null);
   const getSongCoverUrl = (songUrl?: string) => songUrl || data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const initialUrlState = getAdminTabAndSubtabFromPath(window.location.pathname, window.location.search, window.location.hash);
   const [activeTab, setActiveTab] = useState<'demos'|'playlists'|'profile'|'about'|'bio'|'menus'|'socials'|'security'|'templates'|'database'|'reposts'|'tickets'|'layout'|'vouchers'|'admin_theme'>(
@@ -17418,20 +17422,20 @@ function AdminDashboard() {
 
   // Push/Replace state on browser URL when activeTab or demosSubTab changes
   useEffect(() => {
-    let targetPath = '/admin';
+    let targetPath = '/admin/kho-nhac';
     if (activeTab === 'demos') {
       if (demosSubTab === 'playlists') {
         targetPath = '/admin/playlists';
       } else if (demosSubTab && demosSubTab !== 'released') {
         targetPath = `/admin/${demosSubTab}`;
       } else {
-        targetPath = '/admin';
+        targetPath = '/admin/kho-nhac';
       }
     } else {
       targetPath = `/admin/${activeTab}`;
     }
 
-    if (window.location.pathname !== targetPath) {
+    if (window.location.pathname !== targetPath && window.location.pathname !== '/admin') {
       window.history.replaceState(null, '', targetPath);
     }
   }, [activeTab, demosSubTab]);
@@ -18974,6 +18978,295 @@ function AdminDashboard() {
                   : 'md:bg-white md:border md:border-stone-200/60 md:shadow-[0_8px_30px_rgb(0,0,0,0.015)] text-stone-900'
               }`
         }`}>
+          {/* Mobile Header Menu Card with Animated Active Icon & Dropdown (Mobile Only) */}
+          <div className="md:hidden w-full bg-white border border-stone-200 rounded-2xl p-3 shadow-xs relative mb-3 z-30">
+            <div className="flex items-center justify-between gap-3">
+              {/* Left: Selected Menu Button */}
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="flex items-center gap-2.5 bg-stone-900 hover:bg-stone-850 text-white px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-md transition-all cursor-pointer select-none flex-1 justify-between min-w-0"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Menu className="w-4 h-4 text-stone-300 shrink-0" />
+                  
+                  {/* Dynamic Active Section Animated Icon */}
+                  <div className="shrink-0 flex items-center justify-center">
+                    {activeTab === 'demos' && demosSubTab !== 'playlists' && (
+                      <motion.div animate={{ y: [-0.8, 0.8, -0.8], x: [-0.4, 0.4, -0.4] }} transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}>
+                        <Disc3 className="w-4.5 h-4.5 text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.65)] animate-[spin_4s_linear_infinite]" />
+                      </motion.div>
+                    )}
+                    {activeTab === 'demos' && demosSubTab === 'playlists' && (
+                      <motion.div animate={{ rotate: [-5, 5, -5], y: [-1, 1, -1] }} transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}>
+                        <ListMusic className="w-4.5 h-4.5 text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.65)]" />
+                      </motion.div>
+                    )}
+                    {activeTab === 'templates' && (
+                      <motion.div animate={{ rotate: [-5, 5, -5], y: [-1, 1, -1] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}>
+                        <Palette className="w-4.5 h-4.5 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.65)]" />
+                      </motion.div>
+                    )}
+                    {activeTab === 'reposts' && (
+                      <motion.div animate={{ rotate: [-6, 6, -6], y: [-1, 1, -1] }} transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}>
+                        <Repeat className="w-4.5 h-4.5 text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.65)]" />
+                      </motion.div>
+                    )}
+                    {activeTab === 'profile' && (
+                      <motion.div animate={{ rotate: [-6, 6, -6], y: [-0.8, 0.8, -0.8] }} transition={{ repeat: Infinity, duration: 2.3, ease: "easeInOut" }}>
+                        <Settings className="w-4.5 h-4.5 text-teal-400 drop-shadow-[0_0_8px_rgba(45,212,191,0.65)]" />
+                      </motion.div>
+                    )}
+                    {activeTab === 'layout' && (
+                      <motion.div animate={{ scale: [1, 1.05, 1], rotate: [-2, 2, -2] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                        <LayoutTemplate className="w-4.5 h-4.5 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.65)]" />
+                      </motion.div>
+                    )}
+                    {activeTab === 'about' && (
+                      <motion.div animate={{ rotate: [-6, 6, -6], y: [-0.8, 0.8, -0.8] }} transition={{ repeat: Infinity, duration: 2.3, ease: "easeInOut" }}>
+                        <UserCircle className="w-4.5 h-4.5 text-violet-400 drop-shadow-[0_0_8px_rgba(167,139,250,0.65)]" />
+                      </motion.div>
+                    )}
+                    {activeTab === 'bio' && (
+                      <motion.div animate={{ rotate: [-6, 6, -6], y: [-0.8, 0.8, -0.8] }} transition={{ repeat: Infinity, duration: 2.3, ease: "easeInOut" }}>
+                        <BookOpen className="w-4.5 h-4.5 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.65)]" />
+                      </motion.div>
+                    )}
+                    {activeTab === 'menus' && (
+                      <motion.div animate={{ rotate: [-6, 6, -6], y: [-0.8, 0.8, -0.8] }} transition={{ repeat: Infinity, duration: 2.3, ease: "easeInOut" }}>
+                        <List className="w-4.5 h-4.5 text-teal-400 drop-shadow-[0_0_8px_rgba(45,212,191,0.65)]" />
+                      </motion.div>
+                    )}
+                    {activeTab === 'tickets' && (
+                      <motion.div animate={{ rotate: [-5, 5, -5], y: [-1, 1, -1] }} transition={{ repeat: Infinity, duration: 2.1, ease: "easeInOut" }}>
+                        <MessageSquare className="w-4.5 h-4.5 text-rose-400 drop-shadow-[0_0_8px_rgba(251,113,133,0.65)]" />
+                      </motion.div>
+                    )}
+                    {activeTab === 'admin_theme' && (
+                      <motion.div animate={{ scale: [1, 1.05, 1], rotate: [-2, 2, -2] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                        <Paintbrush className="w-4.5 h-4.5 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.65)]" />
+                      </motion.div>
+                    )}
+                    {activeTab === 'vouchers' && (
+                      <Award className="w-4.5 h-4.5 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.65)]" />
+                    )}
+                    {activeTab === 'security' && (
+                      <Lock className="w-4.5 h-4.5 text-stone-400" />
+                    )}
+                  </div>
+
+                  {/* Main section title - strictly main category name */}
+                  <span className="truncate text-white font-black text-sm">
+                    {activeTab === 'demos' && demosSubTab !== 'playlists' ? t("Kho Nhạc") :
+                     activeTab === 'demos' && demosSubTab === 'playlists' ? t("Playlist") :
+                     activeTab === 'templates' ? t("Chủ Đề") :
+                     activeTab === 'reposts' ? t("Đăng lại") :
+                     activeTab === 'profile' ? t("Trang Chủ") :
+                     activeTab === 'layout' ? t("Bố Cục") :
+                     activeTab === 'about' ? t("Về Tôi") :
+                     activeTab === 'bio' ? t("Tiểu Sử") :
+                     activeTab === 'menus' ? t("Danh Mục") :
+                     activeTab === 'tickets' ? t("Hộp thư") :
+                     activeTab === 'admin_theme' ? t("Giao Diện") :
+                     activeTab === 'vouchers' ? t("Voucher") :
+                     activeTab === 'security' ? t("Bảo Mật & Email") :
+                     t("Kho Nhạc")}
+                  </span>
+                </div>
+
+                <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform duration-200 shrink-0 ml-1 ${isMobileMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Right: Compact Artist Profile Header */}
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs font-black text-stone-850 truncate max-w-[100px] sm:max-w-[140px]">
+                  {data?.artistName || 'Nghệ Sĩ'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('about')}
+                  className="w-9 h-9 rounded-full overflow-hidden border border-stone-200 shrink-0 shadow-xs cursor-pointer"
+                  title={t("Về Tôi")}
+                >
+                  <img
+                    src={(previewAvatar !== null ? previewAvatar : (data?.aboutMe?.avatarUrl || data?.homeCoverUrl)) || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=150&q=80"}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile Navigation Dropdown Menu Panel */}
+            <AnimatePresence>
+              {isMobileMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                  transition={{ duration: 0.18 }}
+                  className="absolute top-full left-0 right-0 mt-2 bg-white border border-stone-200 rounded-2xl shadow-xl z-50 p-2 overflow-hidden flex flex-col gap-1"
+                >
+                  {/* Item 1: Kho Nhạc */}
+                  <button
+                    type="button"
+                    onClick={() => { setActiveTab('demos'); setDemosSubTab('released'); setIsMobileMenuOpen(false); }}
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-left transition-all ${
+                      activeTab === 'demos' && demosSubTab !== 'playlists' ? 'bg-stone-900 text-white font-black' : 'hover:bg-stone-100 text-stone-700'
+                    }`}
+                  >
+                    <Disc3 className={`w-4.5 h-4.5 animate-[spin_4s_linear_infinite] ${activeTab === 'demos' && demosSubTab !== 'playlists' ? 'text-amber-400' : 'text-stone-400'}`} />
+                    <span>{t("Kho Nhạc")}</span>
+                  </button>
+
+                  {/* Item 2: Playlist */}
+                  <button
+                    type="button"
+                    onClick={() => { setActiveTab('demos'); setDemosSubTab('playlists'); setIsMobileMenuOpen(false); }}
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-left transition-all ${
+                      activeTab === 'demos' && demosSubTab === 'playlists' ? 'bg-stone-900 text-white font-black' : 'hover:bg-stone-100 text-stone-700'
+                    }`}
+                  >
+                    <ListMusic className={`w-4.5 h-4.5 ${activeTab === 'demos' && demosSubTab === 'playlists' ? 'text-emerald-400' : 'text-stone-400'}`} />
+                    <span>{t("Playlist")}</span>
+                  </button>
+
+                  {/* Item 3: Chủ Đề */}
+                  <button
+                    type="button"
+                    onClick={() => { setActiveTab('templates'); setIsMobileMenuOpen(false); }}
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-left transition-all ${
+                      activeTab === 'templates' ? 'bg-stone-900 text-white font-black' : 'hover:bg-stone-100 text-stone-700'
+                    }`}
+                  >
+                    <Palette className={`w-4.5 h-4.5 ${activeTab === 'templates' ? 'text-cyan-400' : 'text-stone-400'}`} />
+                    <span>{t("Chủ Đề")}</span>
+                  </button>
+
+                  {/* Item 4: Đăng lại */}
+                  <button
+                    type="button"
+                    onClick={() => { setActiveTab('reposts'); setIsMobileMenuOpen(false); }}
+                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-left transition-all ${
+                      activeTab === 'reposts' ? 'bg-stone-900 text-white font-black' : 'hover:bg-stone-100 text-stone-700'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Repeat className={`w-4.5 h-4.5 ${activeTab === 'reposts' ? 'text-sky-400' : 'text-stone-400'}`} />
+                      <span>{t("Đăng lại")}</span>
+                    </div>
+                    {otherSongs.length > 0 && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white">{otherSongs.length}</span>
+                    )}
+                  </button>
+
+                  {/* Item 5: Trang Chủ */}
+                  <button
+                    type="button"
+                    onClick={() => { setActiveTab('profile'); setIsMobileMenuOpen(false); }}
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-left transition-all ${
+                      activeTab === 'profile' ? 'bg-stone-900 text-white font-black' : 'hover:bg-stone-100 text-stone-700'
+                    }`}
+                  >
+                    <Settings className={`w-4.5 h-4.5 ${activeTab === 'profile' ? 'text-teal-400' : 'text-stone-400'}`} />
+                    <span>{t("Trang Chủ")}</span>
+                  </button>
+
+                  {/* Item 6: Bố Cục */}
+                  <button
+                    type="button"
+                    onClick={() => { setActiveTab('layout'); setIsMobileMenuOpen(false); }}
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-left transition-all ${
+                      activeTab === 'layout' ? 'bg-stone-900 text-white font-black' : 'hover:bg-stone-100 text-stone-700'
+                    }`}
+                  >
+                    <LayoutTemplate className={`w-4.5 h-4.5 ${activeTab === 'layout' ? 'text-yellow-400' : 'text-stone-400'}`} />
+                    <span>{t("Bố Cục")}</span>
+                  </button>
+
+                  {/* Item 7: Về Tôi */}
+                  <button
+                    type="button"
+                    onClick={() => { setActiveTab('about'); setIsMobileMenuOpen(false); }}
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-left transition-all ${
+                      activeTab === 'about' ? 'bg-stone-900 text-white font-black' : 'hover:bg-stone-100 text-stone-700'
+                    }`}
+                  >
+                    <UserCircle className={`w-4.5 h-4.5 ${activeTab === 'about' ? 'text-violet-400' : 'text-stone-400'}`} />
+                    <span>{t("Về Tôi")}</span>
+                  </button>
+
+                  {/* Item 8: Tiểu Sử */}
+                  <button
+                    type="button"
+                    onClick={() => { setActiveTab('bio'); setIsMobileMenuOpen(false); }}
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-left transition-all ${
+                      activeTab === 'bio' ? 'bg-stone-900 text-white font-black' : 'hover:bg-stone-100 text-stone-700'
+                    }`}
+                  >
+                    <BookOpen className={`w-4.5 h-4.5 ${activeTab === 'bio' ? 'text-cyan-400' : 'text-stone-400'}`} />
+                    <span>{t("Tiểu Sử")}</span>
+                  </button>
+
+                  {/* Item 9: Danh Mục */}
+                  <button
+                    type="button"
+                    onClick={() => { setActiveTab('menus'); setIsMobileMenuOpen(false); }}
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-left transition-all ${
+                      activeTab === 'menus' ? 'bg-stone-900 text-white font-black' : 'hover:bg-stone-100 text-stone-700'
+                    }`}
+                  >
+                    <List className={`w-4.5 h-4.5 ${activeTab === 'menus' ? 'text-teal-400' : 'text-stone-400'}`} />
+                    <span>{t("Danh Mục")}</span>
+                  </button>
+
+                  {/* Item 10: Hộp thư */}
+                  <button
+                    type="button"
+                    onClick={() => { setActiveTab('tickets'); setIsMobileMenuOpen(false); }}
+                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-left transition-all ${
+                      activeTab === 'tickets' ? 'bg-stone-900 text-white font-black' : 'hover:bg-stone-100 text-stone-700'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <MessageSquare className={`w-4.5 h-4.5 ${activeTab === 'tickets' ? 'text-rose-400' : 'text-stone-400'}`} />
+                      <span>{t("Hộp thư")}</span>
+                    </div>
+                    {bellCount > 0 && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white">{bellCount}</span>
+                    )}
+                  </button>
+
+                  {/* Item 11: Giao Diện */}
+                  <button
+                    type="button"
+                    onClick={() => { setActiveTab('admin_theme'); setIsMobileMenuOpen(false); }}
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-left transition-all ${
+                      activeTab === 'admin_theme' ? 'bg-stone-900 text-white font-black' : 'hover:bg-stone-100 text-stone-700'
+                    }`}
+                  >
+                    <Paintbrush className={`w-4.5 h-4.5 ${activeTab === 'admin_theme' ? 'text-yellow-400' : 'text-stone-400'}`} />
+                    <span>{t("Giao Diện")}</span>
+                  </button>
+
+                  {/* Item 12: Voucher */}
+                  <button
+                    type="button"
+                    onClick={() => { setActiveTab('vouchers'); setIsMobileMenuOpen(false); }}
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-left transition-all ${
+                      activeTab === 'vouchers' ? 'bg-stone-900 text-white font-black' : 'hover:bg-stone-100 text-stone-700'
+                    }`}
+                  >
+                    <Award className={`w-4.5 h-4.5 ${activeTab === 'vouchers' ? 'text-yellow-400' : 'text-stone-400'}`} />
+                    <span>{t("Voucher")}</span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Desktop Account Info & Menu Sidebar (Desktop Only) */}
+          <div className="hidden md:flex flex-col w-full gap-5">
           {/* Khung Tài Khoản */}
           {!effectiveSidebarCollapsed && (
             <div className={`rounded-2xl p-4 relative group select-none ${isGoldTheme ? 'bg-amber-50/50 border border-amber-200 text-amber-900' : 'bg-stone-50 border border-stone-200/80'}`}>
@@ -19641,6 +19934,7 @@ function AdminDashboard() {
               </>
             );
           })()}
+          </div>
         </aside>
 
         <main className={`flex-1 flex flex-col transition-all duration-500 ${
@@ -20225,7 +20519,7 @@ function AdminDashboard() {
                     </div>
                   );
                 })()}</motion.div>)}
-                {demosSubTab === 'drafts' && (<motion.div key="drafts" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
+                {demosSubTab === 'drafts' && (<motion.div key="drafts" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="w-full">{(() => {
                   let draftList = data.demos?.filter(d => d.isDraft && !d.deleted && d.linkType !== 'indirect') || [];
                   if (adminSearchQuery.trim()) {
                     draftList = draftList.filter(d => d.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase()));
@@ -20272,17 +20566,31 @@ function AdminDashboard() {
                               body: JSON.stringify({ demoIds: [...items, ...((data.demos || []).filter(d => !d.isDraft && !d.deleted))].map(d => d.id) })
                             });
                           }}
-                          className={`border border-stone-100 rounded-xl p-3 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white hover:bg-stone-50/50 transition-all cursor-move select-none ${draggedItemIdx === idx ? 'opacity-40 border-dashed border-stone-300 bg-stone-50' : 'shadow-sm'}`}
+                          className={`border border-stone-100 rounded-xl p-3 flex items-center justify-between gap-3 bg-white hover:bg-stone-50/50 transition-all cursor-move select-none ${draggedItemIdx === idx ? 'opacity-40 border-dashed border-stone-300 bg-stone-50' : 'shadow-sm'}`}
                         >
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
-                            <div className="flex flex-col gap-1 flex-1 min-w-0">
-                              <Link to={getAdminLink(`/edit/${demo.id}`)} className="hover:text-amber-600 font-bold text-stone-850 text-sm md:text-base block truncate max-w-[150px] xs:max-w-[240px] sm:max-w-[320px] md:max-w-[280px] lg:max-w-[420px] xl:max-w-[580px]">
-                                {demo.title || t("(Chưa đặt tiêu đề)")}
-                              </Link>
-                              <div className="flex items-center flex-wrap gap-2 text-[10px] md:text-xs">
-                                <span className="px-1.5 py-0.5 rounded font-semibold bg-amber-50 text-amber-600 text-[10px]">{t("Bản nháp")}</span>
-                                {demo.singer && <span className="text-stone-500 font-medium">{t("Ca sĩ")}: {demo.singer}</span>}
+                            <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                              <MarqueeTitle
+                                text={demo.title || t("(Chưa đặt tiêu đề)")}
+                                to={getAdminLink(`/edit/${demo.id}`)}
+                                className="hover:text-amber-600 font-bold text-stone-850 text-sm md:text-base"
+                              />
+                              <div className="flex items-center gap-2 text-[10px] md:text-xs min-w-0">
+                                <span className="px-1.5 py-0.5 rounded font-semibold bg-amber-50 text-amber-600 text-[10px] shrink-0">{t("Bản nháp")}</span>
+                                {demo.singer && (
+                                  <div className="md:hidden flex-1 min-w-0">
+                                    <MarqueeTitle
+                                      text={demo.singer}
+                                      className="text-stone-500 font-medium text-[10px]"
+                                    />
+                                  </div>
+                                )}
+                                <div className="hidden md:flex items-center gap-2 text-stone-500 font-medium truncate">
+                                  {demo.singer && <span>{t("Ca sĩ")}: {demo.singer}</span>}
+                                  {demo.singer && <span className="text-stone-300">•</span>}
+                                  <span>{t("Nhạc sĩ")}: {demo.composer || demo.singer || '---'}</span>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -20305,7 +20613,7 @@ function AdminDashboard() {
                   );
                 })()}</motion.div>)}
 
-                {demosSubTab === 'playlists' && (<motion.div key="playlists" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
+                {demosSubTab === 'playlists' && (<motion.div key="playlists" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="w-full">{(() => {
                   let playlistList = (data.playlists || []).filter(p => !p.deleted);
                   if (adminSearchQuery.trim()) {
                     playlistList = playlistList.filter(p => p.title.toLowerCase().includes(adminSearchQuery.trim().toLowerCase()));
@@ -20402,7 +20710,7 @@ function AdminDashboard() {
                   );
                 })()}</motion.div>)}
 
-                {demosSubTab === 'trash' && (<motion.div key="trash" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="w-full">{(() => {
+                {demosSubTab === 'trash' && (<motion.div key="trash" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="w-full">{(() => {
                   const trashedDemos = data.demos?.filter(d => d.deleted) || [];
                   const trashedPlaylists = (data.playlists || []).filter(p => p.deleted);
                   

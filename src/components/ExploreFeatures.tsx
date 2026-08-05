@@ -4,7 +4,7 @@ import { ArrowLeft, ChevronDown } from 'lucide-react';
 
 // ─── Types ──────────────────────────────────────────────────────────
 interface ExploreDevice {
-  type: 'iphone' | 'ipad' | 'macbook';
+  type: 'iphone' | 'ipad' | 'macbook' | 'frame';
   imageUrl: string;
 }
 
@@ -14,7 +14,7 @@ interface ExploreFeature {
   title: string;
   description: string;
   descriptionExtra?: string;
-  deviceType?: 'iphone' | 'ipad' | 'macbook';
+  deviceType?: 'iphone' | 'ipad' | 'macbook' | 'frame';
   imageUrl?: string;
   devices?: ExploreDevice[];
   layout: 'left' | 'right' | 'center';
@@ -155,10 +155,10 @@ import mockupMacbook from '../assets/mockups/fr-macbook.webp';
 
 function IPhoneMockup({ imageUrl }: { imageUrl: string }) {
   return (
-    <div className="relative w-full max-w-[280px] mx-auto filter drop-shadow-2xl flex items-center justify-center">
-      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '8.5%', left: '6.9%', width: '86.2%', height: '88.5%', borderRadius: '32px' }}>
+    <div className="relative w-full max-w-[400px] mx-auto filter drop-shadow-2xl flex items-center justify-center">
+      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '2.5%', left: '5%', width: '90%', height: '95%', borderRadius: '35px' }}>
         {imageUrl ? (
-          <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+          <img src={imageUrl} alt="" className="w-full h-full object-cover object-center" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-indigo-900/50 to-purple-900/50 flex items-center justify-center">
             <span className="text-white/20 text-sm">No Image</span>
@@ -172,10 +172,10 @@ function IPhoneMockup({ imageUrl }: { imageUrl: string }) {
 
 function IPadMockup({ imageUrl }: { imageUrl: string }) {
   return (
-    <div className="relative w-full max-w-[480px] mx-auto filter drop-shadow-2xl flex items-center justify-center">
-      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '5.1%', left: '3.5%', width: '93%', height: '90%', borderRadius: '12px' }}>
+    <div className="relative w-full max-w-[600px] mx-auto filter drop-shadow-2xl flex items-center justify-center">
+      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '3.5%', left: '3%', width: '94%', height: '93%', borderRadius: '16px' }}>
         {imageUrl ? (
-          <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+          <img src={imageUrl} alt="" className="w-full h-full object-cover object-center" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-indigo-900/50 to-purple-900/50 flex items-center justify-center">
             <span className="text-white/20 text-sm">No Image</span>
@@ -189,10 +189,10 @@ function IPadMockup({ imageUrl }: { imageUrl: string }) {
 
 function MacbookMockup({ imageUrl }: { imageUrl: string }) {
   return (
-    <div className="relative w-full max-w-[640px] mx-auto filter drop-shadow-2xl flex flex-col items-center justify-center">
-      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '14%', left: '11.5%', width: '77%', height: '75%', borderRadius: '4px' }}>
+    <div className="relative w-full max-w-[900px] mx-auto filter drop-shadow-2xl flex flex-col items-center justify-center">
+      <div className="absolute z-0 overflow-hidden bg-neutral-900" style={{ top: '10%', left: '11.5%', width: '77%', height: '79%', borderRadius: '4px' }}>
         {imageUrl ? (
-          <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+          <img src={imageUrl} alt="" className="w-full h-full object-cover object-center" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-indigo-900/50 to-purple-900/50 flex items-center justify-center">
             <span className="text-white/20 text-sm">No Image</span>
@@ -204,11 +204,28 @@ function MacbookMockup({ imageUrl }: { imageUrl: string }) {
   );
 }
 
-function DeviceMockup({ type, imageUrl }: { type: 'iphone' | 'ipad' | 'macbook'; imageUrl: string }) {
+function PlainFrameMockup({ imageUrl }: { imageUrl: string }) {
+  return (
+    <div className="relative w-full max-w-[800px] mx-auto filter drop-shadow-2xl flex flex-col items-center justify-center p-2 sm:p-4">
+      <div className="relative w-full overflow-hidden rounded-2xl sm:rounded-3xl border border-white/20 bg-neutral-900 shadow-2xl" style={{ aspectRatio: '16/9' }}>
+        {imageUrl ? (
+          <img src={imageUrl} alt="Frame" className="w-full h-full object-cover object-center" />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-indigo-900/50 to-purple-900/50 flex items-center justify-center">
+            <span className="text-white/20 text-sm">No Image</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DeviceMockup({ type, imageUrl }: { type: 'iphone' | 'ipad' | 'macbook' | 'frame'; imageUrl: string }) {
   switch (type) {
     case 'iphone': return <IPhoneMockup imageUrl={imageUrl} />;
     case 'ipad': return <IPadMockup imageUrl={imageUrl} />;
     case 'macbook': return <MacbookMockup imageUrl={imageUrl} />;
+    case 'frame': return <PlainFrameMockup imageUrl={imageUrl} />;
     default: return <IPhoneMockup imageUrl={imageUrl} />;
   }
 }
@@ -216,37 +233,42 @@ function DeviceMockup({ type, imageUrl }: { type: 'iphone' | 'ipad' | 'macbook';
 function DeviceComposition({ devices }: { devices: ExploreDevice[] }) {
   if (!devices || devices.length === 0) return null;
 
-  if (devices.length === 1) {
+  const sortedDevices = [...devices].sort((a, b) => {
+    const p = { frame: 4, macbook: 3, ipad: 2, iphone: 1 };
+    return p[b.type] - p[a.type];
+  });
+
+  if (sortedDevices.length === 1) {
     return (
-      <div className="explore-float-1">
-        <DeviceMockup type={devices[0].type} imageUrl={devices[0].imageUrl} />
+      <div className="explore-float-1 w-full max-w-[640px] mx-auto">
+        <DeviceMockup type={sortedDevices[0].type} imageUrl={sortedDevices[0].imageUrl} />
       </div>
     );
   }
 
-  if (devices.length === 2) {
+  if (sortedDevices.length === 2) {
     return (
       <div className="relative w-full max-w-[800px] mx-auto h-[350px] sm:h-[450px] md:h-[550px]">
-        <div className="absolute w-[80%] left-[5%] top-[5%] explore-float-1">
-          <DeviceMockup type={devices[0].type} imageUrl={devices[0].imageUrl} />
+        <div className="absolute w-[95%] left-[2.5%] top-[0%] explore-float-1 z-10" style={{ filter: 'drop-shadow(0 30px 50px rgba(0,0,0,0.4))' }}>
+          <DeviceMockup type={sortedDevices[0].type} imageUrl={sortedDevices[0].imageUrl} />
         </div>
-        <div className="absolute w-[35%] right-[5%] bottom-[10%] explore-float-2 z-20">
-          <DeviceMockup type={devices[1].type} imageUrl={devices[1].imageUrl} />
+        <div className="absolute w-[50%] md:w-[40%] right-[-10%] md:right-[-5%] top-[15%] md:top-[10%] explore-float-2 z-20" style={{ filter: 'drop-shadow(-20px 30px 40px rgba(0,0,0,0.5))' }}>
+          <DeviceMockup type={sortedDevices[1].type} imageUrl={sortedDevices[1].imageUrl} />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative w-full max-w-[900px] mx-auto h-[400px] sm:h-[500px] md:h-[650px]">
-      <div className="absolute w-[70%] left-[15%] top-[5%] explore-float-1 z-10">
-        <DeviceMockup type={devices[0].type} imageUrl={devices[0].imageUrl} />
+    <div className="relative w-full max-w-[800px] mx-auto h-[350px] sm:h-[450px] md:h-[550px]">
+      <div className="absolute w-[95%] left-[2.5%] top-[0%] explore-float-1 z-10" style={{ filter: 'drop-shadow(0 30px 50px rgba(0,0,0,0.4))' }}>
+        <DeviceMockup type={sortedDevices[0].type} imageUrl={sortedDevices[0].imageUrl} />
       </div>
-      <div className="absolute w-[50%] left-[0%] bottom-[15%] explore-float-2 z-20">
-        <DeviceMockup type={devices[1].type} imageUrl={devices[1].imageUrl} />
+      <div className="absolute w-[60%] md:w-[50%] left-[-2%] md:left-[-5%] top-[40%] md:top-[45%] explore-float-2 z-20" style={{ filter: 'drop-shadow(-10px 20px 35px rgba(0,0,0,0.4))' }}>
+        <DeviceMockup type={sortedDevices[1].type} imageUrl={sortedDevices[1].imageUrl} />
       </div>
-      <div className="absolute w-[25%] right-[5%] bottom-[5%] explore-float-3 z-30">
-        <DeviceMockup type={devices[2].type} imageUrl={devices[2].imageUrl} />
+      <div className="absolute w-[45%] md:w-[38%] right-[-15%] md:right-[-10%] top-[15%] md:top-[10%] explore-float-3 z-30" style={{ filter: 'drop-shadow(-20px 30px 40px rgba(0,0,0,0.5))' }}>
+        <DeviceMockup type={sortedDevices[2].type} imageUrl={sortedDevices[2].imageUrl} />
       </div>
     </div>
   );
@@ -703,7 +725,8 @@ export default function ExploreFeatures() {
 
         /* ── Device Side ── */
         .explore-device {
-          flex: 0 0 auto;
+          flex: 1;
+          min-width: 0;
           display: flex;
           align-items: center;
           justify-content: center;

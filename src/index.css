@@ -689,6 +689,7 @@ select,
 textarea {
   box-sizing: border-box !important;
   min-width: 0 !important; /* Prevents input from squeezing and clipping inside flex wrappers */
+  transition: border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 /* Fallback padding protection for any text inputs missing left padding */
@@ -848,13 +849,13 @@ input[name="title"]:not([class*="pr-"]) {
 }
 
 @keyframes marquee-pingpong {
-  0%, 12% { transform: translateX(0%); }
-  45%, 58% { transform: translateX(calc(-100% + 280px)); }
-  90%, 100% { transform: translateX(0%); }
+  0%, 20% { transform: translateX(0); }
+  50%, 70% { transform: translateX(var(--marquee-shift, 0px)); }
+  100% { transform: translateX(0); }
 }
 
 .animate-marquee-pingpong {
-  animation: marquee-pingpong 10s ease-in-out infinite;
+  animation: marquee-pingpong 6s ease-in-out infinite;
 }
 
 @keyframes window-float {

@@ -28,6 +28,7 @@ export interface DemoSong {
   singer?: string;
   audioUrl: string;
   coverUrl?: string;
+  thumbUrl?: string;
   globalCoverUrl?: string;
   backgroundUrl?: string;
   lyrics: string;

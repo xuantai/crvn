@@ -88,7 +88,7 @@ async function uploadToR2(key: string, body: Buffer, contentType: string): Promi
     }));
 
     const timeoutPromise = new Promise<null>((_, reject) =>
-      setTimeout(() => reject(new Error('R2 Upload Timeout')), 5000)
+      setTimeout(() => reject(new Error('R2 Upload Timeout')), 30000)
     );
 
     await Promise.race([uploadPromise, timeoutPromise]);
@@ -286,6 +286,103 @@ async function syncArtistsCustomDomains() {
   }
 }
 
+async function autoBackfillThumbnails() {
+  console.log("[Thumbnails] Starting automatic thumbnail backfill for existing songs...");
+  let count = 0;
+  for (const art of artists) {
+    try {
+      const file = path.join(process.cwd(), `data_${art.username}.json`);
+      if (!fsSync.existsSync(file)) continue;
+
+      const text = fsSync.readFileSync(file, 'utf-8');
+      const artData = JSON.parse(text);
+      if (!artData || !Array.isArray(artData.demos)) continue;
+
+      let modified = false;
+      for (const song of artData.demos) {
+        const needsThumb = !song.thumbUrl || song.thumbUrl === song.coverUrl || !song.thumbUrl.includes('-thumb');
+        if (song.coverUrl && needsThumb) {
+          try {
+            let coverBuffer: Buffer | null = null;
+            let isPng = song.coverUrl.toLowerCase().endsWith('.png');
+
+            let coverPath = '';
+            if (song.coverUrl.includes('/uploads/')) {
+              const relPath = song.coverUrl.substring(song.coverUrl.indexOf('/uploads/'));
+              coverPath = path.join(process.cwd(), 'public', relPath);
+            }
+
+            if (coverPath && fsSync.existsSync(coverPath)) {
+              coverBuffer = await fs.readFile(coverPath);
+              isPng = coverPath.toLowerCase().endsWith('.png');
+            } else if (song.coverUrl.startsWith('http')) {
+              try {
+                const resp = await fetch(song.coverUrl);
+                if (resp.ok) {
+                  const arrayBuf = await resp.arrayBuffer();
+                  coverBuffer = Buffer.from(arrayBuf);
+                  const contentType = resp.headers.get('content-type') || '';
+                  isPng = contentType.includes('png') || song.coverUrl.toLowerCase().endsWith('.png');
+                }
+              } catch (fetchErr: any) {
+                console.error(`[Thumbnails] Could not fetch ${song.coverUrl}:`, fetchErr.message || fetchErr);
+              }
+            }
+
+            if (coverBuffer) {
+              const ext = isPng ? 'png' : 'jpg';
+              const urlParts = song.coverUrl.split('/');
+              const rawFilename = urlParts[urlParts.length - 1].split('?')[0];
+              const baseName = rawFilename.includes('.') ? rawFilename.substring(0, rawFilename.lastIndexOf('.')) : rawFilename;
+              const thumbFilename = `${baseName}-thumb.${ext}`;
+
+              const thumbDir = path.join(process.cwd(), 'public', 'uploads', art.username);
+              await fs.mkdir(thumbDir, { recursive: true }).catch(() => {});
+              const thumbPath = path.join(thumbDir, thumbFilename);
+              const relThumbUrl = `/uploads/${art.username}/${thumbFilename}`;
+
+              let sharpThumb = sharp(coverBuffer).resize({ width: 400, withoutEnlargement: true });
+              if (isPng) {
+                sharpThumb = sharpThumb.png({ palette: true, quality: 80 });
+              } else {
+                sharpThumb = sharpThumb.jpeg({ quality: 75, progressive: true });
+              }
+              const thumbBuffer = await sharpThumb.toBuffer();
+              await fs.writeFile(thumbPath, thumbBuffer).catch(() => {});
+
+              const r2ThumbUrl = await uploadToR2(`uploads/${art.username}/${thumbFilename}`, thumbBuffer, isPng ? 'image/png' : 'image/jpeg');
+
+              song.thumbUrl = r2ThumbUrl || relThumbUrl;
+              modified = true;
+              count++;
+              console.log(`[Thumbnails] Generated thumbnail for song ${song.id} (${song.title}): ${song.thumbUrl}`);
+            }
+          } catch (err: any) {
+            console.error(`[Thumbnails] Error processing song ${song.id}:`, err.message || err);
+          }
+        }
+      }
+
+      if (modified) {
+        await fs.writeFile(file, JSON.stringify(artData, null, 2), 'utf-8');
+        console.log(`[Thumbnails] Saved updated data_${art.username}.json`);
+        const artistDocRef = getFirestoreRefForArtist(art);
+        if (artistDocRef && !isFirestoreDisabled && landingConfig.cloudSyncEnabled !== false) {
+          try {
+            await setDoc(artistDocRef, JSON.parse(JSON.stringify(artData)));
+            console.log(`[Thumbnails] Saved updated data_${art.username}.json to Firestore!`);
+          } catch (fsErr: any) {
+            console.error(`[Thumbnails] Firestore sync error for ${art.username}:`, fsErr);
+          }
+        }
+      }
+    } catch (err: any) {
+      console.error(`[Thumbnails] Error backfilling for ${art.username}:`, err.message || err);
+    }
+  }
+  console.log(`[Thumbnails] Backfill completed. Processed ${count} new thumbnails.`);
+}
+
 async function loadArtists() {
   if (!isFirestoreDisabled && landingConfig.cloudSyncEnabled !== false) {
     try {
@@ -327,6 +424,7 @@ async function loadArtists() {
         await fs.writeFile(ARTISTS_FILE, JSON.stringify(artists, null, 2), 'utf-8');
         if (changed) await setDoc(masterDoc, { artists });
         await syncArtistsCustomDomains();
+        await autoBackfillThumbnails();
         await loadSentEmails();
         return artists;
       }
@@ -420,6 +518,7 @@ async function loadArtists() {
     } catch (e) {}
   }
   await syncArtistsCustomDomains();
+  await autoBackfillThumbnails();
   await loadSentEmails();
   return artists;
 }
@@ -794,25 +893,42 @@ async function uploadLocalToCloud(localPath: string, filename: string, mimetype:
       const isPng = mimetype === 'image/png' || filename.toLowerCase().endsWith('.png');
       const ext = isPng ? 'png' : 'jpg';
       const baseName = filename.includes('.') ? filename.substring(0, filename.lastIndexOf('.')) : filename;
-      const optimizedFilename = `${baseName}-${Date.now()}.${ext}`;
+      const timestamp = Date.now();
+      const optimizedFilename = `${baseName}-${timestamp}.${ext}`;
+      const thumbFilename = `${baseName}-${timestamp}-thumb.${ext}`;
+
       const optimizedDir = path.join(UPLOADS_DIR, artistId);
       await fs.mkdir(optimizedDir, { recursive: true }).catch(() => {});
       const optimizedPath = path.join(optimizedDir, optimizedFilename);
+      const thumbPath = path.join(optimizedDir, thumbFilename);
 
-      let sharpInstance = sharp(localPath).resize({ width: 1600, withoutEnlargement: true });
+      let sharpInstance = sharp(localPath).resize({ width: 1200, withoutEnlargement: true });
       if (isPng) {
         sharpInstance = sharpInstance.png({ palette: true, quality: 85 });
       } else {
         sharpInstance = sharpInstance.jpeg({ quality: 80, progressive: true });
       }
       await sharpInstance.toFile(optimizedPath);
+
+      let sharpThumb = sharp(localPath).resize({ width: 400, withoutEnlargement: true });
+      if (isPng) {
+        sharpThumb = sharpThumb.png({ palette: true, quality: 80 });
+      } else {
+        sharpThumb = sharpThumb.jpeg({ quality: 75, progressive: true });
+      }
+      await sharpThumb.toFile(thumbPath);
+
       await fs.unlink(localPath).catch(() => {});
 
       const optLocalUrl = `/uploads/${artistId}/${optimizedFilename}`;
+      const thumbLocalUrl = `/uploads/${artistId}/${thumbFilename}`;
+
       const fileBuffer = await fs.readFile(optimizedPath);
       const r2Url = await uploadToR2(`uploads/${artistId}/${optimizedFilename}`, fileBuffer, isPng ? 'image/png' : 'image/jpeg');
 
-      // Return Cloudflare R2 URL if available, otherwise return local server URL. Keep file on server as backup!
+      const thumbBuffer = await fs.readFile(thumbPath);
+      const r2ThumbUrl = await uploadToR2(`uploads/${artistId}/${thumbFilename}`, thumbBuffer, isPng ? 'image/png' : 'image/jpeg');
+
       return r2Url || optLocalUrl;
     } catch (error) {
       console.error("Lỗi nén/upload image in uploadLocalToCloud:", error);
@@ -1107,6 +1223,17 @@ async function loadData(explicitUsername?: string) {
         if (!data.playlists) data.playlists = [];
         if (!data.defaultLanguage) data.defaultLanguage = artist.defaultLanguage || 'vi';
         
+        data.demos.forEach((d: any) => {
+          if (d.coverUrl && (!d.thumbUrl || d.thumbUrl === d.coverUrl || !d.thumbUrl.includes('-thumb'))) {
+            const lastDot = d.coverUrl.lastIndexOf('.');
+            if (lastDot > 0 && d.coverUrl.includes('/uploads/') && !d.coverUrl.includes('-thumb')) {
+              d.thumbUrl = `${d.coverUrl.substring(0, lastDot)}-thumb${d.coverUrl.substring(lastDot)}`;
+            } else {
+              d.thumbUrl = d.coverUrl;
+            }
+          }
+        });
+        
         if (data.adminPassword) {
           currentAdminPasswordLocal = data.adminPassword;
         } else {
@@ -1314,6 +1441,7 @@ async function saveData(usernameOrData: any, data?: any) {
 
 async function startServer() {
   await loadArtists();
+  await autoBackfillThumbnails();
   await loadLandingConfig();
   await ensureUploadsDir();
   const app = express();
@@ -1693,10 +1821,16 @@ async function startServer() {
   const formatUrl = (url: string | undefined, baseUrl: string | undefined) => {
     if (!url) return url;
     
+    if (url.includes('%2f') || url.includes('%2F')) {
+      try { url = decodeURIComponent(url); } catch (e) {}
+    }
+    
     // Always prefer relative URLs for uploads so that they work relative to the current site environment
     const uploadsIdx = url.indexOf('uploads/');
     if (uploadsIdx !== -1) {
-      return '/' + url.substring(uploadsIdx);
+      let relPath = url.substring(uploadsIdx);
+      relPath = relPath.replace(/^uploads\/[^/]+\/uploads\//, 'uploads/');
+      return '/' + relPath;
     }
     
     // Normalize baseUrl if provided
@@ -1751,9 +1885,18 @@ async function startServer() {
     cloned.homeCoverUrl = formatUrl(cloned.homeCoverUrl, cloned.globalBaseUrl);
     cloned.faviconUrl = formatUrl(cloned.faviconUrl, cloned.globalBaseUrl);
     cloned.ogImageUrl = formatUrl(cloned.ogImageUrl, cloned.globalBaseUrl);
+    cloned.avatarUrl = formatUrl(cloned.avatarUrl, cloned.globalBaseUrl);
+    if (cloned.aboutMe) {
+      cloned.aboutMe = {
+        ...cloned.aboutMe,
+        avatarUrl: formatUrl(cloned.aboutMe.avatarUrl, cloned.globalBaseUrl)
+      };
+    }
     
-    if (cloned.slideshowImages) {
-       cloned.slideshowImages = cloned.slideshowImages.map((s: string) => formatUrl(s, cloned.globalBaseUrl));
+    if (cloned.slideshowImages && Array.isArray(cloned.slideshowImages)) {
+       cloned.slideshowImages = cloned.slideshowImages
+         .filter((s: string) => typeof s === 'string' && s.trim().length > 0)
+         .map((s: string) => formatUrl(s, cloned.globalBaseUrl));
     }
     
     if (cloned.playlists) {
@@ -1768,6 +1911,7 @@ async function startServer() {
         ...d,
         audioUrl: formatUrl(d.audioUrl, cloned.globalBaseUrl),
         coverUrl: formatUrl(d.coverUrl, cloned.globalBaseUrl),
+        thumbUrl: formatUrl(d.thumbUrl, cloned.globalBaseUrl),
         backgroundUrl: formatUrl(d.backgroundUrl, cloned.globalBaseUrl)
       }));
     }
@@ -2622,24 +2766,56 @@ function generateCaptchaSvg(text: string) {
       if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
       }
-      const fileBuffer = await fs.readFile(req.file.path);
+      const isVideo = req.file.mimetype.startsWith('video/');
       const isPng = req.file.mimetype === 'image/png';
-      const ext = isPng ? '.png' : '.jpg';
-      const optimizedFilename = `explore_${Date.now()}${ext}`;
       
-      // Try optimize with sharp
-      let finalBuffer = fileBuffer;
-      if (sharp) {
-        try {
-          if (isPng) {
-            finalBuffer = await sharp(fileBuffer).resize({ width: 1600, withoutEnlargement: true }).png({ quality: 85 }).toBuffer();
-          } else {
-            finalBuffer = await sharp(fileBuffer).resize({ width: 1600, withoutEnlargement: true }).jpeg({ quality: 85 }).toBuffer();
-          }
-        } catch (e) { /* fallback to original */ }
+      let finalBuffer: Buffer;
+      let contentType = isPng ? 'image/png' : 'image/jpeg';
+      let optimizedFilename = `explore_${Date.now()}${isPng ? '.png' : '.jpg'}`;
+
+      if (isVideo) {
+        if (!ffmpeg || !ffmpegInstaller) {
+          try { await fs.unlink(req.file.path); } catch (e) {}
+          return res.status(500).json({ error: 'Video conversion not supported on this server' });
+        }
+        ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+        
+        const videoPath = req.file.path;
+        const gifPath = `${videoPath}.gif`;
+        optimizedFilename = `explore_${Date.now()}.gif`;
+        contentType = 'image/gif';
+
+        await new Promise((resolve, reject) => {
+          ffmpeg(videoPath)
+            .outputOptions([
+              '-t 5',             // Max 5 seconds
+              '-loop 0',          // Infinite loop
+            ])
+            .complexFilter([
+              'fps=15,scale=800:-1:flags=lanczos[x];[x]split[x1][x2];[x1]palettegen[p];[x2][p]paletteuse'
+            ])
+            .save(gifPath)
+            .on('end', () => resolve(true))
+            .on('error', (err: any) => reject(err));
+        });
+
+        finalBuffer = await fs.readFile(gifPath);
+        try { await fs.unlink(gifPath); } catch (e) {}
+      } else {
+        const fileBuffer = await fs.readFile(req.file.path);
+        finalBuffer = fileBuffer;
+        if (sharp) {
+          try {
+            if (isPng) {
+              finalBuffer = await sharp(fileBuffer).resize({ width: 1600, withoutEnlargement: true }).png({ quality: 85 }).toBuffer();
+            } else {
+              finalBuffer = await sharp(fileBuffer).resize({ width: 1600, withoutEnlargement: true }).jpeg({ quality: 85 }).toBuffer();
+            }
+          } catch (e) { /* fallback to original */ }
+        }
       }
       
-      const r2Url = await uploadToR2(`uploads/explore/${optimizedFilename}`, finalBuffer, isPng ? 'image/png' : 'image/jpeg');
+      const r2Url = await uploadToR2(`uploads/explore/${optimizedFilename}`, finalBuffer, contentType);
       
       // Cleanup temp file
       try { await fs.unlink(req.file.path); } catch (e) {}
@@ -5172,20 +5348,48 @@ ${JSON.stringify(geminiInput, null, 2)}`;
         try {
           const text = await fetchTextNative(fetchUrl);
           if (text) {
-            const match = text.match(/var ytInitialData = (\{.*?\});<\/script>/);
-            if (match) {
-              const data = JSON.parse(match[1]);
-              JSON.stringify(data, (key, value) => {
-                if ((key === 'playlistVideoRenderer' || key === 'gridVideoRenderer') && value.videoId && !ids.has(value.videoId)) {
-                  ids.add(value.videoId);
-                  unique.push({
-                    title: value.title?.runs?.[0]?.text || value.title?.simpleText || 'Unknown',
-                    videoId: value.videoId,
-                    youtubeUrl: `https://www.youtube.com/watch?v=${value.videoId}`
-                  });
+            const idx = text.indexOf('var ytInitialData =');
+            if (idx !== -1) {
+              const jsonStr = text.substring(idx + 'var ytInitialData ='.length, text.indexOf(';</script>', idx));
+              const data = JSON.parse(jsonStr);
+
+              function scanNode(node: any) {
+                if (!node || typeof node !== 'object') return;
+                if (node.lockupViewModel) {
+                  const l = node.lockupViewModel;
+                  const vId = l.contentId;
+                  const title = l.metadata?.lockupMetadataViewModel?.title?.content || 'Video YouTube';
+                  if (vId && !ids.has(vId)) {
+                    ids.add(vId);
+                    unique.push({ title, videoId: vId, youtubeUrl: `https://www.youtube.com/watch?v=${vId}` });
+                  }
+                } else if (node.playlistVideoRenderer) {
+                  const item = node.playlistVideoRenderer;
+                  const vId = item.videoId;
+                  const title = item.title?.runs?.[0]?.text || item.title?.simpleText || 'Video YouTube';
+                  if (vId && !ids.has(vId)) {
+                    ids.add(vId);
+                    unique.push({ title, videoId: vId, youtubeUrl: `https://www.youtube.com/watch?v=${vId}` });
+                  }
+                } else if (node.gridVideoRenderer) {
+                  const item = node.gridVideoRenderer;
+                  const vId = item.videoId;
+                  const title = item.title?.runs?.[0]?.text || item.title?.simpleText || 'Video YouTube';
+                  if (vId && !ids.has(vId)) {
+                    ids.add(vId);
+                    unique.push({ title, videoId: vId, youtubeUrl: `https://www.youtube.com/watch?v=${vId}` });
+                  }
                 }
-                return value;
-              });
+                if (Array.isArray(node)) {
+                  for (const el of node) scanNode(el);
+                } else {
+                  for (const k of Object.keys(node)) {
+                    scanNode(node[k]);
+                  }
+                }
+              }
+
+              scanNode(data);
             }
           }
         } catch (e) {}
@@ -6561,38 +6765,61 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         try {
            const isPng = req.file.mimetype === 'image/png' || req.file.originalname.toLowerCase().endsWith('.png');
            const ext = isPng ? 'png' : 'jpg';
-           const optimizedFilename = `${req.file.filename.split('.')[0]}-${Date.now()}.${ext}`;
+           const baseName = req.file.filename.split('.')[0];
+           const timestamp = Date.now();
+           const optimizedFilename = `${baseName}-${timestamp}.${ext}`;
+           const thumbFilename = `${baseName}-${timestamp}-thumb.${ext}`;
+
            const optimizedPath = path.join(process.cwd(), 'public', 'uploads', artistId, optimizedFilename);
+           const thumbPath = path.join(process.cwd(), 'public', 'uploads', artistId, thumbFilename);
            
            // Ensure directory exists
            await fs.mkdir(path.dirname(optimizedPath), { recursive: true }).catch(() => {});
 
-           let sharpInstance = sharp(req.file.path).resize({ width: 1600, withoutEnlargement: true });
+           // Cover image (1200px)
+           let sharpInstance = sharp(req.file.path).resize({ width: 1200, withoutEnlargement: true });
            if (isPng) {
              sharpInstance = sharpInstance.png({ palette: true, quality: 85 });
            } else {
              sharpInstance = sharpInstance.jpeg({ quality: 80, progressive: true });
            }
            await sharpInstance.toFile(optimizedPath);
+
+           // Thumbnail image (400px)
+           let sharpThumb = sharp(req.file.path).resize({ width: 400, withoutEnlargement: true });
+           if (isPng) {
+             sharpThumb = sharpThumb.png({ palette: true, quality: 80 });
+           } else {
+             sharpThumb = sharpThumb.jpeg({ quality: 75, progressive: true });
+           }
+           await sharpThumb.toFile(thumbPath);
            
            // Delete raw un-optimized temporary upload file
            await fs.unlink(req.file.path).catch(() => {});
            
            const localUrl = `/uploads/${artistId}/${optimizedFilename}`;
+           const localThumbUrl = `/uploads/${artistId}/${thumbFilename}`;
+
            const fileBuffer = await fs.readFile(optimizedPath);
            const r2Url = await uploadToR2(`uploads/${artistId}/${optimizedFilename}`, fileBuffer, isPng ? 'image/png' : 'image/jpeg');
 
-           // Always keep optimized file locally on server as backup!
-           res.json({ url: r2Url || localUrl });
+           const thumbBuffer = await fs.readFile(thumbPath);
+           const r2ThumbUrl = await uploadToR2(`uploads/${artistId}/${thumbFilename}`, thumbBuffer, isPng ? 'image/png' : 'image/jpeg');
+
+           const finalUrl = r2Url || localUrl;
+           const finalThumbUrl = r2ThumbUrl || localThumbUrl;
+
+           res.json({ url: finalUrl, thumbUrl: finalThumbUrl });
         } catch (error) {
            console.error("Lỗi nén ảnh:", error);
            const localUrl = `/uploads/${artistId}/${req.file.filename}`;
            try {
               const fileBuffer = await fs.readFile(req.file.path);
               const r2Url = await uploadToR2(`uploads/${artistId}/${req.file.filename}`, fileBuffer, req.file.mimetype);
-              res.json({ url: r2Url || localUrl });
+              const finalUrl = r2Url || localUrl;
+              res.json({ url: finalUrl, thumbUrl: finalUrl });
            } catch (fallbackErr) {
-              res.json({ url: localUrl });
+              res.json({ url: localUrl, thumbUrl: localUrl });
            }
         }
       } else {

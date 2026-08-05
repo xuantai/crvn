@@ -47,8 +47,31 @@ async function main() {
     });
   });
 
+  const downloadFile = (remotePath, localPath) => new Promise((resolve, reject) => {
+    sftp.fastGet(remotePath, localPath, (err) => {
+      if (err) return resolve(); // ignore if file doesn't exist remotely yet
+      console.log(`  📥 Downloaded ${path.basename(localPath)} from live VPS`);
+      resolve();
+    });
+  });
+
+  // Step 0: Sync live data & databases from VPS to local first to preserve user edits!
+  console.log('=== Step 0: Pulling live data & SQLite DB from VPS to prevent overwriting user edits ===');
+  try {
+    const remoteFiles = await new Promise((resolve, reject) => {
+      sftp.readdir(REMOTE_DIR, (err, list) => err ? reject(err) : resolve(list));
+    });
+    for (const item of remoteFiles) {
+      if (item.filename.endsWith('.json') || item.filename.endsWith('.db')) {
+        await downloadFile(`${REMOTE_DIR}/${item.filename}`, path.join(ROOT, item.filename));
+      }
+    }
+  } catch (e) {
+    console.error('Warning syncing live data:', e.message);
+  }
+
   // Clean remote dist directory first to purge old assets
-  console.log('=== Cleaning remote dist directory ===');
+  console.log('\n=== Cleaning remote dist directory ===');
   await execCmd(`rm -rf ${REMOTE_DIR}/dist && mkdir -p ${REMOTE_DIR}/dist/assets`);
 
   // 1. Upload dist/index.html

@@ -1,42 +1,42 @@
 [
   {
-    "songId": "1783163656590",
-    "description": "xóa đê",
+    "id": "6224169cf393da9a",
+    "reporterArtist": "mxt",
     "messages": [
       {
-        "id": "0636d88750d261c2",
-        "createdAt": "2026-07-05T19:44:19.993Z",
-        "text": "xóa đê",
         "sender": "reporter",
-        "senderName": "Mai Xuân Thứ"
+        "text": "xóa đê",
+        "createdAt": "2026-07-05T19:44:19.993Z",
+        "senderName": "Mai Xuân Thứ",
+        "id": "0636d88750d261c2"
       },
       {
-        "senderName": "Hệ thống",
-        "sender": "admin",
         "createdAt": "2026-07-05T19:45:12.391Z",
-        "text": "Admin hệ thống đã ra quyết định GỠ BÀI HÁT này khỏi kênh của acxuantai."
+        "text": "Admin hệ thống đã ra quyết định GỠ BÀI HÁT này khỏi kênh của acxuantai.",
+        "sender": "admin",
+        "senderName": "Hệ thống"
       },
       {
-        "createdAt": "2026-07-05T20:56:58.691Z",
         "id": "869e8ea9a57f0ed7",
-        "senderName": "Hệ thống",
         "text": "Admin hệ thống đã mở lại ticket này.",
+        "createdAt": "2026-07-05T20:56:58.691Z",
+        "senderName": "Hệ thống",
         "sender": "admin"
       },
       {
-        "senderName": "Hệ thống",
         "createdAt": "2026-07-08T18:32:34.688Z",
-        "id": "dbe7af2ba2c8d7e2",
         "sender": "admin",
+        "id": "dbe7af2ba2c8d7e2",
+        "senderName": "Hệ thống",
         "text": "Yêu cầu đã được đóng và giải quyết bởi Admin hệ thống."
       }
     ],
+    "songId": "1783163656590",
+    "createdAt": "2026-07-05T19:44:19.993Z",
+    "songTitle": "Muốn Nói Với Em",
     "sourceArtist": "acxuantai",
     "status": "resolved",
-    "id": "6224169cf393da9a",
-    "songTitle": "Muốn Nói Với Em",
-    "createdAt": "2026-07-05T19:44:19.993Z",
-    "reporterArtist": "mxt",
-    "type": "remove"
+    "type": "remove",
+    "description": "xóa đê"
   }
 ]
