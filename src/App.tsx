@@ -17418,7 +17418,7 @@ function AdminDashboard() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const initialUrlState = getAdminTabAndSubtabFromPath(window.location.pathname, window.location.search, window.location.hash);
+  const initialUrlState = getAdminTabAndSubtabFromPath(location.pathname, location.search, location.hash);
   const [activeTab, setActiveTab] = useState<'demos'|'playlists'|'profile'|'about'|'bio'|'menus'|'socials'|'security'|'templates'|'database'|'reposts'|'tickets'|'layout'|'vouchers'|'admin_theme'>(
     initialUrlState.tab as any
   );
@@ -19407,12 +19407,7 @@ function AdminDashboard() {
                     title={t("Kho Nhạc")}
                   >
                     {isDemosActive && (
-                      <motion.span
-                        layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
-                        style={{ transition: 'none' }}
-                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
-                      />
+                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
                     )}
                     <motion.div
                       animate={isDemosActive ? {
@@ -19449,12 +19444,7 @@ function AdminDashboard() {
                     title={t("Playlist")}
                   >
                     {isPlaylistActive && (
-                      <motion.span
-                        layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
-                        style={{ transition: 'none' }}
-                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
-                      />
+                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
                     )}
                     <motion.div
                       animate={isPlaylistActive ? {
@@ -19491,12 +19481,7 @@ function AdminDashboard() {
                     title={t("Chủ Đề")}
                   >
                     {isTemplatesActive && (
-                      <motion.span
-                        layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
-                        style={{ transition: 'none' }}
-                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
-                      />
+                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
                     )}
                     <motion.div
                       animate={isTemplatesActive ? {
@@ -19533,12 +19518,7 @@ function AdminDashboard() {
                     title={`${t("Đăng lại")} (${otherSongs.length})`}
                   >
                     {isRepostsActive && (
-                      <motion.span
-                        layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
-                        style={{ transition: 'none' }}
-                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
-                      />
+                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
                     )}
                     <motion.div
                       animate={isRepostsActive ? {
@@ -19586,12 +19566,7 @@ function AdminDashboard() {
                     title={t("Trang Chủ")}
                   >
                     {isProfileActive && (
-                      <motion.span
-                        layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
-                        style={{ transition: 'none' }}
-                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
-                      />
+                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
                     )}
                     <motion.div
                       animate={isProfileActive ? {
@@ -19629,12 +19604,7 @@ function AdminDashboard() {
                     title={t("Bố Cục")}
                   >
                     {isLayoutActive && (
-                      <motion.span
-                        layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
-                        style={{ transition: 'none' }}
-                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
-                      />
+                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
                     )}
                     <motion.div
                       animate={isLayoutActive ? {
@@ -19668,12 +19638,7 @@ function AdminDashboard() {
                     title={t("Về Tôi")}
                   >
                     {isAboutActive && (
-                      <motion.span
-                        layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
-                        style={{ transition: 'none' }}
-                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
-                      />
+                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
                     )}
                     <motion.div
                       animate={isAboutActive ? {
@@ -19711,12 +19676,7 @@ function AdminDashboard() {
                     title={t("Tiểu Sử")}
                   >
                     {isBioActive && (
-                      <motion.span
-                        layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
-                        style={{ transition: 'none' }}
-                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
-                      />
+                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
                     )}
                     <motion.div
                       animate={isBioActive ? {
@@ -19754,12 +19714,7 @@ function AdminDashboard() {
                     title={t("Danh Mục")}
                   >
                     {isMenusActive && (
-                      <motion.span
-                        layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
-                        style={{ transition: 'none' }}
-                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
-                      />
+                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
                     )}
                     <motion.div
                       animate={isMenusActive ? {
@@ -19799,12 +19754,7 @@ function AdminDashboard() {
                     title={t("Hộp thư")}
                   >
                     {isTicketsActive && (
-                      <motion.span
-                        layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
-                        style={{ transition: 'none' }}
-                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
-                      />
+                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
                     )}
                     <motion.div
                       animate={isTicketsActive ? {
@@ -19853,11 +19803,7 @@ function AdminDashboard() {
                       title={t("Cơ sở dữ liệu")}
                     >
                       {activeTab === 'database' && (
-                        <motion.span
-                          layoutId="adminSidebarActiveBg"
-                          className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                          transition={{ type: 'tween', ease: 'easeInOut', duration: 0.32 }}
-                        />
+                        <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
                       )}
                       <motion.div
                         animate={activeTab === 'database' ? {
@@ -19889,12 +19835,7 @@ function AdminDashboard() {
                     title={t("Giao Diện")}
                   >
                     {activeTab === 'admin_theme' && (
-                      <motion.span
-                        layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
-                        style={{ transition: 'none' }}
-                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
-                      />
+                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
                     )}
                     <motion.div
                       animate={activeTab === 'admin_theme' ? {
@@ -19923,12 +19864,7 @@ function AdminDashboard() {
                     title={t("Voucher")}
                   >
                     {activeTab === 'vouchers' && (
-                      <motion.span
-                        layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
-                        style={{ transition: 'none' }}
-                        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
-                      />
+                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
                     )}
                     <motion.div
                         className="relative z-10 flex items-center justify-center"
@@ -19987,11 +19923,7 @@ function AdminDashboard() {
                       }`}
                     >
                       {demosSubTab === 'released' && (
-                        <motion.span
-                          layoutId="adminSubTabActiveBg"
-                          className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
-                          transition={{ type: 'tween', ease: 'easeInOut', duration: 0.32 }}
-                        />
+                        <span className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0" />
                       )}
                       <Music className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 relative z-10 ${demosSubTab === 'released' ? 'hidden sm:block' : ''}`} />
                       <span className={`relative z-10 ${demosSubTab === 'released' ? 'inline' : 'hidden sm:inline'}`}>{t("Đã phát hành")}</span>
@@ -20010,11 +19942,7 @@ function AdminDashboard() {
                       }`}
                     >
                       {demosSubTab === 'demos' && (
-                        <motion.span
-                          layoutId="adminSubTabActiveBg"
-                          className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
-                          transition={{ type: 'tween', ease: 'easeInOut', duration: 0.32 }}
-                        />
+                        <span className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0" />
                       )}
                       <Disc3 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-500 relative z-10 ${demosSubTab === 'demos' ? 'hidden sm:block' : ''}`} />
                       <span className={`relative z-10 ${demosSubTab === 'demos' ? 'inline' : 'hidden sm:inline'}`}>{t("Demo")}</span>
@@ -20033,11 +19961,7 @@ function AdminDashboard() {
                       }`}
                     >
                       {demosSubTab === 'drafts' && (
-                        <motion.span
-                          layoutId="adminSubTabActiveBg"
-                          className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
-                          transition={{ type: 'tween', ease: 'easeInOut', duration: 0.32 }}
-                        />
+                        <span className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0" />
                       )}
                       <FileText className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 relative z-10 ${demosSubTab === 'drafts' ? 'hidden sm:block' : ''}`} />
                       <span className={`relative z-10 ${demosSubTab === 'drafts' ? 'inline' : 'hidden sm:inline'}`}>{t("Bản nháp")}</span>
@@ -20056,11 +19980,7 @@ function AdminDashboard() {
                       }`}
                     >
                       {demosSubTab === 'landing_pages' && (
-                        <motion.span
-                          layoutId="adminSubTabActiveBg"
-                          className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
-                          transition={{ type: 'tween', ease: 'easeInOut', duration: 0.32 }}
-                        />
+                        <span className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0" />
                       )}
                       <ExternalLink className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-500 relative z-10 ${demosSubTab === 'landing_pages' ? 'hidden sm:block' : ''}`} />
                       <span className={`relative z-10 ${demosSubTab === 'landing_pages' ? 'inline' : 'hidden sm:inline'}`}>{t("Landing Page")}</span>
@@ -20079,11 +19999,7 @@ function AdminDashboard() {
                       }`}
                     >
                       {demosSubTab === 'brands' && (
-                        <motion.span
-                          layoutId="adminSubTabActiveBg"
-                          className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
-                          transition={{ type: 'tween', ease: 'easeInOut', duration: 0.32 }}
-                        />
+                        <span className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0" />
                       )}
                       <BadgeCheck className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-500 relative z-10 ${demosSubTab === 'brands' ? 'hidden sm:block' : ''}`} />
                       <span className={`relative z-10 ${demosSubTab === 'brands' ? 'inline' : 'hidden sm:inline'}`}>{t("Nhạc Thương Hiệu")}</span>
