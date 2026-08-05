@@ -697,7 +697,7 @@ function DreamySongCard({
     };
   }, [demo.id]);
 
-  const coverUrl = demo.coverUrl || demo.image || data?.slideshowImages?.[0] || data?.avatarUrl || '';
+  const coverUrl = demo.thumbUrl || demo.coverUrl || demo.image || data?.slideshowImages?.[0] || data?.avatarUrl || '';
   const songYear = demo.releaseYear || demo.year || (demo.releaseDate ? new Date(demo.releaseDate).getFullYear() : '2024');
 
   // Safely extract achievement string
@@ -1232,7 +1232,12 @@ function MusicianSongCard({
   }, []);
 
   const audioUrl = demo.audioUrl || demo.backupAudioUrl || demo.audio_url || '';
-  const getSongCoverUrl = (songUrl?: string) => songUrl || data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
+  const getSongCoverUrl = (songUrlOrObj?: string | any, thumbUrl?: string) => {
+    if (typeof songUrlOrObj === 'object' && songUrlOrObj !== null) {
+      return songUrlOrObj.thumbUrl || songUrlOrObj.coverUrl || songUrlOrObj.imageUrl || data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
+    }
+    return thumbUrl || songUrlOrObj || data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
+  };
 
   const isTouchMobile = typeof window !== 'undefined' && (
     (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
@@ -1450,7 +1455,7 @@ function MusicianSongCard({
   let rawArtistStr = demo.singers || demo.singer || demo.artist || data?.artistName || 'Nghệ Sĩ';
   const singersList = String(rawArtistStr).split(/,\s*|\s+&\s+|\s+ft\.?\s+|\s+feat\.?\s+/i).filter(Boolean);
 
-  let coverUrl = getSongCoverUrl(demo.coverUrl) || getSongCoverUrl(demo.cover_url) || getSongCoverUrl(demo.image) || '';
+  let coverUrl = demo.thumbUrl || getSongCoverUrl(demo.coverUrl) || getSongCoverUrl(demo.cover_url) || getSongCoverUrl(demo.image) || '';
   if (!coverUrl && data?.slideshowImages && data.slideshowImages.length > 0) {
     const hash = Array.from(String(demo.id || demo.title || 'song')).reduce((sum: number, char: any) => sum + char.charCodeAt(0), 0);
     coverUrl = data.slideshowImages[hash % data.slideshowImages.length];
@@ -10055,7 +10060,12 @@ function Home() {
   const [toast, setToast] = useState('');
   const [activeBioSong, setActiveBioSong] = useState<any | null>(null);
   const [randomSong, setRandomSong] = useState<any>(null);
-  const getSongCoverUrl = (songUrl?: string) => songUrl || data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
+  const getSongCoverUrl = (songUrlOrObj?: string | any, thumbUrl?: string) => {
+    if (typeof songUrlOrObj === 'object' && songUrlOrObj !== null) {
+      return songUrlOrObj.thumbUrl || songUrlOrObj.coverUrl || songUrlOrObj.imageUrl || data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
+    }
+    return thumbUrl || songUrlOrObj || data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
+  };
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
 
   useEffect(() => {
@@ -14205,7 +14215,12 @@ function PlaylistPlayer() {
   const [password, setPassword] = useState('');
   const [verifying, setVerifying] = useState(false);
   const [protectedInfo, setProtectedInfo] = useState<{ title?: string; coverUrl?: string; artistExtension?: string }>({});
-  const getSongCoverUrl = (songUrl?: string) => songUrl || artistData?.aboutMe?.avatarUrl || artistData?.homeCoverUrl || '';
+  const getSongCoverUrl = (songUrlOrObj?: string | any, thumbUrl?: string) => {
+    if (typeof songUrlOrObj === 'object' && songUrlOrObj !== null) {
+      return songUrlOrObj.thumbUrl || songUrlOrObj.coverUrl || songUrlOrObj.imageUrl || artistData?.aboutMe?.avatarUrl || artistData?.homeCoverUrl || '';
+    }
+    return thumbUrl || songUrlOrObj || artistData?.aboutMe?.avatarUrl || artistData?.homeCoverUrl || '';
+  };
 
 
   useEffect(() => {
@@ -17420,7 +17435,12 @@ function AdminDashboard() {
   const location = useLocation();
   const [data, setData] = useState<AppData | null>(null);
   const [dataError, setDataError] = useState<string | null>(null);
-  const getSongCoverUrl = (songUrl?: string) => songUrl || data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
+  const getSongCoverUrl = (songUrlOrObj?: string | any, thumbUrl?: string) => {
+    if (typeof songUrlOrObj === 'object' && songUrlOrObj !== null) {
+      return songUrlOrObj.thumbUrl || songUrlOrObj.coverUrl || songUrlOrObj.imageUrl || data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
+    }
+    return thumbUrl || songUrlOrObj || data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
+  };
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -25474,7 +25494,12 @@ function AdminPlaylistEdit() {
   const [songs, setSongs] = useState<any[]>([]);
   const [toast, setToast] = useState('');
   
-  const getSongCoverUrl = (songUrl?: string) => songUrl || appData?.aboutMe?.avatarUrl || appData?.homeCoverUrl || '';
+  const getSongCoverUrl = (songUrlOrObj?: string | any, thumbUrl?: string) => {
+    if (typeof songUrlOrObj === 'object' && songUrlOrObj !== null) {
+      return songUrlOrObj.thumbUrl || songUrlOrObj.coverUrl || songUrlOrObj.imageUrl || appData?.aboutMe?.avatarUrl || appData?.homeCoverUrl || '';
+    }
+    return thumbUrl || songUrlOrObj || appData?.aboutMe?.avatarUrl || appData?.homeCoverUrl || '';
+  };
   const [isLoading, setIsLoading] = useState(true);
   const [title, setTitle] = useState('');
   const [coverUrlPreview, setCoverUrlPreview] = useState('');
