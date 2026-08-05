@@ -72,3 +72,6 @@ All image upload controls across the application (Avatar, Favicon, OG Image / Th
 - **Admin Active Pill Sliding Animation (`adminSidebarActiveBg` & `adminSubTabActiveBg`)**:
   - Both vertical sidebar menu pills (`layoutId="adminSidebarActiveBg"`) and horizontal subtab pills (`layoutId="adminSubTabActiveBg"`) MUST use identical spring animation parameters: `transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}`.
   - Active pill elements MUST include `style={{ transition: 'none' }}` to prevent CSS `transition: all` rules (such as from `.btn-black-gradient-blur`) from interfering with Framer Motion 60fps layout interpolation.
+- **Admin Edit Song State Integrity & Delete Confirmation (`AdminEditDemo`)**:
+  - `AdminEditDemo` MUST maintain all necessary state declarations, refs, and tag insert handlers (`lyricsRef`, `handleInsertTag`, `showTemplatePicker`, `randomSlideUrl`, `isDraggingAudio`, `isDraggingBrandLogo`, `showDeleteConfirm`).
+  - Clicking "Xóa Bài Hát" MUST trigger a custom UI modal (Backdrop blur with alert icon and confirmation buttons) that moves the song to Trash (`/api/demos/${id}/delete`) and redirects to `/admin/songs/trash`.
