@@ -17418,7 +17418,7 @@ function AdminDashboard() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const initialUrlState = getAdminTabAndSubtabFromPath(location.pathname, location.search, location.hash);
+  const initialUrlState = getAdminTabAndSubtabFromPath(window.location.pathname, window.location.search, window.location.hash);
   const [activeTab, setActiveTab] = useState<'demos'|'playlists'|'profile'|'about'|'bio'|'menus'|'socials'|'security'|'templates'|'database'|'reposts'|'tickets'|'layout'|'vouchers'|'admin_theme'>(
     initialUrlState.tab as any
   );
@@ -17426,14 +17426,16 @@ function AdminDashboard() {
     initialUrlState.subtab as any
   );
 
-  // Sync state when location changes
+  const navigate = useNavigate();
+
+  // Sync state when location changes (e.g. Browser Back/Forward navigation)
   useEffect(() => {
     const { tab, subtab } = getAdminTabAndSubtabFromPath(location.pathname, location.search, location.hash);
     if (tab !== activeTab) setActiveTab(tab as any);
     if (subtab !== demosSubTab) setDemosSubTab(subtab as any);
   }, [location.pathname, location.search, location.hash]);
 
-  // Push/Replace state on browser URL when activeTab or demosSubTab changes
+  // Sync browser URL with activeTab & demosSubTab state using navigate (replace)
   useEffect(() => {
     let targetPath = '/admin/songs';
     if (activeTab === 'demos') {
@@ -17448,10 +17450,10 @@ function AdminDashboard() {
       targetPath = `/admin/${activeTab}`;
     }
 
-    if (window.location.pathname !== targetPath) {
-      window.history.replaceState(null, '', targetPath);
+    if (location.pathname !== targetPath) {
+      navigate(targetPath, { replace: true });
     }
-  }, [activeTab, demosSubTab]);
+  }, [activeTab, demosSubTab, location.pathname, navigate]);
   
   // Chorus Repost & Ticket States
   const [showMembershipModal, setShowMembershipModal] = useState(false);
@@ -18080,8 +18082,6 @@ function AdminDashboard() {
   const [isPCPreviewMode, setIsPCPreviewMode] = useState(false);
   const showFullBleed = isPCPreviewMode && (activeTab === 'demos' || activeTab === 'templates');
   const effectiveSidebarCollapsed = isSidebarCollapsed || showFullBleed;
-  
-  const navigate = useNavigate();
 
   useEffect(() => {
     setCurrentPage(1);
@@ -19399,7 +19399,7 @@ function AdminDashboard() {
                 <div className={`${effectiveSidebarCollapsed ? 'flex flex-col gap-2 w-full px-2' : 'mb-3 space-y-1'}`}>
                   <button
                     onClick={() => { setActiveTab('demos'); setDemosSubTab('released'); }}
-                    className={`flex items-center transition-all relative group ${
+                    className={`flex items-center transition-colors relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
                       isDemosActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
@@ -19407,7 +19407,11 @@ function AdminDashboard() {
                     title={t("Kho Nhạc")}
                   >
                     {isDemosActive && (
-                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
+                        transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                      />
                     )}
                     <motion.div
                       animate={isDemosActive ? {
@@ -19436,7 +19440,7 @@ function AdminDashboard() {
 
                   <button
                     onClick={() => { setActiveTab('demos'); setDemosSubTab('playlists'); }}
-                    className={`flex items-center transition-all relative group ${
+                    className={`flex items-center transition-colors relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
                       isPlaylistActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
@@ -19444,7 +19448,11 @@ function AdminDashboard() {
                     title={t("Playlist")}
                   >
                     {isPlaylistActive && (
-                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
+                        transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                      />
                     )}
                     <motion.div
                       animate={isPlaylistActive ? {
@@ -19473,7 +19481,7 @@ function AdminDashboard() {
 
                   <button 
                     onClick={() => setActiveTab('templates')} 
-                    className={`flex items-center transition-all relative group ${
+                    className={`flex items-center transition-colors relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
                       isTemplatesActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
@@ -19481,7 +19489,11 @@ function AdminDashboard() {
                     title={t("Chủ Đề")}
                   >
                     {isTemplatesActive && (
-                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
+                        transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                      />
                     )}
                     <motion.div
                       animate={isTemplatesActive ? {
@@ -19510,7 +19522,7 @@ function AdminDashboard() {
 
                   <button
                     onClick={() => setActiveTab('reposts')}
-                    className={`flex items-center transition-all relative group ${
+                    className={`flex items-center transition-colors relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
                       isRepostsActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
@@ -19518,7 +19530,11 @@ function AdminDashboard() {
                     title={`${t("Đăng lại")} (${otherSongs.length})`}
                   >
                     {isRepostsActive && (
-                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
+                        transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                      />
                     )}
                     <motion.div
                       animate={isRepostsActive ? {
@@ -19558,7 +19574,7 @@ function AdminDashboard() {
                   {/* 1. Trang Chủ (formerly Cài Đặt / Profile) */}
                   <button
                     onClick={() => setActiveTab('profile')}
-                    className={`flex items-center transition-all relative group ${
+                    className={`flex items-center transition-colors relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
                       isProfileActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
@@ -19566,7 +19582,11 @@ function AdminDashboard() {
                     title={t("Trang Chủ")}
                   >
                     {isProfileActive && (
-                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
+                        transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                      />
                     )}
                     <motion.div
                       animate={isProfileActive ? {
@@ -19596,7 +19616,7 @@ function AdminDashboard() {
                   {/* 2. Bố Cục */}
                   <button
                     onClick={() => setActiveTab('layout')}
-                    className={`flex items-center transition-all relative group ${
+                    className={`flex items-center transition-colors relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
                       isLayoutActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
@@ -19604,7 +19624,11 @@ function AdminDashboard() {
                     title={t("Bố Cục")}
                   >
                     {isLayoutActive && (
-                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
+                        transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                      />
                     )}
                     <motion.div
                       animate={isLayoutActive ? {
@@ -19630,7 +19654,7 @@ function AdminDashboard() {
                   {/* 3. Về Tôi */}
                   <button
                     onClick={() => setActiveTab('about')}
-                    className={`flex items-center transition-all relative group ${
+                    className={`flex items-center transition-colors relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
                       isAboutActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
@@ -19638,7 +19662,11 @@ function AdminDashboard() {
                     title={t("Về Tôi")}
                   >
                     {isAboutActive && (
-                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
+                        transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                      />
                     )}
                     <motion.div
                       animate={isAboutActive ? {
@@ -19668,7 +19696,7 @@ function AdminDashboard() {
                   {/* 4. Tiểu Sử */}
                   <button
                     onClick={() => setActiveTab('bio')}
-                    className={`flex items-center transition-all relative group ${
+                    className={`flex items-center transition-colors relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
                       isBioActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
@@ -19676,7 +19704,11 @@ function AdminDashboard() {
                     title={t("Tiểu Sử")}
                   >
                     {isBioActive && (
-                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
+                        transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                      />
                     )}
                     <motion.div
                       animate={isBioActive ? {
@@ -19706,7 +19738,7 @@ function AdminDashboard() {
                   {/* 5. Danh Mục */}
                   <button
                     onClick={() => setActiveTab('menus')}
-                    className={`flex items-center transition-all relative group ${
+                    className={`flex items-center transition-colors relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
                       isMenusActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
@@ -19714,7 +19746,11 @@ function AdminDashboard() {
                     title={t("Danh Mục")}
                   >
                     {isMenusActive && (
-                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
+                        transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                      />
                     )}
                     <motion.div
                       animate={isMenusActive ? {
@@ -19746,7 +19782,7 @@ function AdminDashboard() {
                   {/* 7. Hộp Thư (moved to Hồ Sơ & Mở Rộng section) */}
                   <button
                     onClick={() => setActiveTab('tickets')}
-                    className={`flex items-center transition-all relative group ${
+                    className={`flex items-center transition-colors relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
                       isTicketsActive ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
@@ -19754,7 +19790,11 @@ function AdminDashboard() {
                     title={t("Hộp thư")}
                   >
                     {isTicketsActive && (
-                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
+                        transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                      />
                     )}
                     <motion.div
                       animate={isTicketsActive ? {
@@ -19803,7 +19843,11 @@ function AdminDashboard() {
                       title={t("Cơ sở dữ liệu")}
                     >
                       {activeTab === 'database' && (
-                        <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
+                        <motion.span
+                          layoutId="adminSidebarActiveBg"
+                          className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
+                          transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                        />
                       )}
                       <motion.div
                         animate={activeTab === 'database' ? {
@@ -19827,7 +19871,7 @@ function AdminDashboard() {
                   )}
                   <button
                     onClick={() => setActiveTab('admin_theme')}
-                    className={`flex items-center transition-all relative group ${
+                    className={`flex items-center transition-colors relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
                       activeTab === 'admin_theme' ? 'text-white font-black' : (isGoldTheme ? 'hover:bg-amber-100/50 text-amber-800 hover:text-amber-950' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900')
@@ -19835,7 +19879,11 @@ function AdminDashboard() {
                     title={t("Giao Diện")}
                   >
                     {activeTab === 'admin_theme' && (
-                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
+                        transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                      />
                     )}
                     <motion.div
                       animate={activeTab === 'admin_theme' ? {
@@ -19856,7 +19904,7 @@ function AdminDashboard() {
 
                   <button
                     onClick={() => setActiveTab('vouchers')}
-                    className={`flex items-center transition-all relative group ${
+                    className={`flex items-center transition-colors relative group ${
                       effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                     } ${
                       activeTab === 'vouchers' ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
@@ -19864,7 +19912,11 @@ function AdminDashboard() {
                     title={t("Voucher")}
                   >
                     {activeTab === 'vouchers' && (
-                      <span className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110" />
+                      <motion.span
+                        layoutId="adminSidebarActiveBg"
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
+                        transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                      />
                     )}
                     <motion.div
                         className="relative z-10 flex items-center justify-center"
@@ -19916,14 +19968,18 @@ function AdminDashboard() {
                     <button
                       type="button"
                       onClick={() => setDemosSubTab('released')}
-                      className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all relative ${
+                      className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-colors relative ${
                         demosSubTab === 'released'
                           ? 'text-white'
                           : 'text-stone-500 hover:text-stone-900'
                       }`}
                     >
                       {demosSubTab === 'released' && (
-                        <span className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0" />
+                        <motion.span
+                          layoutId="adminSubTabActiveBg"
+                          className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
+                          transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                        />
                       )}
                       <Music className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 relative z-10 ${demosSubTab === 'released' ? 'hidden sm:block' : ''}`} />
                       <span className={`relative z-10 ${demosSubTab === 'released' ? 'inline' : 'hidden sm:inline'}`}>{t("Đã phát hành")}</span>
@@ -19935,14 +19991,18 @@ function AdminDashboard() {
                     <button
                       type="button"
                       onClick={() => setDemosSubTab('demos')}
-                      className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all relative ${
+                      className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-colors relative ${
                         demosSubTab === 'demos'
                           ? 'text-white'
                           : 'text-stone-500 hover:text-stone-900'
                       }`}
                     >
                       {demosSubTab === 'demos' && (
-                        <span className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0" />
+                        <motion.span
+                          layoutId="adminSubTabActiveBg"
+                          className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
+                          transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                        />
                       )}
                       <Disc3 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-500 relative z-10 ${demosSubTab === 'demos' ? 'hidden sm:block' : ''}`} />
                       <span className={`relative z-10 ${demosSubTab === 'demos' ? 'inline' : 'hidden sm:inline'}`}>{t("Demo")}</span>
@@ -19954,14 +20014,18 @@ function AdminDashboard() {
                     <button
                       type="button"
                       onClick={() => setDemosSubTab('drafts')}
-                      className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all relative ${
+                      className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-colors relative ${
                         demosSubTab === 'drafts'
                           ? 'text-white'
                           : 'text-stone-500 hover:text-stone-900'
                       }`}
                     >
                       {demosSubTab === 'drafts' && (
-                        <span className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0" />
+                        <motion.span
+                          layoutId="adminSubTabActiveBg"
+                          className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
+                          transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                        />
                       )}
                       <FileText className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 relative z-10 ${demosSubTab === 'drafts' ? 'hidden sm:block' : ''}`} />
                       <span className={`relative z-10 ${demosSubTab === 'drafts' ? 'inline' : 'hidden sm:inline'}`}>{t("Bản nháp")}</span>
@@ -19973,14 +20037,18 @@ function AdminDashboard() {
                     <button
                       type="button"
                       onClick={() => setDemosSubTab('landing_pages')}
-                      className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all relative ${
+                      className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-colors relative ${
                         demosSubTab === 'landing_pages'
                           ? 'text-white'
                           : 'text-stone-500 hover:text-stone-900'
                       }`}
                     >
                       {demosSubTab === 'landing_pages' && (
-                        <span className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0" />
+                        <motion.span
+                          layoutId="adminSubTabActiveBg"
+                          className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
+                          transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                        />
                       )}
                       <ExternalLink className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-500 relative z-10 ${demosSubTab === 'landing_pages' ? 'hidden sm:block' : ''}`} />
                       <span className={`relative z-10 ${demosSubTab === 'landing_pages' ? 'inline' : 'hidden sm:inline'}`}>{t("Landing Page")}</span>
@@ -19992,14 +20060,18 @@ function AdminDashboard() {
                     <button
                       type="button"
                       onClick={() => setDemosSubTab('brands')}
-                      className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all relative ${
+                      className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-colors relative ${
                         demosSubTab === 'brands'
                           ? 'text-white'
                           : 'text-stone-500 hover:text-stone-900'
                       }`}
                     >
                       {demosSubTab === 'brands' && (
-                        <span className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0" />
+                        <motion.span
+                          layoutId="adminSubTabActiveBg"
+                          className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
+                          transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                        />
                       )}
                       <BadgeCheck className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-500 relative z-10 ${demosSubTab === 'brands' ? 'hidden sm:block' : ''}`} />
                       <span className={`relative z-10 ${demosSubTab === 'brands' ? 'inline' : 'hidden sm:inline'}`}>{t("Nhạc Thương Hiệu")}</span>
