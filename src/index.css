@@ -866,3 +866,44 @@ input[name="title"]:not([class*="pr-"]) {
 .animate-window-float {
   animation: window-float 8s ease-in-out infinite;
 }
+
+/* ----------------------------------------------------
+   GLOBAL INPUT FOCUS PULSE & SMOOTH FADE-IN/OUT ANIMS
+   ---------------------------------------------------- */
+@keyframes inputFocusPulse {
+  0%, 100% {
+    border-color: #0c0a09 !important;
+    box-shadow: 0 0 0 3px rgba(12, 10, 9, 0.14) !important;
+  }
+  50% {
+    border-color: #57534e !important;
+    box-shadow: 0 0 0 4.5px rgba(12, 10, 9, 0.28) !important;
+  }
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+input[type="url"],
+input[type="search"],
+select,
+textarea,
+.input-standard {
+  transition: border-color 0.25s ease-in-out, box-shadow 0.25s ease-in-out, background-color 0.2s ease-in-out !important;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="url"]:focus,
+input[type="search"]:focus,
+select:focus,
+textarea:focus,
+.input-standard:focus {
+  outline: none !important;
+  border-color: #0c0a09 !important;
+  animation: inputFocusPulse 2s infinite ease-in-out !important;
+}
+
