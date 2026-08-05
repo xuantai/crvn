@@ -24279,6 +24279,31 @@ function AdminEditDemo() {
   const [isDraggingAudio, setIsDraggingAudio] = useState(false);
   const [isDraggingBrandLogo, setIsDraggingBrandLogo] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
+  const [randomSlideUrl, setRandomSlideUrl] = useState<string>('');
+  const lyricsRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleInsertTag = (tag: string) => {
+    const textarea = lyricsRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const before = text.substring(0, start);
+    const after = text.substring(end, text.length);
+    
+    const insertText = `[${tag}]\n`;
+    const newLyrics = before + insertText + after;
+    
+    setLyrics(newLyrics);
+    
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = start + insertText.length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  };
 
   useEffect(() => {
     if (!id) return;
