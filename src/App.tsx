@@ -21198,7 +21198,7 @@ function AdminDashboard() {
 
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Lời giới thiệu")}</label>
-                  <input name="artistBio" defaultValue={data.artistBio || data.description || ''} placeholder={`Thiên đường âm nhạc của ${data.artistName || 'Nghệ Sĩ'}`} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none" />
+                  <input name="artistBio" defaultValue={data.artistBio || data.description || ''} placeholder={`Thiên đường âm nhạc của ${data.artistName || 'Nghệ Sĩ'}`} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tên nghệ sĩ")}</label>
@@ -21211,7 +21211,7 @@ function AdminDashboard() {
                       <button type="button" onClick={() => handleCancelRequest('name')} className="shrink-0 bg-stone-100 hover:bg-stone-200 text-stone-600 px-3.5 py-2.5 text-sm rounded-xl font-bold transition-colors cursor-pointer">Cancel</button>
                     </div>
                   ) : (
-                    <input name="artistName" defaultValue={data.artistName} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none" autoComplete="off" data-lpignore="true" data-1p-ignore="true" />
+                    <input name="artistName" defaultValue={data.artistName} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" autoComplete="off" data-lpignore="true" data-1p-ignore="true" />
                   )}
                 </div>
                 <div>
@@ -21225,7 +21225,7 @@ function AdminDashboard() {
                       <button type="button" onClick={() => handleCancelRequest('username')} className="shrink-0 bg-stone-100 hover:bg-stone-200 text-stone-600 px-3.5 py-2.5 text-sm rounded-xl font-bold transition-colors cursor-pointer">Cancel</button>
                     </div>
                   ) : (
-                    <input name="username" defaultValue={data.username} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none font-mono" autoComplete="off" data-lpignore="true" data-1p-ignore="true" />
+                    <input name="username" defaultValue={data.username} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all font-mono" autoComplete="off" data-lpignore="true" data-1p-ignore="true" />
                   )}
                 </div>
                 <div>
@@ -21239,7 +21239,7 @@ function AdminDashboard() {
                       <button type="button" onClick={() => handleCancelRequest('extension')} className="shrink-0 bg-stone-100 hover:bg-stone-200 text-stone-600 px-3.5 py-2.5 text-sm rounded-xl font-bold transition-colors cursor-pointer">Cancel</button>
                     </div>
                   ) : (
-                    <input name="extension" defaultValue={data.extension} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none font-mono" autoComplete="off" data-lpignore="true" data-1p-ignore="true" />
+                    <input name="extension" defaultValue={data.extension} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all font-mono" autoComplete="off" data-lpignore="true" data-1p-ignore="true" />
                   )}
                   <p className="text-xs text-stone-500 mt-1.5">
                     Link của bạn đang là <strong className="text-stone-700">{data.extension}.chorus.vn</strong>
@@ -21444,18 +21444,18 @@ function AdminDashboard() {
 
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tiêu đề Website")}</label>
-                  <input name="pageTitle" defaultValue={data.pageTitle} placeholder={t("Để trống sẽ dùng mặc định: Thiên Đường Demo của [Tên nghệ sĩ]")} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none" />
+                  <input name="pageTitle" defaultValue={data.pageTitle} placeholder={t("Để trống sẽ dùng mặc định: Thiên Đường Demo của [Tên nghệ sĩ]")} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
                 </div>
 
 <hr className="border-stone-200" />
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Link Playlist YouTube (Nhạc đã phát hành)")}</label>
-                  <input name="youtubePlaylistUrl" defaultValue={data.youtubePlaylistUrl} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none" placeholder="https://youtube.com/playlist?list=..." />
+                  <input name="youtubePlaylistUrl" defaultValue={data.youtubePlaylistUrl} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" placeholder="https://youtube.com/playlist?list=..." />
                   <p className="text-sm text-stone-500 mt-2">{t("Sẽ tự động hiển thị 4 bài hát mới nhất từ playlist này.")}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Link Profile Spotify</label>
-                  <input name="spotifyUrl" defaultValue={data.spotifyUrl} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none" placeholder="https://open.spotify.com/artist/..." />
+                  <input name="spotifyUrl" defaultValue={data.spotifyUrl} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" placeholder="https://open.spotify.com/artist/..." />
                 </div>
                 {/* Cấu hình tên miền riêng (Custom Domain) */}
                 {(data as any).isSpecial && (
@@ -21570,15 +21570,15 @@ function AdminDashboard() {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-stone-600 mb-1.5">{t("Tab 1 (Nhạc phát hành)")}</label>
-                      <input name="tab1Name" defaultValue={data.tab1Name} placeholder={t("Mặc định: Ra Rồi")} className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
+                      <input name="tab1Name" defaultValue={data.tab1Name} placeholder={t("Mặc định: Ra Rồi")} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all bg-white" />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-stone-600 mb-1.5">{t("Tab 2 (Nhạc đề mô)")}</label>
-                      <input name="tab2Name" defaultValue={data.tab2Name} placeholder={t("Mặc định: Đề Mô")} className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
+                      <input name="tab2Name" defaultValue={data.tab2Name} placeholder={t("Mặc định: Đề Mô")} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all bg-white" />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-stone-600 mb-1.5">{t("Tab 3 (Album/EP)")}</label>
-                      <input name="tab3Name" defaultValue={data.tab3Name} placeholder={t("Mặc định: Album/EP")} className="w-full border border-stone-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 bg-white" />
+                      <input name="tab3Name" defaultValue={data.tab3Name} placeholder={t("Mặc định: Album/EP")} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all bg-white" />
                     </div>
                   </div>
                 </div>
@@ -21609,19 +21609,19 @@ function AdminDashboard() {
               <form onSubmit={handleProfileSave} className="space-y-6">
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Facebook</label>
-                  <input name="socialFacebook" defaultValue={data.socialFacebook} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none" placeholder="https://facebook.com/..." />
+                  <input name="socialFacebook" defaultValue={data.socialFacebook} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" placeholder="https://facebook.com/..." />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Instagram</label>
-                  <input name="socialInstagram" defaultValue={data.socialInstagram} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none" placeholder="https://instagram.com/..." />
+                  <input name="socialInstagram" defaultValue={data.socialInstagram} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" placeholder="https://instagram.com/..." />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">YouTube</label>
-                  <input name="socialYoutube" defaultValue={data.socialYoutube} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none" placeholder="https://youtube.com/..." />
+                  <input name="socialYoutube" defaultValue={data.socialYoutube} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" placeholder="https://youtube.com/..." />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-stone-700 mb-2">TikTok</label>
-                  <input name="socialTiktok" defaultValue={data.socialTiktok} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none" placeholder="https://tiktok.com/@..." />
+                  <input name="socialTiktok" defaultValue={data.socialTiktok} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" placeholder="https://tiktok.com/@..." />
                 </div>
                 
                 <div className="flex items-center gap-4 border-t border-stone-100 pt-6 mt-6">
@@ -22644,7 +22644,7 @@ function CustomSelect({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between border border-stone-300 rounded-xl px-3.5 py-2.5 bg-white focus:outline-none transition-all cursor-pointer shadow-xs text-left"
+        className={`w-full flex items-center justify-between border rounded-xl px-3.5 py-2.5 bg-white focus:outline-none transition-all cursor-pointer shadow-xs text-left ${isOpen ? 'border-stone-900 ring-2 ring-stone-900/15 shadow-sm' : 'border-stone-300 hover:border-stone-400'}`}
       >
         <span className="truncate text-stone-700 font-semibold text-sm flex items-center gap-2">
           {selectedOption ? selectedOption.label : placeholder}

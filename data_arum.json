@@ -1,5 +1,36 @@
 {
-  "username": "arum",
+  "youtubePlaylistUrl": "",
+  "pageTitle": "Kho nhạc của ARUM",
+  "menus": [
+    {
+      "id": "m1",
+      "title": "Kho Nhạc",
+      "isVisible": true,
+      "type": "vault"
+    },
+    {
+      "title": "Về Tôi",
+      "isVisible": true,
+      "type": "about",
+      "id": "m2"
+    },
+    {
+      "type": "bio",
+      "isVisible": true,
+      "title": "Tiểu Sử",
+      "id": "m3"
+    }
+  ],
+  "artistBio": "Thiên đường nhạc của ARUM",
+  "artistName": "ARUM",
+  "defaultLanguage": "vi",
+  "memberPassword": "",
+  "aboutMe": {},
+  "homeCoverUrl": "",
+  "biography": {
+    "experience": [],
+    "education": []
+  },
   "layoutSections": [
     "title",
     "vault",
@@ -8,43 +39,12 @@
     "mv",
     "spotify"
   ],
-  "biography": {
-    "experience": [],
-    "education": []
-  },
-  "artistBio": "Thiên đường nhạc của ARUM",
-  "defaultLanguage": "vi",
   "adminPassword": "$2b$10$byrg03EwE1kSRIq5uiy7t.G5/AEXiMZqNL.WgAyDBofZ9336RLJGi",
-  "artistName": "ARUM",
-  "demos": [],
-  "youtubePlaylistUrl": "",
-  "pageTitle": "Kho nhạc của ARUM",
-  "memberPassword": "",
-  "homeCoverUrl": "",
+  "playlists": [],
   "ogImageUrl": "",
   "faviconUrl": "",
-  "releasedSongs": [],
+  "username": "arum",
+  "demos": [],
   "spotifyUrl": "",
-  "menus": [
-    {
-      "id": "m1",
-      "isVisible": true,
-      "type": "vault",
-      "title": "Kho Nhạc"
-    },
-    {
-      "id": "m2",
-      "title": "Về Tôi",
-      "isVisible": true,
-      "type": "about"
-    },
-    {
-      "type": "bio",
-      "id": "m3",
-      "isVisible": true,
-      "title": "Tiểu Sử"
-    }
-  ],
-  "aboutMe": {},
-  "playlists": []
+  "releasedSongs": []
 }
