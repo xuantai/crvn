@@ -24355,11 +24355,45 @@ function AdminEditDemo() {
     };
     fetchDemo();
 
-    fetch('/api/data', {
-      headers: { 'x-artist-extension': getArtistExtensionFromUrl() }
+    fetch('/api/admin/data', {
+      headers: { 'x-artist-extension': getArtistExtensionFromUrl(), 'Authorization': `Bearer ${getAdminToken() || ''}` }
     })
       .then(r => r.json())
-      .then(d => setAppData(d))
+      .then(data => {
+        setAppData(data);
+        if (data.slideshowImages && data.slideshowImages.length > 0) {
+          const randomIndex = Math.floor(Math.random() * data.slideshowImages.length);
+          setRandomSlideUrl(data.slideshowImages[randomIndex]);
+        }
+        if (data.templateConfigs && data.templateConfigs.length > 0) {
+          const sorted = data.templateConfigs.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id), landingConfig?.templateNames, String(c.id)) })).sort((a: any, b: any) => a.order - b.order);
+          setTemplateConfigs(sorted);
+        } else {
+          const fallbackList = [
+            { id: '1', name: 'Vui vẻ (Ấm áp)' },
+            { id: '2', name: 'Căng Cực (Sôi động)' },
+            { id: '3', name: 'Buồn (Sâu lắng)' },
+            { id: '4', name: 'Thư giãn (Nhẹ nhàng)' },
+            { id: '5', name: 'Đáng yêu (Đỏ, Nhảy múa)' },
+            { id: '6', name: 'Hạnh Phúc (Hồng, Hoa rơi)' },
+            { id: '7', name: 'Học Đường (Trắng, Lá vàng rơi)' },
+            { id: '8', name: 'Tổ Quốc (Đỏ, Cờ phấp phới)' },
+            { id: '9', name: 'Cầu Vồng' },
+            { id: '10', name: 'Hip Hop (Đường phố)' },
+            { id: '11', name: 'Kỳ bí (Đen vàng, Trăng khói mưa)' },
+            { id: '12', name: 'Cổ điển (Nâu, retro)' },
+            { id: '13', name: 'Hoàng hôn (Cam đỏ trời chiều)' },
+            { id: '14', name: 'Đại Dương (Sóng biển)' },
+            { id: '15', name: 'Retro 8-Bit (Game)' },
+            { id: '16', name: 'Xếp hình Puzzle' },
+            { id: '17', name: 'Cổ vũ (Mây, mặt trời)' },
+            { id: '18', name: 'Pháo hoa (Năm mới)' },
+            { id: '19', name: 'Ký Ức' },
+            { id: '20', name: 'Ngọt Ngào' }
+          ];
+          setTemplateConfigs(fallbackList.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id), landingConfig?.templateNames, String(c.id)) })));
+        }
+      })
       .catch(() => {});
   }, [id]);
 
@@ -24655,8 +24689,8 @@ function AdminEditDemo() {
     <div className="min-h-screen bg-stone-100 text-stone-900 font-sans py-6 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-4">
-          <Link to={getAdminLink() + (linkType === 'indirect' ? '?subtab=landing_pages' : (demo?.isDraft ? '?subtab=drafts' : (demo?.isReleased ? '?subtab=released' : '?subtab=demos')))} className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-900 font-medium transition-colors">
-            <ArrowLeft className="w-5 h-5" /> {t("Trở về Dashboard")}
+          <Link to={getAdminLink() + (linkType === 'indirect' ? '?subtab=landing_pages' : (demo?.isDraft ? '?subtab=drafts' : (demo?.isReleased ? '?subtab=released' : '?subtab=demos')))} className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-900 font-medium transition-colors shrink-0">
+            <ArrowLeft className="w-5 h-5" /><span className="hidden sm:inline">{t("Trở về Dashboard")}</span>
           </Link>
           <div className="flex gap-2 items-center">
             {demo?.audioUrl && (
@@ -24758,29 +24792,29 @@ function AdminEditDemo() {
           <form onSubmit={handleSubmit} className="space-y-4 edit-demo-form">
             <div>
               <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tên bài hát")}<span className="text-red-500">*</span></label>
-              <input name="title" required value={title} onChange={e => setTitle(e.target.value)} placeholder={t("Nhập tên bài hát...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+              <input name="title" required value={title} onChange={e => setTitle(e.target.value)} placeholder={t("Nhập tên bài hát...")} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Phần mở rộng (Link bài hát)")}</label>
-              <div className="flex items-center gap-2 border border-stone-300 rounded-xl px-4 py-3 bg-white focus-within:border-stone-900 focus-within:ring-2 focus-within:ring-stone-900 transition-shadow">
+              <div className="flex items-center gap-2 border border-stone-300 rounded-xl px-3.5 py-2.5 bg-white focus-within:border-stone-900 focus-within:ring-2 focus-within:ring-stone-900/15 transition-all">
                 <span className="text-stone-400 font-mono text-sm opacity-60 hidden sm:inline">/</span>
-                <input name="slug" value={slug} onChange={e => {setSlug(generateSlug(e.target.value)); setIsSlugEdited(true);}} placeholder="ten-bai-hat..." className="w-full focus:outline-none bg-transparent" />
+                <input name="slug" value={slug} onChange={e => {setSlug(generateSlug(e.target.value)); setIsSlugEdited(true);}} placeholder="ten-bai-hat..." className="w-full focus:outline-none bg-transparent text-sm" />
               </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Ca sĩ thể hiện")}</label>
-                <input name="singer" value={singer} onChange={e => setSinger(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+                <input name="singer" value={singer} onChange={e => setSinger(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Sáng tác")}</label>
-                <input name="composer" value={composer} onChange={e => setComposer(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+                <input name="composer" value={composer} onChange={e => setComposer(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Music Producer")}</label>
-                <input name="musicProducer" value={musicProducer} onChange={e => setMusicProducer(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+                <input name="musicProducer" value={musicProducer} onChange={e => setMusicProducer(e.target.value)} placeholder={appData?.artistName || t("Nghệ sĩ")} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
               </div>
             </div>
 
@@ -25003,11 +25037,11 @@ function AdminEditDemo() {
                     <div className="grid grid-cols-1 gap-4 pt-2">
                       <div>
                         <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tên đối tác")}<span className="text-red-500">*</span></label>
-                        <input type="text" value={brandName} onChange={e => setBrandName(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder="VD: Vingroup" />
+                        <input type="text" value={brandName} onChange={e => setBrandName(e.target.value)} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all shadow-sm" placeholder="VD: Vingroup" />
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Brief khách hàng (nếu có)")}</label>
-                        <textarea rows={3} value={brandBrief} onChange={e => setBrandBrief(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder={t("Nhập brief khách hàng...")} />
+                        <textarea rows={3} value={brandBrief} onChange={e => setBrandBrief(e.target.value)} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all shadow-sm" placeholder={t("Nhập brief khách hàng...")} />
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-stone-700 mb-2 flex justify-between items-center">
@@ -25126,28 +25160,30 @@ function AdminEditDemo() {
                     value={lyrics} 
                     onChange={e => setLyrics(e.target.value)} 
                     placeholder={t("Nhập lời bài hát chỉnh sửa (nếu có)...")} 
-                    className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow leading-relaxed"
+                    className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all leading-relaxed"
                   ></textarea>
                 </div>
 
               <div className="grid grid-cols-1 gap-6 pt-4 border-t border-stone-100">
                   <div className="w-full">
                     <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Template Chủ Đề")}</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 min-w-0">
-                      <CustomSelect
-                        value={template}
-                        onChange={val => setTemplate(val)}
-                        options={templateConfigs.map((tc: any) => ({ value: tc.id, label: t(tc.name), isVip: tc.isVip || tc.id === '2', disabled: (tc.isVip || tc.id === '2') && !(appData?.roleId === 'vip' || appData?.roleId === 'pro' || appData?.isSpecial || (appData?.maxTemplates && appData.maxTemplates > 0)) }))}
-                        className="w-full"
-                      />
+                    <div className="flex gap-3 min-w-0 items-stretch">
+                      <div className="flex-1 min-w-0">
+                        <CustomSelect
+                          value={template}
+                          onChange={val => setTemplate(val)}
+                          options={templateConfigs.map((tc: any) => ({ value: tc.id, label: t(tc.name), isVip: tc.isVip || tc.id === '2', disabled: (tc.isVip || tc.id === '2') && !(appData?.roleId === 'vip' || appData?.roleId === 'pro' || appData?.isSpecial || (appData?.maxTemplates && appData.maxTemplates > 0)) }))}
+                          className="w-full"
+                        />
+                      </div>
                       <input type="hidden" name="template" value={template} />
                       <button 
                         type="button" 
                         disabled={!title.trim()}
                         onClick={() => setShowTemplatePicker(true)} 
-                        className={`px-6 py-3 border border-transparent shrink-0 shadow-sm text-white font-medium rounded-xl flex items-center justify-center gap-2 transition-all ${(!title.trim()) ? 'bg-stone-300 text-stone-500 cursor-not-allowed opacity-60' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/10'}`}
+                        className={`px-4 py-2.5 text-sm border border-transparent shrink-0 shadow-sm text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all ${(!title.trim()) ? 'bg-stone-300 text-stone-500 cursor-not-allowed opacity-60' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/10'}`}
                       >
-                        <Eye className="w-5 h-5" /> {t("Xem trước chủ đề")}
+                        <Eye className="w-4 h-4" /> {t("Xem trước")}
                       </button>
                     </div>
                   </div>
@@ -25166,11 +25202,11 @@ function AdminEditDemo() {
                     <div className="grid grid-cols-1 gap-4 pt-2">
                       <div>
                         <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tên đối tác")}<span className="text-red-500">*</span></label>
-                        <input type="text" value={brandName} onChange={e => setBrandName(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder="VD: Vingroup" />
+                        <input type="text" value={brandName} onChange={e => setBrandName(e.target.value)} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all shadow-sm" placeholder="VD: Vingroup" />
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Brief khách hàng (nếu có)")}</label>
-                        <textarea rows={3} value={brandBrief} onChange={e => setBrandBrief(e.target.value)} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm" placeholder={t("Nhập brief khách hàng...")} />
+                        <textarea rows={3} value={brandBrief} onChange={e => setBrandBrief(e.target.value)} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all shadow-sm" placeholder={t("Nhập brief khách hàng...")} />
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-stone-700 mb-2 flex justify-between items-center">
@@ -25181,7 +25217,7 @@ function AdminEditDemo() {
                         </label>
                         {brandReferenceVideos.map((vid, idx) => (
                           <div key={`l20427-idx-16-${idx}`} className="flex gap-2 mb-2">
-                            <input type="text" value={vid} onChange={e => { const newVids = [...brandReferenceVideos]; newVids[idx] = e.target.value; setBrandReferenceVideos(newVids); }} className="flex-1 border border-stone-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-stone-900 shadow-sm text-sm" placeholder="Link video Youtube..." />
+                            <input type="text" value={vid} onChange={e => { const newVids = [...brandReferenceVideos]; newVids[idx] = e.target.value; setBrandReferenceVideos(newVids); }} className="flex-1 border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all shadow-sm" placeholder="Link video Youtube..." />
                             <button type="button" onClick={() => { const newVids = brandReferenceVideos.filter((_, i) => i !== idx); setBrandReferenceVideos(newVids); }} className="px-3 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100"><Trash2 className="w-4 h-4"/></button>
                           </div>
                         ))}
@@ -25261,23 +25297,23 @@ function AdminEditDemo() {
                 <div className="grid grid-cols-1 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-stone-700 mb-2">Zing MP3</label>
-                    <input name="linkZing" value={linkZing} onChange={e => setLinkZing(e.target.value)} placeholder={t("Nhập link Zing MP3...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+                    <input name="linkZing" value={linkZing} onChange={e => setLinkZing(e.target.value)} placeholder={t("Nhập link Zing MP3...")} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-stone-700 mb-2">Spotify</label>
-                    <input name="linkSpotify" value={linkSpotify} onChange={e => setLinkSpotify(e.target.value)} placeholder={t("Nhập link Spotify...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+                    <input name="linkSpotify" value={linkSpotify} onChange={e => setLinkSpotify(e.target.value)} placeholder={t("Nhập link Spotify...")} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-stone-700 mb-2">Apple Music</label>
-                    <input name="linkApple" value={linkApple} onChange={e => setLinkApple(e.target.value)} placeholder={t("Nhập link Apple Music...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+                    <input name="linkApple" value={linkApple} onChange={e => setLinkApple(e.target.value)} placeholder={t("Nhập link Apple Music...")} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-stone-700 mb-2">YouTube Music</label>
-                    <input name="linkYoutubeMusic" value={linkYoutubeMusic} onChange={e => setLinkYoutubeMusic(e.target.value)} placeholder={t("Nhập link YouTube Music...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+                    <input name="linkYoutubeMusic" value={linkYoutubeMusic} onChange={e => setLinkYoutubeMusic(e.target.value)} placeholder={t("Nhập link YouTube Music...")} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-stone-700 mb-2">YouTube MV</label>
-                    <input name="linkYoutube" value={linkYoutube} onChange={e => setLinkYoutube(e.target.value)} placeholder={t("Nhập link YouTube MV...")} className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+                    <input name="linkYoutube" value={linkYoutube} onChange={e => setLinkYoutube(e.target.value)} placeholder={t("Nhập link YouTube MV...")} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
                   </div>
                 </div>
               </div>
@@ -25291,8 +25327,8 @@ function AdminEditDemo() {
                     <div>
                       <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Mật khẩu bảo vệ (tùy chọn)")}</label>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-3.5 w-5 h-5 text-stone-400" />
-                        <input name="password" value={password} onChange={e => setPassword(e.target.value)} placeholder={t("Bỏ trống nếu không cần")} className="w-full border border-stone-300 rounded-xl pl-10 pr-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow" />
+                        <Lock className="absolute left-3 top-3 w-4 h-4 text-stone-400" />
+                        <input name="password" value={password} onChange={e => setPassword(e.target.value)} placeholder={t("Bỏ trống nếu không cần")} className="w-full border border-stone-300 rounded-xl pl-9 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all shadow-sm" />
                       </div>
                     </div>
                   ) : (

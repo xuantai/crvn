@@ -1,13 +1,34 @@
 {
-  "spotifyUrl": "",
-  "defaultLanguage": "vi",
-  "artistBio": "Producer Kanzi",
-  "pageTitle": "Kho nhạc của Kanzi",
-  "demos": [],
-  "memberPassword": "",
-  "faviconUrl": "",
-  "ogImageUrl": "",
   "adminPassword": "$2b$10$SDSPFvLHoh14KM1yvkq/WuZOKC1Q0bQ.bEU83kPkivy0wG3yxhMly",
+  "youtubePlaylistUrl": "",
+  "artistBio": "Producer Kanzi",
+  "spotifyUrl": "",
+  "demos": [],
+  "menus": [
+    {
+      "isVisible": true,
+      "id": "m1",
+      "title": "Kho Nhạc",
+      "type": "vault"
+    },
+    {
+      "type": "about",
+      "isVisible": true,
+      "title": "Về Tôi",
+      "id": "m2"
+    },
+    {
+      "isVisible": true,
+      "title": "Tiểu Sử",
+      "type": "bio",
+      "id": "m3"
+    }
+  ],
+  "defaultLanguage": "vi",
+  "pageTitle": "Kho nhạc của Kanzi",
+  "homeCoverUrl": "",
+  "username": "kanzi",
+  "releasedSongs": [],
   "layoutSections": [
     "title",
     "random_song",
@@ -17,30 +38,9 @@
     "mv",
     "spotify"
   ],
-  "menus": [
-    {
-      "id": "m1",
-      "isVisible": true,
-      "type": "vault",
-      "title": "Kho Nhạc"
-    },
-    {
-      "id": "m2",
-      "isVisible": true,
-      "type": "about",
-      "title": "Về Tôi"
-    },
-    {
-      "type": "bio",
-      "isVisible": true,
-      "title": "Tiểu Sử",
-      "id": "m3"
-    }
-  ],
   "playlists": [],
-  "homeCoverUrl": "",
-  "releasedSongs": [],
-  "username": "kanzi",
-  "artistName": "Kanzi",
-  "youtubePlaylistUrl": ""
+  "memberPassword": "",
+  "ogImageUrl": "",
+  "faviconUrl": "",
+  "artistName": "Kanzi"
 }
