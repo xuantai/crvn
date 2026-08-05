@@ -19416,7 +19416,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
                       />
                     )}
                     <motion.div
@@ -19453,7 +19453,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
                       />
                     )}
                     <motion.div
@@ -19490,7 +19490,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
                       />
                     )}
                     <motion.div
@@ -19527,7 +19527,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
                       />
                     )}
                     <motion.div
@@ -19575,7 +19575,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
                       />
                     )}
                     <motion.div
@@ -19613,7 +19613,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
                       />
                     )}
                     <motion.div
@@ -19647,7 +19647,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
                       />
                     )}
                     <motion.div
@@ -19685,7 +19685,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
                       />
                     )}
                     <motion.div
@@ -19723,7 +19723,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
                       />
                     )}
                     <motion.div
@@ -19761,7 +19761,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
                       />
                     )}
                     <motion.div
@@ -19810,7 +19810,7 @@ function AdminDashboard() {
                         <motion.span
                           layoutId="adminSidebarActiveBg"
                           className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                          transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
                         />
                       )}
                       <motion.div
@@ -19842,7 +19842,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
                       />
                     )}
                     <motion.div
@@ -19875,7 +19875,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
                       />
                     )}
                     <motion.div
@@ -19938,7 +19938,7 @@ function AdminDashboard() {
                         <motion.span
                           layoutId="adminSubTabActiveBg"
                           className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
-                          transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
                         />
                       )}
                       <Music className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 relative z-10 ${demosSubTab === 'released' ? 'hidden sm:block' : ''}`} />
@@ -19961,7 +19961,7 @@ function AdminDashboard() {
                         <motion.span
                           layoutId="adminSubTabActiveBg"
                           className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
-                          transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
                         />
                       )}
                       <Disc3 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-500 relative z-10 ${demosSubTab === 'demos' ? 'hidden sm:block' : ''}`} />
@@ -19984,7 +19984,7 @@ function AdminDashboard() {
                         <motion.span
                           layoutId="adminSubTabActiveBg"
                           className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
-                          transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
                         />
                       )}
                       <FileText className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 relative z-10 ${demosSubTab === 'drafts' ? 'hidden sm:block' : ''}`} />
@@ -20007,7 +20007,7 @@ function AdminDashboard() {
                         <motion.span
                           layoutId="adminSubTabActiveBg"
                           className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
-                          transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
                         />
                       )}
                       <ExternalLink className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-500 relative z-10 ${demosSubTab === 'landing_pages' ? 'hidden sm:block' : ''}`} />
@@ -20030,7 +20030,7 @@ function AdminDashboard() {
                         <motion.span
                           layoutId="adminSubTabActiveBg"
                           className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
-                          transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
                         />
                       )}
                       <BadgeCheck className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-500 relative z-10 ${demosSubTab === 'brands' ? 'hidden sm:block' : ''}`} />
