@@ -5,7 +5,7 @@ import { BrowserRouter, Routes, Route, Link, useParams, useNavigate, useSearchPa
 import { UserCircle, BookOpen, User, Settings, Play, Pause, Music, Lock, Unlock, ArrowLeft, ArrowRight, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, List, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, RefreshCw, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, ChevronDown, Menu, Palette, LayoutTemplate, Award, History, HelpCircle, Paintbrush, CheckCircle2, XCircle, ShieldCheck, LogIn } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { AppData, DemoSong, TemplateConfig, Achievement } from './types';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, LayoutGroup } from 'motion/react';
 import { IndirectBioCard } from './components/IndirectBioCard';
 import { LoadingScreen } from './components/LoadingScreen';
 import { getYoutubeId } from './components/SmartYouTubePlayer';
@@ -19401,8 +19401,8 @@ function AdminDashboard() {
             const isLayoutActive = activeTab === 'layout';
 
             return (
-              <>
-                <div className={`${effectiveSidebarCollapsed ? 'flex flex-col gap-2 w-full px-2' : 'mb-3 space-y-1'}`}>
+              <LayoutGroup id="adminSidebarNav">
+                <div className={`${effectiveSidebarCollapsed ? 'flex flex-col gap-2 w-full px-2' : 'mb-3 flex flex-col gap-1'}`}>
                   <button
                     onClick={() => { setActiveTab('demos'); setDemosSubTab('released'); }}
                     className={`flex items-center transition-colors relative group ${
@@ -19416,7 +19416,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
+                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                       />
                     )}
                     <motion.div
@@ -19434,13 +19434,9 @@ function AdminDashboard() {
                       <Disc3 className={`w-5 h-5 transition-colors animate-[spin_4s_linear_infinite] ${isDemosActive ? 'text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
                     </motion.div>
                     {!effectiveSidebarCollapsed && (
-                      <motion.span 
-                        animate={isDemosActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
-                        transition={isDemosActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
-                        className="relative z-10"
-                      >
+                      <span className="relative z-10">
                         {t("Kho Nhạc")}
-                      </motion.span>
+                      </span>
                     )}
                   </button>
 
@@ -19457,7 +19453,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
+                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                       />
                     )}
                     <motion.div
@@ -19475,13 +19471,9 @@ function AdminDashboard() {
                       <ListMusic className={`w-5 h-5 transition-colors ${isPlaylistActive ? 'text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
                     </motion.div>
                     {!effectiveSidebarCollapsed && (
-                      <motion.span 
-                        animate={isPlaylistActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
-                        transition={isPlaylistActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
-                        className="relative z-10"
-                      >
+                      <span className="relative z-10">
                         {t("Playlist")}
-                      </motion.span>
+                      </span>
                     )}
                   </button>
 
@@ -19498,7 +19490,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
+                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                       />
                     )}
                     <motion.div
@@ -19516,13 +19508,9 @@ function AdminDashboard() {
                       <Palette className={`w-5 h-5 transition-colors ${isTemplatesActive ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
                     </motion.div>
                     {!effectiveSidebarCollapsed && (
-                      <motion.span 
-                        animate={isTemplatesActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
-                        transition={isTemplatesActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
-                        className="relative z-10"
-                      >
+                      <span className="relative z-10">
                         {t("Chủ Đề")}
-                      </motion.span>
+                      </span>
                     )}
                   </button>
 
@@ -19539,7 +19527,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
+                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                       />
                     )}
                     <motion.div
@@ -19560,19 +19548,15 @@ function AdminDashboard() {
                       )}
                     </motion.div>
                     {!effectiveSidebarCollapsed && (
-                      <motion.span 
-                        animate={isRepostsActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
-                        transition={isRepostsActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
-                        className="relative z-10 flex items-center justify-between w-full"
-                      >
+                      <span className="relative z-10 flex items-center justify-between w-full">
                         <span>{t("Đăng lại")}</span>
                         <span className={`px-2 py-0.5 rounded-full text-xs font-bold transition-colors ${isRepostsActive ? 'bg-white/20 text-white' : 'bg-stone-100 text-stone-600 group-hover:bg-stone-200/80 group-hover:text-stone-900'}`}>{otherSongs.length}</span>
-                      </motion.span>
+                      </span>
                     )}
                   </button>
 
                   {!effectiveSidebarCollapsed && (
-                    <h3 className="text-[10px] font-extrabold text-stone-400 uppercase tracking-widest mb-3 mt-4 px-4 select-none opacity-80">
+                    <h3 className="text-[10px] font-extrabold text-stone-400 uppercase tracking-widest my-2 px-4 select-none opacity-80">
                       {t("Cài Đặt Hệ Thống")}
                     </h3>
                   )}
@@ -19591,7 +19575,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
+                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                       />
                     )}
                     <motion.div
@@ -19609,13 +19593,9 @@ function AdminDashboard() {
                       <Settings className={`w-5 h-5 transition-colors ${isProfileActive ? 'text-teal-400 drop-shadow-[0_0_8px_rgba(45,212,191,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
                     </motion.div>
                     {!effectiveSidebarCollapsed && (
-                      <motion.span 
-                        animate={isProfileActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
-                        transition={isProfileActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
-                        className="relative z-10"
-                      >
+                      <span className="relative z-10">
                         {t("Trang Chủ")}
-                      </motion.span>
+                      </span>
                     )}
                   </button>
 
@@ -19633,7 +19613,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
+                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                       />
                     )}
                     <motion.div
@@ -19647,13 +19627,9 @@ function AdminDashboard() {
                       <LayoutTemplate className={`w-5 h-5 transition-colors ${isLayoutActive ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
                     </motion.div>
                     {!effectiveSidebarCollapsed && (
-                      <motion.span 
-                        animate={isLayoutActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
-                        transition={isLayoutActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
-                        className="relative z-10"
-                      >
+                      <span className="relative z-10">
                         {t("Bố Cục")}
-                      </motion.span>
+                      </span>
                     )}
                   </button>
 
@@ -19671,7 +19647,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
+                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                       />
                     )}
                     <motion.div
@@ -19689,13 +19665,9 @@ function AdminDashboard() {
                       <UserCircle className={`w-5 h-5 transition-colors ${isAboutActive ? 'text-violet-400 drop-shadow-[0_0_8px_rgba(167,139,250,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
                     </motion.div>
                     {!effectiveSidebarCollapsed && (
-                      <motion.span 
-                        animate={isAboutActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
-                        transition={isAboutActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
-                        className="relative z-10"
-                      >
+                      <span className="relative z-10">
                         {t("Về Tôi")}
-                      </motion.span>
+                      </span>
                     )}
                   </button>
 
@@ -19713,7 +19685,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
+                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                       />
                     )}
                     <motion.div
@@ -19731,13 +19703,9 @@ function AdminDashboard() {
                       <BookOpen className={`w-5 h-5 transition-colors ${isBioActive ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
                     </motion.div>
                     {!effectiveSidebarCollapsed && (
-                      <motion.span 
-                        animate={isBioActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
-                        transition={isBioActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
-                        className="relative z-10"
-                      >
+                      <span className="relative z-10">
                         {t("Tiểu Sử")}
-                      </motion.span>
+                      </span>
                     )}
                   </button>
 
@@ -19755,7 +19723,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
+                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                       />
                     )}
                     <motion.div
@@ -19773,19 +19741,13 @@ function AdminDashboard() {
                       <List className={`w-5 h-5 transition-colors ${isMenusActive ? 'text-teal-400 drop-shadow-[0_0_8px_rgba(45,212,191,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
                     </motion.div>
                     {!effectiveSidebarCollapsed && (
-                      <motion.span 
-                        animate={isMenusActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
-                        transition={isMenusActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
-                        className="relative z-10"
-                      >
+                      <span className="relative z-10">
                         {t("Danh Mục")}
-                      </motion.span>
+                      </span>
                     )}
                   </button>
 
-
-
-                  {/* 7. Hộp Thư (moved to Hồ Sơ & Mở Rộng section) */}
+                  {/* 7. Hộp Thư */}
                   <button
                     onClick={() => setActiveTab('tickets')}
                     className={`flex items-center transition-colors relative group ${
@@ -19799,7 +19761,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
+                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                       />
                     )}
                     <motion.div
@@ -19820,11 +19782,7 @@ function AdminDashboard() {
                       )}
                     </motion.div>
                     {!effectiveSidebarCollapsed && (
-                      <motion.span 
-                        animate={isTicketsActive ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
-                        transition={isTicketsActive ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
-                        className="relative z-10 flex items-center justify-between w-full"
-                      >
+                      <span className="relative z-10 flex items-center justify-between w-full">
                         <span className="flex items-center gap-2">
                           {t("Hộp thư")} 
                           {bellCount > 0 && <span className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-ping" />}
@@ -19834,14 +19792,14 @@ function AdminDashboard() {
                             {bellCount}
                           </span>
                         )}
-                      </motion.span>
+                      </span>
                     )}
                   </button>
 
                   {data?.isSpecial && (
                     <button
                       onClick={() => setActiveTab('database')}
-                      className={`flex items-center transition-all relative group ${
+                      className={`flex items-center transition-colors relative group ${
                         effectiveSidebarCollapsed ? 'justify-center w-11 h-11 rounded-xl mx-auto' : 'justify-start w-full gap-3.5 px-4 py-3 rounded-xl font-bold text-sm'
                       } ${
                         activeTab === 'database' ? 'text-white font-black' : 'hover:bg-stone-100/80 text-stone-600 hover:text-stone-900'
@@ -19852,7 +19810,7 @@ function AdminDashboard() {
                         <motion.span
                           layoutId="adminSidebarActiveBg"
                           className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                          transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
+                          transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                         />
                       )}
                       <motion.div
@@ -19865,13 +19823,9 @@ function AdminDashboard() {
                         <Database className={`w-5 h-5 relative z-10 transition-colors ${activeTab === 'database' ? 'text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.65)]' : 'text-stone-400 group-hover:text-stone-700'}`} />
                       </motion.div>
                       {!effectiveSidebarCollapsed && (
-                        <motion.span 
-                          animate={activeTab === 'database' ? { scale: [1, 1.02, 1], opacity: [0.95, 1, 0.95] } : {}} 
-                          transition={activeTab === 'database' ? { repeat: Infinity, duration: 4, ease: "easeInOut" } : {}} 
-                          className="relative z-10"
-                        >
+                        <span className="relative z-10">
                           {t("Cơ sở dữ liệu")}
-                        </motion.span>
+                        </span>
                       )}
                     </button>
                   )}
@@ -19888,7 +19842,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
+                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                       />
                     )}
                     <motion.div
@@ -19921,7 +19875,7 @@ function AdminDashboard() {
                       <motion.span
                         layoutId="adminSidebarActiveBg"
                         className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
+                        transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                       />
                     )}
                     <motion.div
@@ -19936,7 +19890,7 @@ function AdminDashboard() {
                     )}
                   </button>
                 </div>
-              </>
+              </LayoutGroup>
             );
           })()}
           </div>
@@ -19984,7 +19938,7 @@ function AdminDashboard() {
                         <motion.span
                           layoutId="adminSubTabActiveBg"
                           className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
-                          transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
+                          transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                         />
                       )}
                       <Music className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 relative z-10 ${demosSubTab === 'released' ? 'hidden sm:block' : ''}`} />
@@ -20007,7 +19961,7 @@ function AdminDashboard() {
                         <motion.span
                           layoutId="adminSubTabActiveBg"
                           className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
-                          transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
+                          transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                         />
                       )}
                       <Disc3 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-500 relative z-10 ${demosSubTab === 'demos' ? 'hidden sm:block' : ''}`} />
@@ -20030,7 +19984,7 @@ function AdminDashboard() {
                         <motion.span
                           layoutId="adminSubTabActiveBg"
                           className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
-                          transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
+                          transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                         />
                       )}
                       <FileText className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 relative z-10 ${demosSubTab === 'drafts' ? 'hidden sm:block' : ''}`} />
@@ -20053,7 +20007,7 @@ function AdminDashboard() {
                         <motion.span
                           layoutId="adminSubTabActiveBg"
                           className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
-                          transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
+                          transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                         />
                       )}
                       <ExternalLink className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-500 relative z-10 ${demosSubTab === 'landing_pages' ? 'hidden sm:block' : ''}`} />
@@ -20076,7 +20030,7 @@ function AdminDashboard() {
                         <motion.span
                           layoutId="adminSubTabActiveBg"
                           className="absolute inset-0 bg-stone-900 rounded-lg shadow-md z-0"
-                          transition={{ type: 'spring', stiffness: 350, damping: 30, mass: 0.8 }}
+                          transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                         />
                       )}
                       <BadgeCheck className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-500 relative z-10 ${demosSubTab === 'brands' ? 'hidden sm:block' : ''}`} />
