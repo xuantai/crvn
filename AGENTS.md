@@ -49,3 +49,22 @@ All image upload controls across the application (Avatar, Favicon, OG Image / Th
 
 - **Thumbnail Optimization**: For song list items, random song cards, and grids, always prefer `song.thumbUrl || song.coverUrl` (400px optimized WebP/JPG) instead of 1200px high-res originals.
 - **Slideshow Image Cleanliness**: `slideshowImages` arrays must never contain empty strings `""`. Server runtime (`server.ts` `applyBaseUrl`) automatically strips empty items.
+
+---
+
+## 5. 🎵 Admin Songs List, Routing & Mobile UI Standards (`/admin/songs`)
+
+- **Main Route URL**:
+  - The main route for "Kho nhạc" in `/admin` MUST strictly be `/admin/songs` (not `/admin/kho-nhac`).
+  - Sub-tab navigation updates address bar cleanly: `/admin/songs/released`, `/admin/songs/demos`, `/admin/songs/brands`, `/admin/songs/drafts`, `/admin/songs/playlists`, `/admin/songs/trash`.
+- **Mobile Dropdown Navigation**:
+  - Main button title on mobile MUST always display `"Kho Nhạc"` (never infected by subtab names like `"bản nháp"` or `"đã ra mắt"`).
+- **Mobile Song Card 1-Row Layout**:
+  - On mobile screens (`sm:` and smaller), song card elements (index, thumbnail, title/artist info, actions) MUST be arranged in 1 compact horizontal row (`flex flex-row items-center justify-between gap-2.5 p-2.5 sm:p-3`).
+- **Marquee Overflow Text Scrolling (Yoyo / Bounce)**:
+  - Long song titles or artist names that exceed container width MUST use `MarqueeText` with auto overflow calculation.
+  - When text overflows, it smoothly scrolls left until the end of text is visible, pauses, and reverses back to start (left-right bounce).
+- **Singer & Composer Display Rules**:
+  - **Mobile**: Remove `"Ca sĩ:"` text prefix label, render only the singer/artist names using `MarqueeText` (e.g. `A.C Xuân Tài, Changg`).
+  - **PC View**: Display `Tác giả: [Composer] • Ca sĩ: [Singer]`.
+

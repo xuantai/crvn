@@ -1793,11 +1793,13 @@ function MusicianSongCard({
     </div>
   );
 }
-function MarqueeText({ children, className }: { children: React.ReactNode, className?: string }) {
+function MarqueeText({ children, text, to, className }: { children?: React.ReactNode, text?: string, to?: string, className?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [scrollAmount, setScrollAmount] = useState(0);
+
+  const content = children || text;
 
   useEffect(() => {
     let animationFrameId: number;
@@ -1844,9 +1846,9 @@ function MarqueeText({ children, className }: { children: React.ReactNode, class
       if (textObserver) textObserver.disconnect();
       if (containerObserver) containerObserver.disconnect();
     };
-  }, [children]);
+  }, [content]);
 
-  return (
+  const inner = (
     <div ref={containerRef} className={`w-full overflow-hidden flex items-center ${(!isOverflowing && (className?.includes('justify-center') || className?.includes('text-center'))) ? 'justify-center' : 'justify-start'} ${className || ''}`}>
       {isOverflowing ? (
         <motion.div
@@ -1854,16 +1856,25 @@ function MarqueeText({ children, className }: { children: React.ReactNode, class
           animate={{ x: [0, -scrollAmount - 32, 0] }}
           transition={{ duration: Math.max(scrollAmount * 0.03, 3), ease: "linear", repeat: Infinity, repeatDelay: 1.5 }}
         >
-          {children}
+          <div ref={textRef} className="inline-flex items-center">
+            {content}
+          </div>
         </motion.div>
       ) : (
         <div ref={textRef} className={`whitespace-nowrap inline-flex items-center shrink-0 w-max max-w-full ${className?.includes('justify-center') || className?.includes('text-center') ? 'justify-center' : 'justify-start'}`}>
-          {children}
+          {content}
         </div>
       )}
     </div>
   );
+
+  if (to) {
+    return <Link to={to} className="block w-full min-w-0">{inner}</Link>;
+  }
+  return inner;
 }
+
+const MarqueeTitle = MarqueeText;
 
 function formatText(text: string | null | undefined, disableLinks = false, isGold = true, bgMode: 'light' | 'red' | 'dark' | boolean = 'dark', prefix = '') {
   if (!text) return null;
@@ -17368,6 +17379,8 @@ function AdminDatabaseSettings({ artistUsername }: { artistUsername?: string }) 
   );
 }
 
+
+
 const getAdminTabAndSubtabFromPath = (pathname: string, search: string, hash: string) => {
   const allSegments = pathname.split('/').filter(Boolean);
   const adminIdx = allSegments.indexOf('admin');
@@ -17422,20 +17435,20 @@ function AdminDashboard() {
 
   // Push/Replace state on browser URL when activeTab or demosSubTab changes
   useEffect(() => {
-    let targetPath = '/admin/kho-nhac';
+    let targetPath = '/admin/songs';
     if (activeTab === 'demos') {
       if (demosSubTab === 'playlists') {
         targetPath = '/admin/playlists';
       } else if (demosSubTab && demosSubTab !== 'released') {
         targetPath = `/admin/${demosSubTab}`;
       } else {
-        targetPath = '/admin/kho-nhac';
+        targetPath = '/admin/songs';
       }
     } else {
       targetPath = `/admin/${activeTab}`;
     }
 
-    if (window.location.pathname !== targetPath && window.location.pathname !== '/admin') {
+    if (window.location.pathname !== targetPath) {
       window.history.replaceState(null, '', targetPath);
     }
   }, [activeTab, demosSubTab]);
@@ -20279,40 +20292,61 @@ function AdminDashboard() {
                               body: JSON.stringify({ demoIds: [...items, ...((data.demos || []).filter(d => (!d.isReleased || d.isDraft) && !d.deleted))].map(d => d.id) })
                             });
                           }}
-                          className={`border border-stone-100 rounded-xl p-3 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white hover:bg-stone-50/50 transition-all cursor-move select-none ${draggedItemIdx === idx ? 'opacity-40 border-dashed border-stone-300 bg-stone-50' : 'shadow-sm'}`}
+                          className={`border border-stone-100 rounded-xl p-2.5 sm:p-3 flex items-center justify-between gap-2.5 bg-white hover:bg-stone-50/50 transition-all cursor-move select-none ${draggedItemIdx === idx ? 'opacity-40 border-dashed border-stone-300 bg-stone-50' : 'shadow-sm'}`}
                         >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
-                            <div className="flex flex-col gap-1 flex-1 min-w-0">
-                              <Link to={getArtistLink(`/song/${demo.slug || demo.id}`)} state={{ fromAdmin: true }} className="hover:text-blue-600 font-bold text-stone-850 text-sm md:text-base block truncate max-w-[150px] xs:max-w-[240px] sm:max-w-[320px] md:max-w-[280px] lg:max-w-[420px] xl:max-w-[580px]">
-                                {demo.title}
-                              </Link>
-                              <div className="flex items-center flex-wrap gap-2 text-[10px] md:text-xs">
+                          <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
+                            <span className="text-stone-500 font-mono font-bold text-xs sm:text-sm w-6 sm:w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-6 sm:h-7 shrink-0">#{idx + 1}</span>
+                            {(demo.thumbUrl || demo.coverUrl || demo.imageUrl) ? (
+                              <img src={getPreviewUrl(demo.thumbUrl || demo.coverUrl || demo.imageUrl)} className="w-10 h-10 rounded-xl object-cover shrink-0 border border-stone-200 shadow-2xs" alt="" />
+                            ) : (
+                              <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center text-stone-400 shrink-0 border border-stone-200">
+                                <Music className="w-5 h-5" />
+                              </div>
+                            )}
+                            <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                              <MarqueeText
+                                text={demo.title || demo.name || t("Chưa đặt tên")}
+                                to={getArtistLink(`/song/${demo.slug || demo.id}`)}
+                                className="hover:text-blue-600 font-bold text-stone-850 text-sm md:text-base"
+                              />
+                              <div className="flex items-center gap-2 text-[10px] md:text-xs min-w-0">
                                 {demo.status !== 'public' && (
-                                  <span className="px-1.5 py-0.5 rounded font-semibold bg-stone-200 text-stone-600 text-[10px] flex items-center gap-1">
+                                  <span className="px-1.5 py-0.5 rounded font-semibold bg-stone-200 text-stone-600 text-[10px] flex items-center gap-1 shrink-0">
                                     <EyeOff className="w-3 h-3" /> Ẩn
                                   </span>
                                 )}
-                                {demo.singer && <span className="text-stone-500 font-medium">{t("Ca sĩ")}: {demo.singer}</span>}
+                                {(demo.singer || demo.author) && (
+                                  <div className="md:hidden flex-1 min-w-0">
+                                    <MarqueeText
+                                      text={demo.singer || demo.author || '---'}
+                                      className="text-stone-500 font-medium text-[11px]"
+                                    />
+                                  </div>
+                                )}
+                                <div className="hidden md:flex items-center gap-2 text-stone-500 font-medium truncate text-xs">
+                                  {demo.composer && <span>{t("Tác giả")}: {demo.composer}</span>}
+                                  {demo.composer && (demo.singer || demo.author) && <span className="text-stone-300">•</span>}
+                                  {(demo.singer || demo.author) && <span>{t("Ca sĩ")}: {demo.singer || demo.author}</span>}
+                                </div>
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-1.5 shrink-0 self-end md:self-auto">
-                            <button type="button" onClick={() => handleShare(demo.slug || demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Chia sẻ Link")}>
+                          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                            <button type="button" onClick={() => handleShare(demo.slug || demo.id)} className="text-stone-500 hover:bg-stone-100 p-1.5 sm:p-2 rounded-lg transition-colors" title={t("Chia sẻ Link")}>
                                <Globe className="w-4 h-4" />
                             </button>
                             {demo.secretKey && (demo.linkType === 'indirect' ? demo.password : (demo.password || (data?.globalPassword && !demo.isReleased))) && (
-                              <button type="button" onClick={() => handleShareSecret(demo)} className="text-amber-600 hover:bg-amber-50 p-2 rounded-lg transition-colors animate-[fade-in_0.3s_ease-out]" title="Copy Secret Link">
+                              <button type="button" onClick={() => handleShareSecret(demo)} className="text-amber-600 hover:bg-amber-50 p-1.5 sm:p-2 rounded-lg transition-colors animate-[fade-in_0.3s_ease-out]" title="Copy Secret Link">
                                  <Unlock className="w-4 h-4 text-amber-500" />
                               </button>
                             )}
-                            <button type="button" onClick={() => handleDuplicate(demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Nhân bản")}>
+                            <button type="button" onClick={() => handleDuplicate(demo.id)} className="hidden md:inline-flex text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Nhân bản")}>
                                <Copy className="w-4 h-4" />
                             </button>
-                            <Link to={getAdminLink(`/edit/${demo.id}`)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title={t("Chỉnh sửa")}>
+                            <Link to={getAdminLink(`/edit/${demo.id}`)} className="text-blue-600 hover:bg-blue-50 p-1.5 sm:p-2 rounded-lg transition-colors" title={t("Chỉnh sửa")}>
                                <Edit3 className="w-4 h-4" />
                             </Link>
-                            <button type="button" onClick={() => handleDeleteClick('song', demo.id, demo.title)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold text-lg" title={t("Xóa")}>
+                            <button type="button" onClick={() => handleDeleteClick('song', demo.id, demo.title || demo.name || t("Chưa đặt tên"))} className="hidden md:inline-flex text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold text-lg" title={t("Xóa")}>
                               <X className="w-4 h-4 text-red-500 stroke-[3]" />
                             </button>
                           </div>
@@ -20371,44 +20405,64 @@ function AdminDashboard() {
                               body: JSON.stringify({ demoIds: [...((data.demos || []).filter(d => (d.isReleased || d.isDraft) && !d.deleted)), ...items].map(d => d.id) })
                             });
                           }}
-                          className={`border border-stone-100 rounded-xl p-3 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white hover:bg-stone-50/50 transition-all cursor-move select-none ${draggedItemIdx === idx ? 'opacity-40 border-dashed border-stone-300 bg-stone-50' : 'shadow-sm'}`}
+                          className={`border border-stone-100 rounded-xl p-2.5 sm:p-3 flex items-center justify-between gap-2.5 bg-white hover:bg-stone-50/50 transition-all cursor-move select-none ${draggedItemIdx === idx ? 'opacity-40 border-dashed border-stone-300 bg-stone-50' : 'shadow-sm'}`}
                         >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
-                            <div className="flex flex-col gap-1 flex-1 min-w-0">
-                              <Link to={getArtistLink(`/song/${demo.slug || demo.id}`)} state={{ fromAdmin: true }} className="hover:text-blue-600 font-bold text-stone-850 text-sm md:text-base block truncate max-w-[150px] xs:max-w-[240px] sm:max-w-[320px] md:max-w-[280px] lg:max-w-[420px] xl:max-w-[580px]">
-                                {demo.title}
-                              </Link>
-                              <div className="flex items-center flex-wrap gap-2 text-[10px] md:text-xs">
+                          <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
+                            <span className="text-stone-500 font-mono font-bold text-xs sm:text-sm w-6 sm:w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-6 sm:h-7 shrink-0">#{idx + 1}</span>
+                            {(demo.thumbUrl || demo.coverUrl || demo.imageUrl) ? (
+                              <img src={getPreviewUrl(demo.thumbUrl || demo.coverUrl || demo.imageUrl)} className="w-10 h-10 rounded-xl object-cover shrink-0 border border-stone-200 shadow-2xs" alt="" />
+                            ) : (
+                              <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center text-stone-400 shrink-0 border border-stone-200">
+                                <Music className="w-5 h-5" />
+                              </div>
+                            )}
+                            <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                              <MarqueeText
+                                text={demo.title || demo.name || t("Chưa đặt tên")}
+                                to={getArtistLink(`/song/${demo.slug || demo.id}`)}
+                                className="hover:text-blue-600 font-bold text-stone-850 text-sm md:text-base"
+                              />
+                              <div className="flex items-center gap-2 text-[10px] md:text-xs min-w-0">
                                 {demo.status !== 'public' && (
-                                  <span className="px-1.5 py-0.5 rounded font-semibold bg-stone-200 text-stone-600 text-[10px] flex items-center gap-1">
+                                  <span className="px-1.5 py-0.5 rounded font-semibold bg-stone-200 text-stone-600 text-[10px] flex items-center gap-1 shrink-0">
                                     <EyeOff className="w-3 h-3" />{t("Ẩn")}</span>
-                                  
                                 )}
+                                {(demo.singer || demo.author) && (
+                                  <div className="md:hidden flex-1 min-w-0">
+                                    <MarqueeText
+                                      text={demo.singer || demo.author || '---'}
+                                      className="text-stone-500 font-medium text-[11px]"
+                                    />
+                                  </div>
+                                )}
+                                <div className="hidden md:flex items-center gap-2 text-stone-500 font-medium truncate text-xs">
+                                  {demo.composer && <span>{t("Tác giả")}: {demo.composer}</span>}
+                                  {demo.composer && (demo.singer || demo.author) && <span className="text-stone-300">•</span>}
+                                  {(demo.singer || demo.author) && <span>{t("Ca sĩ")}: {demo.singer || demo.author}</span>}
+                                </div>
                                 {(demo.linkType === 'indirect' ? demo.password : (demo.password || (data?.globalPassword && !demo.isReleased))) ? (
-                                  <span className="bg-stone-100 text-stone-700 px-1.5 py-0.5 border border-stone-200 rounded flex items-center gap-1 text-[10px] md:text-xs">
+                                  <span className="bg-stone-100 text-stone-700 px-1.5 py-0.5 border border-stone-200 rounded flex items-center gap-1 text-[10px] md:text-xs shrink-0">
                                     <Lock className="w-3 h-3 text-stone-500" /> <span className="font-mono">{demo.password || `${t('Mật khẩu chung')}: ${data?.globalPassword}`}</span></span>
-                                  
                                 ) : null}
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-1.5 shrink-0 self-end md:self-auto">
-                            <button type="button" onClick={() => handleShare(demo.slug || demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Chia sẻ Link")}>
+                          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                            <button type="button" onClick={() => handleShare(demo.slug || demo.id)} className="text-stone-500 hover:bg-stone-100 p-1.5 sm:p-2 rounded-lg transition-colors" title={t("Chia sẻ Link")}>
                                <Globe className="w-4 h-4" />
                             </button>
                             {demo.secretKey && (demo.linkType === 'indirect' ? demo.password : (demo.password || (data?.globalPassword && !demo.isReleased))) && (
-                              <button type="button" onClick={() => handleShareSecret(demo)} className="text-amber-600 hover:bg-amber-50 p-2 rounded-lg transition-colors animate-[fade-in_0.3s_ease-out]" title="Copy Secret Link">
+                              <button type="button" onClick={() => handleShareSecret(demo)} className="text-amber-600 hover:bg-amber-50 p-1.5 sm:p-2 rounded-lg transition-colors animate-[fade-in_0.3s_ease-out]" title="Copy Secret Link">
                                  <Unlock className="w-4 h-4 text-amber-500" />
                               </button>
                             )}
-                            <button type="button" onClick={() => handleDuplicate(demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Nhân bản")}>
+                            <button type="button" onClick={() => handleDuplicate(demo.id)} className="hidden md:inline-flex text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Nhân bản")}>
                                <Copy className="w-4 h-4" />
                             </button>
-                            <Link to={getAdminLink(`/edit/${demo.id}`)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title={t("Chỉnh sửa")}>
+                            <Link to={getAdminLink(`/edit/${demo.id}`)} className="text-blue-600 hover:bg-blue-50 p-1.5 sm:p-2 rounded-lg transition-colors" title={t("Chỉnh sửa")}>
                                <Edit3 className="w-4 h-4" />
                             </Link>
-                            <button type="button" onClick={() => handleDeleteClick('song', demo.id, demo.title)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold text-lg" title={t("Xóa")}>
+                            <button type="button" onClick={() => handleDeleteClick('song', demo.id, demo.title || demo.name || t("Chưa đặt tên"))} className="hidden md:inline-flex text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold text-lg" title={t("Xóa")}>
                               <X className="w-4 h-4 text-red-500 stroke-[3]" />
                             </button>
                           </div>
@@ -20485,7 +20539,7 @@ function AdminDashboard() {
                             </div>
                             <div className="min-w-0">
                               <h4 className="font-bold text-stone-900 truncate md:text-lg flex items-center gap-1.5">
-                                {demo.title} {demo.password && !demo.isReleased && <Lock className="w-3 h-3 inline text-amber-500 mb-0.5" />}
+                                {demo.title || demo.name || t("Chưa đặt tên")} {demo.password && !demo.isReleased && <Lock className="w-3 h-3 inline text-amber-500 mb-0.5" />}
                               </h4>
                               <p className="text-xs md:text-sm text-stone-500 truncate flex items-center gap-2">
                                 <span className="text-indigo-600 font-bold bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">{t('Đối Tác')}: {demo.brandName || '---'}</span>
@@ -20502,13 +20556,13 @@ function AdminDashboard() {
                                  <Unlock className="w-4 h-4 text-amber-500" />
                               </button>
                             )}
-                            <button type="button" onClick={() => handleDuplicate(demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Nhân bản")}>
+                            <button type="button" onClick={() => handleDuplicate(demo.id)} className="hidden md:inline-flex text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Nhân bản")}>
                                <Copy className="w-4 h-4" />
                             </button>
                             <Link to={getAdminLink(`/edit/${demo.id}`)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title={t("Chỉnh sửa")}>
                                <Edit3 className="w-4 h-4" />
                             </Link>
-                            <button type="button" onClick={() => handleDeleteClick('song', demo.id, demo.title)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold text-lg" title={t("Xóa")}>
+                            <button type="button" onClick={() => handleDeleteClick('song', demo.id, demo.title || demo.name || t("Chưa đặt tên"))} className="hidden md:inline-flex text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold text-lg" title={t("Xóa")}>
                               <X className="w-4 h-4 text-red-500 stroke-[3]" />
                             </button>
                           </div>
@@ -20570,9 +20624,16 @@ function AdminDashboard() {
                         >
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
+                            {(demo.thumbUrl || demo.coverUrl || demo.imageUrl) ? (
+                              <img src={getPreviewUrl(demo.thumbUrl || demo.coverUrl || demo.imageUrl)} className="w-10 h-10 rounded-xl object-cover shrink-0 border border-stone-200 shadow-2xs" alt="" />
+                            ) : (
+                              <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center text-stone-400 shrink-0 border border-stone-200">
+                                <Music className="w-5 h-5" />
+                              </div>
+                            )}
                             <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                               <MarqueeTitle
-                                text={demo.title || t("(Chưa đặt tiêu đề)")}
+                                text={demo.title || demo.name || t("(Chưa đặt tiêu đề)")}
                                 to={getAdminLink(`/edit/${demo.id}`)}
                                 className="hover:text-amber-600 font-bold text-stone-850 text-sm md:text-base"
                               />
@@ -20586,22 +20647,22 @@ function AdminDashboard() {
                                     />
                                   </div>
                                 )}
-                                <div className="hidden md:flex items-center gap-2 text-stone-500 font-medium truncate">
+                                <div className="hidden md:flex items-center gap-2 text-stone-500 font-medium truncate text-xs">
+                                  {demo.composer && <span>{t("Tác giả")}: {demo.composer}</span>}
+                                  {demo.composer && demo.singer && <span className="text-stone-300">•</span>}
                                   {demo.singer && <span>{t("Ca sĩ")}: {demo.singer}</span>}
-                                  {demo.singer && <span className="text-stone-300">•</span>}
-                                  <span>{t("Nhạc sĩ")}: {demo.composer || demo.singer || '---'}</span>
                                 </div>
                               </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-1.5 shrink-0 self-end md:self-auto">
-                            <button type="button" onClick={() => handleDuplicate(demo.id)} className="text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Nhân bản")}>
+                            <button type="button" onClick={() => handleDuplicate(demo.id)} className="hidden md:inline-flex text-stone-500 hover:bg-stone-100 p-2 rounded-lg transition-colors" title={t("Nhân bản")}>
                                <Copy className="w-4 h-4" />
                             </button>
                             <Link to={getAdminLink(`/edit/${demo.id}`)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title={t("Chỉnh sửa")}>
                                <Edit3 className="w-4 h-4" />
                             </Link>
-                            <button type="button" onClick={() => handleDeleteClick('song', demo.id, demo.title || t("Bản nháp"))} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold text-lg" title={t("Xóa")}>
+                            <button type="button" onClick={() => handleDeleteClick('song', demo.id, demo.title || demo.name || t("Bản nháp"))} className="hidden md:inline-flex text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors font-bold text-lg" title={t("Xóa")}>
                               <X className="w-4 h-4 text-red-500 stroke-[3]" />
                             </button>
                           </div>
@@ -24216,6 +24277,82 @@ function AdminEditDemo() {
   const [brandLogoUploadProgress, setBrandLogoUploadProgress] = useState(0);
   const [uploadedBrandLogoUrl, setUploadedBrandLogoUrl] = useState("");
   const [uploadedBrandLogoName, setUploadedBrandLogoName] = useState("");
+  const [composer, setComposer] = useState('');
+  const [musicProducer, setMusicProducer] = useState('');
+  const [singer, setSinger] = useState('');
+  const [lyrics, setLyrics] = useState('');
+  const [template, setTemplate] = useState('1');
+  const [releaseYear, setReleaseYear] = useState('');
+  const [linkType, setLinkType] = useState<'direct' | 'indirect'>('direct');
+  const [linkZing, setLinkZing] = useState('');
+  const [linkSpotify, setLinkSpotify] = useState('');
+  const [linkApple, setLinkApple] = useState('');
+  const [linkYoutubeMusic, setLinkYoutubeMusic] = useState('');
+  const [linkYoutube, setLinkYoutube] = useState('');
+  const [password, setPassword] = useState('');
+  const [status, setStatus] = useState('active');
+  const [isReleased, setIsReleased] = useState(true);
+  const [isDraft, setIsDraft] = useState(false);
+  const [isDraggingCover, setIsDraggingCover] = useState(false);
+  const [isDraggingBg, setIsDraggingBg] = useState(false);
+
+  useEffect(() => {
+    if (!id) return;
+    const fetchDemo = async () => {
+      try {
+        const headers: any = {
+          'x-artist-extension': getArtistExtensionFromUrl(),
+          'Authorization': `Bearer ${getAdminToken() || ''}`
+        };
+        const res = await fetch(`/api/demos/${id}`, { headers });
+        if (res.ok) {
+          const data = await res.json();
+          const d = data.demo || data;
+          setDemo(d);
+          setTitle(d.title || '');
+          setSlug(d.slug || '');
+          setComposer(d.composer || '');
+          setMusicProducer(d.musicProducer || '');
+          setSinger(d.singer || '');
+          setLyrics(d.lyrics || '');
+          setTemplate(d.template || '1');
+          setUploadedAudioUrl(d.audioUrl || '');
+          setUploadedCoverUrl(d.coverUrl || '');
+          setUploadedBgUrl(d.backgroundUrl || '');
+          setPlaylistIds(d.playlistIds || []);
+          setAchievements(d.achievements || []);
+          setReleaseYear(d.releaseYear || '');
+          setLinkType(d.linkType || 'direct');
+          setLinkZing(d.linkZing || '');
+          setLinkSpotify(d.linkSpotify || '');
+          setLinkApple(d.linkApple || '');
+          setLinkYoutubeMusic(d.linkYoutubeMusic || '');
+          setLinkYoutube(d.linkYoutube || '');
+          setLinkDrive(d.linkDrive || '');
+          setPassword(d.password || '');
+          setStatus(d.status || 'active');
+          setIsReleased(d.isReleased !== false);
+          setIsDraft(d.isDraft || false);
+          setIsBrand(d.isBrand || false);
+          setBrandName(d.brandName || '');
+          setBrandBrief(d.brandBrief || '');
+          setBrandColor(d.brandColor || '');
+          setUploadedBrandLogoUrl(d.brandLogoUrl || '');
+          setBrandReferenceVideos(d.brandReferenceVideos || []);
+        }
+      } catch (err) {
+        console.error("Failed to load demo", err);
+      }
+    };
+    fetchDemo();
+
+    fetch('/api/data', {
+      headers: { 'x-artist-extension': getArtistExtensionFromUrl() }
+    })
+      .then(r => r.json())
+      .then(d => setAppData(d))
+      .catch(() => {});
+  }, [id]);
 
 
   const getFileNameFromUrl = (url: string | undefined) => {
@@ -24228,199 +24365,6 @@ function AdminEditDemo() {
       return url || '';
     }
   };
-
-  const [template, setTemplate] = useState('1');
-  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
-
-  const [composer, setComposer] = useState('');
-  const [musicProducer, setMusicProducer] = useState('');
-  const [singer, setSinger] = useState('');
-  const [releaseYear, setReleaseYear] = useState('');
-  const [lyrics, setLyrics] = useState('');
-  const lyricsRef = useRef<HTMLTextAreaElement>(null);
-
-  const handleInsertTag = (tag: string) => {
-    const textarea = lyricsRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = textarea.value;
-    const before = text.substring(0, start);
-    const after = text.substring(end, text.length);
-    
-    const insertText = `[${tag}]\n`;
-    const newLyrics = before + insertText + after;
-    
-    setLyrics(newLyrics);
-    
-    setTimeout(() => {
-      textarea.focus();
-      const newCursorPos = start + insertText.length;
-      textarea.setSelectionRange(newCursorPos, newCursorPos);
-    }, 0);
-  };
-  const [randomSlideUrl, setRandomSlideUrl] = useState<string>('');
-
-  const [linkType, setLinkType] = useState<'direct'|'indirect'>('direct');
-  const [status, setStatus] = useState('public');
-  const [isReleased, setIsReleased] = useState(false);
-  const [password, setPassword] = useState('');
-  const [linkZing, setLinkZing] = useState('');
-  const [linkSpotify, setLinkSpotify] = useState('');
-  const [linkApple, setLinkApple] = useState('');
-  const [linkYoutubeMusic, setLinkYoutubeMusic] = useState('');
-  const [linkYoutube, setLinkYoutube] = useState('');
-
-  const getPreviewUrl = (url: string | undefined) => {
-    if (!url) return '';
-    if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) return url;
-    return url;
-  };
-
-  useEffect(() => {
-    fetch('/api/admin/data', {
-      headers: {
-        'x-artist-extension': getArtistExtensionFromUrl(),
-
-        'Authorization': `Bearer ${getAdminToken() || ''}`
-      }
-    })
-      .then(res => {
-        if (res.status === 401) {
-          removeAdminToken();
-          window.location.href = getAdminLink();
-          throw new Error('Unauthorized');
-        }
-        return res.json();
-      })
-      .then(data => {
-        setAppData(data);
-        if (data.slideshowImages && data.slideshowImages.length > 0) {
-          const randomIndex = Math.floor(Math.random() * data.slideshowImages.length);
-          setRandomSlideUrl(data.slideshowImages[randomIndex]);
-        }
-        if (data.templateConfigs && data.templateConfigs.length > 0) {
-          const sorted = data.templateConfigs.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id), landingConfig?.templateNames, String(c.id)) })).sort((a: any, b: any) => a.order - b.order);
-          setTemplateConfigs(sorted);
-        } else {
-          const fallbackList = [
-            { id: '1', name: 'Vui vẻ (Ấm áp)' },
-            { id: '2', name: 'Căng Cực (Sôi động)' },
-            { id: '3', name: 'Buồn (Sâu lắng)' },
-            { id: '4', name: 'Thư giãn (Nhẹ nhàng)' },
-            { id: '5', name: 'Đáng yêu (Đỏ, Nhảy múa)' },
-            { id: '6', name: 'Hạnh Phúc (Hồng, Hoa rơi)' },
-            { id: '7', name: 'Học Đường (Trắng, Lá vàng rơi)' },
-            { id: '8', name: 'Tổ Quốc (Đỏ, Cờ phấp phới)' },
-            { id: '9', name: 'Cầu Vồng' },
-            { id: '10', name: 'Hip Hop (Đường phố)' },
-            { id: '11', name: 'Kỳ bí (Đen vàng, Trăng khói mưa)' },
-            { id: '12', name: 'Cổ điển (Nâu, retro)' },
-            { id: '13', name: 'Hoàng hôn (Cam đỏ trời chiều)' },
-            { id: '14', name: 'Đại Dương (Sóng biển)' },
-            { id: '15', name: 'Retro 8-Bit (Game)' },
-            { id: '16', name: 'Xếp hình Puzzle' },
-            { id: '17', name: 'Cổ vũ (Mây, mặt trời)' },
-            { id: '18', name: 'Pháo hoa (Năm mới)' },
-            { id: '19', name: 'Ký Ức' },
-            { id: '20', name: 'Ngọt Ngào' }
-          ];
-          setTemplateConfigs(fallbackList.map((c: any) => ({ ...c, name: translateTemplateName(c.name || String(c.id), landingConfig?.templateNames, String(c.id)) })));
-        }
-        const found = data.demos.find((d: any) => d.id === id);
-        if (found) {
-          setDemo(found);
-          setTitle(found.title || '');
-          setSlug(found.slug || '');
-          setIsSlugEdited(!!found.slug);
-          setUploadedCoverUrl(found.coverUrl || '');
-          setUploadedBgUrl(found.backgroundUrl || '');
-          setPlaylistIds(found.playlistIds || []);
-          setTemplate(found.template || '1');
-          setStatus(found.status || 'public');
-          setComposer(found.composer || '');
-          setMusicProducer(found.musicProducer || '');
-          setSinger(found.singer || '');
-          setReleaseYear(found.releaseYear || '');
-          setLyrics(found.lyrics || '');
-          setAchievements(found.achievements || []);
-          setLinkType(found.linkType || 'direct');
-          setIsReleased(found.isReleased || false);
-          setIsBrand(found.isBrand || false);
-          setBrandName(found.brandName || '');
-          setBrandBrief(found.brandBrief || '');
-          setBrandColor(found.brandColor || '');
-          setBrandReferenceVideos(found.brandReferenceVideos || []);
-          setUploadedBrandLogoUrl(found.brandLogoUrl || '');
-          setPassword(found.passwordValue || found.password || '');
-          setUploadedAudioUrl(found.audioUrl || '');
-          setLinkZing(found.linkZing || '');
-          setLinkSpotify(found.linkSpotify || '');
-          setLinkApple(found.linkApple || '');
-          setLinkYoutubeMusic(found.linkYoutubeMusic || '');
-          setLinkYoutube(found.linkYoutube || '');
-          setLinkDrive(found.linkDrive || '');
-        }
-      })
-      .catch(err => {
-        console.error(t("Lỗi tải thông tin quản trị:"), err);
-      });
-  }, [id]);
-
-  const [isReverting, setIsReverting] = useState(false);
-  const handleRevertAudio = async () => {
-    if (!(globalShowConfirm && await globalShowConfirm(t("Bạn có chắc chắn muốn khôi phục lại phiên bản file nhạc trước đó gần nhất không?"), t("Khôi phục phiên bản trước")))) {
-      return;
-    }
-    setIsReverting(true);
-    try {
-      const res = await fetch(`/api/demos/${id}/revert`, {
-        method: 'POST',
-        headers: {
-          'x-artist-extension': getArtistExtensionFromUrl(),
-          'Authorization': `Bearer ${getAdminToken() || ''}`
-        }
-      });
-      if (res.ok) {
-        const updatedDemo = await res.json();
-        setDemo(updatedDemo);
-        setUploadedAudioUrl(updatedDemo.audioUrl || '');
-        setUploadedAudioName(''); // reset to show original/reverted filename
-        triggerNotification(t("Khôi phục phiên bản nhạc thành công!"), "success", t("Thành công"));
-      } else {
-        const errData = await res.json();
-        triggerNotification(errData.error || t("Có lỗi xảy ra khi khôi phục."), "error", t("Thất bại"));
-      }
-    } catch (err) {
-      console.error(err);
-      triggerNotification(t("Lỗi kết nối."), "error", t("Lỗi kết nối"));
-    } finally {
-      setIsReverting(false);
-    }
-  };
-
-  const generateSlug = (text: string) => {
-    return text.toString()
-      .replace(/đ/g, 'd').replace(/Đ/g, 'D')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9 ]/g, '')
-      .replace(/\s+/g, '-');
-  };
-
-  useEffect(() => {
-    if (!isSlugEdited && !demo) {
-      setSlug(generateSlug(title));
-    }
-  }, [title, isSlugEdited, demo]);
-
-  const [isDraggingCover, setIsDraggingCover] = useState(false);
-  const [isDraggingAudio, setIsDraggingAudio] = useState(false);
-  const [isDraggingBg, setIsDraggingBg] = useState(false);
-  const [isDraggingBrandLogo, setIsDraggingBrandLogo] = useState(false);
 
   const audioXhrRef = useRef<XMLHttpRequest | null>(null);
   const coverXhrRef = useRef<XMLHttpRequest | null>(null);
