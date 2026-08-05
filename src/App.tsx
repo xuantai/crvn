@@ -19415,8 +19415,8 @@ function AdminDashboard() {
                     {isDemosActive && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        transition={{ type: 'spring', stiffness: 220, damping: 25, mass: 0.9 }}
                       />
                     )}
                     <motion.div
@@ -19452,8 +19452,8 @@ function AdminDashboard() {
                     {isPlaylistActive && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        transition={{ type: 'spring', stiffness: 220, damping: 25, mass: 0.9 }}
                       />
                     )}
                     <motion.div
@@ -19489,8 +19489,8 @@ function AdminDashboard() {
                     {isTemplatesActive && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        transition={{ type: 'spring', stiffness: 220, damping: 25, mass: 0.9 }}
                       />
                     )}
                     <motion.div
@@ -19526,8 +19526,8 @@ function AdminDashboard() {
                     {isRepostsActive && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        transition={{ type: 'spring', stiffness: 220, damping: 25, mass: 0.9 }}
                       />
                     )}
                     <motion.div
@@ -19574,8 +19574,8 @@ function AdminDashboard() {
                     {isProfileActive && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        transition={{ type: 'spring', stiffness: 220, damping: 25, mass: 0.9 }}
                       />
                     )}
                     <motion.div
@@ -19612,8 +19612,8 @@ function AdminDashboard() {
                     {isLayoutActive && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        transition={{ type: 'spring', stiffness: 220, damping: 25, mass: 0.9 }}
                       />
                     )}
                     <motion.div
@@ -19646,8 +19646,8 @@ function AdminDashboard() {
                     {isAboutActive && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        transition={{ type: 'spring', stiffness: 220, damping: 25, mass: 0.9 }}
                       />
                     )}
                     <motion.div
@@ -19684,8 +19684,8 @@ function AdminDashboard() {
                     {isBioActive && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        transition={{ type: 'spring', stiffness: 220, damping: 25, mass: 0.9 }}
                       />
                     )}
                     <motion.div
@@ -19722,8 +19722,8 @@ function AdminDashboard() {
                     {isMenusActive && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        transition={{ type: 'spring', stiffness: 220, damping: 25, mass: 0.9 }}
                       />
                     )}
                     <motion.div
@@ -19760,8 +19760,8 @@ function AdminDashboard() {
                     {isTicketsActive && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        transition={{ type: 'spring', stiffness: 220, damping: 25, mass: 0.9 }}
                       />
                     )}
                     <motion.div
@@ -19809,8 +19809,8 @@ function AdminDashboard() {
                       {activeTab === 'database' && (
                         <motion.span
                           layoutId="adminSidebarActiveBg"
-                          className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                          transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
+                          className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                          transition={{ type: 'spring', stiffness: 220, damping: 25, mass: 0.9 }}
                         />
                       )}
                       <motion.div
@@ -19841,8 +19841,8 @@ function AdminDashboard() {
                     {activeTab === 'admin_theme' && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        transition={{ type: 'spring', stiffness: 220, damping: 25, mass: 0.9 }}
                       />
                     )}
                     <motion.div
@@ -19874,8 +19874,8 @@ function AdminDashboard() {
                     {activeTab === 'vouchers' && (
                       <motion.span
                         layoutId="adminSidebarActiveBg"
-                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110"
-                        transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
+                        className="absolute inset-0 btn-black-gradient-blur rounded-xl z-0 group-hover:brightness-110 transition-none"
+                        transition={{ type: 'spring', stiffness: 220, damping: 25, mass: 0.9 }}
                       />
                     )}
                     <motion.div
