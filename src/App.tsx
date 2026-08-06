@@ -5882,11 +5882,12 @@ const getArtistExtensionFromUrl = (customPath?: string) => {
   const currentPath = customPath !== undefined ? customPath : window.location.pathname;
   const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
   const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
-  const isDefaultPlatform = host === 'chorus.vn' || host.endsWith('.chorus.vn') || host.endsWith('.run.app') || host.endsWith('.aistudio.google') || host.endsWith('.gitpod.io');
+  const parts = host.split('.');
+  const isDefaultPlatform = parts.length <= 2 || host.endsWith('.run.app') || host.endsWith('.aistudio.google') || host.endsWith('.gitpod.io');
 
-  if (host.endsWith('.chorus.vn') && host !== 'chorus.vn') {
-    const sub = host.replace('.chorus.vn', '');
-    if (sub) return sub;
+  if (parts.length >= 3 && !isLocal) {
+    const sub = parts.slice(0, parts.length - 2).join('.');
+    if (sub && sub !== 'www') return sub;
   }
 
   if ((window as any).__ACTIVE_ARTIST_EXTENSION__ && !isDefaultPlatform && !isLocal) {
@@ -5925,11 +5926,15 @@ const getArtistExtensionFromUrl = (customPath?: string) => {
 
 const isArtistContext = () => {
   const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
-  if (host.endsWith('.chorus.vn') && host !== 'chorus.vn') return true;
-  
-  // Custom domain check: not chorus.vn, not localhost/127.0.0.1, and not .run.app preview domain
   const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
-  const isDefaultPlatform = host === 'chorus.vn' || host.endsWith('.run.app') || host.endsWith('.aistudio.google') || host.endsWith('.gitpod.io');
+  const parts = host.split('.');
+  if (parts.length >= 3 && !isLocal) {
+    const sub = parts.slice(0, parts.length - 2).join('.');
+    if (sub && sub !== 'www') return true;
+  }
+  
+  // Custom domain check
+  const isDefaultPlatform = parts.length <= 2 || host.endsWith('.run.app') || host.endsWith('.aistudio.google') || host.endsWith('.gitpod.io');
   if (!isLocal && !isDefaultPlatform) {
     return true;
   }
@@ -5948,6 +5953,8 @@ const getAdminLink = (subPath: string = '', _customPath?: string) => {
 const getArtistLink = (subPath: string = '', customPath?: string) => {
   const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
   const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
+  const parts = host.split('.');
+  const baseDomain = parts.length >= 2 ? parts.slice(-2).join('.') : host;
   const ext = getArtistExtensionFromUrl(customPath) || (window as any).__ACTIVE_ARTIST_EXTENSION__ || '';
   
   let cleanPath = subPath ? (subPath.startsWith('/') ? subPath : `/${subPath}`) : '';
@@ -5964,9 +5971,9 @@ const getArtistLink = (subPath: string = '', customPath?: string) => {
 
   // 2. Check if cleanPath contains a firstSegment matching an extension (e.g., /acxuantai/song/123)
   if (cleanPath.startsWith('/')) {
-    const parts = cleanPath.split('/').filter(Boolean);
-    if (parts.length > 0) {
-      const firstSegment = parts[0].toLowerCase();
+    const pParts = cleanPath.split('/').filter(Boolean);
+    if (pParts.length > 0) {
+      const firstSegment = pParts[0].toLowerCase();
       const RESERVED_EXTS = [
         'admin', 'master', 'acp', 'verify-email', 'help', 'api', 'assets', 'static', 
         'favicon.ico', 'robots.txt', 'sitemap.xml', 'mem', 'demo', 'song', 'playlist',
@@ -5974,11 +5981,11 @@ const getArtistLink = (subPath: string = '', customPath?: string) => {
       ];
       if (!RESERVED_EXTS.includes(firstSegment)) {
         const targetExt = firstSegment;
-        const restOfPath = '/' + parts.slice(1).join('/');
+        const restOfPath = '/' + pParts.slice(1).join('/');
         const normalizedRest = (restOfPath === '/' || restOfPath === '') ? '' : restOfPath;
 
-        if (!isLocal && (host === 'chorus.vn' || host.endsWith('.chorus.vn'))) {
-          return `https://${targetExt}.chorus.vn${normalizedRest}`;
+        if (!isLocal) {
+          return `https://${targetExt}.${baseDomain}${normalizedRest}`;
         } else if (isLocal) {
           return `http://${targetExt}.localhost:${window.location.port}${normalizedRest}`;
         }
@@ -5988,8 +5995,8 @@ const getArtistLink = (subPath: string = '', customPath?: string) => {
 
   const normalizedPath = cleanPath ? (cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`) : '';
 
-  if (ext && !isLocal && (host === 'chorus.vn' || host.endsWith('.chorus.vn'))) {
-    return `https://${ext}.chorus.vn${normalizedPath}`;
+  if (ext && !isLocal) {
+    return `https://${ext}.${baseDomain}${normalizedPath}`;
   }
   return normalizedPath || '/';
 };
@@ -6019,8 +6026,11 @@ const setGlobalCookie = (name: string, value: string) => {
     return;
   }
   const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
-  const domain = (host.endsWith('.chorus.vn') || host === 'chorus.vn') ? 'domain=.chorus.vn;' : '';
-  document.cookie = `${name}=${encodeURIComponent(value)}; ${domain} path=/; max-age=31536000; SameSite=Lax`;
+  const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
+  const parts = host.split('.');
+  const baseDomain = parts.length >= 2 ? parts.slice(-2).join('.') : host;
+  const domainAttr = !isLocal ? `domain=.${baseDomain};` : '';
+  document.cookie = `${name}=${encodeURIComponent(value)}; ${domainAttr} path=/; max-age=31536000; SameSite=Lax`;
 };
 
 const getGlobalCookie = (name: string) => {
@@ -6031,15 +6041,17 @@ const getGlobalCookie = (name: string) => {
 
 const removeGlobalCookie = (name: string) => {
   const host = typeof window !== 'undefined' ? window.location.hostname.replace(/^www\./, '').toLowerCase().trim() : '';
-  const isChorus = host.endsWith('.chorus.vn') || host === 'chorus.vn';
+  const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
+  const parts = host.split('.');
+  const baseDomain = parts.length >= 2 ? parts.slice(-2).join('.') : host;
   const expires = 'Thu, 01 Jan 1970 00:00:00 GMT';
   const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
   const secure = isHttps ? '; Secure' : '';
 
-  if (isChorus) {
-    document.cookie = `${name}=; domain=.chorus.vn; path=/; expires=${expires}; max-age=0; SameSite=Lax${secure}`;
-    document.cookie = `${name}=; domain=chorus.vn; path=/; expires=${expires}; max-age=0; SameSite=Lax${secure}`;
-    if (host !== 'chorus.vn') {
+  if (!isLocal) {
+    document.cookie = `${name}=; domain=.${baseDomain}; path=/; expires=${expires}; max-age=0; SameSite=Lax${secure}`;
+    document.cookie = `${name}=; domain=${baseDomain}; path=/; expires=${expires}; max-age=0; SameSite=Lax${secure}`;
+    if (host !== baseDomain) {
       document.cookie = `${name}=; domain=.${host}; path=/; expires=${expires}; max-age=0; SameSite=Lax${secure}`;
       document.cookie = `${name}=; domain=${host}; path=/; expires=${expires}; max-age=0; SameSite=Lax${secure}`;
     }
@@ -6051,6 +6063,8 @@ const removeGlobalCookie = (name: string) => {
 const getArtistAdminRedirect = (targetExt: string, toPage = 'admin') => {
   const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
   const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
+  const parts = host.split('.');
+  const baseDomain = (parts.length >= 2 && !isLocal) ? parts.slice(-2).join('.') : host;
 
   if (toPage === 'admin' || toPage.startsWith('admin/')) {
     const sub = toPage.replace(/^admin\/?/, '');
@@ -6058,20 +6072,20 @@ const getArtistAdminRedirect = (targetExt: string, toPage = 'admin') => {
     if (isLocal) {
       return `http://localhost:${window.location.port}${adminPath}`;
     }
-    return `https://chorus.vn${adminPath}`;
+    return `https://${baseDomain}${adminPath}`;
   }
 
   if (toPage === 'help' || toPage.startsWith('help/')) {
     if (isLocal) {
       return `http://localhost:${window.location.port}/help`;
     }
-    return `https://chorus.vn/help`;
+    return `https://${baseDomain}/help`;
   }
 
   // Public artist page link -> ALWAYS use subdomain!
   const pagePath = toPage ? (toPage.startsWith('/') ? toPage : `/${toPage}`) : '';
   if (!isLocal) {
-    return `https://${targetExt}.chorus.vn${pagePath}`;
+    return `https://${targetExt}.${baseDomain}${pagePath}`;
   } else {
     return `http://${targetExt}.localhost:${window.location.port}${pagePath}`;
   }
@@ -6080,8 +6094,11 @@ const getArtistAdminRedirect = (targetExt: string, toPage = 'admin') => {
 const getLogoutRedirectUrl = () => {
   if (typeof window === 'undefined') return '/';
   const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
-  const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
-  const isCustomDomain = !host.endsWith('.chorus.vn') && host !== 'chorus.vn' && host !== 'localhost' && host !== '127.0.0.1';
+  const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
+  const parts = host.split('.');
+  const baseDomain = parts.length >= 2 ? parts.slice(-2).join('.') : host;
+  const isSubdomain = parts.length >= 3 && !isLocal;
+  const isCustomDomain = !isLocal && parts.length <= 2 && host !== baseDomain;
 
   if (isSubdomain || isCustomDomain) {
     return '/';
@@ -6105,17 +6122,16 @@ const getActiveAdminSession = () => {
     };
   }
   const host = typeof window !== 'undefined' ? window.location.hostname.replace(/^www./, '').toLowerCase().trim() : '';
-  const isChorusDomain = host.endsWith('.chorus.vn') || host === 'chorus.vn';
+  const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
+  const isStandardDomain = !isLocal;
 
-  // On .chorus.vn domains, the Cookie is the strict Single Source of Truth!
-  // If global cookie is empty, the user IS LOGGED OUT across all subdomains and main domain.
-  // We NEVER fall back to local storage if global cookie is absent on .chorus.vn!
-  let activeExt = isChorusDomain 
+  // On standard domains, the Cookie is the strict Single Source of Truth!
+  let activeExt = isStandardDomain 
     ? getGlobalCookie('activeAdminExtension') 
     : (getGlobalCookie('activeAdminExtension') || localStorage.getItem('activeAdminExtension'));
 
   let activeToken = activeExt 
-    ? (getGlobalCookie(`adminToken_${activeExt}`) || getGlobalCookie('adminToken') || (isChorusDomain ? null : (localStorage.getItem(`adminToken_${activeExt}`) || localStorage.getItem('adminToken')))) 
+    ? (getGlobalCookie(`adminToken_${activeExt}`) || getGlobalCookie('adminToken') || (isStandardDomain ? null : (localStorage.getItem(`adminToken_${activeExt}`) || localStorage.getItem('adminToken')))) 
     : null;
 
   // If no active extension or no active token exists on cookie level, session is LOGGED OUT!
@@ -7384,11 +7400,14 @@ function AnimatedRoutes() {
     const isMasterPage = location.pathname === '/master' || location.pathname === '/acp';
     const isVerifyEmailPage = location.pathname === '/verify-email';
 
-    // RULE 1 & 2: If accessing /admin on a subdomain (e.g. acxuantai.chorus.vn/admin) or path (/acxuantai/admin), redirect to chorus.vn/admin
+    // RULE 1 & 2: If accessing /admin on a subdomain (e.g. acxuantai.chorus.vn/admin) or path (/acxuantai/admin), redirect to baseDomain/admin
+    const parts = host.split('.');
+    const baseDomain = parts.length >= 2 ? parts.slice(-2).join('.') : host;
+
     if (isAdminPage && !isLocal) {
-      if (host !== 'chorus.vn' || (currentExt && location.pathname.startsWith(`/${currentExt}/admin`))) {
+      if (host !== baseDomain || (currentExt && location.pathname.startsWith(`/${currentExt}/admin`))) {
         const subPath = location.pathname.substring(location.pathname.indexOf('/admin'));
-        window.location.href = `https://chorus.vn${subPath}${location.search}`;
+        window.location.href = `https://${baseDomain}${subPath}${location.search}`;
         return;
       }
     }
@@ -7417,13 +7436,13 @@ function AnimatedRoutes() {
           return;
         }
 
-        // If artist IS valid and accessing path-based artist URL on chorus.vn (e.g., chorus.vn/xxxx/song/abc), redirect to xxxx.chorus.vn/song/abc
-        if (!isLocal && (host === 'chorus.vn' || host === 'www.chorus.vn')) {
-          const parts = location.pathname.split('/').filter(Boolean);
-          const firstSegment = parts[0];
+        // If artist IS valid and accessing path-based artist URL on baseDomain (e.g., chorus.vn/xxxx/song/abc), redirect to xxxx.baseDomain/song/abc
+        if (!isLocal && (host === baseDomain || host === `www.${baseDomain}`)) {
+          const pathParts = location.pathname.split('/').filter(Boolean);
+          const firstSegment = pathParts[0];
           if (firstSegment && !RESERVED_EXTS.includes(firstSegment.toLowerCase())) {
-            const restOfPath = '/' + parts.slice(1).join('/');
-            window.location.href = `https://${firstSegment}.chorus.vn${restOfPath}${location.search}`;
+            const restOfPath = '/' + pathParts.slice(1).join('/');
+            window.location.href = `https://${firstSegment}.${baseDomain}${restOfPath}${location.search}`;
           }
         }
       }).catch(() => {

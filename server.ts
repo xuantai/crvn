@@ -1555,9 +1555,12 @@ async function startServer() {
       });
       if (matchedArtist) {
         ext = matchedArtist.extension;
-      } else if (host.endsWith('.chorus.vn') && host !== 'chorus.vn') {
-        const sub = host.replace('.chorus.vn', '');
-        if (sub) ext = sub;
+      } else {
+        const parts = host.split('.');
+        if (parts.length >= 3) {
+          const sub = parts.slice(0, parts.length - 2).join('.');
+          if (sub && sub !== 'www') ext = sub;
+        }
       }
     }
 
@@ -1575,10 +1578,11 @@ async function startServer() {
           });
           if (matchedArtistByRef) {
             ext = matchedArtistByRef.extension;
-          } else if (refHost.endsWith('.chorus.vn') && refHost !== 'chorus.vn') {
-            const sub = refHost.replace('.chorus.vn', '');
-            if (sub) {
-              ext = sub;
+          } else {
+            const parts = refHost.split('.');
+            if (parts.length >= 3) {
+              const sub = parts.slice(0, parts.length - 2).join('.');
+              if (sub && sub !== 'www') ext = sub;
             }
           }
           
@@ -1721,13 +1725,15 @@ async function startServer() {
       await loadArtists();
     }
     
-    // Check if accessing an unregistered subdomain of .chorus.vn
+    // Check if accessing an unregistered subdomain of base domain
     const hostHeader = req.get('x-forwarded-host') || req.get('host');
     if (hostHeader) {
       const host = hostHeader.replace(/^www\./, '').toLowerCase().trim();
-      if (host.endsWith('.chorus.vn') && host !== 'chorus.vn') {
-        const sub = host.replace('.chorus.vn', '');
-        if (sub) {
+      const parts = host.split('.');
+      if (parts.length >= 3) {
+        const sub = parts.slice(0, parts.length - 2).join('.');
+        const baseDomain = parts.slice(-2).join('.');
+        if (sub && sub !== 'www') {
           const matchedArtist = artists.find(a => {
             if (a.extension === sub || a.username === sub) return true;
             if (a.extraUsernames) {
@@ -1737,7 +1743,7 @@ async function startServer() {
             return false;
           });
           if (!matchedArtist) {
-            return res.redirect(302, 'https://chorus.vn/');
+            return res.redirect(302, `https://${baseDomain}/`);
           }
         }
       }
@@ -4452,7 +4458,12 @@ ${JSON.stringify(geminiInput, null, 2)}`;
 
   app.post('/api/admin/logout', (req: any, res) => {
     const cookies = req.headers.cookie ? Object.fromEntries(req.headers.cookie.split('; ').map(c => c.split('='))) : {};
-    const domains = ['Domain=.chorus.vn; ', ''];
+    const hostHeader = req.get('x-forwarded-host') || req.get('host') || '';
+    const host = hostHeader.replace(/^www\./, '').toLowerCase().trim();
+    const parts = host.split('.');
+    const baseDomain = parts.length >= 2 ? parts.slice(-2).join('.') : host;
+    const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
+    const domains = (!isLocal && baseDomain) ? [`Domain=.${baseDomain}; `, `Domain=${baseDomain}; `, ''] : [''];
     const keysToClear = ['adminToken', 'activeAdminExtension', 'activeAdminName', 'activeAdminAvatar', 'activeAdminActivated', 'memberToken'];
     
     for (const key of Object.keys(cookies)) {
@@ -7390,7 +7401,8 @@ ${JSON.stringify(geminiInput, null, 2)}`;
 
       const host = req.get('x-forwarded-host') || req.get('host') || '';
       const hostAscii = normalizeToAscii(host);
-      const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
+      const hostParts = host.split('.');
+      const isSubdomain = hostParts.length >= 3 && hostParts[0] !== 'www';
       
       const isCustomDomain = artists.some(a => {
         const cd = a.customDomain || '';
