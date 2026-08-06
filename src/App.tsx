@@ -2,7 +2,7 @@ import { createPortal } from "react-dom";
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
 import { ChorusLogo } from './components/ChorusLogo';
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { UserCircle, BookOpen, User, Settings, Play, Pause, Music, Lock, Unlock, ArrowLeft, ArrowRight, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, List, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, RefreshCw, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, ChevronDown, Menu, Palette, LayoutTemplate, Award, History, HelpCircle, Paintbrush, CheckCircle2, XCircle, ShieldCheck, LogIn } from 'lucide-react';
+import { UserCircle, BookOpen, User, Settings, Play, Pause, Music, Lock, Unlock, ArrowLeft, ArrowRight, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, List, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, RefreshCw, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, ChevronDown, Menu, Palette, LayoutTemplate, Award, History, HelpCircle, Paintbrush, CheckCircle2, XCircle, ShieldCheck, LogIn, Calendar } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { AppData, DemoSong, TemplateConfig, Achievement } from './types';
 import { motion, AnimatePresence, LayoutGroup } from 'motion/react';
@@ -24103,19 +24103,52 @@ function AdminCreateDemo() {
             {linkType !== 'indirect' && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-stone-100">
-                  {!isReleased ? (
-                    <div>
-                      <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Mật khẩu bảo vệ (tùy chọn)")}</label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3.5 w-5 h-5 text-stone-400" />
-                        <input name="password" value={password} onChange={e => setPassword(e.target.value)} placeholder={t("Bỏ trống nếu không cần")} className="w-full border border-stone-300 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all font-mono" />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center text-stone-500 text-sm italic font-medium pt-2">
-                      <span>{t("✓ Bài hát đã phát hành sẽ không sử dụng mật khẩu bảo vệ.")}</span>
-                    </div>
-                  )}
+                  <div className="relative min-h-[70px]">
+                    <AnimatePresence mode="wait">
+                      {!isReleased ? (
+                        <motion.div
+                          key="password-slot-create"
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -5 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                        >
+                          <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Mật khẩu bảo vệ (tùy chọn)")}</label>
+                          <div className="relative">
+                            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
+                            <input 
+                              name="password" 
+                              value={password} 
+                              onChange={e => setPassword(e.target.value)} 
+                              placeholder={t("Bỏ trống nếu không cần")} 
+                              className="w-full border border-stone-300 rounded-xl pl-10 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all font-mono bg-white" 
+                            />
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="release-year-slot-create"
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -5 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                        >
+                          <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Năm phát hành")}</label>
+                          <div className="relative">
+                            <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
+                            <input 
+                              name="releaseYear" 
+                              value={releaseYear} 
+                              onChange={e => setReleaseYear(e.target.value.replace(/\D/g, '').slice(0, 4))} 
+                              placeholder={t("2026")} 
+                              maxLength={4}
+                              className="w-full border border-stone-300 rounded-xl pl-10 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all font-mono bg-white" 
+                            />
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                    <div>
                     <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Hiển thị (Trạng thái phát hành)")}</label>
                      <CustomSelect
@@ -24148,27 +24181,32 @@ function AdminCreateDemo() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-stone-100 items-start">
-                   <div className="flex items-center justify-between bg-stone-50 px-3.5 py-2.5 rounded-xl border border-stone-200 min-h-[42px]">
-                    <div className="flex items-center gap-3 cursor-pointer shrink-0">
-                      <input type="checkbox" id="isReleasedForm" name="isReleased" checked={isReleased} onChange={e => {
-                        const checked = e.target.checked;
+                   <div>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Trạng thái phát hành")}</label>
+                    <div 
+                      onClick={() => {
+                        const checked = !isReleased;
                         setIsReleased(checked);
                         if (checked) {
                           setPassword('');
+                          if (!releaseYear) setReleaseYear(new Date().getFullYear().toString());
                         }
-                      }} className="w-6 h-6 rounded border-stone-300 text-stone-900 focus:ring-stone-900 transition-all cursor-pointer" />
-                      <label htmlFor="isReleasedForm" className="block text-sm font-semibold text-stone-700 cursor-pointer select-none mb-0">{t("Đã phát hành")}</label>
-                    </div>
-                    
-                    {isReleased && (
-                      <div className="flex items-center gap-2">
-                        <input name="releaseYear" value={releaseYear} onChange={e => setReleaseYear(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder={t("2026")} className="w-32 border border-stone-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow text-sm text-center bg-white" maxLength={4} />
+                      }}
+                      className="flex items-center justify-between bg-white px-3.5 py-2 rounded-xl border border-stone-300 cursor-pointer h-[42px] hover:border-stone-400 transition-all select-none"
+                    >
+                      <span className="text-sm font-medium text-stone-700">
+                        {isReleased ? t("Đã phát hành") : t("Chưa phát hành")}
+                      </span>
+                      <div className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors duration-300 ${isReleased ? 'bg-stone-900' : 'bg-stone-200'}`}>
+                        <div className={`bg-white w-4 h-4 rounded-full shadow-xs transform transition-transform duration-300 ${isReleased ? 'translate-x-5' : 'translate-x-0'}`} />
                       </div>
-                    )}
+                      <input type="checkbox" name="isReleased" checked={isReleased} readOnly className="sr-only" />
+                    </div>
                   </div>
 
                    <div>
-                     <PlaylistSelect selectedIds={playlistIds} onChange={setPlaylistIds} />
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Playlist")}</label>
+                    <PlaylistSelect selectedIds={playlistIds} onChange={setPlaylistIds} />
                    </div>
                 </div>
               </>
@@ -25438,19 +25476,52 @@ function AdminEditDemo() {
             {linkType !== 'indirect' && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-stone-100">
-                  {!isReleased ? (
-                    <div>
-                      <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Mật khẩu bảo vệ (tùy chọn)")}</label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 w-4 h-4 text-stone-400" />
-                        <input name="password" value={password} onChange={e => setPassword(e.target.value)} placeholder={t("Bỏ trống nếu không cần")} className="w-full border border-stone-300 rounded-xl pl-9 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all shadow-sm" />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center text-stone-500 text-sm italic font-medium pt-2">
-                      <span>{t("✓ Bài hát đã phát hành sẽ không sử dụng mật khẩu bảo vệ.")}</span>
-                    </div>
-                  )}
+                  <div className="relative min-h-[70px]">
+                    <AnimatePresence mode="wait">
+                      {!isReleased ? (
+                        <motion.div
+                          key="password-slot-edit"
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -5 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                        >
+                          <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Mật khẩu bảo vệ (tùy chọn)")}</label>
+                          <div className="relative">
+                            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
+                            <input 
+                              name="password" 
+                              value={password} 
+                              onChange={e => setPassword(e.target.value)} 
+                              placeholder={t("Bỏ trống nếu không cần")} 
+                              className="w-full border border-stone-300 rounded-xl pl-10 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all font-mono bg-white" 
+                            />
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="release-year-slot-edit"
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -5 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                        >
+                          <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Năm phát hành")}</label>
+                          <div className="relative">
+                            <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
+                            <input 
+                              name="releaseYear" 
+                              value={releaseYear} 
+                              onChange={e => setReleaseYear(e.target.value.replace(/\D/g, '').slice(0, 4))} 
+                              placeholder={t("2026")} 
+                              maxLength={4}
+                              className="w-full border border-stone-300 rounded-xl pl-10 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all font-mono bg-white" 
+                            />
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                    <div>
                     <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Hiển thị (Trạng thái phát hành)")}</label>
                      <CustomSelect
@@ -25483,27 +25554,32 @@ function AdminEditDemo() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-stone-100 items-start">
-                   <div className="flex items-center justify-between bg-stone-50 px-3.5 py-2.5 rounded-xl border border-stone-200 min-h-[42px]">
-                    <div className="flex items-center gap-3 cursor-pointer shrink-0">
-                      <input type="checkbox" id="isReleasedForm" name="isReleased" checked={isReleased} onChange={e => {
-                        const checked = e.target.checked;
+                   <div>
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Trạng thái phát hành")}</label>
+                    <div 
+                      onClick={() => {
+                        const checked = !isReleased;
                         setIsReleased(checked);
                         if (checked) {
                           setPassword('');
+                          if (!releaseYear) setReleaseYear(new Date().getFullYear().toString());
                         }
-                      }} className="w-6 h-6 rounded border-stone-300 text-stone-900 focus:ring-stone-900 transition-all cursor-pointer" />
-                      <label htmlFor="isReleasedForm" className="block text-sm font-semibold text-stone-700 cursor-pointer select-none mb-0">{t("Đã phát hành")}</label>
-                    </div>
-                    
-                    {isReleased && (
-                      <div className="flex items-center gap-2">
-                        <input name="releaseYear" value={releaseYear} onChange={e => setReleaseYear(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder={t("2026")} className="w-32 border border-stone-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow text-sm text-center bg-white" maxLength={4} />
+                      }}
+                      className="flex items-center justify-between bg-white px-3.5 py-2 rounded-xl border border-stone-300 cursor-pointer h-[42px] hover:border-stone-400 transition-all select-none"
+                    >
+                      <span className="text-sm font-medium text-stone-700">
+                        {isReleased ? t("Đã phát hành") : t("Chưa phát hành")}
+                      </span>
+                      <div className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors duration-300 ${isReleased ? 'bg-stone-900' : 'bg-stone-200'}`}>
+                        <div className={`bg-white w-4 h-4 rounded-full shadow-xs transform transition-transform duration-300 ${isReleased ? 'translate-x-5' : 'translate-x-0'}`} />
                       </div>
-                    )}
+                      <input type="checkbox" name="isReleased" checked={isReleased} readOnly className="sr-only" />
+                    </div>
                   </div>
 
                    <div>
-                     <PlaylistSelect selectedIds={playlistIds} onChange={setPlaylistIds} />
+                    <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Playlist")}</label>
+                    <PlaylistSelect selectedIds={playlistIds} onChange={setPlaylistIds} />
                    </div>
                 </div>
 

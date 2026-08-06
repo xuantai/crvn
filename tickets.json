@@ -1,42 +1,42 @@
 [
   {
-    "songTitle": "Muốn Nói Với Em",
-    "description": "xóa đê",
+    "status": "resolved",
+    "createdAt": "2026-07-05T19:44:19.993Z",
     "sourceArtist": "acxuantai",
+    "songId": "1783163656590",
+    "id": "6224169cf393da9a",
+    "reporterArtist": "mxt",
     "messages": [
       {
         "sender": "reporter",
-        "senderName": "Mai Xuân Thứ",
-        "id": "0636d88750d261c2",
+        "createdAt": "2026-07-05T19:44:19.993Z",
         "text": "xóa đê",
-        "createdAt": "2026-07-05T19:44:19.993Z"
+        "id": "0636d88750d261c2",
+        "senderName": "Mai Xuân Thứ"
       },
       {
-        "senderName": "Hệ thống",
-        "createdAt": "2026-07-05T19:45:12.391Z",
+        "sender": "admin",
         "text": "Admin hệ thống đã ra quyết định GỠ BÀI HÁT này khỏi kênh của acxuantai.",
-        "sender": "admin"
-      },
-      {
         "senderName": "Hệ thống",
-        "createdAt": "2026-07-05T20:56:58.691Z",
-        "sender": "admin",
-        "id": "869e8ea9a57f0ed7",
-        "text": "Admin hệ thống đã mở lại ticket này."
+        "createdAt": "2026-07-05T19:45:12.391Z"
       },
       {
-        "id": "dbe7af2ba2c8d7e2",
-        "text": "Yêu cầu đã được đóng và giải quyết bởi Admin hệ thống.",
+        "text": "Admin hệ thống đã mở lại ticket này.",
+        "createdAt": "2026-07-05T20:56:58.691Z",
+        "id": "869e8ea9a57f0ed7",
         "sender": "admin",
-        "createdAt": "2026-07-08T18:32:34.688Z",
         "senderName": "Hệ thống"
+      },
+      {
+        "text": "Yêu cầu đã được đóng và giải quyết bởi Admin hệ thống.",
+        "id": "dbe7af2ba2c8d7e2",
+        "sender": "admin",
+        "senderName": "Hệ thống",
+        "createdAt": "2026-07-08T18:32:34.688Z"
       }
     ],
+    "songTitle": "Muốn Nói Với Em",
     "type": "remove",
-    "reporterArtist": "mxt",
-    "createdAt": "2026-07-05T19:44:19.993Z",
-    "status": "resolved",
-    "id": "6224169cf393da9a",
-    "songId": "1783163656590"
+    "description": "xóa đê"
   }
 ]
