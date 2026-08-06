@@ -11621,10 +11621,16 @@ function Home() {
                         const songsInPlaylist = (data?.demos || []).filter(d => !d.deleted && ((d.playlistIds && d.playlistIds.includes(playlist.id)) || (playlist.songIds && playlist.songIds.includes(d.id))));
                         if (songsInPlaylist.length === 0) return <React.Fragment key={`l8086-${playlist.id || ''}-${idx}`} />;
                         
-                        let coverUrl = getThumbUrl(playlist.coverUrl) || '';
+                        const firstSong = songsInPlaylist[0];
+                        const firstSongCover = firstSong ? (firstSong.thumbUrl || firstSong.coverUrl || (firstSong as any).image || '') : '';
+                        const rawCover = (playlist.coverUrl && playlist.coverUrl.trim() !== '') ? playlist.coverUrl : firstSongCover;
+                        let coverUrl = getThumbUrl(rawCover) || '';
+                        if (!coverUrl && firstSongCover) {
+                           coverUrl = getThumbUrl(firstSongCover) || firstSongCover;
+                        }
                         if (!coverUrl && data.slideshowImages && data.slideshowImages.length > 0) {
                            const hash = Array.from(playlist.id as string).reduce((sum: number, char: any) => sum + char.charCodeAt(0), 0);
-                           coverUrl = data.slideshowImages[hash % data.slideshowImages.length];
+                           coverUrl = getThumbUrl(data.slideshowImages[hash % data.slideshowImages.length]) || '';
                         }
 
                         return (
@@ -12811,6 +12817,55 @@ const getAudioPlayUrl = (url: string) => {
   return url;
 };
 
+function Seek10BackwardIcon({ className = "w-6 h-6" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className}>
+      <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" fill="currentColor" />
+      <text x="12" y="16" fontSize="8" fontWeight="800" textAnchor="middle" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">10</text>
+    </svg>
+  );
+}
+
+function Seek10ForwardIcon({ className = "w-6 h-6" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className}>
+      <path d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z" fill="currentColor" />
+      <text x="12" y="16" fontSize="8" fontWeight="800" textAnchor="middle" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">10</text>
+    </svg>
+  );
+}
+
+function YouTubeSeekOverlay({ side, seconds }: { side: 'left' | 'right'; seconds: number }) {
+  return (
+    <motion.div
+      key={`seek-overlay-${side}-${seconds}`}
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.8 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      className={`absolute inset-y-1 ${side === 'left' ? 'left-1 rounded-r-[100%]' : 'right-1 rounded-l-[100%]'} w-1/3 bg-black/45 backdrop-blur-md flex items-center justify-center z-[250] pointer-events-none shadow-[0_0_20px_rgba(0,0,0,0.4)] overflow-hidden`}
+    >
+      <div className="flex items-center gap-1 text-white/90 drop-shadow-md select-none">
+        {side === 'left' ? (
+          <>
+            <span className="text-base sm:text-lg font-black font-mono tracking-tight">-{seconds}s</span>
+            <div className="flex items-center text-white animate-pulse">
+              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3]" />
+            </div>
+          </>
+        ) : (
+          <>
+            <span className="text-base sm:text-lg font-black font-mono tracking-tight">+{seconds}s</span>
+            <div className="flex items-center text-white animate-pulse">
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3]" />
+            </div>
+          </>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
 function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnded, playlistContext, isPreview, lyricsColor, waveColor, showDownload, title, singer, isReleased }: { src: string, backupAudioUrl?: string, template: string, onEnded?: () => void, onAlmostEnded?: () => void, playlistContext?: any, isPreview?: boolean, lyricsColor?: string, waveColor?: string, showDownload?: boolean, title?: string, singer?: string, isReleased?: boolean }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(!isPreview);
@@ -12821,6 +12876,73 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
   const [currentSrc, setCurrentSrc] = useState(getAudioPlayUrl(src));
   const [audioError, setAudioError] = useState<string | null>(null);
   const [isRepeat, setIsRepeat] = useState(false);
+
+  const [seekState, setSeekState] = useState<{ side: 'left' | 'right'; seconds: number; key: number } | null>(null);
+  const seekTimeoutRef = useRef<any>(null);
+  const lastTouchTimeRef = useRef<number>(0);
+  const lastTapRef = useRef<{ time: number; side: 'left' | 'right' }>({ time: 0, side: 'left' });
+
+  const handleSeekRelative = useCallback((delta: number) => {
+    if (!audioRef.current) return;
+    const side: 'left' | 'right' = delta > 0 ? 'right' : 'left';
+    const targetTime = Math.max(0, Math.min(audioRef.current.duration || 0, audioRef.current.currentTime + delta));
+    audioRef.current.currentTime = targetTime;
+    setCurrentTime(targetTime);
+
+    setSeekState((prev) => {
+      if (prev && prev.side === side) {
+        return { side, seconds: prev.seconds + Math.abs(delta), key: Date.now() };
+      }
+      return { side, seconds: Math.abs(delta), key: Date.now() };
+    });
+
+    if (seekTimeoutRef.current) clearTimeout(seekTimeoutRef.current);
+    seekTimeoutRef.current = setTimeout(() => {
+      setSeekState(null);
+    }, 750);
+  }, []);
+
+  useEffect(() => {
+    const handleGlobalSeek = (e: CustomEvent) => {
+      if (typeof e.detail?.delta === 'number') {
+        handleSeekRelative(e.detail.delta);
+      }
+    };
+    window.addEventListener('crvn-seek-audio', handleGlobalSeek as EventListener);
+    return () => {
+      window.removeEventListener('crvn-seek-audio', handleGlobalSeek as EventListener);
+    };
+  }, [handleSeekRelative]);
+
+  const processPlayerTap = (clientX: number, target: HTMLElement, currentTarget: HTMLElement) => {
+    if (target.closest('button, input, a, [role="button"]')) return;
+
+    const rect = currentTarget.getBoundingClientRect();
+    const relX = clientX - rect.left;
+    const side: 'left' | 'right' = relX < rect.width / 2 ? 'left' : 'right';
+    const delta = side === 'right' ? 10 : -10;
+    const now = Date.now();
+    const timeDiff = now - lastTapRef.current.time;
+
+    if (timeDiff >= 40 && timeDiff <= 500 && lastTapRef.current.side === side) {
+      handleSeekRelative(delta);
+      lastTapRef.current = { time: 0, side };
+    } else {
+      lastTapRef.current = { time: now, side };
+    }
+  };
+
+  const handlePlayerTouchEnd = (e: React.TouchEvent) => {
+    const touch = e.changedTouches[0];
+    if (!touch) return;
+    lastTouchTimeRef.current = Date.now();
+    processPlayerTap(touch.clientX, e.target as HTMLElement, e.currentTarget as HTMLElement);
+  };
+
+  const handlePlayerClick = (e: React.MouseEvent) => {
+    if (Date.now() - lastTouchTimeRef.current < 800) return;
+    processPlayerTap(e.clientX, e.target as HTMLElement, e.currentTarget as HTMLElement);
+  };
 
   useEffect(() => {
     if (playlistContext && typeof playlistContext.setIsPlaying === 'function') {
@@ -12955,9 +13077,14 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
 
   return (
     <div 
-      className={`flex flex-col w-full gap-2 md:gap-4 ${isLight ? 'text-stone-900 font-extrabold drop-shadow-sm' : 'text-white font-extrabold drop-shadow-md'}`}
+      className={`flex flex-col w-full gap-2 md:gap-4 relative select-none pb-1 ${isLight ? 'text-stone-900 font-extrabold drop-shadow-sm' : 'text-white font-extrabold drop-shadow-md'}`}
       style={lyricsColor ? { color: lyricsColor } : undefined}
     >
+      <AnimatePresence>
+        {seekState && (
+          <YouTubeSeekOverlay side={seekState.side} seconds={seekState.seconds} />
+        )}
+      </AnimatePresence>
       <audio 
         ref={audioRef} 
         src={currentSrc || undefined} 
@@ -13055,9 +13182,16 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
          </div>
 
         {playlistContext ? (
-          <div className="flex items-center gap-4">
-             <button onClick={() => playlistContext.setShuffle(!playlistContext.shuffle)} className={`opacity-60 hover:opacity-100 ${playlistContext.shuffle ? 'text-blue-400 opacity-100' : ''}`}><Shuffle className="w-4 h-4 md:w-5 md:h-5" /></button>
-             <button onClick={playlistContext.handlePrev} className="opacity-80 hover:opacity-100 hover:scale-110 transition"><SkipBack className="w-5 h-5 md:w-6 md:h-6 fill-current" /></button>
+          <div className="flex items-center gap-2.5 sm:gap-3.5">
+             <button onClick={() => playlistContext.setShuffle(!playlistContext.shuffle)} className={`opacity-60 hover:opacity-100 ${playlistContext.shuffle ? 'text-blue-400 opacity-100' : ''}`} title="Phát ngẫu nhiên"><Shuffle className="w-4 h-4 md:w-5 md:h-5" /></button>
+             <button onClick={playlistContext.handlePrev} className="opacity-80 hover:opacity-100 hover:scale-110 transition" title="Bài trước"><SkipBack className="w-5 h-5 md:w-6 md:h-6 fill-current" /></button>
+             <button 
+               onClick={() => handleSeekRelative(-10)} 
+               className="opacity-80 hover:opacity-100 hover:scale-110 active:scale-95 transition-all flex items-center justify-center p-1.5 rounded-full hover:bg-white/10 text-current" 
+               title="Lùi 10 giây (-10s)"
+             >
+               <Seek10BackwardIcon className="w-5 h-5 md:w-6 md:h-6" />
+             </button>
              <button 
                onClick={togglePlay}
                className={`w-12 h-12 md:w-14 md:h-14 flex items-center justify-center ${isLight ? 'bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] shadow-[0_0_20px_rgba(0,0,0,0.15)]' : 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)]'} rounded-full transition-all outline-none`}
@@ -13068,13 +13202,20 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="ml-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                )}
              </button>
-             <button onClick={playlistContext.handleNext} className="opacity-80 hover:opacity-100 hover:scale-110 transition"><SkipForward className="w-5 h-5 md:w-6 md:h-6 fill-current" /></button>
-             <button onClick={() => playlistContext.setRepeat((playlistContext.repeat + 1) % 3)} className={`opacity-60 hover:opacity-100 ${playlistContext.repeat > 0 ? 'text-blue-400 opacity-100' : ''}`}>
+             <button 
+               onClick={() => handleSeekRelative(10)} 
+               className="opacity-80 hover:opacity-100 hover:scale-110 active:scale-95 transition-all flex items-center justify-center p-1.5 rounded-full hover:bg-white/10 text-current" 
+               title="Tua 10 giây (+10s)"
+             >
+               <Seek10ForwardIcon className="w-5 h-5 md:w-6 md:h-6" />
+             </button>
+             <button onClick={playlistContext.handleNext} className="opacity-80 hover:opacity-100 hover:scale-110 transition" title="Bài tiếp"><SkipForward className="w-5 h-5 md:w-6 md:h-6 fill-current" /></button>
+             <button onClick={() => playlistContext.setRepeat((playlistContext.repeat + 1) % 3)} className={`opacity-60 hover:opacity-100 ${playlistContext.repeat > 0 ? 'text-blue-400 opacity-100' : ''}`} title="Lặp lại">
                {playlistContext.repeat === 2 ? <Repeat1 className="w-4 h-4 md:w-5 md:h-5" /> : <Repeat className="w-4 h-4 md:w-5 md:h-5" />}
              </button>
           </div>
         ) : (
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2.5 sm:gap-4">
              <button 
                onClick={() => setIsRepeat(!isRepeat)} 
                className={`opacity-60 hover:opacity-100 transition-all ${isRepeat ? (isLight ? 'text-indigo-600' : 'text-blue-400') + ' opacity-100 scale-110' : ''}`}
@@ -13083,6 +13224,13 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
                <Repeat className="w-4 h-4 md:w-5 md:h-5" />
              </button>
              <button 
+               onClick={() => handleSeekRelative(-10)} 
+               className="opacity-80 hover:opacity-100 hover:scale-110 active:scale-95 transition-all flex items-center justify-center p-1.5 rounded-full hover:bg-white/10 text-current" 
+               title="Lùi 10 giây (-10s)"
+             >
+               <Seek10BackwardIcon className="w-5 h-5 md:w-6 md:h-6" />
+             </button>
+             <button 
                onClick={togglePlay}
                className={`w-12 h-12 md:w-14 md:h-14 flex items-center justify-center ${isLight ? 'bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] shadow-[0_0_20px_rgba(0,0,0,0.15)]' : 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)]'} rounded-full transition-all outline-none`}
              >
@@ -13091,6 +13239,13 @@ function CustomAudioPlayer({ src, backupAudioUrl, template, onEnded, onAlmostEnd
                ) : (
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="ml-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                )}
+             </button>
+             <button 
+               onClick={() => handleSeekRelative(10)} 
+               className="opacity-80 hover:opacity-100 hover:scale-110 active:scale-95 transition-all flex items-center justify-center p-1.5 rounded-full hover:bg-white/10 text-current" 
+               title="Tua 10 giây (+10s)"
+             >
+               <Seek10ForwardIcon className="w-5 h-5 md:w-6 md:h-6" />
              </button>
              <div className="w-4 h-4 md:w-5 md:h-5 opacity-0 pointer-events-none"></div>
           </div>
@@ -15266,6 +15421,54 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
     }
   };
 
+  const demoLastTouchTimeRef = useRef<number>(0);
+  const demoLastTapRef = useRef<{ time: number; side: 'left' | 'right' }>({ time: 0, side: 'left' });
+  const [demoSeekState, setDemoSeekState] = useState<{ side: 'left' | 'right'; seconds: number; key: number } | null>(null);
+  const demoSeekTimeoutRef = useRef<any>(null);
+
+  const processDemoTap = (clientX: number, target: HTMLElement) => {
+    if (target.closest('button, a, [role="button"], input, label, select, textarea, iframe')) return;
+
+    const screenWidth = window.innerWidth || document.documentElement.clientWidth || 360;
+    const isLeftSide = clientX < screenWidth / 2;
+    const side: 'left' | 'right' = isLeftSide ? 'left' : 'right';
+    const delta = side === 'right' ? 10 : -10;
+    const now = Date.now();
+    const timeDiff = now - demoLastTapRef.current.time;
+
+    if (timeDiff >= 40 && timeDiff <= 500 && demoLastTapRef.current.side === side) {
+      window.dispatchEvent(new CustomEvent('crvn-seek-audio', { detail: { delta } }));
+      
+      setDemoSeekState((prev) => {
+        if (prev && prev.side === side) {
+          return { side, seconds: prev.seconds + 10, key: Date.now() };
+        }
+        return { side, seconds: 10, key: Date.now() };
+      });
+
+      if (demoSeekTimeoutRef.current) clearTimeout(demoSeekTimeoutRef.current);
+      demoSeekTimeoutRef.current = setTimeout(() => {
+        setDemoSeekState(null);
+      }, 750);
+
+      demoLastTapRef.current = { time: 0, side };
+    } else {
+      demoLastTapRef.current = { time: now, side };
+    }
+  };
+
+  const handleDemoTouchEnd = (e: React.TouchEvent) => {
+    const touch = e.changedTouches[0];
+    if (!touch) return;
+    demoLastTouchTimeRef.current = Date.now();
+    processDemoTap(touch.clientX, e.target as HTMLElement);
+  };
+
+  const handleDemoClick = (e: React.MouseEvent) => {
+    if (Date.now() - demoLastTouchTimeRef.current < 800) return;
+    processDemoTap(e.clientX, e.target as HTMLElement);
+  };
+
   useEffect(() => {
      if (demo) {
         let titleSuffix = demo.singer || demo.author || demo.composer || (demo as any)?.defaultArtistName || 'Nghệ sĩ';
@@ -15527,7 +15730,9 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
       onMouseLeave={forceMobile ? handleMouseLeave : undefined}
       onMouseUp={forceMobile ? handleMouseUp : undefined}
       onMouseMove={forceMobile ? handleMouseMove : undefined}
-      className={`min-h-[100dvh] min-w-full px-4 py-8 ${themeClasses} transition-colors duration-1000 relative ${forceMobile ? 'overflow-y-auto overflow-x-hidden no-scrollbar select-none' : ''}`}
+      onTouchEnd={handleDemoTouchEnd}
+      onClick={handleDemoClick}
+      className={`min-h-[100dvh] min-w-full px-4 py-8 ${themeClasses} transition-colors duration-1000 relative touch-manipulation ${forceMobile ? 'overflow-y-auto overflow-x-hidden no-scrollbar select-none' : ''}`}
       style={{ backgroundColor: customConfig?.bgColor || undefined }}
     >
       <svg width="0" height="0" className="absolute pointer-events-none">
@@ -15687,7 +15892,8 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
               transition={{ duration: 0.8, delay: 0.2 }}
               className={`w-full flex flex-col items-center`}
             >
-            <div className={`relative ${
+            <div 
+              className={`relative ${
               templateType === '12' ? 'w-full max-w-[280px] md:max-w-[340px]' : 
               templateType === '19' ? 'w-full max-w-[260px] md:max-w-[320px]' :
               templateType === '20' ? 'w-full max-w-[280px] md:max-w-[340px]' :
@@ -15695,7 +15901,8 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
             } ${
               templateType === '19' ? 'aspect-[4/5]' :
               templateType === '20' ? 'aspect-[4/3]' : 'aspect-square'
-            } mb-4 mt-2 md:mt-0 z-10 mx-auto overflow-visible`}>
+            } mb-4 mt-2 md:mt-0 z-10 mx-auto overflow-visible select-none`}
+            >
               {demo.achievements && demo.achievements.length > 0 && (
                 <motion.div 
                   animate={{ 
