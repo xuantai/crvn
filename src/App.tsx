@@ -1174,7 +1174,7 @@ function MusicianWallFrames({
               {/* Inner Picture Mat Border */}
               <div className="w-full h-full rounded-[2px] border border-stone-300/70 shadow-inner overflow-hidden relative">
                 <img 
-                  src={getThumbUrl(imgUrl)} 
+                  src={imgUrl} 
                   alt={`Khung ảnh ${idx + 1}`} 
                   onLoad={(e) => handleImgLoad(imgUrl, e)}
                   onError={() => handleImgError(imgUrl)}
@@ -10518,7 +10518,7 @@ function Home() {
                         return (
                           <img 
                             key={"avatar-slide-" + idx}
-                            src={getThumbUrl(imgUrl)}
+                            src={imgUrl}
                             alt={data.artistName}
                             className={`absolute inset-0 w-full h-full object-cover object-top scale-105 group-hover:scale-110 transition-all duration-[1500ms] ease-in-out ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
                             referrerPolicy="no-referrer"
@@ -10528,7 +10528,7 @@ function Home() {
                     </>
                   ) : (
                     <img 
-                      src={getThumbUrl(effectiveCoverUrl || data.aboutMe?.avatarUrl)} 
+                      src={effectiveCoverUrl || data.aboutMe?.avatarUrl} 
                       alt={data.artistName} 
                       className="absolute inset-0 w-full h-full object-cover object-top scale-105 group-hover:scale-110 transition-all duration-700 ease-in-out"
                       referrerPolicy="no-referrer"
@@ -10657,7 +10657,7 @@ function Home() {
                 <>
                   {/* Continuous gentle breathing scale + image zoom & brightness boost on hover */}
                   <motion.img 
-                    src={getThumbUrl(artistAvatar)}
+                    src={artistAvatar}
                     alt={data.artistName || 'Avatar'}
                     animate={{
                       scale: [1, 1.05, 1],
@@ -11099,7 +11099,7 @@ function Home() {
       {isMusicianTheme ? (
         <>
           {/* Realistic Wood Grain Background with 3D Cabinet Overlays */}
-          <div className="absolute inset-0 z-[-2] pointer-events-none select-none overflow-hidden bg-[#180A04]">
+          <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden bg-[#180A04]">
             {/* Layer 1: Real Wood Grain Texture Image */}
             <div 
               className="absolute inset-0"
@@ -11122,7 +11122,7 @@ function Home() {
           </div>
 
           {/* Fixed Ambient Studio Lighting & Brass Trim Overlay */}
-          <div className="fixed inset-0 z-[-1] pointer-events-none select-none">
+          <div className="fixed inset-0 z-[1] pointer-events-none select-none">
             {/* Warm Vignette Overlay for focus & readability */}
             <div className="absolute inset-0 shadow-[inset_0_0_140px_rgba(0,0,0,0.92)] pointer-events-none z-10" />
 
@@ -27320,7 +27320,7 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
             transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
             className="aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-black/50 border border-white/20 shadow-2xl relative z-10"
           >
-            <img src={getThumbUrl(avatar)} alt="Profile" className="w-full h-full object-cover object-top hover:scale-110 transition-transform duration-1000" />
+            <img src={avatar} alt="Profile" className="w-full h-full object-cover object-top hover:scale-110 transition-transform duration-1000" />
           </motion.div>
         </motion.div>
       )}
