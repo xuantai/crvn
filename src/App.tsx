@@ -6581,7 +6581,7 @@ const formatFileName = (name: string, maxLen = 22) => {
   return `${start}...${end}${ext}`;
 };
 
-const compressImageInBrowser = async (file: File, maxWidth: number = 1920, quality: number = 0.85): Promise<File> => {
+const compressImageInBrowser = async (file: File, maxWidth: number = 1200, quality: number = 0.80): Promise<File> => {
   if (!file || !file.type || !file.type.startsWith('image/')) {
     return file;
   }
@@ -23652,9 +23652,9 @@ function AdminCreateDemo() {
                         </div>
                       </>
                     ) : uploadedCoverUrl ? (
-                      <img src={getPreviewUrl(uploadedCoverUrl)} className="w-full h-full object-cover" />
+                      <img src={getPreviewUrl(getThumbUrl(uploadedCoverUrl))} className="w-full h-full object-cover" />
                     ) : (appData?.aboutMe?.avatarUrl || appData?.slideshowImages?.[0]) ? (
-                      <img src={getPreviewUrl(appData?.aboutMe?.avatarUrl || appData?.slideshowImages?.[0])} className="w-full h-full object-cover opacity-30 blur-[0.5px]" />
+                      <img src={getPreviewUrl(getThumbUrl(appData?.aboutMe?.avatarUrl || appData?.slideshowImages?.[0]))} className="w-full h-full object-cover opacity-30 blur-[0.5px]" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-stone-500"><Image className="w-6 h-6" /></div>
                     )}
@@ -24933,9 +24933,9 @@ function AdminEditDemo() {
                         </div>
                       </>
                     ) : (uploadedCoverUrl || demo?.coverUrl) ? (
-                      <img src={getPreviewUrl(uploadedCoverUrl || demo?.coverUrl)} className="w-full h-full object-cover" />
+                      <img src={getPreviewUrl(getThumbUrl(uploadedCoverUrl || demo?.coverUrl))} className="w-full h-full object-cover" />
                     ) : (appData?.aboutMe?.avatarUrl || appData?.slideshowImages?.[0] || randomSlideUrl) ? (
-                      <img src={getPreviewUrl(appData?.aboutMe?.avatarUrl || appData?.slideshowImages?.[0] || randomSlideUrl)} className="w-full h-full object-cover opacity-30 blur-[0.5px]" />
+                      <img src={getPreviewUrl(getThumbUrl(appData?.aboutMe?.avatarUrl || appData?.slideshowImages?.[0] || randomSlideUrl))} className="w-full h-full object-cover opacity-30 blur-[0.5px]" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-stone-500"><Image className="w-6 h-6" /></div>
                     )}
@@ -26267,7 +26267,7 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl, on
                     </div>
                   </>
                 ) : aboutData.avatarUrl ? (
-                  <img src={getPreviewUrl(aboutData.avatarUrl)} className="w-full h-full object-cover" />
+                  <img src={getPreviewUrl(getThumbUrl(aboutData.avatarUrl))} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-stone-500"><Image className="w-8 h-8" /></div>
                 )}
@@ -26306,9 +26306,10 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl, on
               <input type="file" id="aboutAvatarUpload" className="hidden" accept="image/*" onChange={async (e) => {
                 if (!e.target.files?.[0]) return;
                 const file = e.target.files[0];
-                setAvatarPreviewObjectUrl(URL.createObjectURL(file));
+                const compressedFile = file.type?.startsWith('image/') ? await compressImageInBrowser(file, 800, 0.75) : file;
+                setAvatarPreviewObjectUrl(URL.createObjectURL(compressedFile));
                 try {
-                  const result = await uploadWithProgress(file, setAvatarProgress);
+                  const result = await uploadWithProgress(compressedFile, setAvatarProgress);
                   const url = typeof result === 'string' ? result : result.url;
                   setAboutData({ ...aboutData, avatarUrl: url });
                   if (onPreviewAvatar) onPreviewAvatar(url);
