@@ -1,36 +1,133 @@
 {
-  "tab3Name": "",
-  "artistBio": "Ngôi nhà nhỏ của Lynk Lee",
-  "homeCoverUrl": "https://cdn.chorus.vn/uploads/lynklee/synced_1784985097476_7987.jpg",
-  "ogImageUrl": "",
-  "tab2Name": "",
   "menus": [
     {
       "type": "vault",
-      "isVisible": true,
       "title": "Kho Nhạc",
+      "isVisible": true,
       "id": "m1"
     },
     {
-      "type": "about",
-      "isVisible": true,
       "title": "Về Tôi",
-      "id": "m2"
+      "type": "about",
+      "id": "m2",
+      "isVisible": true
     },
     {
       "isVisible": true,
       "id": "m3",
-      "type": "bio",
-      "title": "Tiểu Sử"
+      "title": "Tiểu Sử",
+      "type": "bio"
     }
   ],
+  "memberPassword": "",
   "playlists": [
     {
-      "title": "Buồn",
-      "id": "1783176139611",
-      "password": "",
+      "secretLink": "",
       "isDraft": false,
-      "secretLink": ""
+      "password": "",
+      "id": "1783176139611",
+      "title": "Buồn"
+    }
+  ],
+  "adminPassword": "llllllll",
+  "autoSwitchTabs": false,
+  "tab3Name": "",
+  "defaultLanguage": "vi",
+  "layoutSections": [
+    "title",
+    "random_song",
+    "about",
+    "bio",
+    "vault",
+    "mv",
+    "spotify"
+  ],
+  "faviconUrl": "",
+  "artistBio": "Ngôi nhà nhỏ của Lynk Lee",
+  "slideshowImages": [],
+  "artistName": "Lynk Lee",
+  "ogImageUrl": "",
+  "pageTitle": "Kho nhạc của Lynk Lee",
+  "spotifyUrl": "https://open.spotify.com/artist/7H9jPV9qWyp6V629038aXU",
+  "demos": [
+    {
+      "releaseYear": "2023",
+      "status": "public",
+      "linkYoutube": "",
+      "linkSpotify": "",
+      "linkType": "direct",
+      "audioUrl": "/uploads/ym3q7whcri/1783178497886-324052359.mp3",
+      "secretKey": "b54ee852482efafb",
+      "playlistIds": [
+        "1783176139611"
+      ],
+      "isDraft": false,
+      "createdAt": 1783178794448,
+      "achievements": [],
+      "slug": "mim-cuoi-ma-khoc-trong-long",
+      "linkApple": "",
+      "id": "1783178794447",
+      "isReleased": true,
+      "lyrics": "Em muốn cất đi những tháng năm\nEm muốn gói lại những kỷ niệm\nĐể cho quá khứ là một ký ức đẹp\nVì anh là cả một trời thanh xuân\nCho mưa bay bay cho ai đứng nhìn\nCho đôi tình nhân bước đi rất vội\nCuộc đời như một cuốn phim mà thôi\nChuyện mình chỉ là một trong những trích đoạn\nLang thang ngoài phố không anh em vội vàng trong mưa\nCố gắng tìm chút thân quen những ngày hè năm xưa\nTình yêu đẹp như là dưới những con đường êm ả\nLá rơi đầy cánh hoa nào bay theo làn gió ấy\nĐôi chân chỉ muốn đi xa xa rời ngày hôm qua\nEm không thể khóc thêm cho khúc nhạc buồn ngân nga\nThời gian sẽ giúp em quên tất cả một mình em giữa phố đông\nMỉm cười mà khóc trong lòng\nEm muốn cất đi những tháng năm (em vẫn muốn cất những tháng năm đẹp)\nEm muốn gói lại những kỷ niệm (em muốn gửi lại)\nĐể cho quá khứ là một ký ức đẹp (hah-ah-ah)\nVì anh là cả một trời thanh xuân\nCho mưa bay bay cho ai đứng nhìn (cho mưa bay bay ai nhìn em)\nCho đôi tình nhân bước đi rất vội\nCuộc đời như một cuốn phim mà thôi\nChuyện mình chỉ là một trong những trích đoạn\nLang thang ngoài phố không anh em vội vàng trong mưa\nCố gắng tìm chút thân quen những ngày hè năm xưa\nTình yêu đẹp như là dưới những con đường êm ả\nLá rơi đầy cánh hoa nào bay theo làn gió ấy\nĐôi chân chỉ muốn đi xa xa rời ngày hôm qua\nEm không thể khóc thêm cho khúc nhạc buồn ngân nga\nThời gian sẽ giúp em quên tất cả một mình em giữa phố đông\nMỉm cười mà khóc trong lòng\nBên hiên nhà vắng ai quen vẫn ngồi đợi ban trưa\nMong ai về lúc tan ca khi trời còn đang mưa\nTình yêu đẹp như là dưới những con đường êm ả\nLá rơi đầy cánh hoa nào bay theo làn gió\nĐôi chân chỉ muốn\nĐôi chân chỉ muốn đi xa xa rời ngày hôm qua\nEm không thể khóc thêm cho khúc nhạc buồn ngân nga\nThời gian sẽ giúp giúp em quên tất cả những gì đã qua woh\nLang thang ngoài phố không anh em vội vàng trong mưa\nCố gắng tìm chút thân quen những ngày hè năm xưa (một mình dưới mưa)\nTình yêu đẹp như là dưới những con đường êm ả\nLá rơi đầy cánh hoa nào bay theo làn gió ấy\nĐôi chân chỉ muốn đi xa xa rời ngày hôm qua\nEm không thể khóc thêm cho khúc nhạc buồn ngân nga\nThời gian sẽ giúp em quên tất cả một mình em giữa phố đông\nMỉm cười mà khóc trong lòng\nHoh-oh-oh huh-uh-uh-uh-uh-uh-uh-uh-uh-uh",
+      "linkYoutubeMusic": "",
+      "coverUrl": "https://cdn.chorus.vn/uploads/lynklee/synced_1784985096590_8812.jpg",
+      "template": "13",
+      "backupAudioUrl": "/uploads/ym3q7whcri/1783178497886-324052359.mp3",
+      "linkDrive": "",
+      "password": "123321",
+      "singer": "Lynk Lee",
+      "linkZing": "",
+      "composer": "Lynk Lee",
+      "author": "",
+      "backgroundUrl": "",
+      "title": "Mỉm Cười Mà Khóc Trong Lòng",
+      "thumbUrl": "/uploads/lynklee/synced_1784985096590_8812-thumb.jpg"
+    },
+    {
+      "isReleased": true,
+      "backgroundUrl": "",
+      "author": "",
+      "password": "",
+      "linkZing": "",
+      "template": "4",
+      "releaseYear": "2019",
+      "linkYoutube": "",
+      "thumbUrl": "/uploads/lynklee/synced_1784985097051_5275-thumb.jpg",
+      "linkSpotify": "",
+      "linkDrive": "",
+      "composer": "Lynk Lee",
+      "playlistIds": [
+        "1783176139611"
+      ],
+      "id": "1783176714478",
+      "linkYoutubeMusic": "",
+      "singer": "Lynk Lee",
+      "createdAt": 1783176714480,
+      "linkApple": "",
+      "lyrics": "\nEm có buồn\nNếu anh để lại cây viết\nDòng thư cuối sau bức màn\nNghe tiếng đàn\nCất lên trong không gian thật yên lặng\nKhiến anh ngỡ ngàng\nChợt dòng chữ ấy đã phai nhanh vì mắt ướt nhoè\nSợ em không thấy rõ\nAnh để lại yêu thương gói trong khúc nhạc\nAnh viết tặng nhưng em đã quên\n\nLà gió thì gió cứ bay về trời, chỉ cần đến nơi\nBình yên nhẹ nhàng cùng với những áng mây bay xa xôi\nTình yêu mà chỉ có nói bằng lời, nói yêu suốt đời\nSẽ chẳng thể nào tồn tại mãi mãi\nMình quen rồi đấy ừ thì cứ khóc đi\nMình quen rồi đấy ừ thì cứ khóc đi\n\nSáng hôm sau\nTa sẽ không gặp lại nhau nữa\nHàng cây bên hiên vẫn đứng\nTrông theo bóng người nơi phương xa\nLiệu rằng em vui hơn?\nLiệu rằng em có còn tâm trí nhớ đến anh\nMột lời em nói như thể là em không thấy xót xa ah\nAnh cũng vẫn biết những sự thật liên quan đến chúng ta mà\nQuan tâm một người hơn anh\nYêu thương một người hơn anh\nMột lần đau hơn là trăm lần khóc\n\nLà gió thì gió cứ bay về trời, chỉ cần đến nơi\nBình yên nhẹ nhàng cùng với những áng mây bay xa xôi\nTình yêu mà chỉ có nói bằng lời, nói yêu suốt đời\nSẽ chẳng thể nào tồn tại mãi mãi\nĐược khóc thì cứ khóc cho một lần hết nước mắt đi\nĐể rồi ngày mai tỉnh giấc không vấn vương một điều gì\nTự nhiên lại cứ đớn đau dằn vặt khác nào trói mình\nVì đâu phải khổ như thế mãi mãi\n\nLà gió thì gió cứ bay về trời, chỉ cần đến nơi\nBình yên nhẹ nhàng cùng với những áng mây bay xa xôi\nTình yêu mà chỉ có nói bằng lời, nói yêu suốt đời\nSẽ chẳng thể nào tồn tại mãi mãi\nMình quen rồi đấy ừ thì cứ khóc đi\nMình quen rồi đấy ừ thì cứ khóc đi\nMình quen rồi đấy ừ thì cứ khóc đi\nMình quen rồi đấy ừ thì cứ khóc đi\nKhóc đi",
+      "title": "Buồn Thì Cứ Khóc Đi ",
+      "isDraft": false,
+      "backupAudioUrl": "/uploads/ym3q7whcri/1783175902258-676800933.mp3",
+      "linkType": "direct",
+      "audioUrl": "/uploads/ym3q7whcri/1783175902258-676800933.mp3",
+      "status": "public",
+      "coverUrl": "https://cdn.chorus.vn/uploads/lynklee/synced_1784985097051_5275.jpg",
+      "achievements": [
+        {
+          "type": "tiktok_viral",
+          "value": ""
+        },
+        {
+          "type": "youtube_views",
+          "value": "90M"
+        },
+        {
+          "type": "spotify_streams",
+          "value": "50M"
+        }
+      ],
+      "secretKey": "b6059278680aca09",
+      "slug": "buon-thi-cu-khoc-di"
     }
   ],
   "templateConfigs": [
@@ -45,69 +142,69 @@
       "order": 2
     },
     {
-      "order": 3,
+      "id": "3",
       "name": "Buồn (Sâu lắng)",
-      "id": "3"
+      "order": 3
     },
     {
-      "name": "Thư giãn (Nhẹ nhàng)",
       "order": 4,
+      "name": "Thư giãn (Nhẹ nhàng)",
       "id": "4"
     },
     {
-      "id": "5",
       "order": 5,
+      "id": "5",
       "name": "Đáng yêu (Đỏ, Nhảy múa)"
     },
     {
-      "order": 6,
+      "id": "6",
       "name": "Hạnh Phúc (Hồng, Hoa rơi)",
-      "id": "6"
+      "order": 6
     },
     {
       "order": 7,
-      "name": "Học Đường (Trắng, Lá vàng rơi)",
-      "id": "7"
+      "id": "7",
+      "name": "Học Đường (Trắng, Lá vàng rơi)"
     },
     {
-      "name": "Tổ Quốc (Đỏ, Cờ phấp phới)",
       "order": 8,
+      "name": "Tổ Quốc (Đỏ, Cờ phấp phới)",
       "id": "8"
     },
     {
-      "order": 9,
       "id": "9",
-      "name": "Cầu Vồng"
+      "name": "Cầu Vồng",
+      "order": 9
     },
     {
       "name": "Hip Hop (Đường phố)",
-      "order": 10,
-      "id": "10"
+      "id": "10",
+      "order": 10
     },
     {
-      "id": "11",
+      "order": 11,
       "name": "Kỳ bí (Đen vàng, Trăng khói mưa)",
-      "order": 11
+      "id": "11"
     },
     {
-      "name": "Cổ điển (Nâu, retro)",
+      "order": 12,
       "id": "12",
-      "order": 12
+      "name": "Cổ điển (Nâu, retro)"
     },
     {
-      "order": 13,
+      "id": "13",
       "name": "Hoàng hôn (Cam đỏ trời chiều)",
-      "id": "13"
+      "order": 13
     },
     {
       "name": "Đại Dương (Sóng biển)",
-      "order": 14,
-      "id": "14"
+      "id": "14",
+      "order": 14
     },
     {
-      "order": 15,
       "id": "15",
-      "name": "Retro 8-Bit (Game)"
+      "name": "Retro 8-Bit (Game)",
+      "order": 15
     },
     {
       "id": "16",
@@ -115,135 +212,38 @@
       "order": 16
     },
     {
-      "order": 17,
+      "name": "Cổ vũ (Mây, mặt trời)",
       "id": "17",
-      "name": "Cổ vũ (Mây, mặt trời)"
+      "order": 17
     },
     {
-      "name": "Pháo hoa (Năm mới)",
+      "id": "18",
       "order": 18,
-      "id": "18"
-    }
-  ],
-  "slideshowImages": [],
-  "layoutSections": [
-    "title",
-    "random_song",
-    "about",
-    "bio",
-    "vault",
-    "mv",
-    "spotify"
-  ],
-  "tab1Name": "",
-  "username": "lynklee",
-  "defaultLanguage": "vi",
-  "artistName": "Lynk Lee",
-  "customDomain": "",
-  "globalPassword": "",
-  "pageTitle": "Kho nhạc của Lynk Lee",
-  "spotifyUrl": "https://open.spotify.com/artist/7H9jPV9qWyp6V629038aXU",
-  "adminPassword": "llllllll",
-  "releasedSongs": [],
-  "memberPassword": "",
-  "faviconUrl": "",
-  "youtubePlaylistUrl": "https://www.youtube.com/watch?v=Om83TMMO58w&list=PL6FNsSYBXMbGxSmXB5mR--m1b98TBPSqn",
-  "demos": [
-    {
-      "isReleased": true,
-      "createdAt": 1783178794448,
-      "audioUrl": "/uploads/ym3q7whcri/1783178497886-324052359.mp3",
-      "id": "1783178794447",
-      "isDraft": false,
-      "linkType": "direct",
-      "status": "public",
-      "linkApple": "",
-      "singer": "Lynk Lee",
-      "coverUrl": "https://cdn.chorus.vn/uploads/lynklee/synced_1784985096590_8812.jpg",
-      "composer": "Lynk Lee",
-      "linkDrive": "",
-      "releaseYear": "2023",
-      "author": "",
-      "password": "123321",
-      "lyrics": "Em muốn cất đi những tháng năm\nEm muốn gói lại những kỷ niệm\nĐể cho quá khứ là một ký ức đẹp\nVì anh là cả một trời thanh xuân\nCho mưa bay bay cho ai đứng nhìn\nCho đôi tình nhân bước đi rất vội\nCuộc đời như một cuốn phim mà thôi\nChuyện mình chỉ là một trong những trích đoạn\nLang thang ngoài phố không anh em vội vàng trong mưa\nCố gắng tìm chút thân quen những ngày hè năm xưa\nTình yêu đẹp như là dưới những con đường êm ả\nLá rơi đầy cánh hoa nào bay theo làn gió ấy\nĐôi chân chỉ muốn đi xa xa rời ngày hôm qua\nEm không thể khóc thêm cho khúc nhạc buồn ngân nga\nThời gian sẽ giúp em quên tất cả một mình em giữa phố đông\nMỉm cười mà khóc trong lòng\nEm muốn cất đi những tháng năm (em vẫn muốn cất những tháng năm đẹp)\nEm muốn gói lại những kỷ niệm (em muốn gửi lại)\nĐể cho quá khứ là một ký ức đẹp (hah-ah-ah)\nVì anh là cả một trời thanh xuân\nCho mưa bay bay cho ai đứng nhìn (cho mưa bay bay ai nhìn em)\nCho đôi tình nhân bước đi rất vội\nCuộc đời như một cuốn phim mà thôi\nChuyện mình chỉ là một trong những trích đoạn\nLang thang ngoài phố không anh em vội vàng trong mưa\nCố gắng tìm chút thân quen những ngày hè năm xưa\nTình yêu đẹp như là dưới những con đường êm ả\nLá rơi đầy cánh hoa nào bay theo làn gió ấy\nĐôi chân chỉ muốn đi xa xa rời ngày hôm qua\nEm không thể khóc thêm cho khúc nhạc buồn ngân nga\nThời gian sẽ giúp em quên tất cả một mình em giữa phố đông\nMỉm cười mà khóc trong lòng\nBên hiên nhà vắng ai quen vẫn ngồi đợi ban trưa\nMong ai về lúc tan ca khi trời còn đang mưa\nTình yêu đẹp như là dưới những con đường êm ả\nLá rơi đầy cánh hoa nào bay theo làn gió\nĐôi chân chỉ muốn\nĐôi chân chỉ muốn đi xa xa rời ngày hôm qua\nEm không thể khóc thêm cho khúc nhạc buồn ngân nga\nThời gian sẽ giúp giúp em quên tất cả những gì đã qua woh\nLang thang ngoài phố không anh em vội vàng trong mưa\nCố gắng tìm chút thân quen những ngày hè năm xưa (một mình dưới mưa)\nTình yêu đẹp như là dưới những con đường êm ả\nLá rơi đầy cánh hoa nào bay theo làn gió ấy\nĐôi chân chỉ muốn đi xa xa rời ngày hôm qua\nEm không thể khóc thêm cho khúc nhạc buồn ngân nga\nThời gian sẽ giúp em quên tất cả một mình em giữa phố đông\nMỉm cười mà khóc trong lòng\nHoh-oh-oh huh-uh-uh-uh-uh-uh-uh-uh-uh-uh",
-      "thumbUrl": "/uploads/lynklee/synced_1784985096590_8812-thumb.jpg",
-      "secretKey": "b54ee852482efafb",
-      "linkYoutubeMusic": "",
-      "linkZing": "",
-      "backupAudioUrl": "/uploads/ym3q7whcri/1783178497886-324052359.mp3",
-      "backgroundUrl": "",
-      "title": "Mỉm Cười Mà Khóc Trong Lòng",
-      "template": "13",
-      "slug": "mim-cuoi-ma-khoc-trong-long",
-      "achievements": [],
-      "linkYoutube": "",
-      "linkSpotify": "",
-      "playlistIds": [
-        "1783176139611"
-      ]
-    },
-    {
-      "status": "public",
-      "backupAudioUrl": "/uploads/ym3q7whcri/1783175902258-676800933.mp3",
-      "secretKey": "b6059278680aca09",
-      "composer": "Lynk Lee",
-      "coverUrl": "https://cdn.chorus.vn/uploads/lynklee/synced_1784985097051_5275.jpg",
-      "releaseYear": "2019",
-      "title": "Buồn Thì Cứ Khóc Đi ",
-      "audioUrl": "/uploads/ym3q7whcri/1783175902258-676800933.mp3",
-      "linkYoutubeMusic": "",
-      "linkType": "direct",
-      "slug": "buon-thi-cu-khoc-di",
-      "singer": "Lynk Lee",
-      "isReleased": true,
-      "lyrics": "\nEm có buồn\nNếu anh để lại cây viết\nDòng thư cuối sau bức màn\nNghe tiếng đàn\nCất lên trong không gian thật yên lặng\nKhiến anh ngỡ ngàng\nChợt dòng chữ ấy đã phai nhanh vì mắt ướt nhoè\nSợ em không thấy rõ\nAnh để lại yêu thương gói trong khúc nhạc\nAnh viết tặng nhưng em đã quên\n\nLà gió thì gió cứ bay về trời, chỉ cần đến nơi\nBình yên nhẹ nhàng cùng với những áng mây bay xa xôi\nTình yêu mà chỉ có nói bằng lời, nói yêu suốt đời\nSẽ chẳng thể nào tồn tại mãi mãi\nMình quen rồi đấy ừ thì cứ khóc đi\nMình quen rồi đấy ừ thì cứ khóc đi\n\nSáng hôm sau\nTa sẽ không gặp lại nhau nữa\nHàng cây bên hiên vẫn đứng\nTrông theo bóng người nơi phương xa\nLiệu rằng em vui hơn?\nLiệu rằng em có còn tâm trí nhớ đến anh\nMột lời em nói như thể là em không thấy xót xa ah\nAnh cũng vẫn biết những sự thật liên quan đến chúng ta mà\nQuan tâm một người hơn anh\nYêu thương một người hơn anh\nMột lần đau hơn là trăm lần khóc\n\nLà gió thì gió cứ bay về trời, chỉ cần đến nơi\nBình yên nhẹ nhàng cùng với những áng mây bay xa xôi\nTình yêu mà chỉ có nói bằng lời, nói yêu suốt đời\nSẽ chẳng thể nào tồn tại mãi mãi\nĐược khóc thì cứ khóc cho một lần hết nước mắt đi\nĐể rồi ngày mai tỉnh giấc không vấn vương một điều gì\nTự nhiên lại cứ đớn đau dằn vặt khác nào trói mình\nVì đâu phải khổ như thế mãi mãi\n\nLà gió thì gió cứ bay về trời, chỉ cần đến nơi\nBình yên nhẹ nhàng cùng với những áng mây bay xa xôi\nTình yêu mà chỉ có nói bằng lời, nói yêu suốt đời\nSẽ chẳng thể nào tồn tại mãi mãi\nMình quen rồi đấy ừ thì cứ khóc đi\nMình quen rồi đấy ừ thì cứ khóc đi\nMình quen rồi đấy ừ thì cứ khóc đi\nMình quen rồi đấy ừ thì cứ khóc đi\nKhóc đi",
-      "linkZing": "",
-      "template": "4",
-      "linkDrive": "",
-      "author": "",
-      "isDraft": false,
-      "linkYoutube": "",
-      "playlistIds": [
-        "1783176139611"
-      ],
-      "linkSpotify": "",
-      "backgroundUrl": "",
-      "createdAt": 1783176714480,
-      "achievements": [
-        {
-          "value": "",
-          "type": "tiktok_viral"
-        },
-        {
-          "type": "youtube_views",
-          "value": "90M"
-        },
-        {
-          "value": "50M",
-          "type": "spotify_streams"
-        }
-      ],
-      "password": "",
-      "id": "1783176714478",
-      "thumbUrl": "/uploads/lynklee/synced_1784985097051_5275-thumb.jpg",
-      "linkApple": ""
+      "name": "Pháo hoa (Năm mới)"
     }
   ],
   "biography": {
+    "experience": [
+      {
+        "description": "Tham gia vui vẻ nè",
+        "time": "2023",
+        "title": "Chị Đẹp Đạp Gió Rẽ Sóng"
+      }
+    ],
     "education": [
       {
         "description": "Tập sáng tác và làm nhạc",
-        "time": "2009-2012",
-        "title": "Underground"
-      }
-    ],
-    "experience": [
-      {
-        "time": "2023",
-        "description": "Tham gia vui vẻ nè",
-        "title": "Chị Đẹp Đạp Gió Rẽ Sóng"
+        "title": "Underground",
+        "time": "2009-2012"
       }
     ]
   },
-  "autoSwitchTabs": false
+  "customDomain": "",
+  "tab2Name": "",
+  "releasedSongs": [],
+  "homeCoverUrl": "https://cdn.chorus.vn/uploads/lynklee/synced_1784985097476_7987.jpg",
+  "globalPassword": "",
+  "tab1Name": "",
+  "youtubePlaylistUrl": "https://www.youtube.com/watch?v=Om83TMMO58w&list=PL6FNsSYBXMbGxSmXB5mR--m1b98TBPSqn",
+  "username": "lynklee"
 }

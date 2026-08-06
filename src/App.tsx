@@ -11095,13 +11095,20 @@ function Home() {
               ? 'bg-gradient-to-b from-[#F9F5EA] via-[#FCF9F2] to-[#FAF5E6] text-[#2C1E03] selection:bg-amber-500 selection:text-stone-950 font-sans' 
               : 'bg-neutral-950 text-white selection:bg-rose-500 selection:text-white font-sans bg-notebook-dark'
       } relative z-0`}
+      style={isMusicianTheme ? {
+        backgroundImage: `url(${woodBgAsset})`,
+        backgroundSize: '320px auto',
+        backgroundRepeat: 'repeat',
+        backgroundAttachment: 'fixed',
+        backgroundPosition: 'center top',
+      } : undefined}
     >
       <SocialCarousel data={data} pushDown={pushDown} isGoldTheme={isGoldTheme} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />
       
       {isMusicianTheme ? (
         <>
           {/* Realistic Wood Grain Background with 3D Cabinet Overlays */}
-          <div className="fixed inset-0 z-0 pointer-events-none select-none overflow-hidden bg-[#24130a]">
+          <div className="fixed inset-0 z-[-1] pointer-events-none select-none overflow-hidden bg-[#24130a]">
             {/* Layer 1: Real Wood Grain Texture Image (Sharp Repeat) */}
             <div 
               className="absolute inset-0"
@@ -11110,7 +11117,7 @@ function Home() {
                 backgroundSize: '320px auto',
                 backgroundPosition: 'center top',
                 backgroundRepeat: 'repeat',
-                filter: 'brightness(1.1) contrast(1.2) saturate(1.15)',
+                filter: 'brightness(1.15) contrast(1.25) saturate(1.2)',
               }}
             />
 
@@ -22862,7 +22869,7 @@ function PlaylistSelect({ selectedIds, onChange }: { selectedIds: string[], onCh
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button type="button" onClick={() => setIsOpen(!isOpen)} className="w-full bg-white border border-stone-300 rounded-xl px-3.5 py-2.5 flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all text-left text-sm">
+      <button type="button" onClick={() => setIsOpen(!isOpen)} className="w-full bg-white border border-stone-300 rounded-xl px-3.5 py-2.5 flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all text-left text-sm h-[42px]">
         <span className="truncate text-stone-700 font-medium">{selectedIds.length > 0 ? `${selectedIds.length} playlist được chọn` : t("Chọn Playlist")}</span>
         <svg className={`w-4 h-4 text-stone-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -24037,19 +24044,21 @@ function AdminCreateDemo() {
               <div className="grid grid-cols-1 gap-6 pt-4 border-t border-stone-100">
                   <div className="w-full">
                     <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Template Chủ Đề")}</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 min-w-0">
-                      <CustomSelect
-                        value={template}
-                        onChange={val => setTemplate(val)}
-                        options={templateConfigs.map((tc: any) => ({ value: tc.id, label: t(tc.name), isVip: tc.isVip || tc.id === '2', disabled: (tc.isVip || tc.id === '2') && !(appData?.roleId === 'vip' || appData?.roleId === 'pro' || appData?.isSpecial || (appData?.maxTemplates && appData.maxTemplates > 0)) }))}
-                        className="w-full"
-                      />
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 min-w-0">
+                      <div className="flex-1 min-w-0">
+                        <CustomSelect
+                          value={template}
+                          onChange={val => setTemplate(val)}
+                          options={templateConfigs.map((tc: any) => ({ value: tc.id, label: t(tc.name), isVip: tc.isVip || tc.id === '2', disabled: (tc.isVip || tc.id === '2') && !(appData?.roleId === 'vip' || appData?.roleId === 'pro' || appData?.isSpecial || (appData?.maxTemplates && appData.maxTemplates > 0)) }))}
+                          className="w-full"
+                        />
+                      </div>
                       <input type="hidden" name="templateCreate" value={template} />
                       <button 
                         type="button" 
                         disabled={!title.trim()}
                         onClick={() => setShowTemplatePicker(true)} 
-                        className={`px-4 py-2.5 text-sm border border-transparent shrink-0 shadow-sm text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all ${(!title.trim()) ? 'bg-stone-300 text-stone-500 cursor-not-allowed opacity-60' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/10'}`}
+                        className={`px-4 text-sm h-[42px] border border-transparent shrink-0 shadow-sm text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all ${(!title.trim()) ? 'bg-stone-300 text-stone-500 cursor-not-allowed opacity-60' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/10'}`}
                       >
                         <Eye className="w-4 h-4" /> {t("Xem trước chủ đề")}
                       </button>
@@ -25417,7 +25426,7 @@ function AdminEditDemo() {
               <div className="grid grid-cols-1 gap-6 pt-4 border-t border-stone-100">
                   <div className="w-full">
                     <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Template Chủ Đề")}</label>
-                    <div className="flex gap-3 min-w-0 items-stretch">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 min-w-0">
                       <div className="flex-1 min-w-0">
                         <CustomSelect
                           value={template}
@@ -25431,7 +25440,7 @@ function AdminEditDemo() {
                         type="button" 
                         disabled={!title.trim()}
                         onClick={() => setShowTemplatePicker(true)} 
-                        className={`px-4 py-2.5 text-sm border border-transparent shrink-0 shadow-sm text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all ${(!title.trim()) ? 'bg-stone-300 text-stone-500 cursor-not-allowed opacity-60' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/10'}`}
+                        className={`px-4 text-sm h-[42px] border border-transparent shrink-0 shadow-sm text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all ${(!title.trim()) ? 'bg-stone-300 text-stone-500 cursor-not-allowed opacity-60' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/10'}`}
                       >
                         <Eye className="w-4 h-4" /> {t("Xem trước chủ đề")}
                       </button>
