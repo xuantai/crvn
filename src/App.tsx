@@ -2808,6 +2808,7 @@ const adminTranslations: Record<string, Record<string, string>> = {
     "Người dùng nhập mật khẩu này tại trang": "Người dùng nhập mật khẩu này tại trang",
     "Người nhận": "Người nhận",
     "Người yêu cầu:": "Người yêu cầu:",
+    "Người đăng": "Người đăng",
     "Người đăng tải": "Người đăng tải",
     "Nhân bản": "Nhân bản",
     "Thương hiệu": "Thương hiệu",
@@ -21910,13 +21911,87 @@ function AdminDashboard() {
                 </div>
               ) : (
                 <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-sm">
-                  <div className="overflow-x-auto">
+                  {/* Mobile Card View (block sm:hidden) */}
+                  <div className="block sm:hidden divide-y divide-stone-150">
+                    {otherSongs.map((song, idx) => {
+                      const isSinger = song.singer?.toLowerCase().includes(data?.artistName?.toLowerCase() || '');
+                      const isComposer = song.composer?.toLowerCase().includes(data?.artistName?.toLowerCase() || '');
+                      
+                      return (
+                        <div key={`mob-repost-${song.id || ''}-${idx}`} className="p-3.5 bg-white space-y-2.5">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <div className="font-bold text-stone-900 text-sm flex items-center gap-1.5 flex-wrap">
+                                <span>{song.title}</span>
+                                {song.isExternal && (
+                                  <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-bold px-1.5 py-0.5 rounded-md inline-flex items-center gap-0.5" title={t("Bài hát ngoài hệ thống")}>
+                                    <Globe className="w-2.5 h-2.5" /> {t("Ngoài")}
+                                  </span>
+                                )}
+                              </div>
+                              {/* Mobile: Display singer only without 'Ca sĩ:' prefix or composer */}
+                              <div className="text-xs text-stone-600 font-medium mt-0.5 truncate">
+                                {song.singer || t("Chưa rõ")}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <button
+                                onClick={() => navigate(getAdminLink('/new'), { state: { repostFrom: song } })}
+                                className="p-2 rounded-xl border border-stone-200 hover:border-stone-900 bg-white text-stone-700 transition-all shadow-sm cursor-pointer"
+                                title={t("Đăng lại bài hát này lên kênh của bạn")}
+                              >
+                                <Repeat className="w-4 h-4" />
+                              </button>
+                              {song.isExternal ? (
+                                <button
+                                  onClick={() => handleRemoveExternalRepost(song.id)}
+                                  className="p-2 rounded-xl border border-red-100 bg-red-50 text-red-600 transition-all shadow-sm cursor-pointer"
+                                  title={t("Xóa khỏi danh sách đăng lại")}
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => setReportSong(song)}
+                                  className="px-2.5 py-1.5 rounded-xl border border-red-100 bg-red-50 text-red-600 text-xs font-bold transition-all cursor-pointer"
+                                  title={t("Gửi báo cáo / yêu cầu gỡ hoặc chỉnh sửa")}
+                                >
+                                  Report
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between text-xs pt-2 border-t border-stone-100 text-stone-500">
+                            <div className="flex items-center gap-1 min-w-0 flex-1 mr-2">
+                              <span className="text-stone-400 shrink-0">{t("Người đăng")}:</span>
+                              <span className="font-semibold text-stone-800 truncate">{song.sourceArtist.artistName || song.sourceArtist.name}</span>
+                              {song.isExternal ? (
+                                <span className="text-[10px] text-emerald-600 font-mono flex items-center gap-0.5 shrink-0">(<Globe className="w-2.5 h-2.5" />{t("Ngoại tuyến")})</span>
+                              ) : (
+                                <span className="text-[10px] text-stone-400 font-mono shrink-0">(@{song.sourceArtist.username})</span>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap gap-1 shrink-0">
+                              {isSinger && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-100">{t("Ca sĩ")}</span>}
+                              {isComposer && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100">{t("Nhạc sĩ")}</span>}
+                              {!isSinger && !isComposer && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-stone-100 text-stone-600 border border-stone-200">{t("Nghệ sĩ liên quan")}</span>}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Desktop Table View (hidden sm:block) */}
+                  <div className="hidden sm:block overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
                         <tr className="bg-stone-50/70 border-b border-stone-150 text-xs font-bold text-stone-500 uppercase tracking-wider">
                           <th className="px-6 py-4">{t("Bài hát")}</th>
                           <th className="px-6 py-4">{t("Vai trò của bạn")}</th>
-                          <th className="px-6 py-4">{t("Người đăng tải")}</th>
+                          <th className="px-6 py-4">{t("Người đăng")}</th>
                           <th className="px-6 py-4 text-right">{t("Hành động")}</th>
                         </tr>
                       </thead>
