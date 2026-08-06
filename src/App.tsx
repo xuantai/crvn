@@ -11086,7 +11086,7 @@ function Home() {
       transition={{ duration: 0.5, ease: "easeOut" }}
       className={`min-h-screen flex flex-col ${
         isMusicianTheme
-          ? 'bg-[#1C0E07] text-stone-100 selection:bg-amber-600 selection:text-white font-sans'
+          ? 'text-stone-100 selection:bg-amber-600 selection:text-white font-sans'
           : isDreamyTheme 
             ? 'bg-gradient-to-br from-[#FFF5F7] via-[#F8F2FC] via-[#FAF5FF] to-[#FFF7ED] text-stone-900 selection:bg-rose-400 selection:text-white font-sans' 
             : isGoldTheme 
