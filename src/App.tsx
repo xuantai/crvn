@@ -5866,6 +5866,17 @@ const getThumbUrl = (url: string | undefined): string => {
   return url;
 };
 
+const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+  const target = e.currentTarget;
+  if (!target || (target as any).__error_handled__) return;
+  (target as any).__error_handled__ = true;
+  if (target.src.includes('-thumb.')) {
+    target.src = target.src.replace(/-thumb\.(jpg|png|webp|jpeg)/i, '.$1');
+  } else if (target.src.includes('cdn.chorus.vn/')) {
+    target.src = target.src.replace('cdn.chorus.vn/', 'chorus.vn/');
+  }
+};
+
 // ---- GLOBAL MULTI-ARTIST INTERCEPTORS ----
 const getArtistExtensionFromUrl = (customPath?: string) => {
   const currentPath = customPath !== undefined ? customPath : window.location.pathname;
@@ -7412,7 +7423,7 @@ function AnimatedRoutes() {
   };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {/* @ts-ignore */}
       <Routes location={location} key={getRouteKey(location.pathname)}>
         {/* Core Root Routes */}
@@ -10035,6 +10046,9 @@ function RandomSongCard({
 }
 
 function Home() {
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.src = '/fallback-cover.png';
+  };
   const { lang, setLang, setArtistData, landingConfig, artistData } = useContext(LanguageContext);
   const t = useMemo(() => {
     const baseDict = translations[lang] || translations['vi'];
