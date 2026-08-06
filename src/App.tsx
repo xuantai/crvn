@@ -11101,15 +11101,15 @@ function Home() {
         <>
           {/* Realistic Wood Grain Background with 3D Cabinet Overlays */}
           <div className="fixed inset-0 z-0 pointer-events-none select-none overflow-hidden bg-[#24130a]">
-            {/* Layer 1: Real Wood Grain Texture Image */}
+            {/* Layer 1: Real Wood Grain Texture Image (Sharp Repeat) */}
             <div 
               className="absolute inset-0"
               style={{
                 backgroundImage: `url('/wood-bg.jpg')`,
-                backgroundSize: 'cover',
+                backgroundSize: '320px auto',
                 backgroundPosition: 'center top',
-                backgroundRepeat: 'no-repeat',
-                filter: 'brightness(1.05) contrast(1.1) saturate(1.1)',
+                backgroundRepeat: 'repeat',
+                filter: 'brightness(1.1) contrast(1.2) saturate(1.15)',
               }}
             />
 
@@ -23786,7 +23786,7 @@ function AdminCreateDemo() {
                         : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
                     }`}
                   >
-                    <div className="w-20 h-20 rounded-2xl overflow-hidden bg-stone-900 border border-stone-400 shadow-md relative shrink-0">
+                    <div className={`w-20 h-20 rounded-2xl overflow-hidden ${uploadedBgUrl || bgPreviewObjectUrl ? 'bg-stone-900 border border-stone-400' : 'bg-stone-100 border border-stone-300 text-stone-400'} shadow-md relative shrink-0`}>
                       {(bgUploadProgress > 0 && bgUploadProgress < 100 && bgPreviewObjectUrl) ? (
                         <>
                           <img src={bgPreviewObjectUrl} className="w-full h-full object-cover opacity-60 blur-[1px]" />
@@ -25133,7 +25133,7 @@ function AdminEditDemo() {
                         : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
                     }`}
                   >
-                    <div className="w-20 h-20 rounded-2xl overflow-hidden bg-stone-900 border border-stone-400 shadow-md relative shrink-0">
+                    <div className={`w-20 h-20 rounded-2xl overflow-hidden ${uploadedBgUrl || bgPreviewObjectUrl ? 'bg-stone-900 border border-stone-400' : 'bg-stone-100 border border-stone-300 text-stone-400'} shadow-md relative shrink-0`}>
                       {(bgUploadProgress > 0 && bgUploadProgress < 100 && bgPreviewObjectUrl) ? (
                         <>
                           <img src={bgPreviewObjectUrl} className="w-full h-full object-cover opacity-60 blur-[1px]" />
