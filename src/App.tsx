@@ -14517,8 +14517,8 @@ function PlaylistPlayer() {
                             className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-neutral-800 flex-shrink-0 overflow-hidden border border-white/5 relative z-10 transition-transform cursor-pointer group/cover"
                             title={i === currentIndex ? (isPlaying ? t("Tạm dừng") : t("Phát nhạc")) : t("Phát bài này")}
                           >
-                             {getSongCoverUrl(song.coverUrl) ? (
-                               <img src={getSongCoverUrl(song.coverUrl)} className="w-full h-full object-cover group-hover/cover:scale-110 transition-transform" />
+                             {getSongCoverUrl(song.thumbUrl || song.coverUrl) ? (
+                               <img src={getSongCoverUrl(song.thumbUrl || song.coverUrl)} className="w-full h-full object-cover group-hover/cover:scale-110 transition-transform" />
                              ) : (
                                <Music className="w-4 h-4 m-3 sm:m-3.5 text-neutral-500" />
                              )}
@@ -18173,7 +18173,17 @@ function AdminDashboard() {
     return url;
   };
 
-  const uploadWithProgress = async (file: File, setProgress: (p: number) => void): Promise<string> => {
+  const getThumbUrl = (url: string | undefined) => {
+    if (!url) return '';
+    if (url.includes('-thumb')) return url;
+    const lastDot = url.lastIndexOf('.');
+    if (lastDot > 0 && (url.includes('/uploads/') || url.includes('.r2.dev/'))) {
+      return `${url.substring(0, lastDot)}-thumb${url.substring(lastDot)}`;
+    }
+    return url;
+  };
+
+  const uploadWithProgress = async (file: File, setProgress: (p: number) => void): Promise<{url: string, thumbUrl: string}> => {
     const fileToUpload = (file.type && file.type.startsWith('image/')) ? await compressImageInBrowser(file) : file;
     return new Promise((resolve, reject) => {
       const formData = new FormData();
@@ -18191,7 +18201,7 @@ function AdminDashboard() {
         if (xhr.status === 200) {
           setProgress(100);
           const res = JSON.parse(xhr.responseText);
-          resolve(res.url);
+          resolve({ url: res.url, thumbUrl: res.thumbUrl || res.url });
         } else {
           let msg = 'Tải ảnh lên thất bại!';
           try {
@@ -19135,11 +19145,11 @@ function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('about')}
-                  className="w-9 h-9 rounded-full overflow-hidden border border-stone-200 shrink-0 shadow-xs cursor-pointer"
+                  className={`w-9 h-9 rounded-full overflow-hidden border shrink-0 shadow-xs cursor-pointer transition-all ${previewAvatar !== null ? 'border-amber-400 ring-2 ring-amber-300/50 animate-[pulse_1.5s_ease-in-out_infinite]' : 'border-stone-200'}`}
                   title={t("Về Tôi")}
                 >
                   <img
-                    src={(previewAvatar !== null ? previewAvatar : (data?.aboutMe?.avatarUrl || data?.homeCoverUrl)) || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=150&q=80"}
+                    src={getThumbUrl((previewAvatar !== null ? previewAvatar : (data?.aboutMe?.avatarUrl || data?.homeCoverUrl)) || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=150&q=80")}
                     alt=""
                     className="w-full h-full object-cover"
                   />
@@ -19321,9 +19331,9 @@ function AdminDashboard() {
           {!effectiveSidebarCollapsed && (
             <div className={`rounded-2xl p-4 relative group select-none ${isGoldTheme ? 'bg-amber-50/50 border border-amber-200 text-amber-900' : 'bg-stone-50 border border-stone-200/80'}`}>
               <div className="flex flex-col items-center text-center">
-                <div className="relative w-16 h-16 mb-2 rounded-full overflow-hidden border border-stone-200 shadow-sm cursor-pointer group/avatar">
+                <div className={`relative w-16 h-16 mb-2 rounded-full overflow-hidden border shadow-sm cursor-pointer group/avatar transition-all ${previewAvatar !== null ? 'border-amber-400 ring-2 ring-amber-300/50 animate-[pulse_1.5s_ease-in-out_infinite]' : 'border-stone-200'}`}>
                   <img
-                    src={(previewAvatar !== null ? previewAvatar : (data?.aboutMe?.avatarUrl || data?.homeCoverUrl)) || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=150&q=80"}
+                    src={getThumbUrl((previewAvatar !== null ? previewAvatar : (data?.aboutMe?.avatarUrl || data?.homeCoverUrl)) || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=150&q=80")}
                     alt="Artist Avatar"
                     className="w-full h-full object-cover transition-all group-hover/avatar:brightness-75"
                     referrerPolicy="no-referrer"
@@ -19392,11 +19402,11 @@ function AdminDashboard() {
             <div className="flex flex-col items-center mb-4">
               <button
                 onClick={() => setActiveTab('about')}
-                className="w-10 h-10 rounded-full overflow-hidden border border-stone-200 hover:border-stone-400 transition-colors cursor-pointer relative group"
+                className={`w-10 h-10 rounded-full overflow-hidden border hover:border-stone-400 transition-all cursor-pointer relative group ${previewAvatar !== null ? 'border-amber-400 ring-2 ring-amber-300/50 animate-[pulse_1.5s_ease-in-out_infinite]' : 'border-stone-200'}`}
                 title={t("Tài Khoản (Bấm để chuyển về mục giới thiệu)")}
               >
                 <img
-                  src={(previewAvatar !== null ? previewAvatar : (data?.aboutMe?.avatarUrl || data?.homeCoverUrl)) || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=150&q=80"}
+                  src={getThumbUrl((previewAvatar !== null ? previewAvatar : (data?.aboutMe?.avatarUrl || data?.homeCoverUrl)) || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=150&q=80")}
                   alt="Artist Avatar"
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
@@ -21303,7 +21313,8 @@ function AdminDashboard() {
                       const newUploads = [];
                       for (let i = 0; i < e.target.files.length; i++) {
                          try {
-                           const url = await uploadWithProgress(e.target.files[i], setSlideProgress);
+                           const result = await uploadWithProgress(e.target.files[i], setSlideProgress);
+                           const url = typeof result === 'string' ? result : result.url;
                            newUploads.push(url);
                          } catch (err) {
                            console.error(err);
@@ -21327,7 +21338,8 @@ function AdminDashboard() {
                         const file = e.dataTransfer.files?.[0];
                         if (file) {
                             try {
-                                const url = await uploadWithProgress(file, setFaviconProgress);
+                                const result = await uploadWithProgress(file, setFaviconProgress);
+                                const url = typeof result === 'string' ? result : result.url;
                                 setFaviconUrlPreview(url);
                             } catch (err) {
                                 alert(t("Lỗi upload"));
@@ -21368,7 +21380,8 @@ function AdminDashboard() {
                     <input type="file" id="faviconUpload" className="hidden" accept="image/*" onChange={async (e) => {
                       if (!e.target.files?.[0]) return;
                       try {
-                        const url = await uploadWithProgress(e.target.files[0], setFaviconProgress);
+                        const result = await uploadWithProgress(e.target.files[0], setFaviconProgress);
+                        const url = typeof result === 'string' ? result : result.url;
                         setFaviconUrlPreview(url);
                       } catch (err) {
                         alert(t("Lỗi upload"));
@@ -21389,7 +21402,8 @@ function AdminDashboard() {
                         const file = e.dataTransfer.files?.[0];
                         if (file) {
                             try {
-                                const url = await uploadWithProgress(file, setOgImageProgress);
+                                const result = await uploadWithProgress(file, setOgImageProgress);
+                                const url = typeof result === 'string' ? result : result.url;
                                 setOgImageUrlPreview(url);
                             } catch (err) {
                                 alert(t("Lỗi upload"));
@@ -21430,7 +21444,8 @@ function AdminDashboard() {
                     <input type="file" id="ogImageUpload" className="hidden" accept="image/*" onChange={async (e) => {
                       if (!e.target.files?.[0]) return;
                       try {
-                        const url = await uploadWithProgress(e.target.files[0], setOgImageProgress);
+                        const result = await uploadWithProgress(e.target.files[0], setOgImageProgress);
+                        const url = typeof result === 'string' ? result : result.url;
                         setOgImageUrlPreview(url);
                       } catch (err) {
                         alert(t("Lỗi upload"));
@@ -21906,8 +21921,8 @@ function AdminDashboard() {
                               <td className="px-6 py-4">
                                 <div className="flex items-center gap-3">
                                   <div className="w-10 h-10 rounded-lg overflow-hidden border border-stone-200 shrink-0 bg-stone-100 flex items-center justify-center">
-                                    {getSongCoverUrl(song.coverUrl) ? (
-                                      <img src={getSongCoverUrl(song.coverUrl)} className="w-full h-full object-cover" alt={song.title} />
+                                    {getSongCoverUrl(song.thumbUrl || song.coverUrl) ? (
+                                      <img src={getSongCoverUrl(song.thumbUrl || song.coverUrl)} className="w-full h-full object-cover" alt={song.title} />
                                     ) : (
                                       <Disc3 className="w-5 h-5 text-stone-400" />
                                     )}
@@ -25775,7 +25790,7 @@ function AdminPlaylistEdit() {
     return url;
   };
 
-  const uploadWithProgress = async (file: File, setProgress: (p: number) => void): Promise<string> => {
+  const uploadWithProgress = async (file: File, setProgress: (p: number) => void): Promise<{url: string, thumbUrl: string}> => {
     const fileToUpload = (file.type && file.type.startsWith('image/')) ? await compressImageInBrowser(file) : file;
     return new Promise((resolve, reject) => {
       const formData = new FormData();
@@ -25793,7 +25808,7 @@ function AdminPlaylistEdit() {
         if (xhr.status === 200) {
           setProgress(100);
           const res = JSON.parse(xhr.responseText);
-          resolve(res.url);
+          resolve({ url: res.url, thumbUrl: res.thumbUrl || res.url });
         } else reject(new Error('Upload failed'));
       };
       xhr.onerror = () => reject(new Error('Network error'));
@@ -25982,7 +25997,8 @@ function AdminPlaylistEdit() {
               <input type="file" id="playlistCoverUpload" className="hidden" accept="image/*" onChange={async (e) => {
                 if (!e.target.files?.[0]) return;
                 try {
-                  const url = await uploadWithProgress(e.target.files[0], setCoverProgress);
+                  const result = await uploadWithProgress(e.target.files[0], setCoverProgress);
+                  const url = typeof result === 'string' ? result : result.url;
                   setCoverUrlPreview(url);
                 } catch (err) {
                   alert(t("Lỗi upload"));
@@ -26019,8 +26035,8 @@ function AdminPlaylistEdit() {
                        className={`flex items-center gap-4 p-3 rounded-xl border transition-all ${draggingIdx === i ? 'bg-stone-100 border-stone-400 opacity-50 relative z-10' : 'bg-white border-stone-200 hover:bg-stone-50'} cursor-grab active:cursor-grabbing`}
                     >
                        <GripVertical className="w-5 h-5 text-stone-400 shrink-0" />
-                       {getSongCoverUrl(song.coverUrl) ? (
-                         <img src={getPreviewUrl(getSongCoverUrl(song.coverUrl))} className="w-12 h-12 rounded object-cover border border-stone-200 shrink-0" alt="" />
+                       {getSongCoverUrl(song.thumbUrl || song.coverUrl) ? (
+                         <img src={getPreviewUrl(getSongCoverUrl(song.thumbUrl || song.coverUrl))} className="w-12 h-12 rounded object-cover border border-stone-200 shrink-0" alt="" />
                        ) : (
                          <div className="w-12 h-12 bg-stone-100 rounded flex items-center justify-center shrink-0 border border-stone-200">
                            <Disc3 className="w-6 h-6 text-stone-400" />
@@ -26102,8 +26118,8 @@ function AdminPlaylistEdit() {
                         }}
                         className="w-5 h-5 rounded text-stone-900 border-stone-300 focus:ring-stone-900" 
                       />
-                      {getSongCoverUrl(song.coverUrl) ? (
-                         <img src={getPreviewUrl(getSongCoverUrl(song.coverUrl))} className="w-10 h-10 rounded object-cover border shrink-0" alt="" />
+                      {getSongCoverUrl(song.thumbUrl || song.coverUrl) ? (
+                         <img src={getPreviewUrl(getSongCoverUrl(song.thumbUrl || song.coverUrl))} className="w-10 h-10 rounded object-cover border shrink-0" alt="" />
                       ) : (
                         <div className="w-10 h-10 bg-stone-100 rounded flex items-center justify-center shrink-0 border">
                           <Disc3 className="w-5 h-5 text-stone-400" />
@@ -26162,6 +26178,9 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl, on
   });
   const [avatarProgress, setAvatarProgress] = useState(0);
   const [avatarPreviewObjectUrl, setAvatarPreviewObjectUrl] = useState('');
+  const [avatarSaving, setAvatarSaving] = useState(false);
+  const initialAvatarUrlRef = useRef(data.aboutMe?.avatarUrl || data.avatarUrl || data.homeCoverUrl || '');
+  const isAvatarDirty = aboutData.avatarUrl !== initialAvatarUrlRef.current;
   const [socials, setSocials] = useState({
     socialFacebook: data.socialFacebook || '',
     socialInstagram: data.socialInstagram || '',
@@ -26175,6 +26194,17 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl, on
       aboutMe: aboutData,
       ...socials
     });
+    initialAvatarUrlRef.current = aboutData.avatarUrl;
+  };
+
+  const handleQuickSaveAvatar = async () => {
+    setAvatarSaving(true);
+    try {
+      await onSave({ aboutMe: { ...aboutData }, ...socials });
+      initialAvatarUrlRef.current = aboutData.avatarUrl;
+    } finally {
+      setAvatarSaving(false);
+    }
   };
 
   const handleChange = (field: string) => (e: any) => {
@@ -26208,7 +26238,8 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl, on
                   if (file) {
                       setAvatarPreviewObjectUrl(URL.createObjectURL(file));
                       try {
-                          const url = await uploadWithProgress(file, setAvatarProgress);
+                          const result = await uploadWithProgress(file, setAvatarProgress);
+                          const url = typeof result === 'string' ? result : result.url;
                           setAboutData({ ...aboutData, avatarUrl: url });
                           if (onPreviewAvatar) onPreviewAvatar(url);
                           if (avatarPreviewObjectUrl) URL.revokeObjectURL(avatarPreviewObjectUrl);
@@ -26222,7 +26253,7 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl, on
                   }
               }}
             >
-              <div className="w-20 h-20 rounded-2xl overflow-hidden bg-stone-900 border border-stone-400 shadow-md relative shrink-0">
+              <div className={`w-20 h-20 rounded-2xl overflow-hidden bg-stone-900 border shadow-md relative shrink-0 transition-all ${isAvatarDirty ? 'border-amber-400 ring-2 ring-amber-300/50 animate-[pulse_1.5s_ease-in-out_infinite]' : 'border-stone-400'}`}>
                 {(avatarProgress > 0 && avatarProgress < 100 && avatarPreviewObjectUrl) ? (
                   <>
                     <img src={avatarPreviewObjectUrl} className="w-full h-full object-cover opacity-60 blur-[1px]" />
@@ -26239,6 +26270,9 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl, on
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-stone-500"><Image className="w-8 h-8" /></div>
                 )}
+                {isAvatarDirty && avatarProgress !== 100 && !(avatarProgress > 0 && avatarProgress < 100) && (
+                  <div className="absolute top-0.5 right-0.5 w-2.5 h-2.5 bg-amber-400 rounded-full animate-ping" />
+                )}
               </div>
               <div className="flex-1 min-w-[150px]">
                 <div className="flex items-center gap-2">
@@ -26249,10 +26283,22 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl, on
                   {avatarProgress > 0 && avatarProgress < 100 ? (
                     <button type="button" onClick={() => { setAvatarProgress(0); if (avatarPreviewObjectUrl) { URL.revokeObjectURL(avatarPreviewObjectUrl); setAvatarPreviewObjectUrl(''); } }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
                   ) : (aboutData.avatarUrl ? (
-                    <button type="button" onClick={() => { setAboutData({ ...aboutData, avatarUrl: '' }); setAvatarProgress(0); (document.getElementById('aboutAvatarUpload') as HTMLInputElement).value = ''; if (onPreviewAvatar) onPreviewAvatar(''); }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                    <>
+                      {isAvatarDirty && (
+                        <button type="button" onClick={handleQuickSaveAvatar} disabled={avatarSaving} className="w-8 h-8 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center hover:bg-emerald-200 transition-all shrink-0 hover:scale-110 shadow-sm" title={t("Lưu avatar ngay")}>
+                          {avatarSaving ? <div className="w-4 h-4 rounded-full border-2 border-emerald-300 border-t-emerald-700 animate-spin" /> : <Check className="w-4 h-4" />}
+                        </button>
+                      )}
+                      <button type="button" onClick={() => { setAboutData({ ...aboutData, avatarUrl: '' }); setAvatarProgress(0); (document.getElementById('aboutAvatarUpload') as HTMLInputElement).value = ''; if (onPreviewAvatar) onPreviewAvatar(''); }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                    </>
                   ) : null)}
                 </div>
-                <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
+                {isAvatarDirty && (
+                  <p className="text-[11px] text-amber-600 font-semibold mt-1 animate-pulse">
+                    ⚠ {t("Chưa lưu — nhấn ✓ hoặc Lưu bên dưới")}
+                  </p>
+                )}
+                <p className="text-[11px] text-stone-400 mt-1 truncate max-w-full">
                   {t("Kéo thả ảnh trực tiếp vào ô này")}
                 </p>
               </div>
@@ -26261,7 +26307,8 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl, on
                 const file = e.target.files[0];
                 setAvatarPreviewObjectUrl(URL.createObjectURL(file));
                 try {
-                  const url = await uploadWithProgress(file, setAvatarProgress);
+                  const result = await uploadWithProgress(file, setAvatarProgress);
+                  const url = typeof result === 'string' ? result : result.url;
                   setAboutData({ ...aboutData, avatarUrl: url });
                   if (onPreviewAvatar) onPreviewAvatar(url);
                   if (avatarPreviewObjectUrl) URL.revokeObjectURL(avatarPreviewObjectUrl);
