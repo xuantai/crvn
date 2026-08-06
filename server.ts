@@ -1114,8 +1114,11 @@ async function uploadUrlOrFileToCloud(urlOrPath: string, globalBaseUrl?: string)
         const isPng = mimetype === 'image/png' || filename.toLowerCase().endsWith('.png');
         const finalExt = isPng ? 'png' : 'jpg';
         const baseFilename = filename.includes('.') ? filename.substring(0, filename.lastIndexOf('.')) : filename;
-        const optimizedFilename = `${baseFilename}-${Date.now()}.${finalExt}`;
+        const timestamp = Date.now();
+        const optimizedFilename = `${baseFilename}-${timestamp}.${finalExt}`;
+        const thumbFilename = `${baseFilename}-${timestamp}-thumb.${finalExt}`;
         const optimizedPath = path.join(UPLOADS_DIR, optimizedFilename);
+        const thumbPath = path.join(UPLOADS_DIR, thumbFilename);
 
         let sharpInstance = sharp(fileBuffer).resize({ width: 1600, withoutEnlargement: true });
         if (isPng) {
@@ -1125,15 +1128,26 @@ async function uploadUrlOrFileToCloud(urlOrPath: string, globalBaseUrl?: string)
         }
         const optimizedBuffer = await sharpInstance.toBuffer();
 
-        // Always save optimized image to server local disk as backup
+        let sharpThumb = sharp(fileBuffer).resize({ width: 400, withoutEnlargement: true });
+        if (isPng) {
+          sharpThumb = sharpThumb.png({ palette: true, quality: 80 });
+        } else {
+          sharpThumb = sharpThumb.jpeg({ quality: 75, progressive: true });
+        }
+        const thumbBuffer = await sharpThumb.toBuffer();
+
+        // Always save optimized image and thumbnail to server local disk as backup
         await fs.writeFile(optimizedPath, optimizedBuffer);
-        if (localSourceFullPath && localSourceFullPath !== optimizedPath) {
+        await fs.writeFile(thumbPath, thumbBuffer);
+
+        if (localSourceFullPath && localSourceFullPath !== optimizedPath && localSourceFullPath !== thumbPath) {
           await fs.unlink(localSourceFullPath).catch(() => {});
         }
         const optLocalUrl = `/uploads/${optimizedFilename}`;
 
-        // Upload to Cloudflare R2 if available, or fallback to local URL
+        // Upload main image and thumbnail to Cloudflare R2 if available
         const r2Url = await uploadToR2(`uploads/${optimizedFilename}`, optimizedBuffer, isPng ? 'image/png' : 'image/jpeg');
+        await uploadToR2(`uploads/${thumbFilename}`, thumbBuffer, isPng ? 'image/png' : 'image/jpeg');
         return r2Url || optLocalUrl;
       } catch (sharpErr) {
         console.error(`[Đồng bộ hóa] sharp compression error:`, sharpErr);
@@ -2816,6 +2830,10 @@ function generateCaptchaSvg(text: string) {
       }
       
       const r2Url = await uploadToR2(`uploads/explore/${optimizedFilename}`, finalBuffer, contentType);
+      const baseNameExplore = optimizedFilename.includes('.') ? optimizedFilename.substring(0, optimizedFilename.lastIndexOf('.')) : optimizedFilename;
+      const extExplore = path.extname(optimizedFilename);
+      const thumbFilenameExplore = `${baseNameExplore}-thumb${extExplore}`;
+      await uploadToR2(`uploads/explore/${thumbFilenameExplore}`, finalBuffer, contentType);
       
       // Cleanup temp file
       try { await fs.unlink(req.file.path); } catch (e) {}
@@ -2828,6 +2846,7 @@ function generateCaptchaSvg(text: string) {
         const localDir = path.join(process.cwd(), 'public', 'uploads');
         if (!fsSync.existsSync(localDir)) fsSync.mkdirSync(localDir, { recursive: true });
         await fs.writeFile(path.join(localDir, optimizedFilename), finalBuffer);
+        await fs.writeFile(path.join(localDir, thumbFilenameExplore), finalBuffer);
         res.json({ success: true, url: localPath });
       }
     } catch (e: any) {
@@ -6891,8 +6910,11 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
       const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
       const rawBuffer = Buffer.from(base64Data, 'base64');
       
-      const filename = `thumb-${Date.now()}.jpg`;
+      const timestamp = Date.now();
+      const filename = `thumb-${timestamp}.jpg`;
+      const thumbFilename = `thumb-${timestamp}-thumb.jpg`;
       const filepath = path.join(process.cwd(), 'public', 'uploads', artistId, filename);
+      const thumbpath = path.join(process.cwd(), 'public', 'uploads', artistId, thumbFilename);
       
       // Ensure directory exists
       await fs.mkdir(path.dirname(filepath), { recursive: true }).catch(() => {});
@@ -6903,14 +6925,25 @@ app.post('/api/demos', upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'c
         .resize({ width: 1600, withoutEnlargement: true })
         .toBuffer();
       
+      const thumbBuffer = await sharp(rawBuffer)
+        .jpeg({ quality: 75, progressive: true })
+        .resize({ width: 400, withoutEnlargement: true })
+        .toBuffer();
+
       // Lưu file cục bộ server làm backup
       await fs.writeFile(filepath, optimizedBuffer);
+      await fs.writeFile(thumbpath, thumbBuffer);
       
       const localUrl = `/uploads/${artistId}/${filename}`;
-      const r2Url = await uploadToR2(`uploads/${artistId}/${filename}`, optimizedBuffer, 'image/jpeg');
+      const localThumbUrl = `/uploads/${artistId}/${thumbFilename}`;
 
-      // Tra ve R2 URL neu thanh cong, hoac local server URL. Giu file backup tren server local!
-      res.json({ url: r2Url || localUrl });
+      const r2Url = await uploadToR2(`uploads/${artistId}/${filename}`, optimizedBuffer, 'image/jpeg');
+      const r2ThumbUrl = await uploadToR2(`uploads/${artistId}/${thumbFilename}`, thumbBuffer, 'image/jpeg');
+
+      // Tra ve R2 URL neu thanh cong, hoac local server URL.
+      const finalUrl = r2Url || localUrl;
+      const finalThumbUrl = r2ThumbUrl || localThumbUrl;
+      res.json({ url: finalUrl, thumbUrl: finalThumbUrl });
     } catch (e) {
       console.error(e);
       res.status(500).json({ error: 'Failed to upload image' });
@@ -7292,13 +7325,23 @@ ${JSON.stringify(geminiInput, null, 2)}`;
   } else {
     // Serve static files but DON'T serve index.html by default
     const distPath = path.join(process.cwd(), 'dist');
+    // Smart cache headers: immutable for hashed assets, no-cache for HTML/data
     app.use((req, res, next) => {
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
+      if (req.path.startsWith('/assets/')) {
+        // Hashed filenames = immutable forever cache
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else if (req.path.match(/\.(jpg|jpeg|png|webp|avif|svg|gif|ico|woff2?|ttf|eot)$/i)) {
+        // Static media = cache 7 days
+        res.setHeader('Cache-Control', 'public, max-age=604800');
+      } else {
+        // Everything else (HTML, JSON) = no cache
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+      }
       next();
     });
-    app.use(express.static(distPath, { index: false, maxAge: 0 }));
+    app.use(express.static(distPath, { index: false }));
   }
 
   app.get('/demo/:id', (req, res) => {
@@ -7522,17 +7565,22 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       html = html.replace(/<title>.*?<\/title>/i, `<title>${escapedTitle}</title>`);
       
       let metaTags = `
+        <meta name="description" content="${escapedDesc}" />
+        <link rel="canonical" href="${escapedUrl}" />
         <meta property="og:title" content="${escapedTitle}" />
         <meta property="og:description" content="${escapedDesc}" />
         <meta property="og:image" content="${escapedImage}" />
         <meta property="og:image:secure_url" content="${escapedImage}" />
         <meta property="og:url" content="${escapedUrl}" />
-        <meta property="og:site_name" content="tài.com" />
+        <meta property="og:site_name" content="Chorus" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="${escapedTitle}" />
         <meta name="twitter:description" content="${escapedDesc}" />
         <meta name="twitter:image" content="${escapedImage}" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Playfair+Display:wght@600;700&family=Lora:wght@400;600&display=swap" />
       `;
       if (faviconUrlToInject) {
         metaTags += `\n        <link rel="icon" href="${escapeHtmlAttr(faviconUrlToInject)}" />`;
