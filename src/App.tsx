@@ -11105,17 +11105,18 @@ function Home() {
               className="absolute inset-0"
               style={{
                 backgroundImage: `url('/wood-bg.jpg')`,
-                backgroundSize: '500px auto',
-                backgroundRepeat: 'repeat',
-                filter: 'brightness(0.98) contrast(1.15) saturate(1.15)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center top',
+                backgroundRepeat: 'no-repeat',
+                filter: 'brightness(1.05) contrast(1.1) saturate(1.1)',
               }}
             />
 
             {/* Layer 2: Subtle warm color overlay to unify tone */}
             <div 
-              className="absolute inset-0 opacity-15"
+              className="absolute inset-0 opacity-20"
               style={{
-                background: 'linear-gradient(180deg, rgba(45,22,11,0.4) 0%, rgba(24,10,4,0.1) 50%, rgba(45,22,11,0.4) 100%)',
+                background: 'linear-gradient(180deg, rgba(45,22,11,0.2) 0%, rgba(24,10,4,0) 50%, rgba(45,22,11,0.3) 100%)',
                 mixBlendMode: 'multiply'
               }}
             />
