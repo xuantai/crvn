@@ -10096,8 +10096,8 @@ function Home() {
     return rawTheme || 'liquid-glass';
   }, [data?.adminTheme]);
 
-  const isDreamyTheme = activeTheme === 'musician';
-  const isMusicianTheme = activeTheme === 'musician2';
+  const isMusicianTheme = activeTheme === 'musician' || activeTheme === 'musician2';
+  const isDreamyTheme = activeTheme === 'dreamy';
   const isGoldTheme = (activeTheme === 'gold' || activeTheme === 'gold2') && !isMusicianTheme && !isDreamyTheme;
   const isGold2Theme = (activeTheme === 'gold' || activeTheme === 'gold2') && !isMusicianTheme && !isDreamyTheme;
 
@@ -23817,98 +23817,108 @@ function AdminCreateDemo() {
                     <input type="checkbox" id="isBrandCreateDirect" checked={isBrand} onChange={e => setIsBrand(e.target.checked)} className="w-5 h-5 accent-indigo-500 rounded border-stone-300 cursor-pointer" />
                     <label htmlFor="isBrandCreateDirect" className="font-semibold text-stone-700 text-sm cursor-pointer">{t("Là nhạc thương hiệu (Brand Music)")}</label>
                   </div>
-                  {isBrand && (
-                    <div className="grid grid-cols-1 gap-4 pt-2">
-                      <div>
-                        <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tên đối tác")}<span className="text-red-500">*</span></label>
-                        <input type="text" value={brandName} onChange={e => setBrandName(e.target.value)} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" placeholder="VD: Vingroup" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Brief khách hàng (nếu có)")}</label>
-                        <textarea rows={3} value={brandBrief} onChange={e => setBrandBrief(e.target.value)} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" placeholder={t("Nhập brief khách hàng...")} />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-stone-700 mb-2 flex justify-between items-center">
-                          <span>{t("Video Tham Khảo (Tối đa 5 video)")}</span>
-                          {brandReferenceVideos.length < 5 && (
-                            <button type="button" onClick={() => setBrandReferenceVideos([...brandReferenceVideos, ""])} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-indigo-200"><Plus className="w-3 h-3"/>{t("Thêm video")}</button>
-                          )}
-                        </label>
-                        {brandReferenceVideos.map((vid, idx) => (
-                          <div key={`l18921-idx-13-${idx}`} className="flex gap-2 mb-2">
-                            <input type="text" value={vid} onChange={e => { const newVids = [...brandReferenceVideos]; newVids[idx] = e.target.value; setBrandReferenceVideos(newVids); }} className="flex-1 border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all font-mono" placeholder="Link video Youtube..." />
-                            <button type="button" onClick={() => { const newVids = brandReferenceVideos.filter((_, i) => i !== idx); setBrandReferenceVideos(newVids); }} className="px-3 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100"><Trash2 className="w-4 h-4"/></button>
+                  <AnimatePresence>
+                    {isBrand && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                        className="overflow-hidden"
+                      >
+                        <div className="grid grid-cols-1 gap-4 pt-2">
+                          <div>
+                            <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tên đối tác")}<span className="text-red-500">*</span></label>
+                            <input type="text" value={brandName} onChange={e => setBrandName(e.target.value)} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" placeholder="VD: Vingroup" />
                           </div>
-                        ))}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Logo đối tác (Upload)")}</label>
-                        <div 
-                          onDragOver={(e) => { e.preventDefault(); setIsDraggingBrandLogo(true); }}
-                          onDragLeave={() => setIsDraggingBrandLogo(false)}
-                          onDrop={(e) => { 
-                            e.preventDefault(); 
-                            setIsDraggingBrandLogo(false); 
-                            const file = e.dataTransfer.files?.[0]; 
-                            if (file && file.type.startsWith('image/')) {
-                               const fd = new FormData(); fd.append("file", file); fd.append("type", "image");
-                               setBrandLogoUploadProgress(10);
-                               fetch("/api/upload", { method: "POST", body: fd, headers: { "Authorization": `Bearer ${getAdminToken() || ""}`, "x-artist-extension": getArtistExtensionFromUrl() }})
-                               .then(res => res.json()).then(data => {
-                                 setUploadedBrandLogoUrl(data.url); setUploadedBrandLogoName(file.name); setBrandLogoUploadProgress(100);
-                               });
-                            }
-                          }}
-                          className={`flex flex-wrap gap-4 items-center p-3 rounded-2xl border-2 transition-all duration-200 ${
-                            isDraggingBrandLogo 
-                              ? 'border-indigo-500 bg-indigo-50/50 border-dashed scale-[1.01]' 
-                              : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
-                          }`}
-                        >
-                          {uploadedBrandLogoUrl ? (
-                            <img src={uploadedBrandLogoUrl} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />
-                          ) : (
-                            <div className="w-16 h-16 rounded-xl border border-dashed border-stone-300 flex items-center justify-center bg-stone-100 text-stone-400">
-                              <Image className="w-6 h-6" />
+                          <div>
+                            <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Brief khách hàng (nếu có)")}</label>
+                            <textarea rows={3} value={brandBrief} onChange={e => setBrandBrief(e.target.value)} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" placeholder={t("Nhập brief khách hàng...")} />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-stone-700 mb-2 flex justify-between items-center">
+                              <span>{t("Video Tham Khảo (Tối đa 5 video)")}</span>
+                              {brandReferenceVideos.length < 5 && (
+                                <button type="button" onClick={() => setBrandReferenceVideos([...brandReferenceVideos, ""])} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-indigo-200"><Plus className="w-3 h-3"/>{t("Thêm video")}</button>
+                              )}
+                            </label>
+                            {brandReferenceVideos.map((vid, idx) => (
+                              <div key={`l18921-idx-13-${idx}`} className="flex gap-2 mb-2">
+                                <input type="text" value={vid} onChange={e => { const newVids = [...brandReferenceVideos]; newVids[idx] = e.target.value; setBrandReferenceVideos(newVids); }} className="flex-1 border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all font-mono" placeholder="Link video Youtube..." />
+                                <button type="button" onClick={() => { const newVids = brandReferenceVideos.filter((_, i) => i !== idx); setBrandReferenceVideos(newVids); }} className="px-3 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100"><Trash2 className="w-4 h-4"/></button>
+                              </div>
+                            ))}
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Logo đối tác (Upload)")}</label>
+                            <div 
+                              onDragOver={(e) => { e.preventDefault(); setIsDraggingBrandLogo(true); }}
+                              onDragLeave={() => setIsDraggingBrandLogo(false)}
+                              onDrop={(e) => { 
+                                e.preventDefault(); 
+                                setIsDraggingBrandLogo(false); 
+                                const file = e.dataTransfer.files?.[0]; 
+                                if (file && file.type.startsWith('image/')) {
+                                   const fd = new FormData(); fd.append("file", file); fd.append("type", "image");
+                                   setBrandLogoUploadProgress(10);
+                                   fetch("/api/upload", { method: "POST", body: fd, headers: { "Authorization": `Bearer ${getAdminToken() || ""}`, "x-artist-extension": getArtistExtensionFromUrl() }})
+                                   .then(res => res.json()).then(data => {
+                                     setUploadedBrandLogoUrl(data.url); setUploadedBrandLogoName(file.name); setBrandLogoUploadProgress(100);
+                                   });
+                                }
+                              }}
+                              className={`flex flex-wrap gap-4 items-center p-3 rounded-2xl border-2 transition-all duration-200 ${
+                                isDraggingBrandLogo 
+                                  ? 'border-indigo-500 bg-indigo-50/50 border-dashed scale-[1.01]' 
+                                  : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
+                              }`}
+                            >
+                              {uploadedBrandLogoUrl ? (
+                                <img src={uploadedBrandLogoUrl} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />
+                              ) : (
+                                <div className="w-16 h-16 rounded-xl border border-dashed border-stone-300 flex items-center justify-center bg-stone-100 text-stone-400">
+                                  <Image className="w-6 h-6" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-[150px]">
+                                 <div className="flex items-center gap-2">
+                                   <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${brandLogoUploadProgress === 100 || uploadedBrandLogoUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('brandLogoCreateDirectUpload')?.click()}>
+                                       <Upload className="w-4 h-4"/>
+                                       <span className="max-w-[150px] truncate">{brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? `Đang tải ${brandLogoUploadProgress}%` : (uploadedBrandLogoName ? formatFileName(uploadedBrandLogoName) : t("Chọn logo"))}</span>
+                                   </button>
+                                   {brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? (
+                                     <button type="button" onClick={() => setBrandLogoUploadProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
+                                   ) : (uploadedBrandLogoUrl ? (
+                                     <button type="button" onClick={() => { setUploadedBrandLogoUrl(''); setBrandLogoUploadProgress(0); setUploadedBrandLogoName(''); (document.getElementById('brandLogoCreateDirectUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                                   ) : null)}
+                                 </div>
+                                 {brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 && (
+                                   <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-2">
+                                     <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${brandLogoUploadProgress}%` }} />
+                                   </div>
+                                 )}
+                                 <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
+                                   {uploadedBrandLogoName ? `Tệp đã chọn: ${formatFileName(uploadedBrandLogoName, 30)}` : t("Kéo thả logo trực tiếp vào ô này")}
+                                 </p>
+                              </div>
+                              <input type="file" id="brandLogoCreateDirectUpload" name="brandLogo" accept="image/*" onChange={e => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  setBrandLogoUploadProgress(10);
+                                  const fd = new FormData(); fd.append("file", file); fd.append("type", "image");
+                                  fetch("/api/upload", { method: "POST", body: fd, headers: { "Authorization": `Bearer ${getAdminToken() || ""}`, "x-artist-extension": getArtistExtensionFromUrl() }})
+                                  .then(res => res.json()).then(data => {
+                                    setUploadedBrandLogoUrl(data.url); setUploadedBrandLogoName(file.name); setBrandLogoUploadProgress(100);
+                                  });
+                                }
+                              }} className="hidden" />
                             </div>
-                          )}
-                          <div className="flex-1 min-w-[150px]">
-                             <div className="flex items-center gap-2">
-                               <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${brandLogoUploadProgress === 100 || uploadedBrandLogoUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('brandLogoCreateDirectUpload')?.click()}>
-                                   <Upload className="w-4 h-4"/>
-                                   <span className="max-w-[150px] truncate">{brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? `Đang tải ${brandLogoUploadProgress}%` : (uploadedBrandLogoName ? formatFileName(uploadedBrandLogoName) : t("Chọn logo"))}</span>
-                               </button>
-                               {brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? (
-                                 <button type="button" onClick={() => setBrandLogoUploadProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
-                               ) : (uploadedBrandLogoUrl ? (
-                                 <button type="button" onClick={() => { setUploadedBrandLogoUrl(''); setBrandLogoUploadProgress(0); setUploadedBrandLogoName(''); (document.getElementById('brandLogoCreateDirectUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
-                               ) : null)}
-                             </div>
-                             {brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 && (
-                               <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-2">
-                                 <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${brandLogoUploadProgress}%` }} />
-                               </div>
-                             )}
-                             <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
-                               {uploadedBrandLogoName ? `Tệp đã chọn: ${formatFileName(uploadedBrandLogoName, 30)}` : t("Kéo thả logo trực tiếp vào ô này")}
-                             </p>
                           </div>
-                          <input type="file" id="brandLogoCreateDirectUpload" name="brandLogo" accept="image/*" onChange={e => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              setBrandLogoUploadProgress(10);
-                              const fd = new FormData(); fd.append("file", file); fd.append("type", "image");
-                              fetch("/api/upload", { method: "POST", body: fd, headers: { "Authorization": `Bearer ${getAdminToken() || ""}`, "x-artist-extension": getArtistExtensionFromUrl() }})
-                              .then(res => res.json()).then(data => {
-                                setUploadedBrandLogoUrl(data.url); setUploadedBrandLogoName(file.name); setBrandLogoUploadProgress(100);
-                              });
-                            }
-                          }} className="hidden" />
-                        </div>
-                      </div>
 
-                    </div>
-                  )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 <div>
@@ -23979,98 +23989,108 @@ function AdminCreateDemo() {
                     <input type="checkbox" id="isBrandCreateIndirect" checked={isBrand} onChange={e => setIsBrand(e.target.checked)} className="w-5 h-5 accent-indigo-500 rounded border-stone-300 cursor-pointer" />
                     <label htmlFor="isBrandCreateIndirect" className="font-semibold text-stone-700 text-sm cursor-pointer">{t("Là nhạc thương hiệu (Brand Music)")}</label>
                   </div>
-                  {isBrand && (
-                    <div className="grid grid-cols-1 gap-4 pt-2">
-                      <div>
-                        <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tên đối tác")}<span className="text-red-500">*</span></label>
-                        <input type="text" value={brandName} onChange={e => setBrandName(e.target.value)} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" placeholder="VD: Vingroup" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Brief khách hàng (nếu có)")}</label>
-                        <textarea rows={3} value={brandBrief} onChange={e => setBrandBrief(e.target.value)} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" placeholder={t("Nhập brief khách hàng...")} />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-stone-700 mb-2 flex justify-between items-center">
-                          <span>{t("Video Tham Khảo (Tối đa 5 video)")}</span>
-                          {brandReferenceVideos.length < 5 && (
-                            <button type="button" onClick={() => setBrandReferenceVideos([...brandReferenceVideos, ""])} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-indigo-200"><Plus className="w-3 h-3"/>{t("Thêm video")}</button>
-                          )}
-                        </label>
-                        {brandReferenceVideos.map((vid, idx) => (
-                          <div key={`l19083-idx-14-${idx}`} className="flex gap-2 mb-2">
-                            <input type="text" value={vid} onChange={e => { const newVids = [...brandReferenceVideos]; newVids[idx] = e.target.value; setBrandReferenceVideos(newVids); }} className="flex-1 border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all font-mono" placeholder="Link video Youtube..." />
-                            <button type="button" onClick={() => { const newVids = brandReferenceVideos.filter((_, i) => i !== idx); setBrandReferenceVideos(newVids); }} className="px-3 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100"><Trash2 className="w-4 h-4"/></button>
+                  <AnimatePresence>
+                    {isBrand && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                        className="overflow-hidden"
+                      >
+                        <div className="grid grid-cols-1 gap-4 pt-2">
+                          <div>
+                            <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tên đối tác")}<span className="text-red-500">*</span></label>
+                            <input type="text" value={brandName} onChange={e => setBrandName(e.target.value)} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" placeholder="VD: Vingroup" />
                           </div>
-                        ))}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Logo đối tác (Upload)")}</label>
-                        <div 
-                          onDragOver={(e) => { e.preventDefault(); setIsDraggingBrandLogo(true); }}
-                          onDragLeave={() => setIsDraggingBrandLogo(false)}
-                          onDrop={(e) => { 
-                            e.preventDefault(); 
-                            setIsDraggingBrandLogo(false); 
-                            const file = e.dataTransfer.files?.[0]; 
-                            if (file && file.type.startsWith('image/')) {
-                               const fd = new FormData(); fd.append("file", file); fd.append("type", "image");
-                               setBrandLogoUploadProgress(10);
-                               fetch("/api/upload", { method: "POST", body: fd, headers: { "Authorization": `Bearer ${getAdminToken() || ""}`, "x-artist-extension": getArtistExtensionFromUrl() }})
-                               .then(res => res.json()).then(data => {
-                                 setUploadedBrandLogoUrl(data.url); setUploadedBrandLogoName(file.name); setBrandLogoUploadProgress(100);
-                               });
-                            }
-                          }}
-                          className={`flex flex-wrap gap-4 items-center p-3 rounded-2xl border-2 transition-all duration-200 ${
-                            isDraggingBrandLogo 
-                              ? 'border-indigo-500 bg-indigo-50/50 border-dashed scale-[1.01]' 
-                              : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
-                          }`}
-                        >
-                          {uploadedBrandLogoUrl ? (
-                            <img src={uploadedBrandLogoUrl} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />
-                          ) : (
-                            <div className="w-16 h-16 rounded-xl border border-dashed border-stone-300 flex items-center justify-center bg-stone-100 text-stone-400">
-                              <Image className="w-6 h-6" />
+                          <div>
+                            <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Brief khách hàng (nếu có)")}</label>
+                            <textarea rows={3} value={brandBrief} onChange={e => setBrandBrief(e.target.value)} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" placeholder={t("Nhập brief khách hàng...")} />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-stone-700 mb-2 flex justify-between items-center">
+                              <span>{t("Video Tham Khảo (Tối đa 5 video)")}</span>
+                              {brandReferenceVideos.length < 5 && (
+                                <button type="button" onClick={() => setBrandReferenceVideos([...brandReferenceVideos, ""])} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-indigo-200"><Plus className="w-3 h-3"/>{t("Thêm video")}</button>
+                              )}
+                            </label>
+                            {brandReferenceVideos.map((vid, idx) => (
+                              <div key={`l19083-idx-14-${idx}`} className="flex gap-2 mb-2">
+                                <input type="text" value={vid} onChange={e => { const newVids = [...brandReferenceVideos]; newVids[idx] = e.target.value; setBrandReferenceVideos(newVids); }} className="flex-1 border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all font-mono" placeholder="Link video Youtube..." />
+                                <button type="button" onClick={() => { const newVids = brandReferenceVideos.filter((_, i) => i !== idx); setBrandReferenceVideos(newVids); }} className="px-3 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100"><Trash2 className="w-4 h-4"/></button>
+                              </div>
+                            ))}
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Logo đối tác (Upload)")}</label>
+                            <div 
+                              onDragOver={(e) => { e.preventDefault(); setIsDraggingBrandLogo(true); }}
+                              onDragLeave={() => setIsDraggingBrandLogo(false)}
+                              onDrop={(e) => { 
+                                e.preventDefault(); 
+                                setIsDraggingBrandLogo(false); 
+                                const file = e.dataTransfer.files?.[0]; 
+                                if (file && file.type.startsWith('image/')) {
+                                   const fd = new FormData(); fd.append("file", file); fd.append("type", "image");
+                                   setBrandLogoUploadProgress(10);
+                                   fetch("/api/upload", { method: "POST", body: fd, headers: { "Authorization": `Bearer ${getAdminToken() || ""}`, "x-artist-extension": getArtistExtensionFromUrl() }})
+                                   .then(res => res.json()).then(data => {
+                                     setUploadedBrandLogoUrl(data.url); setUploadedBrandLogoName(file.name); setBrandLogoUploadProgress(100);
+                                   });
+                                }
+                              }}
+                              className={`flex flex-wrap gap-4 items-center p-3 rounded-2xl border-2 transition-all duration-200 ${
+                                isDraggingBrandLogo 
+                                  ? 'border-indigo-500 bg-indigo-50/50 border-dashed scale-[1.01]' 
+                                  : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
+                              }`}
+                            >
+                              {uploadedBrandLogoUrl ? (
+                                <img src={uploadedBrandLogoUrl} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />
+                              ) : (
+                                <div className="w-16 h-16 rounded-xl border border-dashed border-stone-300 flex items-center justify-center bg-stone-100 text-stone-400">
+                                  <Image className="w-6 h-6" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-[150px]">
+                                 <div className="flex items-center gap-2">
+                                   <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${brandLogoUploadProgress === 100 || uploadedBrandLogoUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('brandLogoCreateIndirectUpload')?.click()}>
+                                       <Upload className="w-4 h-4"/>
+                                       <span className="max-w-[150px] truncate">{brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? `Đang tải ${brandLogoUploadProgress}%` : (uploadedBrandLogoName ? formatFileName(uploadedBrandLogoName) : t("Chọn logo"))}</span>
+                                   </button>
+                                   {brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? (
+                                     <button type="button" onClick={() => setBrandLogoUploadProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
+                                   ) : (uploadedBrandLogoUrl ? (
+                                     <button type="button" onClick={() => { setUploadedBrandLogoUrl(''); setBrandLogoUploadProgress(0); setUploadedBrandLogoName(''); (document.getElementById('brandLogoCreateIndirectUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                                   ) : null)}
+                                 </div>
+                                 {brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 && (
+                                   <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-2">
+                                     <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${brandLogoUploadProgress}%` }} />
+                                   </div>
+                                 )}
+                                 <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
+                                   {uploadedBrandLogoName ? `Tệp đã chọn: ${formatFileName(uploadedBrandLogoName, 30)}` : t("Kéo thả logo trực tiếp vào ô này")}
+                                 </p>
+                              </div>
+                              <input type="file" id="brandLogoCreateIndirectUpload" name="brandLogo" accept="image/*" onChange={e => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  setBrandLogoUploadProgress(10);
+                                  const fd = new FormData(); fd.append("file", file); fd.append("type", "image");
+                                  fetch("/api/upload", { method: "POST", body: fd, headers: { "Authorization": `Bearer ${getAdminToken() || ""}`, "x-artist-extension": getArtistExtensionFromUrl() }})
+                                  .then(res => res.json()).then(data => {
+                                    setUploadedBrandLogoUrl(data.url); setUploadedBrandLogoName(file.name); setBrandLogoUploadProgress(100);
+                                  });
+                                }
+                              }} className="hidden" />
                             </div>
-                          )}
-                          <div className="flex-1 min-w-[150px]">
-                             <div className="flex items-center gap-2">
-                               <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${brandLogoUploadProgress === 100 || uploadedBrandLogoUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('brandLogoCreateIndirectUpload')?.click()}>
-                                   <Upload className="w-4 h-4"/>
-                                   <span className="max-w-[150px] truncate">{brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? `Đang tải ${brandLogoUploadProgress}%` : (uploadedBrandLogoName ? formatFileName(uploadedBrandLogoName) : t("Chọn logo"))}</span>
-                               </button>
-                               {brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 ? (
-                                 <button type="button" onClick={() => setBrandLogoUploadProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
-                               ) : (uploadedBrandLogoUrl ? (
-                                 <button type="button" onClick={() => { setUploadedBrandLogoUrl(''); setBrandLogoUploadProgress(0); setUploadedBrandLogoName(''); (document.getElementById('brandLogoCreateIndirectUpload') as HTMLInputElement).value = ''; }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
-                               ) : null)}
-                             </div>
-                             {brandLogoUploadProgress > 0 && brandLogoUploadProgress < 100 && (
-                               <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-2">
-                                 <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${brandLogoUploadProgress}%` }} />
-                               </div>
-                             )}
-                             <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
-                               {uploadedBrandLogoName ? `Tệp đã chọn: ${formatFileName(uploadedBrandLogoName, 30)}` : t("Kéo thả logo trực tiếp vào ô này")}
-                             </p>
                           </div>
-                          <input type="file" id="brandLogoCreateIndirectUpload" name="brandLogo" accept="image/*" onChange={e => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              setBrandLogoUploadProgress(10);
-                              const fd = new FormData(); fd.append("file", file); fd.append("type", "image");
-                              fetch("/api/upload", { method: "POST", body: fd, headers: { "Authorization": `Bearer ${getAdminToken() || ""}`, "x-artist-extension": getArtistExtensionFromUrl() }})
-                              .then(res => res.json()).then(data => {
-                                setUploadedBrandLogoUrl(data.url); setUploadedBrandLogoName(file.name); setBrandLogoUploadProgress(100);
-                              });
-                            }
-                          }} className="hidden" />
-                        </div>
-                      </div>
 
-                    </div>
-                  )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
               <div className="grid grid-cols-1 gap-6 pt-4 border-t border-stone-100">
