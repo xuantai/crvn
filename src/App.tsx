@@ -6821,76 +6821,94 @@ function AdminLogin() {
     setErr('');
     setUnregisteredEmail('');
     setLoading(true);
-    if ((window as any).google?.accounts?.id) {
-      try {
-        (window as any).google.accounts.id.initialize({
-          client_id: googleClientId,
-          callback: async (response: any) => {
-            if (response?.credential) {
-              try {
-                const res = await fetch('/api/auth/google', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ credential: response.credential })
-                });
 
-                if (res.ok) {
-                  const data = await res.json();
-                  if (data.isArtist && (data.adminToken || data.token)) {
-                    const token = data.adminToken || data.token;
-                    const extension = data.artistExtension || data.username;
-                    const avatar = data.user?.picture || '';
-                    if ((window as any).syncLoginSession) {
-                      (window as any).syncLoginSession(
-                        token,
-                        extension,
-                        data.artistName || data.username || extension,
-                        avatar,
-                        true
-                      );
+    const initGSI = () => {
+      if ((window as any).google?.accounts?.id) {
+        try {
+          (window as any).google.accounts.id.initialize({
+            client_id: googleClientId,
+            callback: async (response: any) => {
+              if (response?.credential) {
+                try {
+                  const res = await fetch('/api/auth/google', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ credential: response.credential })
+                  });
+
+                  if (res.ok) {
+                    const data = await res.json();
+                    if (data.isArtist && (data.adminToken || data.token)) {
+                      const token = data.adminToken || data.token;
+                      const extension = data.artistExtension || data.username;
+                      const avatar = data.user?.picture || '';
+                      if ((window as any).syncLoginSession) {
+                        (window as any).syncLoginSession(
+                          token,
+                          extension,
+                          data.artistName || data.username || extension,
+                          avatar,
+                          true
+                        );
+                      } else {
+                        setAdminToken(token, `/${extension}`);
+                        localStorage.setItem('activeAdminExtension', extension);
+                        setGlobalCookie('activeAdminExtension', extension);
+                        localStorage.setItem('activeAdminName', data.artistName || data.username || extension);
+                        localStorage.setItem('activeAdminAvatar', avatar);
+                      }
+                      window.location.href = getAdminLink();
+                      return;
                     } else {
-                      setAdminToken(token, `/${extension}`);
-                      localStorage.setItem('activeAdminExtension', extension);
-                      setGlobalCookie('activeAdminExtension', extension);
-                      localStorage.setItem('activeAdminName', data.artistName || data.username || extension);
-                      localStorage.setItem('activeAdminAvatar', avatar);
+                      const email = data.user?.email || '';
+                      if (email) {
+                        setUnregisteredEmail(email);
+                        setIsGoogleVerifiedState(true);
+                      }
+                      setErr(`Email ${email} chưa được đăng ký tài khoản nghệ sĩ.`);
                     }
-                    window.location.href = getAdminLink();
-                    return;
                   } else {
-                    const email = data.user?.email || '';
-                    if (email) {
-                      setUnregisteredEmail(email);
-                      setIsGoogleVerifiedState(true);
-                    }
-                    setErr(`Email ${email} chưa được đăng ký tài khoản nghệ sĩ.`);
+                    const data = await res.json();
+                    setErr(data.error || 'Lỗi xác thực Google');
                   }
-                } else {
-                  const data = await res.json();
-                  setErr(data.error || 'Lỗi xác thực Google');
+                } catch (e: any) {
+                  setErr('Lỗi kết nối máy chủ!');
+                } finally {
+                  setLoading(false);
                 }
-              } catch (e: any) {
-                setErr('Lỗi kết nối máy chủ!');
-              } finally {
+              } else {
                 setLoading(false);
               }
-            } else {
+            }
+          });
+          (window as any).google.accounts.id.prompt((notification: any) => {
+            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
               setLoading(false);
             }
-          }
-        });
-        (window as any).google.accounts.id.prompt((notification: any) => {
-          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-            setLoading(false);
-          }
-        });
-      } catch (e: any) {
-        setErr(e?.message || 'Lỗi khởi tạo Google Auth');
+          });
+        } catch (e: any) {
+          setErr(e?.message || 'Lỗi khởi tạo Google Auth');
+          setLoading(false);
+        }
+      } else {
+        setErr('Đang nạp thư viện Google, vui lòng thử lại sau vài giây!');
         setLoading(false);
       }
+    };
+
+    // Lazy load GSI script on first use
+    if ((window as any).google?.accounts?.id) {
+      initGSI();
+    } else if (!document.querySelector('script[src*="accounts.google.com/gsi/client"]')) {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.onload = () => setTimeout(initGSI, 100);
+      script.onerror = () => { setErr('Không thể tải Google Auth'); setLoading(false); };
+      document.head.appendChild(script);
     } else {
-      setErr('Đang nạp thư viện Google, vui lòng thử lại sau vài giây!');
-      setLoading(false);
+      // Script tag exists but not loaded yet, retry
+      setTimeout(initGSI, 500);
     }
   };
 
@@ -10388,7 +10406,7 @@ function Home() {
   }, []);
 
   useEffect(() => {
-    fetch('/api/data').then(res => res.json()).then(data => {
+    const processData = (data: any) => {
       if (!data || data.error === 'inactive' || data.error === 'Artist not found' || data.notFound) {
         const currentExt = getArtistExtensionFromUrl(window.location.pathname);
         const activeExt = localStorage.getItem('activeAdminExtension');
@@ -10467,7 +10485,16 @@ function Home() {
                 if (res) setSpotifyInfo(res);
             }).catch(()=>{});
       }
-    });
+    };
+
+    // Use server-injected data if available, otherwise fetch from API
+    if ((window as any).__INITIAL_DATA__) {
+      const initialData = (window as any).__INITIAL_DATA__;
+      delete (window as any).__INITIAL_DATA__; // Clean up to free memory
+      processData(initialData);
+    } else {
+      fetch('/api/data').then(res => res.json()).then(processData);
+    }
   }, [t.lDemos]);
 
   if (!data) return <LoadingScreen text={t.load} />;

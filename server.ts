@@ -7614,6 +7614,23 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       window.__ACTIVE_ARTIST_USERNAME__ = ${JSON.stringify(activeArtist.username)};
       window.__ACTIVE_ARTIST_EXTENSION__ = ${JSON.stringify(activeArtist.extension)};
     </script>`;
+
+        // Server-side data injection: eliminate client fetch waterfall
+        try {
+          const internalPort = PORT || 3000;
+          const dataUrl = `http://127.0.0.1:${internalPort}/api/data`;
+          const headers: Record<string, string> = { 'host': req.headers.host || '' };
+          if (req.headers.cookie) headers['cookie'] = req.headers.cookie as string;
+          const dataRes = await fetch(dataUrl, { headers, signal: AbortSignal.timeout(3000) });
+          if (dataRes.ok) {
+            const jsonStr = await dataRes.text();
+            // Escape </script> in JSON to prevent XSS
+            const safeJson = jsonStr.replace(/<\//g, '<\\/');
+            injectedScripts += `\n    <script>window.__INITIAL_DATA__=${safeJson}</script>`;
+          }
+        } catch (_e) {
+          // Silently fail — client will fetch via API as fallback
+        }
       }
       html = html.replace(/<\/head>/i, `${metaTags}${injectedScripts}</head>`);
 
