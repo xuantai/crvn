@@ -1,102 +1,102 @@
 {
+  "socialYoutube": "",
+  "username": "takumi",
   "socialTiktok": "",
-  "artistBio": "Thiên đường nhạc của takumi",
+  "slideshowImages": [],
+  "defaultLanguage": "vi",
   "adminPassword": "$2b$10$jjJwMH0Biwd2RvgMcK6Zw.BqlpH2YWzIt99zYKDAB8rnfQ7PYg2DG",
-  "socialInstagram": "",
-  "memberPassword": "",
-  "biography": {
-    "education": [],
-    "experience": []
-  },
-  "hideFromHomepage": false,
+  "autoSwitchTabs": false,
   "demos": [
     {
-      "achievements": [],
-      "audioUrl": "/uploads/wit94rwjtb9ms62n4mq/1785328827951-928290362.mp3",
-      "linkType": "direct",
-      "lyrics": "đáadasdad",
       "secretKey": "1f2ca33fc5f7c3f8",
       "brandName": "",
-      "backgroundUrl": "",
-      "createdAt": 1785328830796,
-      "status": "hidden",
-      "backupAudioUrl": "/uploads/wit94rwjtb9ms62n4mq/1785328827951-928290362.mp3",
-      "linkApple": "",
-      "musicProducer": "",
-      "title": "demo mới nè",
-      "brandColor": "",
-      "coverUrl": "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Fwit94rwjtb9ms62n4mq%2F1785328821813-832351063-1785328821815.jpg?alt=media&token=a4a84446-e322-4fc2-b1d1-6901bb4e85f5",
-      "linkYoutubeMusic": "",
-      "brandBrief": "",
-      "brandLogoUrl": "",
-      "template": "3",
-      "author": "",
       "id": "1785328830795",
+      "linkSpotify": "",
+      "brandLogoUrl": "",
+      "brandColor": "",
       "isBrand": false,
-      "slug": "demo-moi-ne",
+      "linkYoutube": "",
       "password": "",
-      "linkDrive": "",
-      "linkZing": "",
+      "linkYoutubeMusic": "",
+      "lyrics": "đáadasdad",
+      "backgroundUrl": "",
       "releaseYear": "",
       "brandReferenceVideos": [],
-      "composer": "takumi",
-      "isReleased": false,
-      "linkYoutube": "",
-      "linkSpotify": "",
+      "linkZing": "",
+      "brandBrief": "",
+      "createdAt": 1785328830796,
+      "linkApple": "",
+      "thumbUrl": "/uploads/takumi/uploads%2Fwit94rwjtb9ms62n4mq%2F1785328821813-832351063-1785328821815-thumb.jpg",
+      "musicProducer": "",
+      "achievements": [],
       "isDraft": false,
-      "playlistIds": [],
+      "status": "hidden",
       "singer": "takumi",
-      "thumbUrl": "/uploads/takumi/uploads%2Fwit94rwjtb9ms62n4mq%2F1785328821813-832351063-1785328821815-thumb.jpg"
+      "linkDrive": "",
+      "template": "3",
+      "slug": "demo-moi-ne",
+      "title": "demo mới nè",
+      "backupAudioUrl": "/uploads/wit94rwjtb9ms62n4mq/1785328827951-928290362.mp3",
+      "coverUrl": "https://firebasestorage.googleapis.com/v0/b/taimusic-96289.firebasestorage.app/o/uploads%2Fwit94rwjtb9ms62n4mq%2F1785328821813-832351063-1785328821815.jpg?alt=media&token=a4a84446-e322-4fc2-b1d1-6901bb4e85f5",
+      "playlistIds": [],
+      "audioUrl": "/uploads/wit94rwjtb9ms62n4mq/1785328827951-928290362.mp3",
+      "linkType": "direct",
+      "isReleased": false,
+      "author": "",
+      "composer": "takumi"
     }
   ],
-  "pageTitle": "Kho nhạc của takumi",
-  "slideshowImages": [],
+  "memberPassword": "",
   "homeCoverUrl": "/uploads/wit94rwjtb9ms62n4mq/1785533922506-914542025.jpg",
+  "pageTitle": "Kho nhạc của takumi",
+  "socialFacebook": "",
+  "youtubePlaylistUrl": "",
   "adminTheme": "liquid-glass",
+  "playlists": [],
+  "ogImageUrl": "",
+  "tab2Name": "",
+  "menus": [
+    {
+      "isVisible": true,
+      "id": "m1",
+      "title": "Kho Nhạc",
+      "type": "vault"
+    },
+    {
+      "isVisible": true,
+      "type": "about",
+      "title": "Về Tôi",
+      "id": "m2"
+    },
+    {
+      "title": "Tiểu Sử",
+      "type": "bio",
+      "isVisible": true,
+      "id": "m3"
+    }
+  ],
+  "avatarUrl": "/uploads/wit94rwjtb9ms62n4mq/1785533922506-914542025.jpg",
+  "biography": {
+    "experience": [],
+    "education": []
+  },
+  "hideFromHomepage": false,
+  "aboutMe": {
+    "avatarUrl": "/uploads/wit94rwjtb9ms62n4mq/1785533922506-914542025.jpg",
+    "intro": ""
+  },
+  "artistBio": "Thiên đường nhạc của takumi",
+  "tab3Name": "",
+  "tab1Name": "",
+  "socialInstagram": "",
+  "spotifyUrl": "",
+  "artistName": "Ta Ku Mi",
+  "releasedSongs": [],
+  "faviconUrl": "",
   "layoutSections": [
     "title",
     "vault",
     "mv",
     "spotify"
-  ],
-  "socialFacebook": "",
-  "tab3Name": "",
-  "autoSwitchTabs": false,
-  "menus": [
-    {
-      "id": "m1",
-      "isVisible": true,
-      "title": "Kho Nhạc",
-      "type": "vault"
-    },
-    {
-      "title": "Về Tôi",
-      "type": "about",
-      "isVisible": true,
-      "id": "m2"
-    },
-    {
-      "type": "bio",
-      "isVisible": true,
-      "title": "Tiểu Sử",
-      "id": "m3"
-    }
-  ],
-  "releasedSongs": [],
-  "socialYoutube": "",
-  "playlists": [],
-  "youtubePlaylistUrl": "",
-  "username": "takumi",
-  "defaultLanguage": "vi",
-  "aboutMe": {
-    "avatarUrl": "/uploads/wit94rwjtb9ms62n4mq/1785533922506-914542025.jpg",
-    "intro": ""
-  },
-  "faviconUrl": "",
-  "tab1Name": "",
-  "artistName": "Ta Ku Mi",
-  "ogImageUrl": "",
-  "spotifyUrl": "",
-  "tab2Name": "",
-  "avatarUrl": "/uploads/wit94rwjtb9ms62n4mq/1785533922506-914542025.jpg"
+  ]
 }
