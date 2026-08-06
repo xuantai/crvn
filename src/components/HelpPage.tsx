@@ -695,39 +695,39 @@ export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
                     <h3 className="text-lg font-black text-neutral-900 mb-6">Thông Tin Cơ Bản</h3>
                     <form onSubmit={handleProfileSave} className="space-y-6">
                       <div>
-                        <label className="block text-xs font-black text-neutral-500 uppercase tracking-wider mb-2">Nghệ Danh</label>
+                        <label className="block text-xs font-bold text-stone-700 mb-2">Nghệ Danh</label>
                         <input
                           type="text"
                           value={artistName}
                           onChange={e => setArtistName(e.target.value)}
-                          className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:bg-white transition-all font-medium"
+                          className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all bg-white"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-black text-neutral-500 uppercase tracking-wider mb-2">Username đăng nhập</label>
+                        <label className="block text-xs font-bold text-stone-700 mb-2">Username đăng nhập</label>
                         <input
                           type="text"
                           value={username}
                           onChange={e => setUsername(e.target.value)}
-                          className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:bg-white transition-all font-medium"
+                          className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all bg-white font-mono"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-black text-neutral-500 uppercase tracking-wider mb-2">Phần mở rộng (Link)</label>
+                        <label className="block text-xs font-bold text-stone-700 mb-2">Phần mở rộng (Link)</label>
                         <input
                           type="text"
                           value={extension}
                           onChange={e => setExtension(e.target.value)}
-                          className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:bg-white transition-all font-medium"
+                          className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all bg-white font-mono"
                           required
                         />
                         <div className="mt-2 text-[11px] text-neutral-500">Đang dùng: <span className="font-bold text-black">{artistData?.extension}.{getPlatformDomain()}</span></div>
                       </div>
                       {profileError && <div className="text-red-600 text-xs font-bold">{profileError}</div>}
                       {profileSuccess && <div className="text-emerald-600 text-xs font-bold">{profileSuccess}</div>}
-                      <button type="submit" className="w-full bg-black text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-neutral-800 transition-colors">
+                      <button type="submit" className="w-full bg-stone-900 hover:bg-stone-800 text-white px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer">
                         Lưu Thông Tin
                       </button>
                     </form>
@@ -742,7 +742,7 @@ export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
                               type="password"
                               value={oldPassword}
                               onChange={e => setOldPassword(e.target.value)}
-                              className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:bg-white transition-all font-medium"
+                              className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all bg-white font-mono"
                               placeholder="Mật khẩu hiện tại..."
                               required
                             />
@@ -752,7 +752,7 @@ export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
                               type="password"
                               value={newPassword}
                               onChange={e => setNewPassword(e.target.value)}
-                              className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:bg-white transition-all font-medium"
+                              className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all bg-white font-mono"
                               placeholder="Mật khẩu mới..."
                               required
                             />
@@ -762,14 +762,14 @@ export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
                               type="password"
                               value={confirmPassword}
                               onChange={e => setConfirmPassword(e.target.value)}
-                              className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:bg-white transition-all font-medium"
+                              className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all bg-white font-mono"
                               placeholder="Xác nhận mật khẩu mới..."
                               required
                             />
                           </div>
                           {passwordError && <div className="text-red-600 text-xs font-bold">{passwordError}</div>}
                           {passwordSuccess && <div className="text-emerald-600 text-xs font-bold">{passwordSuccess}</div>}
-                          <button type="submit" className="w-full bg-black text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-neutral-800 transition-colors">
+                          <button type="submit" className="w-full bg-stone-900 hover:bg-stone-800 text-white px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer">
                             Đổi Mật Khẩu
                           </button>
                         </form>
@@ -783,14 +783,14 @@ export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
                               type="email"
                               value={email}
                               onChange={e => setEmail(e.target.value)}
-                              className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:bg-white transition-all font-medium"
+                              className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all bg-white"
                               placeholder="Nhập email..."
                               required
                             />
                           </div>
                           {emailError && <div className="text-red-600 text-xs font-bold">{emailError}</div>}
                           {emailSuccess && <div className="text-emerald-600 text-xs font-bold">{emailSuccess}</div>}
-                          <button type="submit" className="w-full bg-white text-black border border-neutral-200 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-neutral-50 transition-colors">
+                          <button type="submit" className="w-full bg-stone-100 text-stone-700 border border-stone-200 px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-stone-200 transition-colors cursor-pointer">
                             Cập Nhật
                           </button>
                         </form>

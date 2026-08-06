@@ -491,7 +491,7 @@ export default function RegisterModal({
                 )}
 
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block">
+                  <label className="text-xs font-bold text-stone-700 block">
                     Nghệ Danh
                   </label>
                   <input
@@ -511,13 +511,13 @@ export default function RegisterModal({
                       }
                     }}
                     placeholder="Tên nghệ danh của bạn"
-                    className="w-full bg-neutral-50 border border-neutral-200/80 rounded-xl px-4 py-3 text-neutral-800 text-xs font-medium focus:outline-none focus:border-neutral-400 focus:bg-white transition-all font-sans"
+                    className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all bg-white"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block">
+                    <label className="text-xs font-bold text-stone-700 block">
                       Username Đăng Nhập
                     </label>
                     <input
@@ -530,12 +530,12 @@ export default function RegisterModal({
                         setRegUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''));
                       }}
                       placeholder="admin-username"
-                      className="w-full bg-neutral-50 border border-neutral-200/80 rounded-xl px-4 py-3 text-neutral-800 text-xs font-medium focus:outline-none focus:border-neutral-400 focus:bg-white transition-all font-sans"
+                      className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all bg-white font-mono"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block">
+                    <label className="text-xs font-bold text-stone-700 block">
                       Phần Mở Rộng
                     </label>
                     <input
@@ -548,14 +548,14 @@ export default function RegisterModal({
                         setRegExtension(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''));
                       }}
                       placeholder="artist"
-                      className="w-full bg-neutral-50 border border-neutral-200/80 rounded-xl px-4 py-3 text-neutral-800 text-xs font-medium focus:outline-none focus:border-neutral-400 focus:bg-white transition-all font-sans"
+                      className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all bg-white font-mono"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block">
+                    <label className="text-xs font-bold text-stone-700 block">
                       Email Đăng Ký
                     </label>
                     {isGoogleEmailVerified && (
@@ -583,17 +583,17 @@ export default function RegisterModal({
                       value={regEmail}
                       onChange={(e) => setRegEmail(e.target.value)}
                       placeholder="artist@gmail.com"
-                      className={`w-full border rounded-xl py-3 text-xs font-medium focus:outline-none transition-all font-sans ${
+                      className={`w-full border rounded-xl py-2.5 text-sm transition-all ${
                         isGoogleEmailVerified
-                          ? 'pl-10 pr-4 bg-emerald-50/70 border-emerald-300 text-emerald-950 font-black cursor-not-allowed'
-                          : 'px-4 bg-neutral-50 border-neutral-200/80 text-neutral-800 focus:border-neutral-400 focus:bg-white'
+                          ? 'pl-10 pr-4 bg-emerald-50/70 border-emerald-300 text-emerald-950 font-bold cursor-not-allowed'
+                          : 'px-3.5 border-stone-300 text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 bg-white'
                       }`}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block">
+                  <label className="text-xs font-bold text-stone-700 block">
                     Mật Khẩu Quản Trị
                   </label>
                   <PasswordInput
@@ -602,13 +602,13 @@ export default function RegisterModal({
                     value={regPassword}
                     onChange={(e: any) => setRegPassword(e.target.value)}
                     placeholder="Nhập mật khẩu..."
-                    className="w-full bg-neutral-50 border border-neutral-200/80 rounded-xl px-4 py-3 pr-12 text-neutral-800 text-xs font-medium focus:outline-none focus:border-neutral-400 focus:bg-white transition-all font-sans"
+                    className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 pr-12 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all bg-white font-mono"
                   />
                 </div>
 
                 {/* Captcha Block */}
-                <div className="space-y-1.5 bg-neutral-50 border border-neutral-200/60 p-4 rounded-2xl">
-                  <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest block mb-1">
+                <div className="space-y-1.5 bg-stone-50 border border-stone-200 p-4 rounded-2xl">
+                  <label className="text-xs font-bold text-stone-700 block mb-1">
                     Mã Bảo Mật (Captcha)
                   </label>
                   <div className="flex items-center gap-3">
@@ -628,7 +628,7 @@ export default function RegisterModal({
                       type="button"
                       onClick={fetchCaptcha}
                       disabled={regSubmitting}
-                      className="p-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 rounded-xl transition-colors cursor-pointer flex items-center justify-center"
+                      className="p-2.5 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-xl transition-colors cursor-pointer flex items-center justify-center"
                       title="Tải lại captcha"
                     >
                       <RefreshCw className="w-4 h-4" />
@@ -639,8 +639,8 @@ export default function RegisterModal({
                       disabled={regSubmitting}
                       value={captchaAnswer}
                       onChange={(e) => setCaptchaAnswer(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
-                      placeholder="Nhập mã..."
-                      className="w-full bg-white border border-neutral-200/80 rounded-xl px-4 py-3 text-neutral-850 text-xs font-black tracking-widest uppercase focus:outline-none focus:border-neutral-400 transition-all font-sans"
+                      placeholder="Mã..."
+                      className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-stone-850 text-sm font-mono tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all bg-white"
                     />
                   </div>
                 </div>
