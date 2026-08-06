@@ -23045,6 +23045,9 @@ function AdminCreateDemo() {
   const [brandLogoUploadProgress, setBrandLogoUploadProgress] = useState(0);
   const [uploadedBrandLogoUrl, setUploadedBrandLogoUrl] = useState("");
   const [uploadedBrandLogoName, setUploadedBrandLogoName] = useState("");
+  const [coverPreviewObjectUrl, setCoverPreviewObjectUrl] = useState('');
+  const [bgPreviewObjectUrl, setBgPreviewObjectUrl] = useState('');
+  const [brandLogoPreviewObjectUrl, setBrandLogoPreviewObjectUrl] = useState('');
 
 
   const getFileNameFromUrl = (url: string | undefined) => {
@@ -23294,8 +23297,12 @@ function AdminCreateDemo() {
       }
       if (type === 'cover') {
         setUploadedCoverName(file.name);
+        setCoverPreviewObjectUrl(URL.createObjectURL(file));
       } else if (type === 'background') {
         setUploadedBgName(file.name);
+        setBgPreviewObjectUrl(URL.createObjectURL(file));
+      } else if (type === 'brandLogo') {
+        setBrandLogoPreviewObjectUrl(URL.createObjectURL(file));
       }
     }
 
@@ -23342,9 +23349,15 @@ function AdminCreateDemo() {
             } else if (type === 'cover') {
                 setUploadedCoverUrl(res.url);
                 setCoverUploadProgress(100);
+                if (coverPreviewObjectUrl) { URL.revokeObjectURL(coverPreviewObjectUrl); setCoverPreviewObjectUrl(''); }
+            } else if (type === 'brandLogo') {
+                setUploadedBrandLogoUrl(res.url);
+                setBrandLogoUploadProgress(100);
+                if (brandLogoPreviewObjectUrl) { URL.revokeObjectURL(brandLogoPreviewObjectUrl); setBrandLogoPreviewObjectUrl(''); }
             } else {
                 setUploadedBgUrl(res.url);
                 setBgUploadProgress(100);
+                if (bgPreviewObjectUrl) { URL.revokeObjectURL(bgPreviewObjectUrl); setBgPreviewObjectUrl(''); }
             }
         } else {
             triggerNotification(xhr.status === 413 ? t("Hệ thống báo lỗi file quá lớn.") : t("Lỗi tải file. Vui lòng thử lại."), 'error', t("Tải tệp thất bại"));
@@ -23358,12 +23371,18 @@ function AdminCreateDemo() {
                 setUploadedCoverName('');
                 setUploadedCoverUrl('');
                 setCoverUploadProgress(0);
+                if (coverPreviewObjectUrl) { URL.revokeObjectURL(coverPreviewObjectUrl); setCoverPreviewObjectUrl(''); }
                 const input = document.getElementById('coverCreateUpload') as HTMLInputElement;
                 if (input) input.value = '';
+            } else if (type === 'brandLogo') {
+                setUploadedBrandLogoUrl('');
+                setBrandLogoUploadProgress(0);
+                if (brandLogoPreviewObjectUrl) { URL.revokeObjectURL(brandLogoPreviewObjectUrl); setBrandLogoPreviewObjectUrl(''); }
             } else {
                 setUploadedBgName('');
                 setUploadedBgUrl('');
                 setBgUploadProgress(0);
+                if (bgPreviewObjectUrl) { URL.revokeObjectURL(bgPreviewObjectUrl); setBgPreviewObjectUrl(''); }
                 const input = document.getElementById('bgCreateUpload') as HTMLInputElement;
                 if (input) input.value = '';
             }
@@ -23386,12 +23405,18 @@ function AdminCreateDemo() {
             setUploadedCoverName('');
             setUploadedCoverUrl('');
             setCoverUploadProgress(0);
+            if (coverPreviewObjectUrl) { URL.revokeObjectURL(coverPreviewObjectUrl); setCoverPreviewObjectUrl(''); }
             const input = document.getElementById('coverCreateUpload') as HTMLInputElement;
             if (input) input.value = '';
+        } else if (type === 'brandLogo') {
+            setUploadedBrandLogoUrl('');
+            setBrandLogoUploadProgress(0);
+            if (brandLogoPreviewObjectUrl) { URL.revokeObjectURL(brandLogoPreviewObjectUrl); setBrandLogoPreviewObjectUrl(''); }
         } else {
             setUploadedBgName('');
             setUploadedBgUrl('');
             setBgUploadProgress(0);
+            if (bgPreviewObjectUrl) { URL.revokeObjectURL(bgPreviewObjectUrl); setBgPreviewObjectUrl(''); }
             const input = document.getElementById('bgCreateUpload') as HTMLInputElement;
             if (input) input.value = '';
         }
@@ -23598,13 +23623,26 @@ function AdminCreateDemo() {
                       : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
                   }`}
                 >
-                  {uploadedCoverUrl ? (
-                    <img src={getPreviewUrl(uploadedCoverUrl)} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />
-                  ) : (
-                    <div className="w-16 h-16 rounded-xl border border-dashed border-stone-300 flex items-center justify-center bg-stone-100 text-stone-400">
-                      <Image className="w-6 h-6" />
-                    </div>
-                  )}
+                  <div className="w-20 h-20 rounded-2xl overflow-hidden bg-stone-900 border border-stone-400 shadow-md relative shrink-0">
+                    {(coverUploadProgress > 0 && coverUploadProgress < 100 && coverPreviewObjectUrl) ? (
+                      <>
+                        <img src={coverPreviewObjectUrl} className="w-full h-full object-cover opacity-60 blur-[1px]" />
+                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-1">
+                          <div className="w-6 h-6 rounded-full border-2 border-white/30 border-t-emerald-400 animate-spin" />
+                          <span className="text-xs font-black drop-shadow text-white">{coverUploadProgress}%</span>
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40">
+                          <div className="h-full bg-gradient-to-r from-emerald-500 to-green-400 transition-all duration-300" style={{ width: `${coverUploadProgress}%` }} />
+                        </div>
+                      </>
+                    ) : uploadedCoverUrl ? (
+                      <img src={getPreviewUrl(uploadedCoverUrl)} className="w-full h-full object-cover" />
+                    ) : (appData?.aboutMe?.avatarUrl || appData?.slideshowImages?.[0]) ? (
+                      <img src={getPreviewUrl(appData?.aboutMe?.avatarUrl || appData?.slideshowImages?.[0])} className="w-full h-full object-cover opacity-30 blur-[0.5px]" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-stone-500"><Image className="w-6 h-6" /></div>
+                    )}
+                  </div>
                   <div className="flex-1 min-w-[150px]">
                     <div className="flex items-center gap-2">
                       <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${coverUploadProgress === 100 || uploadedCoverUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('coverCreateUpload')?.click()}>
@@ -23649,13 +23687,24 @@ function AdminCreateDemo() {
                         : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
                     }`}
                   >
-                    {uploadedBgUrl ? (
-                      <img src={uploadedBgUrl} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />
-                    ) : (
-                      <div className="w-16 h-16 rounded-xl border border-dashed border-stone-300 flex items-center justify-center bg-stone-100 text-stone-400">
-                        <Image className="w-6 h-6" />
-                      </div>
-                    )}
+                    <div className="w-20 h-20 rounded-2xl overflow-hidden bg-stone-900 border border-stone-400 shadow-md relative shrink-0">
+                      {(bgUploadProgress > 0 && bgUploadProgress < 100 && bgPreviewObjectUrl) ? (
+                        <>
+                          <img src={bgPreviewObjectUrl} className="w-full h-full object-cover opacity-60 blur-[1px]" />
+                          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-1">
+                            <div className="w-6 h-6 rounded-full border-2 border-white/30 border-t-emerald-400 animate-spin" />
+                            <span className="text-xs font-black drop-shadow text-white">{bgUploadProgress}%</span>
+                          </div>
+                          <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40">
+                            <div className="h-full bg-gradient-to-r from-emerald-500 to-green-400 transition-all duration-300" style={{ width: `${bgUploadProgress}%` }} />
+                          </div>
+                        </>
+                      ) : uploadedBgUrl ? (
+                        <img src={getPreviewUrl(uploadedBgUrl)} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-stone-500"><Image className="w-6 h-6" /></div>
+                      )}
+                    </div>
                     <div className="flex-1 min-w-[150px]">
                       <div className="flex items-center gap-2">
                         <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${bgUploadProgress === 100 || uploadedBgUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('bgCreateUpload')?.click()}>
@@ -24281,6 +24330,9 @@ function AdminEditDemo() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
   const [randomSlideUrl, setRandomSlideUrl] = useState<string>('');
+  const [coverPreviewObjectUrl, setCoverPreviewObjectUrl] = useState('');
+  const [bgPreviewObjectUrl, setBgPreviewObjectUrl] = useState('');
+  const [brandLogoPreviewObjectUrl, setBrandLogoPreviewObjectUrl] = useState('');
   const lyricsRef = useRef<HTMLTextAreaElement>(null);
 
   const handleInsertTag = (tag: string) => {
@@ -24478,8 +24530,12 @@ function AdminEditDemo() {
       }
       if (type === 'cover') {
         setUploadedCoverName(file.name);
+        setCoverPreviewObjectUrl(URL.createObjectURL(file));
       } else if (type === 'background') {
         setUploadedBgName(file.name);
+        setBgPreviewObjectUrl(URL.createObjectURL(file));
+      } else if (type === 'brandLogo') {
+        setBrandLogoPreviewObjectUrl(URL.createObjectURL(file));
       }
     }
 
@@ -24526,9 +24582,15 @@ function AdminEditDemo() {
             } else if (type === 'cover') {
                 setUploadedCoverUrl(res.url);
                 setCoverUploadProgress(100);
+                if (coverPreviewObjectUrl) { URL.revokeObjectURL(coverPreviewObjectUrl); setCoverPreviewObjectUrl(''); }
+            } else if (type === 'brandLogo') {
+                setUploadedBrandLogoUrl(res.url);
+                setBrandLogoUploadProgress(100);
+                if (brandLogoPreviewObjectUrl) { URL.revokeObjectURL(brandLogoPreviewObjectUrl); setBrandLogoPreviewObjectUrl(''); }
             } else {
                 setUploadedBgUrl(res.url);
                 setBgUploadProgress(100);
+                if (bgPreviewObjectUrl) { URL.revokeObjectURL(bgPreviewObjectUrl); setBgPreviewObjectUrl(''); }
             }
         } else {
             triggerNotification(xhr.status === 413 ? t("Hệ thống báo lỗi file quá lớn.") : t("Lỗi tải file. Vui lòng thử lại."), 'error', t("Tải tệp thất bại"));
@@ -24542,12 +24604,18 @@ function AdminEditDemo() {
                 setUploadedCoverName('');
                 setUploadedCoverUrl('');
                 setCoverUploadProgress(0);
+                if (coverPreviewObjectUrl) { URL.revokeObjectURL(coverPreviewObjectUrl); setCoverPreviewObjectUrl(''); }
                 const input = document.getElementById('coverEditUpload') as HTMLInputElement;
                 if (input) input.value = '';
+            } else if (type === 'brandLogo') {
+                setUploadedBrandLogoUrl('');
+                setBrandLogoUploadProgress(0);
+                if (brandLogoPreviewObjectUrl) { URL.revokeObjectURL(brandLogoPreviewObjectUrl); setBrandLogoPreviewObjectUrl(''); }
             } else {
                 setUploadedBgName('');
                 setUploadedBgUrl('');
                 setBgUploadProgress(0);
+                if (bgPreviewObjectUrl) { URL.revokeObjectURL(bgPreviewObjectUrl); setBgPreviewObjectUrl(''); }
                 const input = document.getElementById('bgEditUpload') as HTMLInputElement;
                 if (input) input.value = '';
             }
@@ -24836,13 +24904,26 @@ function AdminEditDemo() {
                       : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
                   }`}
                 >
-                  {(uploadedCoverUrl || demo?.coverUrl) ? (
-                    <img src={getPreviewUrl(uploadedCoverUrl || demo?.coverUrl)} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />
-                  ) : (
-                    <div className="w-16 h-16 rounded-xl border border-dashed border-stone-300 flex items-center justify-center bg-stone-100 text-stone-400">
-                      <Image className="w-6 h-6" />
-                    </div>
-                  )}
+                  <div className="w-20 h-20 rounded-2xl overflow-hidden bg-stone-900 border border-stone-400 shadow-md relative shrink-0">
+                    {(coverUploadProgress > 0 && coverUploadProgress < 100 && coverPreviewObjectUrl) ? (
+                      <>
+                        <img src={coverPreviewObjectUrl} className="w-full h-full object-cover opacity-60 blur-[1px]" />
+                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-1">
+                          <div className="w-6 h-6 rounded-full border-2 border-white/30 border-t-emerald-400 animate-spin" />
+                          <span className="text-xs font-black drop-shadow text-white">{coverUploadProgress}%</span>
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40">
+                          <div className="h-full bg-gradient-to-r from-emerald-500 to-green-400 transition-all duration-300" style={{ width: `${coverUploadProgress}%` }} />
+                        </div>
+                      </>
+                    ) : (uploadedCoverUrl || demo?.coverUrl) ? (
+                      <img src={getPreviewUrl(uploadedCoverUrl || demo?.coverUrl)} className="w-full h-full object-cover" />
+                    ) : (appData?.aboutMe?.avatarUrl || appData?.slideshowImages?.[0] || randomSlideUrl) ? (
+                      <img src={getPreviewUrl(appData?.aboutMe?.avatarUrl || appData?.slideshowImages?.[0] || randomSlideUrl)} className="w-full h-full object-cover opacity-30 blur-[0.5px]" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-stone-500"><Image className="w-6 h-6" /></div>
+                    )}
+                  </div>
                   <div className="flex-1 min-w-[150px]">
                     <div className="flex items-center gap-2">
                       <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${coverUploadProgress === 100 || uploadedCoverUrl || demo?.coverUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('coverEditUpload')?.click()}>
@@ -24895,13 +24976,24 @@ function AdminEditDemo() {
                         : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'
                     }`}
                   >
-                    {(uploadedBgUrl || demo?.backgroundUrl) ? (
-                      <img src={getPreviewUrl(uploadedBgUrl || demo?.backgroundUrl)} className="w-16 h-16 rounded-xl object-cover border border-stone-200 shadow-sm" />
-                    ) : (
-                      <div className="w-16 h-16 rounded-xl border border-dashed border-stone-300 flex items-center justify-center bg-stone-100 text-stone-400">
-                        <Image className="w-6 h-6" />
-                      </div>
-                    )}
+                    <div className="w-20 h-20 rounded-2xl overflow-hidden bg-stone-900 border border-stone-400 shadow-md relative shrink-0">
+                      {(bgUploadProgress > 0 && bgUploadProgress < 100 && bgPreviewObjectUrl) ? (
+                        <>
+                          <img src={bgPreviewObjectUrl} className="w-full h-full object-cover opacity-60 blur-[1px]" />
+                          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-1">
+                            <div className="w-6 h-6 rounded-full border-2 border-white/30 border-t-emerald-400 animate-spin" />
+                            <span className="text-xs font-black drop-shadow text-white">{bgUploadProgress}%</span>
+                          </div>
+                          <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40">
+                            <div className="h-full bg-gradient-to-r from-emerald-500 to-green-400 transition-all duration-300" style={{ width: `${bgUploadProgress}%` }} />
+                          </div>
+                        </>
+                      ) : (uploadedBgUrl || demo?.backgroundUrl) ? (
+                        <img src={getPreviewUrl(uploadedBgUrl || demo?.backgroundUrl)} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-stone-500"><Image className="w-6 h-6" /></div>
+                      )}
+                    </div>
                     <div className="flex-1 min-w-[150px]">
                       <div className="flex items-center gap-2">
                         <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${bgUploadProgress === 100 || uploadedBgUrl || demo?.backgroundUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('bgEditUpload')?.click()}>
@@ -26069,6 +26161,7 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl, on
     };
   });
   const [avatarProgress, setAvatarProgress] = useState(0);
+  const [avatarPreviewObjectUrl, setAvatarPreviewObjectUrl] = useState('');
   const [socials, setSocials] = useState({
     socialFacebook: data.socialFacebook || '',
     socialInstagram: data.socialInstagram || '',
@@ -26113,24 +26206,40 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl, on
                   e.preventDefault(); e.stopPropagation();
                   const file = e.dataTransfer.files?.[0];
                   if (file) {
+                      setAvatarPreviewObjectUrl(URL.createObjectURL(file));
                       try {
                           const url = await uploadWithProgress(file, setAvatarProgress);
                           setAboutData({ ...aboutData, avatarUrl: url });
                           if (onPreviewAvatar) onPreviewAvatar(url);
+                          if (avatarPreviewObjectUrl) URL.revokeObjectURL(avatarPreviewObjectUrl);
+                          setAvatarPreviewObjectUrl('');
                       } catch (err) {
                           alert(t("Lỗi upload"));
                           setAvatarProgress(0);
+                          if (avatarPreviewObjectUrl) URL.revokeObjectURL(avatarPreviewObjectUrl);
+                          setAvatarPreviewObjectUrl('');
                       }
                   }
               }}
             >
-              {aboutData.avatarUrl ? (
-                <img src={getPreviewUrl(aboutData.avatarUrl)} className="w-20 h-20 rounded-2xl object-cover border border-stone-200 shadow-sm" />
-              ) : (
-                <div className="w-20 h-20 rounded-2xl border border-stone-200 bg-stone-100/50 flex items-center justify-center text-stone-400 shadow-inner shrink-0">
-                  <Image className="w-8 h-8" />
-                </div>
-              )}
+              <div className="w-20 h-20 rounded-2xl overflow-hidden bg-stone-900 border border-stone-400 shadow-md relative shrink-0">
+                {(avatarProgress > 0 && avatarProgress < 100 && avatarPreviewObjectUrl) ? (
+                  <>
+                    <img src={avatarPreviewObjectUrl} className="w-full h-full object-cover opacity-60 blur-[1px]" />
+                    <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-1">
+                      <div className="w-6 h-6 rounded-full border-2 border-white/30 border-t-emerald-400 animate-spin" />
+                      <span className="text-xs font-black drop-shadow text-white">{avatarProgress}%</span>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40">
+                      <div className="h-full bg-gradient-to-r from-emerald-500 to-green-400 transition-all duration-300" style={{ width: `${avatarProgress}%` }} />
+                    </div>
+                  </>
+                ) : aboutData.avatarUrl ? (
+                  <img src={getPreviewUrl(aboutData.avatarUrl)} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-stone-500"><Image className="w-8 h-8" /></div>
+                )}
+              </div>
               <div className="flex-1 min-w-[150px]">
                 <div className="flex items-center gap-2">
                   <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${avatarProgress === 100 || aboutData.avatarUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('aboutAvatarUpload')?.click()}>
@@ -26138,29 +26247,30 @@ function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl, on
                       <span className="max-w-[150px] truncate">{avatarProgress > 0 && avatarProgress < 100 ? `Đang tải ${avatarProgress}%` : (aboutData.avatarUrl ? t("Thay đổi") : t("Chọn ảnh"))}</span>
                   </button>
                   {avatarProgress > 0 && avatarProgress < 100 ? (
-                    <button type="button" onClick={() => setAvatarProgress(0)} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
+                    <button type="button" onClick={() => { setAvatarProgress(0); if (avatarPreviewObjectUrl) { URL.revokeObjectURL(avatarPreviewObjectUrl); setAvatarPreviewObjectUrl(''); } }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
                   ) : (aboutData.avatarUrl ? (
                     <button type="button" onClick={() => { setAboutData({ ...aboutData, avatarUrl: '' }); setAvatarProgress(0); (document.getElementById('aboutAvatarUpload') as HTMLInputElement).value = ''; if (onPreviewAvatar) onPreviewAvatar(''); }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
                   ) : null)}
                 </div>
-                {avatarProgress > 0 && avatarProgress < 100 && (
-                  <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-2">
-                    <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${avatarProgress}%` }} />
-                  </div>
-                )}
                 <p className="text-[11px] text-stone-400 mt-1.5 truncate max-w-full">
                   {t("Kéo thả ảnh trực tiếp vào ô này")}
                 </p>
               </div>
               <input type="file" id="aboutAvatarUpload" className="hidden" accept="image/*" onChange={async (e) => {
                 if (!e.target.files?.[0]) return;
+                const file = e.target.files[0];
+                setAvatarPreviewObjectUrl(URL.createObjectURL(file));
                 try {
-                  const url = await uploadWithProgress(e.target.files[0], setAvatarProgress);
+                  const url = await uploadWithProgress(file, setAvatarProgress);
                   setAboutData({ ...aboutData, avatarUrl: url });
-                          if (onPreviewAvatar) onPreviewAvatar(url);
+                  if (onPreviewAvatar) onPreviewAvatar(url);
+                  if (avatarPreviewObjectUrl) URL.revokeObjectURL(avatarPreviewObjectUrl);
+                  setAvatarPreviewObjectUrl('');
                 } catch (err) {
                   alert(t("Lỗi upload"));
                   setAvatarProgress(0);
+                  if (avatarPreviewObjectUrl) URL.revokeObjectURL(avatarPreviewObjectUrl);
+                  setAvatarPreviewObjectUrl('');
                 }
               }} />
             </div>
