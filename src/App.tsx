@@ -10610,7 +10610,7 @@ function Home() {
             {isMusicianTheme && (
               <>
                 {/* Wood grain texture overlay on header */}
-                <div className="absolute inset-0 z-0 pointer-events-none rounded-3xl sm:rounded-[2.5rem] overflow-hidden" style={{ backgroundImage: `url(${woodBgAsset})`, backgroundSize: '400px auto', backgroundRepeat: 'repeat', opacity: 0.18, filter: 'brightness(0.8) contrast(1.3)' }} />
+                <div className="absolute inset-0 z-0 pointer-events-none rounded-3xl sm:rounded-[2.5rem] overflow-hidden css-wood-grain opacity-[0.18]" />
               <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-[1] opacity-20 sm:opacity-25 pointer-events-none hidden md:block">
                 <svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
                   {/* Turntable base */}
@@ -11095,37 +11095,19 @@ function Home() {
               ? 'bg-gradient-to-b from-[#F9F5EA] via-[#FCF9F2] to-[#FAF5E6] text-[#2C1E03] selection:bg-amber-500 selection:text-stone-950 font-sans' 
               : 'bg-neutral-950 text-white selection:bg-rose-500 selection:text-white font-sans bg-notebook-dark'
       } relative z-0`}
-      style={isMusicianTheme ? {
-        backgroundImage: `url(${woodBgAsset})`,
-        backgroundSize: '320px auto',
-        backgroundRepeat: 'repeat',
-        backgroundAttachment: 'fixed',
-        backgroundPosition: 'center top',
-      } : undefined}
+      style={undefined}
     >
       <SocialCarousel data={data} pushDown={pushDown} isGoldTheme={isGoldTheme} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} />
       
       {isMusicianTheme ? (
         <>
           {/* Realistic Wood Grain Background with 3D Cabinet Overlays */}
-          <div className="fixed inset-0 z-[-1] pointer-events-none select-none overflow-hidden bg-[#24130a]">
-            {/* Layer 1: Real Wood Grain Texture Image (Sharp Repeat) */}
-            <div 
-              className="absolute inset-0"
-              style={{
-                backgroundImage: `url(${woodBgAsset})`,
-                backgroundSize: '320px auto',
-                backgroundPosition: 'center top',
-                backgroundRepeat: 'repeat',
-                filter: 'brightness(1.15) contrast(1.25) saturate(1.2)',
-              }}
-            />
-
+          <div className="fixed inset-0 z-[-1] pointer-events-none select-none overflow-hidden css-wood-grain">
             {/* Layer 2: Subtle warm color overlay to unify tone */}
             <div 
-              className="absolute inset-0 opacity-20"
+              className="absolute inset-0 opacity-25"
               style={{
-                background: 'linear-gradient(180deg, rgba(45,22,11,0.2) 0%, rgba(24,10,4,0) 50%, rgba(45,22,11,0.3) 100%)',
+                background: 'linear-gradient(180deg, rgba(45,22,11,0.3) 0%, rgba(24,10,4,0) 50%, rgba(45,22,11,0.4) 100%)',
                 mixBlendMode: 'multiply'
               }}
             />
@@ -12382,7 +12364,7 @@ const activeAchievements = hasAchievements;
                                     : `bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 ${activeHoverBorderColor}`
                           }`}
                         >
-                          {isMusicianTheme && currentPage !== 1 && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
+                          {isMusicianTheme && currentPage !== 1 && <div className="absolute inset-0 z-0 css-wood-grain-dark" />}
                           <span className="relative z-[2]">{t("Trước")}</span>
                         </button>
                         
@@ -12424,7 +12406,7 @@ const activeAchievements = hasAchievements;
                                           : `bg-white/5 border-white/10 text-white/70 hover:text-white hover:bg-white/15 ${activeHoverBorderColor}`
                                 }`}
                               >
-                                {isMusicianTheme && !isCurrent && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '200px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
+                                {isMusicianTheme && !isCurrent && <div className="absolute inset-0 z-0 css-wood-grain-dark" />}
                                 <span className="relative z-[2]">{page}</span>
                               </button>
                             );
@@ -12458,7 +12440,7 @@ const activeAchievements = hasAchievements;
                                     : `bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 ${activeHoverBorderColor}`
                           }`}
                         >
-                          {isMusicianTheme && currentPage !== totalPages && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
+                          {isMusicianTheme && currentPage !== totalPages && <div className="absolute inset-0 z-0 css-wood-grain-dark" />}
                           <span className="relative z-[2]">{t("Sau")}</span>
                         </button>
                       </div>
@@ -12525,7 +12507,7 @@ const activeAchievements = hasAchievements;
                           {/* Wood grain texture for MV items */}
                           {isMusicianTheme && (
                             <>
-                              <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '500px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />
+                              <div className="absolute inset-0 z-0 css-wood-grain-dark" />
                               <div className="absolute inset-0 z-[1] bg-gradient-to-r from-black/30 via-transparent to-black/30" />
                             </>
                           )}
@@ -12593,7 +12575,7 @@ const activeAchievements = hasAchievements;
                                   : 'bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 hover:border-emerald-500/50'
                         }`}
                       >
-                        {isMusicianTheme && mvCurrentPage !== 1 && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
+                        {isMusicianTheme && mvCurrentPage !== 1 && <div className="absolute inset-0 z-0 css-wood-grain-dark" />}
                         <span className="relative z-[2]">{t("Trước")}</span>
                       </button>
                       
@@ -12637,7 +12619,7 @@ const activeAchievements = hasAchievements;
                                         : 'bg-white/5 border-white/10 text-white/70 hover:text-white hover:bg-white/15 hover:border-emerald-500/50'
                               }`}
                             >
-                              {isMusicianTheme && !isCurrent && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '200px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
+                              {isMusicianTheme && !isCurrent && <div className="absolute inset-0 z-0 css-wood-grain-dark" />}
                               <span className="relative z-[2]">{page}</span>
                             </button>
                           );
@@ -12671,7 +12653,7 @@ const activeAchievements = hasAchievements;
                                   : 'bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/15 hover:border-emerald-500/50'
                         }`}
                       >
-                        {isMusicianTheme && mvCurrentPage !== mvTotalPages && <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.35) contrast(1.2) saturate(1.1)' }} />}
+                        {isMusicianTheme && mvCurrentPage !== mvTotalPages && <div className="absolute inset-0 z-0 css-wood-grain-dark" />}
                         <span className="relative z-[2]">{t("Sau")}</span>
                       </button>
                     </div>
@@ -27539,7 +27521,7 @@ function BeautifulSelect({
       >
         {isMusicianTheme && (
           <>
-            <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.8) contrast(1.2) saturate(1.1)' }} />
+            <div className="absolute inset-0 z-0 css-wood-grain-dark" />
             <div className="absolute inset-0 z-[1] bg-gradient-to-b from-white/10 to-black/20" />
           </>
         )}
@@ -27561,14 +27543,13 @@ function BeautifulSelect({
         <div 
           className={`absolute bottom-full left-0 mb-1.5 w-full min-w-[65px] rounded-xl shadow-2xl border backdrop-blur-lg overflow-hidden py-1 z-40 animate-in fade-in slide-in-from-bottom-2 duration-150 ${
             isMusicianTheme
-              ? 'border-amber-700/80 shadow-[0_8px_30px_rgba(0,0,0,0.9)]'
+              ? 'border-amber-700/80 shadow-[0_8px_30px_rgba(0,0,0,0.9)] css-wood-grain-dark'
               : isDreamyTheme
                 ? 'bg-white/95 border-2 border-rose-200 shadow-xl'
                 : isGoldTheme 
                   ? 'bg-[#FAF5E6]/95 border-[#D4AF37] shadow-[0_8px_30px_rgba(170,124,17,0.2)]' 
                   : 'bg-[#18181b]/95 border-white/10 shadow-black/80'
           }`}
-          style={isMusicianTheme ? { backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.8) contrast(1.2) saturate(1.1)' } : undefined}
         >
           {options.map((opt, optIdx) => (
             <button

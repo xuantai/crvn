@@ -206,6 +206,77 @@
   background-size: 100% 32px;
 }
 
+/* ═══ Pure CSS Wood Grain Background ═══ */
+.css-wood-grain {
+  background-color: #2a1508;
+  background-image:
+    /* Fine vertical grain lines */
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px, transparent 1px,
+      rgba(180,120,60,0.025) 1px, rgba(180,120,60,0.025) 2px,
+      transparent 2px, transparent 3px
+    ),
+    /* Medium grain bands with natural variation */
+    repeating-linear-gradient(
+      89.5deg,
+      transparent 0px, transparent 12px,
+      rgba(140,85,35,0.07) 12px, rgba(140,85,35,0.07) 15px,
+      transparent 15px, transparent 32px,
+      rgba(120,70,28,0.05) 32px, rgba(120,70,28,0.05) 34px,
+      transparent 34px, transparent 55px
+    ),
+    /* Wide plank color shifts */
+    repeating-linear-gradient(
+      90deg,
+      rgba(50,25,10,0.3) 0px,
+      rgba(65,33,14,0.15) 80px,
+      rgba(42,21,8,0.35) 160px,
+      rgba(58,30,12,0.2) 240px,
+      rgba(50,25,10,0.3) 320px
+    ),
+    /* Horizontal ring suggestions */
+    repeating-linear-gradient(
+      180deg,
+      transparent 0px, transparent 120px,
+      rgba(160,100,45,0.03) 120px, rgba(160,100,45,0.03) 122px,
+      transparent 122px, transparent 300px,
+      rgba(130,80,35,0.025) 300px, rgba(130,80,35,0.025) 301px,
+      transparent 301px, transparent 480px
+    ),
+    /* Warm knot radials */
+    radial-gradient(ellipse 200px 600px at 15% 30%, rgba(90,50,18,0.18) 0%, transparent 100%),
+    radial-gradient(ellipse 180px 500px at 75% 60%, rgba(85,45,15,0.12) 0%, transparent 100%),
+    radial-gradient(ellipse 150px 400px at 45% 80%, rgba(95,55,20,0.1) 0%, transparent 100%),
+    /* Base warm gradient */
+    linear-gradient(180deg, #2D160B 0%, #3B1E0F 25%, #4A2512 50%, #3B1E0F 75%, #2D160B 100%);
+}
+
+/* Darker variant for small UI elements (pagination, buttons) */
+.css-wood-grain-dark {
+  background-color: #1a0d05;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px, transparent 1px,
+      rgba(140,85,40,0.03) 1px, rgba(140,85,40,0.03) 2px,
+      transparent 2px, transparent 3px
+    ),
+    repeating-linear-gradient(
+      89.5deg,
+      transparent 0px, transparent 10px,
+      rgba(100,60,25,0.08) 10px, rgba(100,60,25,0.08) 12px,
+      transparent 12px, transparent 28px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(35,18,7,0.4) 0px,
+      rgba(50,25,10,0.2) 60px,
+      rgba(35,18,7,0.4) 120px
+    ),
+    linear-gradient(180deg, #1a0d05 0%, #24130a 50%, #1a0d05 100%);
+}
+
 @keyframes wave {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
