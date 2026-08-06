@@ -89,6 +89,17 @@ async function main() {
   console.log('\n=== Step 3: Uploading dist/server.cjs ===');
   await uploadFile(path.join(ROOT, 'dist', 'server.cjs'), `${REMOTE_DIR}/dist/server.cjs`);
 
+  // 3b. Upload static root files (images from public/) that Vite copies to dist/
+  console.log('\n=== Step 3b: Uploading dist/ root static files ===');
+  const distRootFiles = fs.readdirSync(path.join(ROOT, 'dist'));
+  const staticExts = ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.ico', '.gif', '.mp4', '.webm'];
+  for (const f of distRootFiles) {
+    const ext = path.extname(f).toLowerCase();
+    if (staticExts.includes(ext)) {
+      await uploadFile(path.join(ROOT, 'dist', f), `${REMOTE_DIR}/dist/${f}`);
+    }
+  }
+
   // 4. Upload Data Files & SQLite DB
   console.log('\n=== Step 4: Uploading Data JSONs & SQLite DB ===');
   const files = fs.readdirSync(ROOT);

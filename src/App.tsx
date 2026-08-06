@@ -1174,7 +1174,7 @@ function MusicianWallFrames({
               {/* Inner Picture Mat Border */}
               <div className="w-full h-full rounded-[2px] border border-stone-300/70 shadow-inner overflow-hidden relative">
                 <img 
-                  src={imgUrl} 
+                  src={getThumbUrl(imgUrl)} 
                   alt={`Khung ảnh ${idx + 1}`} 
                   onLoad={(e) => handleImgLoad(imgUrl, e)}
                   onError={() => handleImgError(imgUrl)}
@@ -10393,14 +10393,21 @@ function Home() {
           setLang(data.defaultLanguage);
         }
         
-        // Determine default menu tab
-        if (data.menus && data.menus.length > 0) {
-          const visibleMenus = data.menus.filter((m: any) => m.isVisible);
-          if (visibleMenus.length > 0) {
-            setActiveMenuTab(visibleMenus[0].id);
-          }
+        // Determine default menu tab from URL hash or fallback to first visible
+        const allMenus = (data.menus && data.menus.length > 0) ? data.menus : [
+          { id: 'm1', type: 'vault', title: 'Kho Nhạc', isVisible: true },
+          { id: 'm2', type: 'about', title: 'Về Tôi', isVisible: true },
+          { id: 'm3', type: 'bio', title: 'Tiểu Sử', isVisible: true }
+        ];
+        const hashMap: Record<string, string> = { '#music': 'vault', '#about': 'about', '#bio': 'bio' };
+        const currentHash = window.location.hash.toLowerCase();
+        const hashType = hashMap[currentHash];
+        const matchedMenu = hashType ? allMenus.find((m: any) => m.type === hashType && m.isVisible) : null;
+        if (matchedMenu) {
+          setActiveMenuTab(matchedMenu.id);
         } else {
-          setActiveMenuTab('m1'); // default to vault
+          const visibleMenus = allMenus.filter((m: any) => m.isVisible);
+          setActiveMenuTab(visibleMenus.length > 0 ? visibleMenus[0].id : 'm1');
         }
         document.title = data.pageTitle || `${t.dDesc} ${data.artistName || 'Nghệ sĩ'}`;
         if (data.faviconUrl) {
@@ -10511,7 +10518,7 @@ function Home() {
                         return (
                           <img 
                             key={"avatar-slide-" + idx}
-                            src={imgUrl}
+                            src={getThumbUrl(imgUrl)}
                             alt={data.artistName}
                             className={`absolute inset-0 w-full h-full object-cover object-top scale-105 group-hover:scale-110 transition-all duration-[1500ms] ease-in-out ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
                             referrerPolicy="no-referrer"
@@ -10521,7 +10528,7 @@ function Home() {
                     </>
                   ) : (
                     <img 
-                      src={effectiveCoverUrl || data.aboutMe?.avatarUrl} 
+                      src={getThumbUrl(effectiveCoverUrl || data.aboutMe?.avatarUrl)} 
                       alt={data.artistName} 
                       className="absolute inset-0 w-full h-full object-cover object-top scale-105 group-hover:scale-110 transition-all duration-700 ease-in-out"
                       referrerPolicy="no-referrer"
@@ -10650,7 +10657,7 @@ function Home() {
                 <>
                   {/* Continuous gentle breathing scale + image zoom & brightness boost on hover */}
                   <motion.img 
-                    src={artistAvatar}
+                    src={getThumbUrl(artistAvatar)}
                     alt={data.artistName || 'Avatar'}
                     animate={{
                       scale: [1, 1.05, 1],
@@ -27233,6 +27240,9 @@ function PublicNavbar({ menus, activeTab, setActiveTab, t, isGoldTheme, isMusici
               window.open(m.link, '_blank');
             } else {
               setActiveTab(m.id);
+              const typeToHash: Record<string, string> = { vault: '#music', about: '#about', bio: '#bio' };
+              const newHash = typeToHash[m.type] || '';
+              if (newHash) window.history.replaceState(null, '', newHash);
             }
           }}
           className={`font-bold transition-all relative text-sm sm:text-base ${
@@ -27310,7 +27320,7 @@ function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtensi
             transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
             className="aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-black/50 border border-white/20 shadow-2xl relative z-10"
           >
-            <img src={avatar} alt="Profile" className="w-full h-full object-cover object-top hover:scale-110 transition-transform duration-1000" />
+            <img src={getThumbUrl(avatar)} alt="Profile" className="w-full h-full object-cover object-top hover:scale-110 transition-transform duration-1000" />
           </motion.div>
         </motion.div>
       )}
