@@ -11099,23 +11099,23 @@ function Home() {
       {isMusicianTheme ? (
         <>
           {/* Realistic Wood Grain Background with 3D Cabinet Overlays */}
-          <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden bg-[#180A04]">
+          <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden bg-[#24130a]">
             {/* Layer 1: Real Wood Grain Texture Image */}
             <div 
               className="absolute inset-0"
               style={{
                 backgroundImage: `url('/wood-bg.jpg')`,
-                backgroundSize: '600px auto',
+                backgroundSize: '500px auto',
                 backgroundRepeat: 'repeat',
-                filter: 'brightness(0.45) contrast(1.15) saturate(1.2)',
+                filter: 'brightness(0.85) contrast(1.2) saturate(1.15)',
               }}
             />
 
             {/* Layer 2: Subtle warm color overlay to unify tone */}
             <div 
-              className="absolute inset-0 opacity-40"
+              className="absolute inset-0 opacity-20"
               style={{
-                background: 'linear-gradient(180deg, rgba(45,22,11,0.7) 0%, rgba(24,10,4,0.3) 50%, rgba(45,22,11,0.7) 100%)',
+                background: 'linear-gradient(180deg, rgba(45,22,11,0.5) 0%, rgba(24,10,4,0.1) 50%, rgba(45,22,11,0.5) 100%)',
                 mixBlendMode: 'multiply'
               }}
             />
@@ -22785,9 +22785,9 @@ function PlaylistSelect({ selectedIds, onChange }: { selectedIds: string[], onCh
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button type="button" onClick={() => setIsOpen(!isOpen)} className="w-full h-[60px] bg-white border border-stone-300 rounded-xl px-4 py-3 flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow text-left">
+      <button type="button" onClick={() => setIsOpen(!isOpen)} className="w-full bg-white border border-stone-300 rounded-xl px-3.5 py-2.5 flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all text-left text-sm">
         <span className="truncate text-stone-700 font-medium">{selectedIds.length > 0 ? `${selectedIds.length} playlist được chọn` : t("Chọn Playlist")}</span>
-        <svg className={`w-5 h-5 text-stone-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className={`w-4 h-4 text-stone-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
@@ -23962,9 +23962,9 @@ function AdminCreateDemo() {
                         type="button" 
                         disabled={!title.trim()}
                         onClick={() => setShowTemplatePicker(true)} 
-                        className={`px-6 py-3 border border-transparent shrink-0 shadow-sm text-white font-medium rounded-xl flex items-center justify-center gap-2 transition-all ${(!title.trim()) ? 'bg-stone-300 text-stone-500 cursor-not-allowed opacity-60' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/10'}`}
+                        className={`px-4 py-2.5 text-sm border border-transparent shrink-0 shadow-sm text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all ${(!title.trim()) ? 'bg-stone-300 text-stone-500 cursor-not-allowed opacity-60' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/10'}`}
                       >
-                        <Eye className="w-5 h-5" /> {t("Xem trước chủ đề")}
+                        <Eye className="w-4 h-4" /> {t("Xem trước chủ đề")}
                       </button>
                     </div>
                   </div>
@@ -24148,7 +24148,7 @@ function AdminCreateDemo() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-stone-100 items-start">
-                   <div className="flex items-center justify-between bg-stone-50 p-4 rounded-xl border border-stone-200 h-[60px]">
+                   <div className="flex items-center justify-between bg-stone-50 px-3.5 py-2.5 rounded-xl border border-stone-200 min-h-[42px]">
                     <div className="flex items-center gap-3 cursor-pointer shrink-0">
                       <input type="checkbox" id="isReleasedForm" name="isReleased" checked={isReleased} onChange={e => {
                         const checked = e.target.checked;
@@ -25296,9 +25296,9 @@ function AdminEditDemo() {
                         type="button" 
                         disabled={!title.trim()}
                         onClick={() => setShowTemplatePicker(true)} 
-                        className={`px-4 py-2.5 text-sm border border-transparent shrink-0 shadow-sm text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all ${(!title.trim()) ? 'bg-stone-300 text-stone-500 cursor-not-allowed opacity-60' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/10'}`}
+                        className={`px-4 py-2.5 text-sm border border-transparent shrink-0 shadow-sm text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all ${(!title.trim()) ? 'bg-stone-300 text-stone-500 cursor-not-allowed opacity-60' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/10'}`}
                       >
-                        <Eye className="w-4 h-4" /> {t("Xem trước")}
+                        <Eye className="w-4 h-4" /> {t("Xem trước chủ đề")}
                       </button>
                     </div>
                   </div>
@@ -25483,7 +25483,7 @@ function AdminEditDemo() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-stone-100 items-start">
-                   <div className="flex items-center justify-between bg-stone-50 p-4 rounded-xl border border-stone-200 h-[60px]">
+                   <div className="flex items-center justify-between bg-stone-50 px-3.5 py-2.5 rounded-xl border border-stone-200 min-h-[42px]">
                     <div className="flex items-center gap-3 cursor-pointer shrink-0">
                       <input type="checkbox" id="isReleasedForm" name="isReleased" checked={isReleased} onChange={e => {
                         const checked = e.target.checked;
@@ -27150,7 +27150,7 @@ function BeautifulSelect({
       >
         {isMusicianTheme && (
           <>
-            <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.4) contrast(1.2) saturate(1.1)' }} />
+            <div className="absolute inset-0 z-0" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.8) contrast(1.2) saturate(1.1)' }} />
             <div className="absolute inset-0 z-[1] bg-gradient-to-b from-white/10 to-black/20" />
           </>
         )}
@@ -27179,7 +27179,7 @@ function BeautifulSelect({
                   ? 'bg-[#FAF5E6]/95 border-[#D4AF37] shadow-[0_8px_30px_rgba(170,124,17,0.2)]' 
                   : 'bg-[#18181b]/95 border-white/10 shadow-black/80'
           }`}
-          style={isMusicianTheme ? { backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.4) contrast(1.2) saturate(1.1)' } : undefined}
+          style={isMusicianTheme ? { backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '300px auto', backgroundRepeat: 'repeat', filter: 'brightness(0.8) contrast(1.2) saturate(1.1)' } : undefined}
         >
           {options.map((opt, optIdx) => (
             <button
