@@ -1216,10 +1216,25 @@ function normalizeArtistData(data: any, artist?: any) {
   return data;
 }
 
+const artistDataMemoryCache = new Map<string, { rawData: any; timestamp: number }>();
+
+function invalidateArtistDataCache(username?: string) {
+  if (username) {
+    artistDataMemoryCache.delete(username);
+  } else {
+    artistDataMemoryCache.clear();
+  }
+}
+
 async function loadData(explicitUsername?: string) {
   const storeUsername = artistStorage.getStore();
   const currentUsername = explicitUsername || storeUsername || 'acxuantai';
   const artist = artists.find(a => a.username === currentUsername) || artists[0] || { username: 'acxuantai', artistName: 'A.C Xuân Tài' };
+
+  if (artistDataMemoryCache.has(currentUsername)) {
+    const cached = artistDataMemoryCache.get(currentUsername)!;
+    return normalizeArtistData(JSON.parse(JSON.stringify(cached.rawData)), artist);
+  }
 
   const artistDataFile = path.join(process.cwd(), `data_${currentUsername}.json`);
   const artistDocRef = getFirestoreRefForArtist(artist);
@@ -1309,6 +1324,7 @@ async function loadData(explicitUsername?: string) {
            await fs.writeFile(artistDataFile, JSON.stringify(data, null, 2), 'utf-8');
         } catch (e) {}
 
+        artistDataMemoryCache.set(currentUsername, { rawData: data, timestamp: Date.now() });
         return normalizeArtistData(data, artist);
       }
     } catch (error: any) {
@@ -1360,12 +1376,14 @@ async function loadData(explicitUsername?: string) {
           handleFirebaseError(e);
         }
       }
+      artistDataMemoryCache.set(currentUsername, { rawData: parsedData, timestamp: Date.now() });
       return normalizeArtistData(parsedData, artist);
     } else if (currentUsername === 'acxuantai' && fsSync.existsSync(DATA_FILE)) {
       // Copy existing data.json for master artist acxuantai
       const data = await fs.readFile(DATA_FILE, 'utf-8');
       await fs.writeFile(artistDataFile, data, 'utf-8');
       const parsedData = JSON.parse(data);
+      artistDataMemoryCache.set(currentUsername, { rawData: parsedData, timestamp: Date.now() });
       return normalizeArtistData(parsedData, artist);
     }
   } catch (error: any) {
@@ -1401,6 +1419,7 @@ async function loadData(explicitUsername?: string) {
     await fs.writeFile(artistDataFile, JSON.stringify(defaultData, null, 2), 'utf-8');
   } catch (e) {}
 
+  artistDataMemoryCache.set(currentUsername, { rawData: defaultData, timestamp: Date.now() });
   return normalizeArtistData(defaultData, artist);
 }
 
@@ -1431,6 +1450,9 @@ async function saveData(usernameOrData: any, data?: any) {
 
   // Ensure username is always explicitly stored in the data file for future reliability
   realData.username = currentUsername;
+
+  // Immediately update in-memory RAM cache
+  artistDataMemoryCache.set(currentUsername, { rawData: JSON.parse(JSON.stringify(realData)), timestamp: Date.now() });
 
   const artist = artists.find(a => a.username === currentUsername) || artists[0] || { username: 'acxuantai' };
   const artistDataFile = path.join(process.cwd(), `data_${currentUsername}.json`);

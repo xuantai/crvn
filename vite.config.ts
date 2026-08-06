@@ -25,6 +25,12 @@ export default defineConfig(() => {
           entryFileNames: `assets/[name]-[hash]-${Date.now()}.js`,
           chunkFileNames: `assets/[name]-[hash]-${Date.now()}.js`,
           assetFileNames: `assets/[name]-[hash]-${Date.now()}[extname]`,
+          manualChunks: {
+            'vendor-lucide': ['lucide-react'],
+            'vendor-motion': ['motion'],
+            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+            'vendor-canvas': ['html-to-image', 'html2canvas'],
+          },
         },
       },
     },
