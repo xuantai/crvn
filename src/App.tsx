@@ -5854,6 +5854,15 @@ interface LangContextType {
 export const LanguageContext = createContext<LangContextType>({ lang: 'vi', setLang: () => {} });
 
 // Thumbnail fallback handled server-side now
+const getThumbUrl = (url: string | undefined): string => {
+  if (!url) return '';
+  if (url.includes('-thumb')) return url;
+  const lastDot = url.lastIndexOf('.');
+  if (lastDot > 0 && (url.includes('/uploads/') || url.includes('.r2.dev/'))) {
+    return `${url.substring(0, lastDot)}-thumb${url.substring(lastDot)}`;
+  }
+  return url;
+};
 
 // ---- GLOBAL MULTI-ARTIST INTERCEPTORS ----
 const getArtistExtensionFromUrl = (customPath?: string) => {
@@ -7668,7 +7677,7 @@ function UnifiedArtistSessionFloatingWidget({ onLogout }: { onLogout: () => void
               <a href={getArtistAdminRedirect(activeExt, '').replace(/\/$/, '') || '/'} className="flex items-center gap-2 group cursor-pointer hover:opacity-80 transition-opacity" title={t("Đến kho nhạc")}>
                 {avatar ? (
                   <img 
-                    src={getAvatarUrl(avatar)} 
+                    src={getThumbUrl(getAvatarUrl(avatar))} 
                     className="w-8 h-8 rounded-full object-cover border border-white/20 shadow-sm shrink-0"
                     alt={activeName}
                     onError={(e) => {
@@ -11595,7 +11604,7 @@ function Home() {
                         const songsInPlaylist = (data?.demos || []).filter(d => !d.deleted && ((d.playlistIds && d.playlistIds.includes(playlist.id)) || (playlist.songIds && playlist.songIds.includes(d.id))));
                         if (songsInPlaylist.length === 0) return <React.Fragment key={`l8086-${playlist.id || ''}-${idx}`} />;
                         
-                        let coverUrl = playlist.coverUrl || '';
+                        let coverUrl = getThumbUrl(playlist.coverUrl) || '';
                         if (!coverUrl && data.slideshowImages && data.slideshowImages.length > 0) {
                            const hash = Array.from(playlist.id as string).reduce((sum: number, char: any) => sum + char.charCodeAt(0), 0);
                            coverUrl = data.slideshowImages[hash % data.slideshowImages.length];
@@ -11636,7 +11645,7 @@ function Home() {
                                     {Array.from({ length: discCount }).map((_, dIdx) => {
                                       const offset = discOffsets[dIdx % discOffsets.length];
                                       const targetSong = songsInPlaylist[dIdx];
-                                      const discCoverUrl = (targetSong && getSongCoverUrl(targetSong.coverUrl)) || coverUrl;
+                                      const discCoverUrl = (targetSong && getSongCoverUrl(targetSong.thumbUrl || targetSong.coverUrl)) || coverUrl;
 
                                       return (
                                         <div 
@@ -11880,9 +11889,9 @@ function Home() {
                                           transition={{ duration: 0.45, ease: "easeOut" }}
                                           className="absolute inset-0 w-full h-full"
                                         >
-                                          {getSongCoverUrl(demo.coverUrl) ? (
+                                          {getSongCoverUrl(demo.thumbUrl || demo.coverUrl) ? (
                                             <img 
-                                              src={getSongCoverUrl(demo.coverUrl)} 
+                                              src={getSongCoverUrl(demo.thumbUrl || demo.coverUrl)} 
                                               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
                                               alt={demo.title} 
                                               referrerPolicy="no-referrer"
@@ -12137,8 +12146,8 @@ function Home() {
                                             transition={{ duration: 0.45, ease: "easeOut" }}
                                             className="absolute inset-0 w-full h-full"
                                           >
-                                            {getSongCoverUrl(demo.coverUrl) ? (
-                                               <img src={getSongCoverUrl(demo.coverUrl)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={demo.title} />
+                                            {getSongCoverUrl(demo.thumbUrl || demo.coverUrl) ? (
+                                               <img src={getSongCoverUrl(demo.thumbUrl || demo.coverUrl)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={demo.title} />
                                             ) : (
                                                <div className={`w-full h-full ${isGoldTheme ? 'bg-[#FAF5E6] text-stone-400 group-hover:text-[#AA7C11]' : 'bg-neutral-800 text-neutral-600 group-hover:text-rose-500'} flex items-center justify-center transition-colors`}>
                                                   <Disc3 className="w-6 h-6 sm:w-8 sm:h-8" />
@@ -12678,7 +12687,7 @@ const activeAchievements = hasAchievements;
       <AnimatePresence>
         {activeBioSong && (
           <IndirectBioCard key="indirect-bio-card" 
-            demo={{...activeBioSong, coverUrl: getPreviewUrl(getSongCoverUrl(activeBioSong.coverUrl))}} 
+            demo={{...activeBioSong, coverUrl: getPreviewUrl(getSongCoverUrl(activeBioSong.thumbUrl || activeBioSong.coverUrl))}} 
             onClose={() => setActiveBioSong(null)} 
             isStandalone={false}
             lang={lang}
@@ -18173,15 +18182,7 @@ function AdminDashboard() {
     return url;
   };
 
-  const getThumbUrl = (url: string | undefined) => {
-    if (!url) return '';
-    if (url.includes('-thumb')) return url;
-    const lastDot = url.lastIndexOf('.');
-    if (lastDot > 0 && (url.includes('/uploads/') || url.includes('.r2.dev/'))) {
-      return `${url.substring(0, lastDot)}-thumb${url.substring(lastDot)}`;
-    }
-    return url;
-  };
+  // getThumbUrl is now a global function (top-level)
 
   const uploadWithProgress = async (file: File, setProgress: (p: number) => void): Promise<{url: string, thumbUrl: string}> => {
     const fileToUpload = (file.type && file.type.startsWith('image/')) ? await compressImageInBrowser(file) : file;
@@ -20509,8 +20510,8 @@ function AdminDashboard() {
                             <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-stone-100 shrink-0 overflow-hidden relative shadow-sm border border-stone-200 group-hover:shadow-md transition-shadow">
                               {demo.brandLogoUrl ? (
                                 <img src={demo.brandLogoUrl} alt="" className="w-full h-full object-cover" />
-                              ) : getSongCoverUrl(demo.coverUrl) ? (
-                                <img src={getSongCoverUrl(demo.coverUrl)} alt="" className="w-full h-full object-cover" />
+                              ) : getSongCoverUrl(demo.thumbUrl || demo.coverUrl) ? (
+                                <img src={getSongCoverUrl(demo.thumbUrl || demo.coverUrl)} alt="" className="w-full h-full object-cover" />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-stone-300">
                                   <Music className="w-6 h-6" />
