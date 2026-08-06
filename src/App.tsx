@@ -10,6 +10,7 @@ import { IndirectBioCard } from './components/IndirectBioCard';
 import { LoadingScreen } from './components/LoadingScreen';
 import { getYoutubeId } from './components/SmartYouTubePlayer';
 import RegisterModal from './components/RegisterModal';
+const woodBgAsset = '/wood-bg.jpg';
 
 
 function Portal({ children }: { children: React.ReactNode }) {
@@ -10097,8 +10098,8 @@ function Home() {
     return rawTheme || 'liquid-glass';
   }, [data?.adminTheme]);
 
-  const isMusicianTheme = activeTheme === 'musician' || activeTheme === 'musician2';
-  const isDreamyTheme = activeTheme === 'dreamy';
+  const isMusicianTheme = activeTheme === 'musician2';
+  const isDreamyTheme = activeTheme === 'musician' || activeTheme === 'dreamy';
   const isGoldTheme = (activeTheme === 'gold' || activeTheme === 'gold2') && !isMusicianTheme && !isDreamyTheme;
   const isGold2Theme = (activeTheme === 'gold' || activeTheme === 'gold2') && !isMusicianTheme && !isDreamyTheme;
 
@@ -10609,7 +10610,7 @@ function Home() {
             {isMusicianTheme && (
               <>
                 {/* Wood grain texture overlay on header */}
-                <div className="absolute inset-0 z-0 pointer-events-none rounded-3xl sm:rounded-[2.5rem] overflow-hidden" style={{ backgroundImage: `url('/wood-bg.jpg')`, backgroundSize: '400px auto', backgroundRepeat: 'repeat', opacity: 0.12, filter: 'brightness(0.7) contrast(1.3)' }} />
+                <div className="absolute inset-0 z-0 pointer-events-none rounded-3xl sm:rounded-[2.5rem] overflow-hidden" style={{ backgroundImage: `url(${woodBgAsset})`, backgroundSize: '400px auto', backgroundRepeat: 'repeat', opacity: 0.18, filter: 'brightness(0.8) contrast(1.3)' }} />
               <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-[1] opacity-20 sm:opacity-25 pointer-events-none hidden md:block">
                 <svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
                   {/* Turntable base */}
@@ -11105,7 +11106,7 @@ function Home() {
             <div 
               className="absolute inset-0"
               style={{
-                backgroundImage: `url('/wood-bg.jpg')`,
+                backgroundImage: `url(${woodBgAsset})`,
                 backgroundSize: '320px auto',
                 backgroundPosition: 'center top',
                 backgroundRepeat: 'repeat',
