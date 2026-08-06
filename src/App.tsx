@@ -11099,7 +11099,7 @@ function Home() {
       {isMusicianTheme ? (
         <>
           {/* Realistic Wood Grain Background with 3D Cabinet Overlays */}
-          <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden bg-[#24130a]">
+          <div className="fixed inset-0 z-0 pointer-events-none select-none overflow-hidden bg-[#24130a]">
             {/* Layer 1: Real Wood Grain Texture Image */}
             <div 
               className="absolute inset-0"
@@ -11107,15 +11107,15 @@ function Home() {
                 backgroundImage: `url('/wood-bg.jpg')`,
                 backgroundSize: '500px auto',
                 backgroundRepeat: 'repeat',
-                filter: 'brightness(0.85) contrast(1.2) saturate(1.15)',
+                filter: 'brightness(0.98) contrast(1.15) saturate(1.15)',
               }}
             />
 
             {/* Layer 2: Subtle warm color overlay to unify tone */}
             <div 
-              className="absolute inset-0 opacity-20"
+              className="absolute inset-0 opacity-15"
               style={{
-                background: 'linear-gradient(180deg, rgba(45,22,11,0.5) 0%, rgba(24,10,4,0.1) 50%, rgba(45,22,11,0.5) 100%)',
+                background: 'linear-gradient(180deg, rgba(45,22,11,0.4) 0%, rgba(24,10,4,0.1) 50%, rgba(45,22,11,0.4) 100%)',
                 mixBlendMode: 'multiply'
               }}
             />
@@ -24135,13 +24135,13 @@ function AdminCreateDemo() {
                 <div className="mt-6 mb-6">
                   <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Link Google Drive tải nhạc")}</label>
                   <div className="relative">
-                    <FolderDown className="absolute left-3 top-3.5 w-5 h-5 text-stone-400" />
+                    <FolderDown className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
                     <input 
                       name="linkDrive" 
                       value={linkDrive} 
                       onChange={e => setLinkDrive(e.target.value)} 
                       placeholder="https://drive.google.com/file/d/.../view" 
-                      className="w-full border border-stone-300 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all bg-white font-mono" 
+                      className="w-full border border-stone-300 rounded-xl pl-10 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all bg-white font-mono" 
                     />
                   </div>
                   <p className="text-xs text-stone-500 mt-2">{t("Nếu nhập link, người dùng sẽ thấy icon tải nhạc (Download) ở trên phần lời bài hát để click tải.")}</p>
@@ -24182,7 +24182,7 @@ function AdminCreateDemo() {
                 className="btn-glass-draft text-stone-900 text-sm sm:text-base font-bold py-2.5 px-5 sm:px-6 rounded-xl transition-all duration-300 disabled:opacity-80 flex justify-center items-center gap-2 active:scale-[0.98] shadow-sm sm:flex-initial sm:min-w-[150px]"
               >
                 <FileText className="w-5 h-5 text-amber-500" />
-                {loading ? t("Đang lưu...") : t("Lưu Bản Nháp")}
+                {loading ? t("Đang lưu...") : t("Lưu Nháp")}
               </button>
               
               <button 
@@ -25470,13 +25470,13 @@ function AdminEditDemo() {
                 <div className="mt-6 mb-6">
                   <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Link Google Drive tải nhạc")}</label>
                   <div className="relative">
-                    <FolderDown className="absolute left-3 top-3.5 w-5 h-5 text-stone-400" />
+                    <FolderDown className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
                     <input 
                       name="linkDrive" 
                       value={linkDrive} 
                       onChange={e => setLinkDrive(e.target.value)} 
                       placeholder="https://drive.google.com/file/d/.../view" 
-                      className="w-full border border-stone-300 rounded-xl pl-10 pr-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-900 transition-shadow bg-white" 
+                      className="w-full border border-stone-300 rounded-xl pl-10 pr-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all bg-white font-mono" 
                     />
                   </div>
                   <p className="text-xs text-stone-500 mt-2">{t("Nếu nhập link, người dùng sẽ thấy icon tải nhạc (Download) ở trên phần lời bài hát để click tải.")}</p>
@@ -25561,7 +25561,7 @@ function AdminEditDemo() {
                     className="btn-glass-draft text-stone-900 text-sm sm:text-base font-bold py-2.5 px-5 sm:px-6 rounded-xl transition-all duration-300 disabled:opacity-80 flex justify-center items-center gap-2 active:scale-[0.98] shadow-sm sm:flex-initial sm:min-w-[150px]"
                   >
                     <FileText className="w-5 h-5 text-amber-500" />
-                    {loading ? t("Đang lưu...") : t("Lưu Bản Nháp")}
+                    {loading ? t("Đang lưu...") : t("Lưu Nháp")}
                   </button>
                   
                   <button 
