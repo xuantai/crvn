@@ -6203,10 +6203,10 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
 import { formatFileName, compressImageInBrowser, compressImageToJPG, uploadGlobal } from './utils/adminUtils';
 // [CODE-SPLIT] formatFileName, compressImageInBrowser, compressImageToJPG, uploadGlobal moved to src/utils/adminUtils.ts
 
-import ACPControlPanel from './components/ACPControlPanel';
-import ChorusVNLanding from './components/ChorusVNLanding';
-import ExploreFeatures from './components/ExploreFeatures';
-import HelpPage from './components/HelpPage';
+const ACPControlPanel = React.lazy(() => import('./components/ACPControlPanel'));
+const ChorusVNLanding = React.lazy(() => import('./components/ChorusVNLanding'));
+const ExploreFeatures = React.lazy(() => import('./components/ExploreFeatures'));
+const HelpPage = React.lazy(() => import('./components/HelpPage'));
 
 // ---- ADMIN LOGIN & REQUIRE ADMIN ----
 
@@ -6919,6 +6919,7 @@ function AnimatedRoutes() {
   };
 
   return (
+      <React.Suspense fallback={<LoadingScreen text="Đang tải..." />}>
     <AnimatePresence mode="wait">
       {/* @ts-ignore */}
       <Routes location={location} key={getRouteKey(location.pathname)}>
@@ -6953,6 +6954,7 @@ function AnimatedRoutes() {
         <Route path="/:artistExtension/admin" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
       </Routes>
     </AnimatePresence>
+      </React.Suspense>
   );
 }
 
