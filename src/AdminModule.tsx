@@ -13,6 +13,7 @@ import { getArtistSubdomainUrl, getPlatformDomain, formatPlatformText } from "./
 import { Portal, MarqueeText, MarqueeTitle, LanguageSwitcher, PasswordInput, DemoPlayer, getAdminTabAndSubtabFromPath, getGlobalShowConfirm, setGlobalShowConfirm } from "./App";
 import { ChorusLogo } from "./components/ChorusLogo";
 import { getYoutubeId } from "./components/SmartYouTubePlayer";
+import { LoadingScreen } from "./components/LoadingScreen";
 export function AdminDashboard() {
   const { t } = useAdminTranslation();
   const location = useLocation();
