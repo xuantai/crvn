@@ -10,7 +10,7 @@ import { useAdminTranslation, LanguageContext, translations } from "./i18n";
 import { formatShareUrl, getThumbUrl, handleImageError, getArtistExtensionFromUrl, getAdminLink, getArtistLink, getArtistFullUrl, getAdminToken, setAdminToken, removeAdminToken, copyToClipboard, getGlobalCookie, sanitizePlaylistPassword, resolveUploadUrl, getAudioPlayUrl, isArtistContext, getActiveAdminSession, setGlobalCookie, removeGlobalCookie, getAdminTokenKey } from "./utils/shared";
 import { uploadGlobal, compressImageInBrowser, compressImageToJPG, formatFileName } from "./utils/adminUtils";
 import { getArtistSubdomainUrl, getPlatformDomain, formatPlatformText } from "./utils/platform";
-import { Portal, MarqueeText, MarqueeTitle, LanguageSwitcher, PasswordInput, DemoPlayer, getGlobalShowConfirm, setGlobalShowConfirm } from "./App";
+import { Portal, MarqueeText, MarqueeTitle, LanguageSwitcher, PasswordInput, DemoPlayer, getAdminTabAndSubtabFromPath, getGlobalShowConfirm, setGlobalShowConfirm } from "./App";
 import { ChorusLogo } from "./components/ChorusLogo";
 import { getYoutubeId } from "./components/SmartYouTubePlayer";
 export function AdminDashboard() {
@@ -8909,4 +8909,1611 @@ export function AdminPlaylistEdit() {
       )}
     </div>
   );
+}
+
+function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl, onPreviewAvatar }: any) {
+  const [aboutData, setAboutData] = useState(() => {
+    const initialAbout = data.aboutMe || {};
+    const resolvedAvatar = initialAbout.avatarUrl || data.avatarUrl || data.homeCoverUrl || '';
+    const resolvedIntro = initialAbout.intro || initialAbout.bio || initialAbout.bio1 || '';
+    return {
+      ...initialAbout,
+      avatarUrl: resolvedAvatar,
+      intro: resolvedIntro
+    };
+  });
+  const [avatarProgress, setAvatarProgress] = useState(0);
+  const [avatarPreviewObjectUrl, setAvatarPreviewObjectUrl] = useState('');
+  const [avatarSaving, setAvatarSaving] = useState(false);
+  const initialAvatarUrlRef = useRef(data.aboutMe?.avatarUrl || data.avatarUrl || data.homeCoverUrl || '');
+  const isAvatarDirty = aboutData.avatarUrl !== initialAvatarUrlRef.current;
+  const [socials, setSocials] = useState({
+    socialFacebook: data.socialFacebook || '',
+    socialInstagram: data.socialInstagram || '',
+    socialYoutube: data.socialYoutube || '',
+    socialTiktok: data.socialTiktok || '',
+  });
+  
+  const handleSave = (e: any) => {
+    e.preventDefault();
+    onSave({ 
+      aboutMe: aboutData,
+      ...socials
+    });
+    initialAvatarUrlRef.current = aboutData.avatarUrl;
+  };
+
+  const handleQuickSaveAvatar = async () => {
+    setAvatarSaving(true);
+    try {
+      await onSave({ aboutMe: { ...aboutData }, ...socials });
+      initialAvatarUrlRef.current = aboutData.avatarUrl;
+    } finally {
+      setAvatarSaving(false);
+    }
+  };
+
+  const handleChange = (field: string) => (e: any) => {
+    setAboutData({ ...aboutData, [field]: e.target.value });
+  };
+
+  
+  
+  
+  return (
+    <motion.div key="about" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+      <div className="max-w-2xl pb-10">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-stone-100 pb-4">
+          <div>
+            <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+              <User className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />
+              {t("Về Tôi")}
+            </h2>
+            <p className="text-xs text-stone-500 mt-1">{t("Cài đặt thông tin giới thiệu và câu chuyện nghệ sĩ của bạn")}</p>
+          </div>
+        </div>
+        <form onSubmit={handleSave} className="space-y-6">
+          <div>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Avatar Nghệ Sĩ")}</label>
+            <div 
+              className="flex items-center gap-4 p-4 rounded-3xl border-2 border-dashed border-stone-200 bg-stone-50/50 hover:border-stone-300 transition-colors"
+              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+              onDrop={async (e) => {
+                  e.preventDefault(); e.stopPropagation();
+                  const file = e.dataTransfer.files?.[0];
+                  if (file) {
+                      setAvatarPreviewObjectUrl(URL.createObjectURL(file));
+                      try {
+                          const result = await uploadWithProgress(file, setAvatarProgress);
+                          const url = typeof result === 'string' ? result : result.url;
+                          setAboutData({ ...aboutData, avatarUrl: url });
+                          if (onPreviewAvatar) onPreviewAvatar(url);
+                          if (avatarPreviewObjectUrl) URL.revokeObjectURL(avatarPreviewObjectUrl);
+                          setAvatarPreviewObjectUrl('');
+                      } catch (err) {
+                          alert(t("Lỗi upload"));
+                          setAvatarProgress(0);
+                          if (avatarPreviewObjectUrl) URL.revokeObjectURL(avatarPreviewObjectUrl);
+                          setAvatarPreviewObjectUrl('');
+                      }
+                  }
+              }}
+            >
+              <div className={`w-20 h-20 rounded-2xl overflow-hidden bg-stone-900 border shadow-md relative shrink-0 transition-all ${isAvatarDirty ? 'border-amber-400 ring-2 ring-amber-300/50 animate-[pulse_1.5s_ease-in-out_infinite]' : 'border-stone-400'}`}>
+                {(avatarProgress > 0 && avatarProgress < 100 && avatarPreviewObjectUrl) ? (
+                  <>
+                    <img src={avatarPreviewObjectUrl} className="w-full h-full object-cover opacity-60 blur-[1px]" />
+                    <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-1">
+                      <div className="w-6 h-6 rounded-full border-2 border-white/30 border-t-emerald-400 animate-spin" />
+                      <span className="text-xs font-black drop-shadow text-white">{avatarProgress}%</span>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40">
+                      <div className="h-full bg-gradient-to-r from-emerald-500 to-green-400 transition-all duration-300" style={{ width: `${avatarProgress}%` }} />
+                    </div>
+                  </>
+                ) : aboutData.avatarUrl ? (
+                  <img src={getPreviewUrl(getThumbUrl(aboutData.avatarUrl))} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-stone-500"><Image className="w-8 h-8" /></div>
+                )}
+                {isAvatarDirty && avatarProgress !== 100 && !(avatarProgress > 0 && avatarProgress < 100) && (
+                  <div className="absolute top-0.5 right-0.5 w-2.5 h-2.5 bg-amber-400 rounded-full animate-ping" />
+                )}
+              </div>
+              <div className="flex-1 min-w-[150px]">
+                <div className="flex items-center gap-2">
+                  <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${avatarProgress === 100 || aboutData.avatarUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('aboutAvatarUpload')?.click()}>
+                      <Upload className="w-4 h-4"/>
+                      <span className="max-w-[150px] truncate">{avatarProgress > 0 && avatarProgress < 100 ? `Đang tải ${avatarProgress}%` : (aboutData.avatarUrl ? t("Thay đổi") : t("Chọn ảnh"))}</span>
+                  </button>
+                  {avatarProgress > 0 && avatarProgress < 100 ? (
+                    <button type="button" onClick={() => { setAvatarProgress(0); if (avatarPreviewObjectUrl) { URL.revokeObjectURL(avatarPreviewObjectUrl); setAvatarPreviewObjectUrl(''); } }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
+                  ) : (aboutData.avatarUrl ? (
+                    <>
+                      {isAvatarDirty && (
+                        <button type="button" onClick={handleQuickSaveAvatar} disabled={avatarSaving} className="w-8 h-8 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center hover:bg-emerald-200 transition-all shrink-0 hover:scale-110 shadow-sm" title={t("Lưu avatar ngay")}>
+                          {avatarSaving ? <div className="w-4 h-4 rounded-full border-2 border-emerald-300 border-t-emerald-700 animate-spin" /> : <Check className="w-4 h-4" />}
+                        </button>
+                      )}
+                      <button type="button" onClick={() => { setAboutData({ ...aboutData, avatarUrl: '' }); setAvatarProgress(0); (document.getElementById('aboutAvatarUpload') as HTMLInputElement).value = ''; if (onPreviewAvatar) onPreviewAvatar(''); }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                    </>
+                  ) : null)}
+                </div>
+                {isAvatarDirty && (
+                  <p className="text-[11px] text-amber-600 font-semibold mt-1 animate-pulse">
+                    ⚠ {t("Chưa lưu — nhấn ✓ hoặc Lưu bên dưới")}
+                  </p>
+                )}
+                <p className="text-[11px] text-stone-400 mt-1 truncate max-w-full">
+                  {t("Kéo thả ảnh trực tiếp vào ô này")}
+                </p>
+              </div>
+              <input type="file" id="aboutAvatarUpload" className="hidden" accept="image/*" onChange={async (e) => {
+                if (!e.target.files?.[0]) return;
+                const file = e.target.files[0];
+                const compressedFile = file.type?.startsWith('image/') ? await compressImageInBrowser(file, 800, 0.75) : file;
+                setAvatarPreviewObjectUrl(URL.createObjectURL(compressedFile));
+                try {
+                  const result = await uploadWithProgress(compressedFile, setAvatarProgress);
+                  const url = typeof result === 'string' ? result : result.url;
+                  setAboutData({ ...aboutData, avatarUrl: url });
+                  if (onPreviewAvatar) onPreviewAvatar(url);
+                  if (avatarPreviewObjectUrl) URL.revokeObjectURL(avatarPreviewObjectUrl);
+                  setAvatarPreviewObjectUrl('');
+                } catch (err) {
+                  alert(t("Lỗi upload"));
+                  setAvatarProgress(0);
+                  if (avatarPreviewObjectUrl) URL.revokeObjectURL(avatarPreviewObjectUrl);
+                  setAvatarPreviewObjectUrl('');
+                }
+              }} />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Danh Xưng")}</label>
+            <input value={aboutData.role || ''} onChange={handleChange('role')} placeholder={t("Ca nhạc sĩ, producer...")} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tự bạch")}</label>
+            <textarea value={aboutData.intro || ''} onChange={handleChange('intro')} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all min-h-[100px]" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tên Thật")}</label>
+              <input value={aboutData.realName || ''} onChange={handleChange('realName')} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Ngày Sinh")}</label>
+              <input value={aboutData.dob || ''} onChange={handleChange('dob')} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Đến Từ")}</label>
+              <input value={aboutData.address || ''} onChange={handleChange('address')} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Sinh Sống")}</label>
+              <input value={aboutData.company || ''} onChange={handleChange('company')} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Email")}</label>
+              <input value={aboutData.email || ''} onChange={handleChange('email')} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("SĐT")}</label>
+              <input value={aboutData.phone || ''} onChange={handleChange('phone')} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
+            </div>
+          </div>
+
+          {/* Mạng Xã Hội */}
+          <div className="pt-6 border-t border-stone-100 mt-4">
+            <h3 className="text-lg font-bold text-stone-900 mb-2 flex items-center gap-2">
+              <Globe className="w-5 h-5 text-indigo-600 animate-[pulse_2s_infinite]" />
+              {t("Mạng xã hội")}
+            </h3>
+            <p className="text-xs text-stone-500 mb-4">{t("Liên kết các kênh mạng xã hội chính thức của bạn")}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Facebook</label>
+                <input 
+                  value={socials.socialFacebook} 
+                  onChange={(e) => setSocials({ ...socials, socialFacebook: e.target.value })} 
+                  className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" 
+                  placeholder="https://facebook.com/..." 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Instagram</label>
+                <input 
+                  value={socials.socialInstagram} 
+                  onChange={(e) => setSocials({ ...socials, socialInstagram: e.target.value })} 
+                  className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" 
+                  placeholder="https://instagram.com/..." 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">YouTube</label>
+                <input 
+                  value={socials.socialYoutube} 
+                  onChange={(e) => setSocials({ ...socials, socialYoutube: e.target.value })} 
+                  className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" 
+                  placeholder="https://youtube.com/..." 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">TikTok</label>
+                <input 
+                  value={socials.socialTiktok} 
+                  onChange={(e) => setSocials({ ...socials, socialTiktok: e.target.value })} 
+                  className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" 
+                  placeholder="https://tiktok.com/@..." 
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4 border-t border-stone-100 pt-6 mt-6">
+            <button type="submit" className="bg-stone-900 text-white shadow-sm hover:shadow-md hover:bg-stone-800 active:scale-[0.98] px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer">
+              {t("Lưu cài đặt")}
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </motion.div>
+  );
+}
+
+function AdminBioEdit({ data, t, onSave }: any) {
+  const [education, setEducation] = useState<any[]>(data.biography?.education || []);
+  const [experience, setExperience] = useState<any[]>(data.biography?.experience || []);
+
+  const handleSave = (e: any) => {
+    e.preventDefault();
+    onSave({ biography: { education, experience } });
+  };
+
+  const addEdu = () => {
+    if (education.length < 20) setEducation([...education, { time: '', title: '', description: '' }]);
+  };
+  const addExp = () => {
+    if (experience.length < 20) setExperience([...experience, { time: '', title: '', description: '' }]);
+  };
+
+  const updateEdu = (idx: number, field: string, val: any) => {
+    const newEdu = [...education];
+    newEdu[idx][field] = val;
+    setEducation(newEdu);
+  };
+  
+  const updateExp = (idx: number, field: string, val: any) => {
+    const newExp = [...experience];
+    newExp[idx][field] = val;
+    setExperience(newExp);
+  };
+
+  const removeEdu = (idx: number) => setEducation(education.filter((_, i) => i !== idx));
+  const removeExp = (idx: number) => setExperience(experience.filter((_, i) => i !== idx));
+
+  
+  
+  
+  return (
+    <motion.div key="bio" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+      <div className="max-w-4xl pb-10">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-stone-100 pb-4">
+          <div>
+            <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+              <BookOpen className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />
+              {t("Tiểu Sử")}
+            </h2>
+            <p className="text-xs text-stone-500 mt-1">{t("Quản lý học vấn và kinh nghiệm hoạt động nghệ thuật của bạn")}</p>
+          </div>
+        </div>
+        <form onSubmit={handleSave} className="space-y-10">
+          
+          {/* Education section */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-stone-800">{t('Học Vấn')}</h3>
+              <button type="button" onClick={addEdu} className="flex items-center gap-1 text-sm bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-1.5 rounded-lg cursor-pointer">
+                <Plus className="w-4 h-4" /> {t("Thêm giai đoạn")}
+              </button>
+            </div>
+            <div className="space-y-4">
+              {education.map((edu, idx) => (
+                <div key={`l21589-idx-17-${idx}`} className="bg-white border border-stone-200 rounded-xl p-4 flex flex-col gap-4 relative">
+                  <div className="flex justify-end">
+                    <button type="button" onClick={() => removeEdu(idx)} className="text-stone-400 hover:text-red-500 p-2 cursor-pointer">
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="flex-1 space-y-3">
+                    <div className="flex gap-4">
+                      <div className="w-1/3">
+                        <label className="block text-xs font-bold text-stone-500 mb-1">{t("Thời gian")}</label>
+                        <input value={edu.time} onChange={(e) => updateEdu(idx, 'time', e.target.value)} maxLength={22} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all font-mono" placeholder="VD: 2009-2012" />
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-xs font-bold text-stone-500 mb-1">{t("Sự Kiện")}</label>
+                        <input value={edu.title} onChange={(e) => updateEdu(idx, 'title', e.target.value)} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" placeholder="VD: THPT Chuyên..." />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-500 mb-1">{t("Mô tả")}</label>
+                      <textarea value={edu.description} onChange={(e) => updateEdu(idx, 'description', e.target.value)} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all min-h-[60px]" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-500 mb-2">{t("Hình ảnh minh họa (Tối đa 4 ảnh)")}</label>
+                      <MultiImageDropzone 
+                        values={edu.imageUrls && Array.isArray(edu.imageUrls) ? edu.imageUrls : (edu.imageUrl ? [edu.imageUrl] : [])} 
+                        onChange={async (file: any) => {
+                          try {
+                            const jpg = await compressImageToJPG(file, 1000);
+                            const url = await uploadGlobal(jpg);
+                            const currentUrls = edu.imageUrls && Array.isArray(edu.imageUrls) ? [...edu.imageUrls] : (edu.imageUrl ? [edu.imageUrl] : []);
+                            if (currentUrls.length < 4) {
+                              const newUrls = [...currentUrls, url];
+                              updateEdu(idx, 'imageUrls', newUrls);
+                              updateEdu(idx, 'imageUrl', newUrls[0] || '');
+                            }
+                          } catch (e) { alert("Error uploading"); }
+                        }} 
+                        onRemove={(imgIdx: number) => {
+                          const currentUrls = edu.imageUrls && Array.isArray(edu.imageUrls) ? [...edu.imageUrls] : (edu.imageUrl ? [edu.imageUrl] : []);
+                          const newUrls = currentUrls.filter((_, i) => i !== imgIdx);
+                          updateEdu(idx, 'imageUrls', newUrls);
+                          updateEdu(idx, 'imageUrl', newUrls[0] || '');
+                        }} 
+                        onReorder={(newUrls: string[]) => {
+                          updateEdu(idx, 'imageUrls', newUrls);
+                          updateEdu(idx, 'imageUrl', newUrls[0] || '');
+                        }}
+                        t={t} 
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Experience section */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-stone-800">{t('Kinh nghiệm')}</h3>
+              <button type="button" onClick={addExp} className="flex items-center gap-1 text-sm bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-1.5 rounded-lg cursor-pointer">
+                <Plus className="w-4 h-4" /> {t("Thêm giai đoạn")}
+              </button>
+            </div>
+            <div className="space-y-4">
+              {experience.map((exp, idx) => (
+                <div key={`l21655-idx-18-${idx}`} className="bg-white border border-stone-200 rounded-xl p-4 flex flex-col gap-4 relative">
+                  <div className="flex justify-end">
+                    <button type="button" onClick={() => removeExp(idx)} className="text-stone-400 hover:text-red-500 p-2 cursor-pointer">
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="flex-1 space-y-3">
+                    <div className="flex gap-4">
+                      <div className="w-1/3">
+                        <label className="block text-xs font-bold text-stone-500 mb-1">{t("Thời gian")}</label>
+                        <input value={exp.time} onChange={(e) => updateExp(idx, 'time', e.target.value)} maxLength={22} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all font-mono" placeholder="VD: 2025" />
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-xs font-bold text-stone-500 mb-1">{t("Sự Kiện")}</label>
+                        <input value={exp.title} onChange={(e) => updateExp(idx, 'title', e.target.value)} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-500 mb-1">{t("Mô tả")}</label>
+                      <textarea value={exp.description} onChange={(e) => updateExp(idx, 'description', e.target.value)} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all min-h-[60px]" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-500 mb-2">{t("Hình ảnh minh họa (Tối đa 4 ảnh)")}</label>
+                      <MultiImageDropzone 
+                        values={exp.imageUrls && Array.isArray(exp.imageUrls) ? exp.imageUrls : (exp.imageUrl ? [exp.imageUrl] : [])} 
+                        onChange={async (file: any) => {
+                          try {
+                            const jpg = await compressImageToJPG(file, 1000);
+                            const url = await uploadGlobal(jpg);
+                            const currentUrls = exp.imageUrls && Array.isArray(exp.imageUrls) ? [...exp.imageUrls] : (exp.imageUrl ? [exp.imageUrl] : []);
+                            if (currentUrls.length < 4) {
+                              const newUrls = [...currentUrls, url];
+                              updateExp(idx, 'imageUrls', newUrls);
+                              updateExp(idx, 'imageUrl', newUrls[0] || '');
+                            }
+                          } catch (e) { alert("Error uploading"); }
+                        }} 
+                        onRemove={(imgIdx: number) => {
+                          const currentUrls = exp.imageUrls && Array.isArray(exp.imageUrls) ? [...exp.imageUrls] : (exp.imageUrl ? [exp.imageUrl] : []);
+                          const newUrls = currentUrls.filter((_, i) => i !== imgIdx);
+                          updateExp(idx, 'imageUrls', newUrls);
+                          updateExp(idx, 'imageUrl', newUrls[0] || '');
+                        }} 
+                        onReorder={(newUrls: string[]) => {
+                          updateExp(idx, 'imageUrls', newUrls);
+                          updateExp(idx, 'imageUrl', newUrls[0] || '');
+                        }}
+                        t={t} 
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 border-t border-stone-100 pt-6 mt-4">
+            <button type="submit" className="bg-stone-900 text-white shadow-sm hover:shadow-md hover:bg-stone-800 active:scale-[0.98] px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer">
+              {t("Lưu cài đặt")}
+            </button>
+          </div>
+        </form>
+      </div>
+    </motion.div>
+  );
+}
+
+function AdminMenuEdit({ data, t, onSave }: any) {
+  const { landingConfig } = useContext(LanguageContext);
+  const getMenuTitle = (m: any) => {
+    if (m.type === 'vault') return landingConfig?.menuVaultVi || "Kho Nhạc";
+    if (m.type === 'about') return landingConfig?.menuAboutVi || "Về Tôi";
+    if (m.type === 'bio') return landingConfig?.menuBioVi || "Tiểu Sử";
+    return m.title;
+  };
+
+  const [menus, setMenus] = useState<any[]>(data.menus || [
+    { id: 'm1', type: 'vault', title: 'Kho Nhạc', isVisible: true },
+    { id: 'm2', type: 'about', title: 'Về Tôi', isVisible: true },
+    { id: 'm3', type: 'bio', title: 'Tiểu Sử', isVisible: true }
+  ]);
+
+  const handleDragStart = (e: any, index: number) => {
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
+  const handleDrop = (e: any, dropIndex: number) => {
+    const dragIndex = parseInt(e.dataTransfer.getData('text/plain'));
+    if (dragIndex === dropIndex) return;
+    const newMenus = [...menus];
+    const draggedItem = newMenus[dragIndex];
+    newMenus.splice(dragIndex, 1);
+    newMenus.splice(dropIndex, 0, draggedItem);
+    setMenus(newMenus);
+  };
+
+  const handleSave = () => {
+    onSave({ menus });
+  };
+  
+  const addCustomMenu = () => {
+    const customCount = menus.filter((m: any) => m.type === 'custom').length;
+    if (customCount >= 3) {
+      alert("Tối đa 3 custom tab");
+      return;
+    }
+    setMenus([...menus, { id: 'c' + Date.now(), type: 'custom', title: 'Tab Mới', link: '', isVisible: true }]);
+  };
+
+  const updateMenu = (idx: number, field: string, val: any) => {
+    const newMenus = [...menus];
+    newMenus[idx][field] = val;
+    setMenus(newMenus);
+  };
+
+  const removeMenu = (idx: number) => {
+    setMenus(menus.filter((_, i) => i !== idx));
+  };
+
+  return (
+    <div className="py-1">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-stone-100 pb-4">
+        <div>
+          <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+            <List className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />
+            {t("Quản lý Menu")}
+          </h2>
+          <p className="text-xs text-stone-500 mt-1">{t("Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.")}</p>
+        </div>
+      </div>
+      
+      <div className="space-y-3 mb-6">
+        {menus.map((m: any, i: number) => (
+          <div 
+            key={`l21788-${m.id || ''}-${i}`} 
+            draggable 
+            onDragStart={(e) => handleDragStart(e, i)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => handleDrop(e, i)}
+            className="flex items-center gap-4 bg-stone-50 border border-stone-200 rounded-xl p-3 cursor-grab active:cursor-grabbing"
+          >
+            <GripVertical className="text-stone-400 w-5 h-5 shrink-0" />
+            <div className="flex-1 flex gap-4 items-center">
+              {m.type === 'custom' ? (
+                <input 
+                  value={m.title} 
+                  onChange={(e) => updateMenu(i, 'title', e.target.value)} 
+                  className="font-bold bg-white border border-stone-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
+                  placeholder={t("Tiêu Đề Menu")}
+                />
+              ) : (
+                <div className="font-bold bg-stone-100 text-stone-600 border border-stone-200 rounded-lg px-3 py-1.5 text-sm cursor-not-allowed select-none">
+                  {t(getMenuTitle(m))}
+                </div>
+              )}
+              {m.type === 'custom' && (
+                <input 
+                  value={m.link || ''} 
+                  onChange={(e) => updateMenu(i, 'link', e.target.value)} 
+                  className="flex-1 bg-white border border-stone-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
+                  placeholder={t("Đường Dẫn (URL)")}
+                />
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+               <label className="flex items-center gap-2 text-sm text-stone-600 cursor-pointer">
+                 <input type="checkbox" checked={m.isVisible} onChange={(e) => updateMenu(i, 'isVisible', e.target.checked)} className="rounded text-stone-900 focus:ring-stone-900" />
+                 {t("Hiển thị")}
+               </label>
+               {m.type === 'custom' && (
+                 <button type="button" onClick={() => removeMenu(i)} className="text-stone-400 hover:text-red-500 p-1">
+                   <Trash2 className="w-4 h-4" />
+                 </button>
+               )}
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      <div className="flex items-center gap-4 border-t border-stone-100 pt-6 mt-6">
+        <button type="button" onClick={addCustomMenu} className="btn-white-glass-smoke px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1.5 shadow-sm hover:scale-[1.01] cursor-pointer">
+          <Plus className="w-4 h-4 text-stone-500" /> {t("Thêm Menu Mới")}
+        </button>
+        <button type="button" onClick={handleSave} className="bg-stone-900 text-white shadow-sm hover:shadow-md hover:bg-stone-800 active:scale-[0.98] px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer">
+          {t("Lưu Menu")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function AdminLayoutEdit({ data, t, onSave }: any) {
+  const defaultSections = ['title', 'random_song', 'about', 'bio', 'vault', 'mv', 'spotify'];
+  const rawSections = data.layoutSections && Array.isArray(data.layoutSections) ? data.layoutSections : defaultSections;
+  const initialSections = Array.from(new Set(rawSections));
+  if (!initialSections.includes('random_song')) {
+    const titleIdx = initialSections.indexOf('title');
+    if (titleIdx !== -1) {
+      initialSections.splice(titleIdx + 1, 0, 'random_song');
+    } else {
+      initialSections.splice(1, 0, 'random_song');
+    }
+  }
+
+  const [layoutSections, setLayoutSections] = useState<string[]>(initialSections);
+  const [hiddenSections, setHiddenSections] = useState<string[]>(data.hiddenSections || []);
+  const [includeDemoInRandomSong, setIncludeDemoInRandomSong] = useState<boolean>(data.includeDemoInRandomSong !== false);
+
+  const toggleVisibility = (sec: string) => {
+    if (sec === 'vault') return; // Kho Nhạc không được ẩn
+    setHiddenSections(prev => 
+      prev.includes(sec) ? prev.filter(s => s !== sec) : [...prev, sec]
+    );
+  };
+
+  const getSectionName = (sec: string) => {
+    if (sec === 'title') return t("Tiêu Đề (Tên & Giới thiệu ngắn)");
+    if (sec === 'random_song') return t("Bài Hát Ngẫu Nhiên");
+    if (sec === 'about') return t("Về Tôi");
+    if (sec === 'bio') return t("Tiểu Sử");
+    if (sec === 'spotify') return t("Spotify Playlist / Album");
+    if (sec === 'vault') return t("Kho Nhạc (Danh sách Đề mô / Ra Rồi)");
+    if (sec === 'mv') return t("MV Đã Phát Hành (YouTube Videos)");
+    return sec;
+  };
+
+  const handleDragStart = (e: any, index: number) => {
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
+
+  const handleDrop = (e: any, dropIndex: number) => {
+    const dragIndex = parseInt(e.dataTransfer.getData('text/plain'));
+    if (dragIndex === dropIndex) return;
+    const newList = [...layoutSections];
+    const draggedItem = newList[dragIndex];
+    newList.splice(dragIndex, 1);
+    newList.splice(dropIndex, 0, draggedItem);
+    setLayoutSections(newList);
+  };
+
+  const handleSave = () => {
+    onSave({ layoutSections, hiddenSections, includeDemoInRandomSong });
+  };
+
+  return (
+    <div className="py-1">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-stone-100 pb-4">
+        <div>
+          <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+            <LayoutTemplate className="w-6 h-6 text-teal-600 animate-[pulse_2.5s_infinite]" />
+            {t("Bố Cục Trang Chủ")}
+          </h2>
+          <p className="text-xs text-stone-500 mt-1">{t("Kéo thả các phần bên dưới để sắp xếp thứ tự hiển thị và tích chọn để bật/tắt hiển thị ở trang chủ nghệ sĩ.")}</p>
+        </div>
+      </div>
+
+      <div className="space-y-3 mb-6">
+        {layoutSections.map((sec, i) => {
+          const isHidden = hiddenSections.includes(sec);
+          const isVault = sec === 'vault';
+          return (
+            <div 
+              key={`l21892-${sec}-${i}`} 
+              className={`flex flex-col border rounded-xl p-4 transition-all hover:shadow-sm select-none ${
+                isHidden ? 'bg-stone-100/60 border-stone-200 opacity-60' : 'bg-stone-50 border-stone-200 hover:border-stone-300'
+              }`}
+            >
+              <div 
+                draggable 
+                onDragStart={(e) => handleDragStart(e, i)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => handleDrop(e, i)}
+                className="flex items-center gap-4 cursor-grab active:cursor-grabbing"
+              >
+                <GripVertical className="text-stone-400 w-5 h-5 shrink-0" />
+
+                {/* Visibility Checkbox Tick */}
+                <label 
+                  className={`flex items-center gap-2.5 shrink-0 cursor-pointer ${isVault ? 'cursor-not-allowed opacity-90' : ''}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <input 
+                    type="checkbox" 
+                    checked={isVault ? true : !isHidden}
+                    disabled={isVault}
+                    onChange={() => toggleVisibility(sec)}
+                    className="w-4 h-4 rounded text-teal-600 border-stone-300 focus:ring-teal-500 cursor-pointer disabled:cursor-not-allowed"
+                  />
+                </label>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className={`font-bold text-sm ${isHidden ? 'text-stone-500 line-through' : 'text-stone-800'}`}>
+                      {getSectionName(sec)}
+                    </span>
+                    {isVault && (
+                      <span className="text-[10px] font-extrabold bg-stone-200 text-stone-700 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        {t("Bắt buộc")}
+                      </span>
+                    )}
+                    {isHidden && !isVault && (
+                      <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+                        {t("Đã ẩn")}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-stone-400 mt-0.5">
+                    {sec === 'title' && t("Phần hiển thị tên nghệ sĩ, dấu tích xanh và lời giới thiệu ngắn.")}
+                    {sec === 'random_song' && t("Hiển thị thẻ bài hát ngẫu nhiên xoay tua linh hoạt.")}
+                    {sec === 'about' && t("Phần giới thiệu bản thân, hình ảnh nghệ sĩ và thông tin nổi bật.")}
+                    {sec === 'bio' && t("Phần tiểu sử âm nhạc, hành trình nghệ thuật và các cột mốc sự nghiệp.")}
+                    {sec === 'spotify' && t("Khung phát nhạc nhúng trực tiếp từ Spotify (nếu được cấu hình).")}
+                    {sec === 'vault' && t("Phần danh sách bài hát chính chia theo tab Đề mô / Ra Rồi (Bắt buộc hiển thị).")}
+                    {sec === 'mv' && t("Phần hiển thị các MV Youtube đã phát hành và trình phát video popup.")}
+                  </div>
+                </div>
+
+                <div className="w-6 h-6 rounded-full bg-stone-200/80 flex items-center justify-center text-xs font-bold text-stone-600 shrink-0">
+                  {i + 1}
+                </div>
+              </div>
+
+              {sec === 'random_song' && (
+                <div className="mt-3 pt-3 border-t border-stone-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pl-9 cursor-auto" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                      {t("Hiển thị demo trong bài hát ngẫu nhiên ?")}
+                    </span>
+                    <span className="text-[11px] text-stone-400 font-medium mt-0.5">
+                      {includeDemoInRandomSong ? t("Đang Bật - Bao gồm cả các bài Đề mô chưa phát hành") : t("Đang Tắt - Chỉ hiển thị các bài đã Ra Rồi (Phát hành chính thức)")}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={includeDemoInRandomSong}
+                    onClick={() => setIncludeDemoInRandomSong(prev => !prev)}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                      includeDemoInRandomSong ? 'bg-teal-600' : 'bg-stone-300'
+                    }`}
+                  >
+                    <span className="sr-only">{t("Hiển thị demo trong bài hát ngẫu nhiên ?")}</span>
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        includeDemoInRandomSong ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="flex items-center gap-4 border-t border-stone-100 pt-6 mt-6">
+        <button 
+          type="button" 
+          onClick={handleSave} 
+          className="bg-stone-900 text-white shadow-sm hover:shadow-md hover:bg-stone-800 active:scale-[0.98] px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer"
+        >
+          {t("Lưu Bố Cục")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function AdminTemplatesSettings({ isPCPreviewMode, setIsPCPreviewMode }: { isPCPreviewMode?: boolean, setIsPCPreviewMode?: (b: boolean) => void }) {
+  const { t } = useAdminTranslation();
+  const { landingConfig } = useContext(LanguageContext);
+  const [templateConfigs, setTemplateConfigs] = useState<TemplateConfig[]>([
+    { id: '1', name: 'Vui vẻ (Ấm áp)', order: 1 },
+    { id: '2', name: 'Căng Cực (Sôi động)', order: 2 },
+    { id: '3', name: 'Buồn (Sâu lắng)', order: 3 },
+    { id: '4', name: 'Thư giãn (Nhẹ nhàng)', order: 4 },
+    { id: '5', name: 'Đáng yêu (Đỏ, Nhảy múa)', order: 5 },
+    { id: '6', name: 'Hạnh Phúc (Hồng, Hoa rơi)', order: 6 },
+    { id: '7', name: 'Học Đường (Trắng, Lá vàng rơi)', order: 7 },
+    { id: '8', name: 'Tổ Quốc (Đỏ, Cờ phấp phới)', order: 8 },
+    { id: '9', name: 'Cầu Vồng', order: 9 },
+    { id: '10', name: 'Hip Hop (Đường phố)', order: 10 },
+    { id: '11', name: 'Kỳ bí (Đen vàng, Trăng khói mưa)', order: 11 },
+    { id: '12', name: 'Cổ điển (Nâu, retro)', order: 12 },
+    { id: '13', name: 'Hoàng hôn (Cam đỏ trời chiều)', order: 13 },
+    { id: '14', name: 'Đại Dương (Sóng biển)', order: 14 },
+    { id: '15', name: 'Retro 8-Bit (Game)', order: 15 },
+    { id: '16', name: 'Xếp hình Puzzle', order: 16 },
+    { id: '17', name: 'Cổ vũ (Mây, mặt trời)', order: 17 },
+    { id: '18', name: 'Pháo hoa (Năm mới)', order: 18 }
+  ]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [toast, setToast] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [expandedTemplateIds, setExpandedTemplateIds] = useState<string[]>([]);
+
+  const [demos, setDemos] = useState<any[]>([]);
+
+  const toggleExpand = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setExpandedTemplateIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  useEffect(() => {
+    fetch('/api/admin/data', {
+      headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+ 'Authorization': `Bearer ${getAdminToken() || ''}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        const defaultNames = [
+          'Vui vẻ (Ấm áp)', 'Căng Cực (Sôi động)', 'Buồn (Sâu lắng)', 'Thư giãn (Nhẹ nhàng)',
+          'Đáng yêu (Đỏ, Nhảy múa)', 'Hạnh Phúc (Hồng, Hoa rơi)', 'Học Đường (Trắng, Lá vàng rơi)',
+          'Tổ Quốc (Đỏ, Cờ phấp phới)', 'Cầu Vồng', 'Hip Hop (Đường phố)',
+          'Kỳ bí (Đen vàng, Trăng khói mưa)', 'Cổ điển (Nâu, retro)', 'Hoàng hôn (Cam đỏ trời chiều)',
+          'Đại Dương (Sóng biển)', 'Retro 8-Bit (Game)', 'Xếp hình Puzzle', 'Cổ vũ (Mây, mặt trời)', 'Pháo hoa (Năm mới)'
+        ];
+        let merged: any[] = [];
+        if (data.templateConfigs && data.templateConfigs.length > 0) {
+          merged = data.templateConfigs.map((c: any) => ({
+            ...c,
+            name: translateTemplateName(c.name || String(c.id), landingConfig?.templateNames, String(c.id))
+          }));
+        }
+        for (let i = 1; i <= 18; i++) {
+           const exist = merged.find((c: any) => c.id === String(i));
+           if (!exist) {
+             merged.push({ id: String(i), name: translateTemplateName(defaultNames[i - 1], landingConfig?.templateNames, String(i)), order: i });
+           } else {
+             exist.name = translateTemplateName(exist.name || String(i), landingConfig?.templateNames, String(i));
+           }
+        }
+        merged.sort((a: any, b: any) => a.order - b.order);
+        setTemplateConfigs(merged);
+        setDemos(data.demos || []);
+        setIsLoading(false);
+      });
+  }, []);
+
+  const handleSaveAll = async (configsToSave: TemplateConfig[]) => {
+    fetch('/api/admin/save-templates', {
+      method: 'POST',
+      headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAdminToken() || ''}`
+      },
+      body: JSON.stringify({ configs: configsToSave })
+    });
+    setToast(t('Đã lưu cấu hình!'));
+    setTimeout(() => setToast(''), 3000);
+  };
+
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    e.dataTransfer.setData("text/plain", id);
+  };
+
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    const sourceId = e.dataTransfer.getData("text/plain");
+    if (sourceId === targetId) return;
+
+    const sourceIdx = templateConfigs.findIndex(t => t.id === sourceId);
+    const targetIdx = templateConfigs.findIndex(t => t.id === targetId);
+    
+    if (sourceIdx >= 0 && targetIdx >= 0) {
+      const newConfigs = [...templateConfigs];
+      const [item] = newConfigs.splice(sourceIdx, 1);
+      newConfigs.splice(targetIdx, 0, item);
+      
+      newConfigs.forEach((c, idx) => c.order = idx + 1);
+      setTemplateConfigs(newConfigs);
+      handleSaveAll(newConfigs);
+    }
+  };
+
+  if (isLoading) return <div>{t("Đang tải...")}</div>;
+
+  if (editingId) {
+    return <AdminTemplateEdit 
+             config={templateConfigs.find(c => c.id === editingId)!} 
+             demos={demos}
+             templateName={landingConfig?.templateNames?.[editingId]}
+             onBack={() => {
+                setEditingId(null);
+                if (setIsPCPreviewMode) setIsPCPreviewMode(false);
+             }}
+             onSave={async (newConfig: TemplateConfig) => {
+               const newConfigs = templateConfigs.map(c => c.id === editingId ? newConfig : c);
+               setTemplateConfigs(newConfigs);
+               await handleSaveAll(newConfigs);
+             }}
+             isPCPreviewMode={isPCPreviewMode}
+             setIsPCPreviewMode={setIsPCPreviewMode}
+           />;
+  }
+
+  return (
+    <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-stone-100 pb-4">
+        <div>
+          <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+            <Palette className="w-6 h-6 text-rose-500 animate-[pulse_2.5s_infinite]" />
+            {t("Chỉnh Sửa Chủ Đề")}
+          </h2>
+          <p className="text-xs text-stone-500 mt-1">{t("Kéo thả để sắp xếp lại thứ tự hiển thị của chủ đề khi chọn. Nhấn vào Chủ Đề để chỉnh sửa chi tiết.")}</p>
+        </div>
+        {toast && <span className="bg-emerald-100 text-emerald-700 font-bold px-4 py-2 rounded-xl text-sm animate-pulse">{toast}</span>}
+      </div>
+      
+      <div className="space-y-3">
+        {templateConfigs.map((config, idx) => {
+          const isExpanded = expandedTemplateIds.includes(config.id);
+          const activeDemos = demos.filter(d => (d.template || '1') === config.id);
+          return (
+          <div key={`l12836-${config.id || ''}-${idx}`} className="space-y-1">
+          <div 
+            draggable
+            onDragStart={(e) => handleDragStart(e, config.id)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => handleDrop(e, config.id)}
+            onClick={() => setEditingId(config.id)}
+            className="flex items-center justify-between p-4 bg-stone-50 border border-stone-200 rounded-xl hover:bg-stone-100 cursor-pointer transition-colors"
+          >
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+               <div className="cursor-grab text-stone-400 hover:text-stone-600 p-1 -m-1 shrink-0" onClick={e => e.stopPropagation()}>
+                 <GripVertical className="w-5 h-5" />
+               </div>
+               <span className="text-stone-500 font-mono font-bold text-xs sm:text-sm w-6 sm:w-7 tracking-tight flex items-center justify-center bg-stone-200/80 rounded-md h-6 sm:h-7 shrink-0">#{config.id}</span>
+               <span className="text-sm sm:text-base font-bold truncate">{landingConfig?.templateNames?.[config.id] || (DEFAULT_VI_NAMES[config.id] ? t(DEFAULT_VI_NAMES[config.id]) : config.name)}</span>
+               {landingConfig?.templateVip?.[config.id] && (
+                 <span className="bg-yellow-100 text-yellow-700 text-[10px] font-black px-1.5 py-0.5 rounded border border-yellow-200 shrink-0">VIP</span>
+               )}
+            </div>
+            <div 
+              className="p-2 -mr-2 text-stone-400 hover:text-stone-800 transition-colors" 
+              onClick={(e) => toggleExpand(e, config.id)}
+            >
+              {isExpanded ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </div>
+          </div>
+          {isExpanded && activeDemos.length > 0 && (
+            <div className="pl-14 pr-4 py-2 bg-stone-50/50 rounded-xl border border-stone-100 space-y-1">
+               {activeDemos.map((d, idx) => (
+                 <div key={`l12865-${d.id || ''}-${idx}`} className="text-sm font-medium text-stone-600 flex items-center gap-2 truncate">
+                   <span className="w-1.5 h-1.5 rounded-full bg-stone-300 shrink-0"></span>
+                   <span className="truncate">{d.title}</span>
+                 </div>
+               ))}
+            </div>
+          )}
+          {isExpanded && activeDemos.length === 0 && (
+            <div className="pl-14 pr-4 py-2 bg-stone-50/50 rounded-xl border border-stone-100 text-sm italic text-stone-400">
+               {t("Chưa có bài hát nào dùng chủ đề này")}
+            </div>
+          )}
+          </div>
+        ); })}
+      </div>
+    </div>
+  );
+}
+function AdminDatabaseSettings({ artistUsername }: { artistUsername?: string }) {
+  const { t } = useAdminTranslation();
+  const [configsData, setConfigsData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [editingConfigId, setEditingConfigId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<any>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [mediaSyncing, setMediaSyncing] = useState(false);
+
+  useEffect(() => {
+    fetchConfigs();
+  }, []);
+
+  const handleSyncMediaFirebase = async () => {
+    const globalConfirm = (window as any).globalShowConfirm;
+    if (globalConfirm && !(await globalConfirm('Hệ thống sẽ tải toàn bộ tệp tin nhạc (mp3) và hình ảnh (ảnh bìa, ảnh chạy slideshow, ảnh đại diện, banner) từ Firebase/Google Drive về lưu trữ trực tiếp trên ổ cứng Server, sau đó đồng bộ hóa đường dẫn nội bộ. Bạn có muốn tiếp tục?', 'Tải Media & Đồng Bộ về Server', 'confirm'))) {
+      return;
+    }
+
+    setMediaSyncing(true);
+    setError('');
+    setSuccess('');
+    try {
+      const res = await fetch('/api/admin/firebase-media-sync', {
+        method: 'POST',
+        headers: {
+          'x-artist-extension': getArtistExtensionFromUrl(),
+          'Authorization': `Bearer ${getAdminToken()}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSuccess(data.message || 'Tải media và đồng bộ hóa từ Firebase thành công!');
+        if ((window as any).loadData) {
+          (window as any).loadData();
+        }
+      } else {
+        setError(data.error || 'Có lỗi xảy ra khi tải media và đồng bộ.');
+      }
+    } catch (e) {
+      setError('Lỗi kết nối máy chủ');
+    } finally {
+      setMediaSyncing(false);
+    }
+  };
+
+  const handleSyncFirebase = async () => {
+    if (!configsData || !configsData.configs || configsData.configs.length === 0) {
+      setError('Bạn chưa cấu hình Firebase Database nào!');
+      return;
+    }
+    const globalConfirm = (window as any).globalShowConfirm;
+    if (globalConfirm && !(await globalConfirm('Bạn có chắc chắn muốn đồng bộ toàn bộ dữ liệu từ Firebase cũ về Server mới? Tất cả bài hát, danh sách phát và cài đặt hiện tại trên Server của bạn sẽ được ghi đè bằng dữ liệu từ Firebase.', 'Đồng bộ Firebase', 'confirm'))) {
+      return;
+    }
+
+    setSyncing(true);
+    setError('');
+    setSuccess('');
+    try {
+      const res = await fetch('/api/admin/firebase-sync', {
+        method: 'POST',
+        headers: {
+          'x-artist-extension': getArtistExtensionFromUrl(),
+          'Authorization': `Bearer ${getAdminToken()}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSuccess(data.message || 'Đồng bộ dữ liệu từ Firebase thành công! Vui lòng tải lại trang để thấy dữ liệu mới.');
+        if ((window as any).loadData) {
+          (window as any).loadData();
+        }
+      } else {
+        setError(data.error || 'Có lỗi xảy ra khi đồng bộ.');
+      }
+    } catch (e) {
+      setError('Lỗi kết nối máy chủ');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const fetchConfigs = async () => {
+    try {
+      const res = await fetch('/api/admin/firebase-configs', {
+        headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+ 'Authorization': `Bearer ${getAdminToken()}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setConfigsData(data);
+      } else {
+        setError('Không thể lấy danh sách cấu hình Firebase');
+      }
+    } catch (e) {
+      setError('Lỗi kết nối máy chủ');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSwitch = async (id: string) => {
+    if (!configsData) return;
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      const newConfigsData = { ...configsData, activeId: id };
+      const res = await fetch('/api/admin/firebase-configs', {
+        method: 'POST',
+        headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
+          'Authorization': `Bearer ${getAdminToken()}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newConfigsData)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setConfigsData(newConfigsData);
+        setSuccess('Đã chuyển DB Firebase thành công! (Vui lòng tải lại trang để thấy dữ liệu mới)');
+      } else {
+        setError(data.error || 'Lỗi khi chuyển DB');
+      }
+    } catch (e) {
+      setError('Lỗi kết nối máy chủ');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!configsData || !editForm) return;
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      let updatedConfigs = [...configsData.configs];
+      if (editingConfigId === 'new') {
+        updatedConfigs.push({ ...editForm, id: Date.now().toString() });
+      } else {
+        const idx = updatedConfigs.findIndex(c => c.id === editingConfigId);
+        if (idx >= 0) updatedConfigs[idx] = editForm;
+      }
+      const newConfigsData = { ...configsData, configs: updatedConfigs };
+      
+      const res = await fetch('/api/admin/firebase-configs', {
+        method: 'POST',
+        headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+
+          'Authorization': `Bearer ${getAdminToken()}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newConfigsData)
+      });
+      if (res.ok) {
+        setConfigsData(newConfigsData);
+        setSuccess('Đã lưu cấu hình Firebase!');
+        setEditingConfigId(null);
+        setEditForm(null);
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Lỗi khi lưu cấu hình');
+      }
+    } catch (e) {
+      setError('Lỗi kết nối máy chủ');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading && !configsData) return <div className="text-stone-500">{t("Đang tải...")}</div>;
+
+  if (editingConfigId && editForm) {
+    return (
+      <div className="space-y-6 max-w-2xl">
+        <div className="flex items-center gap-2 mb-4">
+          <button onClick={() => { setEditingConfigId(null); setEditForm(null); }} className="p-2 hover:bg-stone-200 rounded-lg text-stone-500">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h2 className="text-2xl font-bold text-stone-900">{editingConfigId === 'new' ? t('Thêm cấu hình mới') : t('Chỉnh sửa cấu hình')}</h2>
+        </div>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-stone-700 mb-1">{t("Tên gợi nhớ (VD: DB cũ, Mặc định...)")}</label>
+            <input type="text" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} className="w-full px-4 py-2 bg-stone-100 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-stone-900" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1">Project ID</label>
+              <input type="text" value={editForm.config.projectId} onChange={e => setEditForm({...editForm, config: {...editForm.config, projectId: e.target.value}})} className="w-full px-4 py-2 bg-stone-100 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-stone-900" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1">API Key</label>
+              <input type="text" value={editForm.config.apiKey} onChange={e => setEditForm({...editForm, config: {...editForm.config, apiKey: e.target.value}})} className="w-full px-4 py-2 bg-stone-100 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-stone-900" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1">App ID</label>
+              <input type="text" value={editForm.config.appId} onChange={e => setEditForm({...editForm, config: {...editForm.config, appId: e.target.value}})} className="w-full px-4 py-2 bg-stone-100 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-stone-900" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1">Auth Domain</label>
+              <input type="text" value={editForm.config.authDomain} onChange={e => setEditForm({...editForm, config: {...editForm.config, authDomain: e.target.value}})} className="w-full px-4 py-2 bg-stone-100 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-stone-900" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1">Storage Bucket</label>
+              <input type="text" value={editForm.config.storageBucket} onChange={e => setEditForm({...editForm, config: {...editForm.config, storageBucket: e.target.value}})} className="w-full px-4 py-2 bg-stone-100 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-stone-900" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1">Messaging Sender ID</label>
+              <input type="text" value={editForm.config.messagingSenderId} onChange={e => setEditForm({...editForm, config: {...editForm.config, messagingSenderId: e.target.value}})} className="w-full px-4 py-2 bg-stone-100 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-stone-900" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1">Measurement ID</label>
+              <input type="text" value={editForm.config.measurementId || ''} onChange={e => setEditForm({...editForm, config: {...editForm.config, measurementId: e.target.value}})} className="w-full px-4 py-2 bg-stone-100 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-stone-900" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1">{t("Firestore Database ID (mặc định là default)")}</label>
+              <input type="text" value={editForm.config.firestoreDatabaseId || ''} onChange={e => setEditForm({...editForm, config: {...editForm.config, firestoreDatabaseId: e.target.value}})} placeholder="default" className="w-full px-4 py-2 bg-stone-100 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-stone-900" />
+            </div>
+          </div>
+          
+          {error && <p className="text-red-500 text-sm font-medium mt-2">{error}</p>}
+          
+          <div className="pt-4 flex gap-3">
+            <button disabled={loading} onClick={handleSaveEdit} className="px-6 py-2 bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] rounded-xl font-bold hover:bg-stone-800 disabled:opacity-50">
+              Lưu Lại
+            </button>
+            <button onClick={() => { setEditingConfigId(null); setEditForm(null); }} className="px-6 py-2 bg-stone-200 text-stone-800 rounded-xl font-bold hover:bg-stone-300">
+              Hủy
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 max-w-4xl">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold mb-2 text-stone-900">{t("Quản Lý Cơ Sở Dữ Liệu")}</h2>
+          <p className="text-sm text-stone-500">{t("Chuyển đổi giữa các Firebase config (DB mới / DB cũ) an toàn.")}</p>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={async () => {
+            if (globalShowConfirm && await globalShowConfirm('CẢNH BÁO: Hành động này sẽ XÓA SẠCH toàn bộ dữ liệu (bài hát, playlist, cài đặt) trong Database ĐANG DÙNG. Bạn có chắc chắn muốn làm mới Database này?', 'Cảnh báo xóa sạch dữ liệu', 'danger')) {
+              setLoading(true);
+              try {
+                const res = await fetch('/api/admin/firebase-wipe', {
+                  method: 'POST',
+                  headers: {
+        'x-artist-extension': getArtistExtensionFromUrl(),
+ 'Authorization': `Bearer ${getAdminToken()}` }
+                });
+                if (res.ok) {
+                  setSuccess('{t("Đã xóa sạch dữ liệu trong DB hiện tại. Vui lòng tải lại trang!")}');
+                } else {
+                  setError('{t("Lỗi khi xóa DB")}');
+                }
+              } catch (e) {
+                setError('Lỗi kết nối máy chủ');
+              } finally {
+                setLoading(false);
+              }
+            }
+          }} className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 text-sm">
+            <Trash2 className="w-4 h-4" /> {t("Làm mới DB này")}
+          </button>
+          <button onClick={() => {
+            setEditingConfigId('new');
+            setEditForm({ name: '', config: { projectId: '', apiKey: '', appId: '', authDomain: '', storageBucket: '', messagingSenderId: '', measurementId: '', firestoreDatabaseId: 'default' } });
+          }} className="flex items-center gap-2 px-4 py-2 bg-stone-900 text-white shadow-md hover:shadow-xl hover:shadow-stone-900/20 hover:-translate-y-0.5 border border-transparent hover:bg-stone-800 transition-all duration-300 ease-out active:scale-[0.98] rounded-xl font-bold hover:bg-stone-800 text-sm">
+            <Plus className="w-4 h-4" /> {t("Thêm DB mới")}
+          </button>
+          <button
+            disabled={syncing || loading}
+            onClick={handleSyncFirebase}
+            className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white shadow-md hover:shadow-xl hover:shadow-amber-600/20 hover:-translate-y-0.5 border border-transparent hover:bg-amber-700 transition-all duration-300 ease-out active:scale-[0.98] rounded-xl font-bold hover:bg-amber-800 text-sm"
+          >
+            {syncing ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <span>{t("Đang đồng bộ...")}</span>
+              </>
+            ) : (
+              <>
+                <RefreshCw className="w-4 h-4" />
+                <span>{t("Đồng bộ từ Firebase cũ")}</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {success && <div className="p-4 bg-green-50 text-green-700 rounded-xl border border-green-200 font-medium">{success}</div>}
+      {error && <div className="p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 font-medium">{error}</div>}
+
+      {(getArtistExtensionFromUrl() === 'acxuantai' || artistUsername === 'acxuantai') && (
+        <div className="bg-stone-50 border border-amber-200 rounded-2xl p-6 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div className="space-y-1.5">
+              <h3 className="font-extrabold text-stone-900 text-base flex items-center gap-2">
+                <span className="w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping"></span>
+                Đồng Bộ Toàn Bộ Dữ Liệu & Tải Media Về Server Chính
+              </h3>
+              <p className="text-xs text-stone-500 leading-relaxed max-w-3xl">
+                Dành riêng cho tài khoản đặc biệt: Tải trực tiếp toàn bộ các tệp tin âm thanh (.mp3) và hình ảnh (ảnh bìa, slideshow, avatar, banner) từ Firebase Database/Storage về ổ đĩa cứng của Server chính này, tự động tối ưu hóa đường dẫn nội bộ cục bộ để cả hai nơi đều lưu trữ đầy đủ tài nguyên một cách độc lập và đồng bộ.
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled={mediaSyncing || loading}
+              onClick={handleSyncMediaFirebase}
+              className="flex items-center justify-center gap-2 px-6 py-3.5 bg-amber-500 hover:bg-amber-600 disabled:bg-stone-300 text-stone-950 font-extrabold rounded-xl text-sm transition-all shadow-md hover:shadow-lg active:scale-[0.98] shrink-0 cursor-pointer self-start md:self-auto"
+            >
+              {mediaSyncing ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-stone-950/30 border-t-stone-950 rounded-full animate-spin"></div>
+                  <span>Đang tải tệp tin...</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  <span>Tải & Đồng bộ Media</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {configsData?.configs?.map((c: any, idx: number) => {
+          const isActive = c.id === configsData.activeId;
+          return (
+            <div key={`l13349-${c.id || ''}-${idx}`} className={`p-5 rounded-2xl border-2 transition-all ${isActive ? 'border-blue-500 bg-blue-50/30' : 'border-stone-200 bg-white hover:border-stone-300'}`}>
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
+                    {t(c.name)} {isActive && <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">{t("Đang dùng")}</span>}
+                  </h3>
+                  <p className="text-sm text-stone-500 font-mono mt-1">{c.config.projectId}</p>
+                </div>
+                <button onClick={() => { setEditingConfigId(c.id); setEditForm({...c}); }} className="p-2 text-stone-400 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-lg">
+                  <Edit3 className="w-4 h-4" />
+                </button>
+              </div>
+              
+              {!isActive && (
+                <button disabled={loading} onClick={() => handleSwitch(c.id)} className="w-full py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold rounded-xl text-sm disabled:opacity-50 transition-colors">
+                  Dùng DB này
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+function MultiImageDropzone({ values = [], onChange, onRemove, onReorder, t }: any) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  
+  const handleDrag = (e: any) => { 
+    e.preventDefault(); e.stopPropagation(); 
+    if (e.type === 'dragenter' || e.type === 'dragover') setIsDragging(true); 
+    else setIsDragging(false); 
+  };
+  
+  const handleDrop = async (e: any) => { 
+    e.preventDefault(); e.stopPropagation(); setIsDragging(false); 
+    const files = Array.from(e.dataTransfer.files || []);
+    if (files.length > 0) {
+      setIsUploading(true);
+      for (const file of files) {
+        if (values.length >= 4) break;
+        await onChange(file);
+      }
+      setIsUploading(false);
+    }
+  };
+
+  const handleChange = async (e: any) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      setIsUploading(true);
+      for (const file of files) {
+        if (values.length >= 4) break;
+        await onChange(file);
+      }
+      setIsUploading(false);
+    }
+  };
+
+  // Drag and drop reordering handlers
+  const handleDragStart = (e: any, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: any, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+    setDragOverIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleItemDrop = (e: any, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    const newValues = [...values];
+    const [draggedItem] = newValues.splice(draggedIndex, 1);
+    newValues.splice(index, 0, draggedItem);
+
+    if (onReorder) {
+      onReorder(newValues);
+    }
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* List of uploaded images */}
+      {values.length > 0 && (
+        <div className="grid grid-cols-4 gap-3">
+          {values.map((url: string, index: number) => (
+            <div 
+              key={`l21421-idx-${index}`} 
+              draggable="true"
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDragEnd={handleDragEnd}
+              onDrop={(e) => handleItemDrop(e, index)}
+              className={`relative aspect-square bg-stone-100 rounded-xl overflow-hidden border transition-all duration-200 group cursor-grab active:cursor-grabbing ${
+                draggedIndex === index ? 'opacity-40 scale-95 border-indigo-400' : 
+                dragOverIndex === index ? 'border-indigo-500 scale-105 bg-indigo-50/10' : 'border-stone-200 hover:border-stone-300'
+              }`}
+            >
+              <img src={url} className="w-full h-full object-cover pointer-events-none" />
+              <button 
+                type="button" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemove(index);
+                }} 
+                className="absolute top-1 right-1 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-md cursor-pointer flex items-center justify-center z-10"
+                title={t("Xóa ảnh")}
+              >
+                <X className="w-4 h-4 pointer-events-none" />
+              </button>
+              <div className="absolute bottom-1 left-1 bg-black/60 text-white px-1.5 py-0.5 rounded text-[9px] font-bold select-none pointer-events-none z-10">
+                #{index + 1}
+              </div>
+              
+              {/* Overlay with subtle drag text on hover */}
+              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none z-0">
+                <span className="text-[9px] text-white font-semibold bg-black/50 px-1.5 py-0.5 rounded select-none">
+                  {t('Kéo để đổi vị trí') || 'Kéo để đổi vị trí'}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Upload trigger */}
+      {values.length < 4 && (
+        <div onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop} className={`flex items-center gap-4 p-3 rounded-2xl border-2 transition-all ${isDragging ? 'border-indigo-500 bg-indigo-50/50 border-dashed scale-[1.01]' : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'}`}>
+          <label className="flex-1 flex flex-col items-center justify-center cursor-pointer py-2">
+            {isUploading ? (
+              <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mb-2" />
+            ) : (
+              <Upload className="w-5 h-5 text-stone-400 mb-2" />
+            )}
+            <span className="text-xs text-stone-500 font-medium">{isUploading ? t('Đang tải...') || 'Đang tải...' : `${t("Kéo thả hoặc Click để tải ảnh")} (${values.length}/4)`}</span>
+            <input type="file" accept="image/*" multiple className="hidden" onChange={handleChange} disabled={isUploading} />
+          </label>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+const translateTemplateName = (nameOrId: string, customNames?: Record<string, string>, id?: string) => {
+  if (id && customNames?.[id]) return customNames[id];
+  if (customNames && customNames[nameOrId]) return customNames[nameOrId];
+  const map: Record<string, string> = {
+    '1': 'Vui vẻ (Ấm áp)',
+    '2': 'Căng Cực (Sôi động)',
+    '3': 'Buồn (Sâu lắng)',
+    '4': 'Thư giãn (Nhẹ nhàng)',
+    '5': 'Đáng yêu (Đỏ, Nhảy múa)',
+    '6': 'Hạnh Phúc (Hồng, Hoa rơi)',
+    '7': 'Học Đường (Trắng, Lá vàng rơi)',
+    '8': 'Tổ Quốc (Đỏ, Cờ phấp phới)',
+    '9': 'Cầu Vồng',
+    '10': 'Hip Hop (Đường phố)',
+    '11': 'Kỳ bí (Đen vàng, Trăng khói mưa)',
+    '12': 'Cổ điển (Nâu, retro)',
+    '13': 'Hoàng hôn (Cam đỏ trời chiều)',
+    '14': 'Đại Dương (Sóng biển)',
+    '15': 'Retro 8-Bit (Game)',
+    '16': 'Xếp hình Puzzle',
+    '17': 'Cổ vũ (Mây, mặt trời)',
+    '18': 'Pháo hoa (Năm mới)',
+    'Vui vẻ (Ấm áp)': 'Vui vẻ (Ấm áp)',
+    'Căng Cực (Sôi động)': 'Căng Cực (Sôi động)',
+    'Buồn (Sâu lắng)': 'Buồn (Sâu lắng)',
+    'Thư giãn (Nhẹ nhàng)': 'Thư giãn (Nhẹ nhàng)',
+    'Đáng yêu (Đỏ, Nhảy múa)': 'Đáng yêu (Đỏ, Nhảy múa)',
+    'Hạnh Phúc (Hồng, Hoa rơi)': 'Hạnh Phúc (Hồng, Hoa rơi)',
+    'Học Đường (Trắng, Lá vàng rơi)': 'Học Đường (Trắng, Lá vàng rơi)',
+    'Tổ Quốc (Đỏ, Cờ phấp phới)': 'Tổ Quốc (Đỏ, Cờ phấp phới)',
+    'Vietnam (Red, waving flag)': 'Tổ Quốc (Đỏ, Cờ phấp phới)',
+    'Cầu Vồng': 'Cầu Vồng',
+    'Hip Hop (Đường phố)': 'Hip Hop (Đường phố)',
+    'Kỳ bí (Đen vàng, Trăng khói mưa)': 'Kỳ bí (Đen vàng, Trăng khói mưa)',
+    'Cổ điển (Nâu, retro)': 'Cổ điển (Nâu, retro)',
+    'Hoàng hôn (Cam đỏ trời chiều)': 'Hoàng hôn (Cam đỏ trời chiều)',
+    'Đại Dương (Sóng biển)': 'Đại Dương (Sóng biển)',
+    'Retro 8-Bit (Game)': 'Retro 8-Bit (Game)',
+    'Xếp hình Puzzle': 'Xếp hình Puzzle',
+    'Cổ vũ (Mây, mặt trời)': 'Cổ vũ (Mây, mặt trời)',
+    'Pháo hoa (Năm mới)': 'Pháo hoa (Năm mới)',
+    };
+  return map[nameOrId] || nameOrId;
+};
+function AdminTemplateEdit({ config, demos, onBack, onSave, isPCPreviewMode, setIsPCPreviewMode, templateName }: any) {
+    const { t } = useAdminTranslation();
+    const { lang } = useContext(LanguageContext);
+    const [name, setName] = useState(config.name);
+    const [bgColor, setBgColor] = useState(config.bgColor || '');
+    const [titleColor, setTitleColor] = useState(config.titleColor || '');
+    const [lyricsColor, setLyricsColor] = useState(config.lyricsColor || '');
+    const [authorColor, setAuthorColor] = useState(config.authorColor || '');
+    const [waveColor, setWaveColor] = useState(config.waveColor || '');
+    const [previewSongId, setPreviewSongId] = useState(demos[0]?.id || '');
+
+    const currentConfig = { ...config, name, bgColor, titleColor, lyricsColor, authorColor, waveColor };
+
+    const authorColorLabel = lang === 'en' ? "Composer color" : 
+                             lang === 'ko' ? "작곡가 색상" : 
+                             lang === 'ja' ? "作曲家カラー" : 
+                             lang === 'th' ? "สีของผู้แต่ง" : 
+                             lang === 'zh' ? "作曲家颜色" : "Màu Tên tác giả";
+
+    const renderColorPickerField = (
+      label: string, 
+      value: string, 
+      setValue: (v: string) => void, 
+      placeholder: string
+    ) => {
+      const isValidHex = /^#([0-9A-F]{3}){1,2}$/i.test(value);
+      const pickerVal = isValidHex ? (value.length === 4 ? '#' + value[1] + value[1] + value[2] + value[2] + value[3] + value[3] : value) : '#ffffff';
+
+      return (
+        <div>
+          <label className={`block font-semibold text-stone-700 mb-1 ${isPCPreviewMode ? 'text-xs' : 'text-sm'}`}>{t(label)}</label>
+          <div className="flex gap-2 items-center animate-fade-in">
+            <input 
+              value={value} 
+              onChange={e => setValue(e.target.value)} 
+              className={`flex-1 border border-stone-200 rounded-xl px-4 ${isPCPreviewMode ? 'py-2 text-sm' : 'py-3 text-base'} bg-stone-50/50 hover:bg-stone-50 outline-none focus:ring-2 focus:ring-emerald-500/25 transition-all`} 
+              placeholder={placeholder} 
+            />
+            <div className="relative w-10 h-10 md:w-12 md:h-12 border border-stone-200 rounded-xl overflow-hidden shrink-0 cursor-pointer shadow-[0_1px_3px_rgba(0,0,0,0.05)] transition-transform flex items-center justify-center bg-stone-50">
+              <div className="absolute inset-1 rounded-lg border border-black/5" style={{ backgroundColor: value || 'transparent' }} />
+              <input 
+                type="color" 
+                value={pickerVal} 
+                onChange={e => setValue(e.target.value)} 
+                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer" 
+              />
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    return (
+      <div className={`flex flex-col fixed inset-0 md:relative md:inset-auto bg-zinc-900 z-[101] md:z-40 ${isPCPreviewMode ? 'w-full h-full' : 'md:h-[calc(100vh-128px)] md:-m-8'}`}>
+         <div className="bg-white p-4 border-b flex justify-between items-center z-10 shrink-0">
+             <button onClick={onBack} className="flex items-center gap-2 text-stone-600 hover:text-stone-900 font-medium font-sans">
+                 <ArrowLeft className="w-5 h-5"/> {t("Trở về")}
+             </button>
+             <div className="flex items-center gap-4">
+                 <button 
+                     onClick={() => setIsPCPreviewMode && setIsPCPreviewMode(!isPCPreviewMode)} 
+                     className={`hidden md:flex items-center justify-center p-2 rounded-lg border transition-all duration-300 ${isPCPreviewMode ? 'border-stone-800 bg-stone-100 text-stone-900' : 'border-stone-200 bg-transparent text-stone-450 hover:text-stone-700 hover:border-stone-400'} shadow-sm`}
+                     title={t("Chủ đề xem trên máy tính")}
+                 >
+                     <Monitor className="w-5 h-5 stroke-[1.5]" />
+                 </button>
+                 <button onClick={() => onSave(currentConfig)} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2 rounded-xl text-sm transition-colors shadow">
+                     {t("Lưu cài đặt")}
+                 </button>
+             </div>
+         </div>
+         <div className="flex flex-1 flex-col md:flex-row overflow-y-auto md:overflow-hidden relative border-t-0">
+             <div className={`w-full h-auto md:h-full ${isPCPreviewMode ? 'md:w-[260px] p-4 space-y-4' : 'md:w-[400px] p-6 md:p-8 space-y-6'} bg-white flex-shrink-0 border-b md:border-b-0 md:border-r overflow-visible md:overflow-y-auto custom-scrollbar`}>
+                 <div>
+                     <h3 className={`${isPCPreviewMode ? 'text-lg' : 'text-2xl'} font-black mb-1`}>{t("Chỉnh sửa")}</h3>
+                     <p className="inline-block bg-stone-100 text-stone-500 font-mono text-xs px-2 py-0.5 rounded-md mt-1">{t("Chủ đề")} #{config.id} - {templateName || (DEFAULT_VI_NAMES[config.id] ? t(DEFAULT_VI_NAMES[config.id]) : config.name)}</p>
+                 </div>
+                 
+                 <div>
+                    <label className={`${isPCPreviewMode ? 'text-xs' : 'text-sm'} block font-semibold text-stone-700 mb-2`}>{t("Bài hát Preview")}</label>
+                    <div className="relative">
+                       <select className={`w-full border border-stone-300 rounded-xl pl-4 pr-10 ${isPCPreviewMode ? 'py-2 text-sm' : 'py-3'} bg-white shadow-xs appearance-none cursor-pointer hover:border-stone-400 transition-colors`} value={previewSongId} onChange={e => setPreviewSongId(e.target.value)}>
+                          {demos.map((d: any, idx: number) => (
+                              <option key={`l12967-${d.id || ''}-${idx}`} value={d.id}>{d.title}</option>
+                          ))}
+                       </select>
+                       <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
+                       </div>
+                    </div>
+                 </div>
+
+                 <div className={`space-y-4 pt-4 border-t border-stone-200 ${isPCPreviewMode ? 'text-sm' : ''}`}>
+                    {renderColorPickerField("Màu nền tùy chỉnh", bgColor, setBgColor, "VD: #111827")}
+                    {renderColorPickerField("Màu chữ tiêu đề", titleColor, setTitleColor, "VD: #ffffff")}
+                    {renderColorPickerField(authorColorLabel, authorColor, setAuthorColor, "VD: #fef08a")}
+                    {renderColorPickerField("Màu lời bài hát", lyricsColor, setLyricsColor, "VD: #eeeeee")}
+                    {renderColorPickerField("Màu sóng âm", waveColor, setWaveColor, "VD: #10b981")}
+                 </div>
+             </div>
+             <div className="flex-1 w-full min-h-[700px] md:min-h-0 bg-stone-900 relative overflow-hidden flex items-center justify-center py-6 md:py-0">
+                {previewSongId ? (
+                   <div className={`w-full bg-black relative overflow-hidden transition-all duration-500 ease-in-out transform transform-gpu ${
+                       isPCPreviewMode 
+                           ? 'h-full border-0 rounded-none shadow-none scale-100 min-w-[700px] xl:min-w-[1024px]'
+                           : 'md:w-[375px] h-full md:h-[812px] shadow-2xl md:rounded-[3rem] md:border-[12px] border-stone-800 shrink-0 md:scale-[0.80] lg:scale-[0.80] xl:scale-[0.80] 2xl:scale-[0.95] origin-center no-scrollbar'
+                   }`}>
+                      <div className="absolute inset-0 overflow-y-auto  no-scrollbar custom-scrollbar">
+                        <DemoPlayer songIdP={previewSongId} previewConfig={{...currentConfig, isPCPreviewMode}} />
+                      </div>
+                   </div>
+                ) : (
+                    <div className="text-stone-500 bg-stone-900 h-full w-full flex items-center justify-center font-medium">{t("Hãy chọn bài hát để xem.")}</div>
+                )}
+             </div>
+         </div>
+      </div>
+    );
 }
