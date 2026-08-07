@@ -11,7 +11,7 @@ import { LoadingScreen } from './components/LoadingScreen';
 import { getYoutubeId } from './components/SmartYouTubePlayer';
 import RegisterModal from './components/RegisterModal';
 import { getArtistSubdomainUrl, getPlatformDomain, ensureGoogleSdkLoaded } from './utils/platform';
-import { formatShareUrl, getThumbUrl, handleImageError, isBasePlatformDomain, setGlobalCookie, getGlobalCookie, removeGlobalCookie, getArtistExtensionFromUrl, isArtistContext, getAdminLink, getArtistLink, getArtistFullUrl, sanitizePlaylistPassword, getAdminTokenKey, getMemberTokenKey, getArtistAdminRedirect, getLogoutRedirectUrl, getActiveAdminSession, getAdminToken, setAdminToken, removeAdminToken, getMemberToken, setMemberToken, removeMemberToken } from './utils/shared';
+import { formatShareUrl, getThumbUrl, handleImageError, isBasePlatformDomain, setGlobalCookie, getGlobalCookie, removeGlobalCookie, getArtistExtensionFromUrl, isArtistContext, getAdminLink, getArtistLink, getArtistFullUrl, sanitizePlaylistPassword, getAdminTokenKey, getMemberTokenKey, getArtistAdminRedirect, getLogoutRedirectUrl, getActiveAdminSession, getAdminToken, setAdminToken, removeAdminToken, getMemberToken, setMemberToken, removeMemberToken, copyToClipboard, resolveUploadUrl, getAudioPlayUrl } from './utils/shared';
 const woodBgAsset = '/wood-bg.jpg';
 
 
@@ -12257,57 +12257,7 @@ const activeAchievements = hasAchievements;
   );
 }
 
-const resolveUploadUrl = (url: string | undefined): string => {
-  if (!url) return '';
-  const uploadsIndex = url.indexOf('/uploads/');
-  if (uploadsIndex !== -1) {
-    return url.substring(uploadsIndex);
-  }
-  return url;
-};
-
-// [CODE-SPLIT] formatShareUrl moved to src/utils/shared.ts
-
-const copyToClipboard = async (text: string): Promise<boolean> => {
-  if (navigator.clipboard) {
-    try {
-      await navigator.clipboard.writeText(text);
-      return true;
-    } catch (e) {
-      console.warn("Clipboard API failed, using fallback copy method.", e);
-    }
-  }
-  
-  // Fallback copy method
-  try {
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    textArea.style.top = "0";
-    textArea.style.left = "0";
-    textArea.style.position = "fixed";
-    textArea.style.opacity = "0";
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    const successful = document.execCommand('copy');
-    document.body.removeChild(textArea);
-    return successful;
-  } catch (err) {
-    console.error("Fallback copy method failed.", err);
-    return false;
-  }
-};
-
-const getAudioPlayUrl = (url: string) => {
-  if (!url) return '';
-  // Convert Google Drive share link to proxied backend URL to bypass CORS/cookie restrictions
-  const driveRegex = /(?:drive\.google\.com\/(?:file\/d\/|open\?id=)|docs\.google\.com\/(?:file\/d\/|open\?id=))([a-zA-Z0-9_-]{25,})/;
-  const match = url.match(driveRegex);
-  if (match && match[1]) {
-    return `/api/proxy-audio?url=${encodeURIComponent(url)}`;
-  }
-  return url;
-};
+// [CODE-SPLIT] resolveUploadUrl, copyToClipboard, getAudioPlayUrl moved to src/utils/shared.ts
 
 function Seek10BackwardIcon({ className = "w-6 h-6" }: { className?: string }) {
   return (
