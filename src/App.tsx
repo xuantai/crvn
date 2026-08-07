@@ -2,8 +2,8 @@ import { createPortal } from "react-dom";
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
 import { ChorusLogo } from './components/ChorusLogo';
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { UserCircle, BookOpen, User, Settings, Play, Pause, Music, Lock, Unlock, ArrowLeft, ArrowRight, Upload, Disc3, Plus, Trash2, Edit3, Globe, Camera, X, FileAudio, Share2, ListMusic, List, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, GripVertical, LogOut, ChevronRight, RefreshCw, Monitor, Home as HomeIcon, PanelLeftClose, PanelLeftOpen, Eye, EyeOff, FileText, Sparkles, Copy, ExternalLink, Database, BadgeCheck, Search, Download, FolderDown, RotateCcw, Image, MessageSquare, Bell, Send, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, ChevronDown, Menu, Palette, LayoutTemplate, Award, History, HelpCircle, Paintbrush, CheckCircle2, XCircle, ShieldCheck, LogIn, Calendar } from 'lucide-react';
-import { toPng } from 'html-to-image';
+import { User, Settings, Play, Pause, Music, Lock, Unlock, ArrowLeft, ArrowRight, Upload, Disc3, Plus, Edit3, Globe, X, Share2, ListMusic, List, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Facebook, Instagram, Youtube, LogOut, ChevronRight, Eye, EyeOff, FileText, Sparkles, Copy, Database, BadgeCheck, Search, Download, Image, Bell, AlertCircle, AlertTriangle, CheckCircle, Info, Check, ChevronLeft, Menu, Palette, Award, CheckCircle2, ShieldCheck } from 'lucide-react';
+// html-to-image: toPng moved to AdminModule.tsx
 import { AppData, DemoSong, TemplateConfig, Achievement } from './types';
 import { motion, AnimatePresence, LayoutGroup } from 'motion/react';
 import { IndirectBioCard } from './components/IndirectBioCard';
