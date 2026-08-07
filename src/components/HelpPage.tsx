@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronRight, Settings, LogIn, LogOut, FileText, Layout, Copy, Repeat, Lock, Link as LinkIcon, Save, Eye, Plus, ChevronLeft, Globe, Camera, X } from 'lucide-react';
-import { LanguageContext } from '../App';
+import { LanguageContext } from '../i18n';
 import { getPlatformDomain, getArtistSubdomainUrl } from '../utils/platform';
 
 
