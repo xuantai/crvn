@@ -12530,7 +12530,7 @@ function SocialCarousel({ data, pushDown = false, isGoldTheme = false, isMusicia
 }
 
 // ---- ADMIN DASHBOARD ----
-const DEFAULT_VI_NAMES: Record<string, string> = {
+export const DEFAULT_VI_NAMES: Record<string, string> = {
   '1': 'Vui vẻ (Ấm áp)',
   '2': 'Căng Cực (Sôi động)',
   '3': 'Buồn (Sâu lắng)',

@@ -10,7 +10,7 @@ import { useAdminTranslation, LanguageContext, translations } from "./i18n";
 import { formatShareUrl, getThumbUrl, handleImageError, getArtistExtensionFromUrl, getAdminLink, getArtistLink, getArtistFullUrl, getAdminToken, setAdminToken, removeAdminToken, copyToClipboard, getGlobalCookie, sanitizePlaylistPassword, resolveUploadUrl, getAudioPlayUrl, isArtistContext, getActiveAdminSession, setGlobalCookie, removeGlobalCookie, getAdminTokenKey } from "./utils/shared";
 import { uploadGlobal, compressImageInBrowser, compressImageToJPG, formatFileName } from "./utils/adminUtils";
 import { getArtistSubdomainUrl, getPlatformDomain, formatPlatformText } from "./utils/platform";
-import { Portal, MarqueeText, MarqueeTitle, LanguageSwitcher, PasswordInput, DemoPlayer, getAdminTabAndSubtabFromPath, getGlobalShowConfirm, setGlobalShowConfirm } from "./App";
+import { Portal, MarqueeText, MarqueeTitle, LanguageSwitcher, PasswordInput, DemoPlayer, getAdminTabAndSubtabFromPath, getGlobalShowConfirm, setGlobalShowConfirm, DEFAULT_VI_NAMES } from "./App";
 import { ChorusLogo } from "./components/ChorusLogo";
 import { getYoutubeId } from "./components/SmartYouTubePlayer";
 import { LoadingScreen } from "./components/LoadingScreen";
