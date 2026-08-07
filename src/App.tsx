@@ -13315,4 +13315,1681 @@ const getAdminTabAndSubtabFromPath = (pathname: string, search: string, hash: st
 };
 
 
+
+
+function AdminAboutEdit({ data, t, onSave, uploadWithProgress, getPreviewUrl, onPreviewAvatar }: any) {
+  const [aboutData, setAboutData] = useState(() => {
+    const initialAbout = data.aboutMe || {};
+    const resolvedAvatar = initialAbout.avatarUrl || data.avatarUrl || data.homeCoverUrl || '';
+    const resolvedIntro = initialAbout.intro || initialAbout.bio || initialAbout.bio1 || '';
+    return {
+      ...initialAbout,
+      avatarUrl: resolvedAvatar,
+      intro: resolvedIntro
+    };
+  });
+  const [avatarProgress, setAvatarProgress] = useState(0);
+  const [avatarPreviewObjectUrl, setAvatarPreviewObjectUrl] = useState('');
+  const [avatarSaving, setAvatarSaving] = useState(false);
+  const initialAvatarUrlRef = useRef(data.aboutMe?.avatarUrl || data.avatarUrl || data.homeCoverUrl || '');
+  const isAvatarDirty = aboutData.avatarUrl !== initialAvatarUrlRef.current;
+  const [socials, setSocials] = useState({
+    socialFacebook: data.socialFacebook || '',
+    socialInstagram: data.socialInstagram || '',
+    socialYoutube: data.socialYoutube || '',
+    socialTiktok: data.socialTiktok || '',
+  });
+  
+  const handleSave = (e: any) => {
+    e.preventDefault();
+    onSave({ 
+      aboutMe: aboutData,
+      ...socials
+    });
+    initialAvatarUrlRef.current = aboutData.avatarUrl;
+  };
+
+  const handleQuickSaveAvatar = async () => {
+    setAvatarSaving(true);
+    try {
+      await onSave({ aboutMe: { ...aboutData }, ...socials });
+      initialAvatarUrlRef.current = aboutData.avatarUrl;
+    } finally {
+      setAvatarSaving(false);
+    }
+  };
+
+  const handleChange = (field: string) => (e: any) => {
+    setAboutData({ ...aboutData, [field]: e.target.value });
+  };
+
+  
+  
+  
+  return (
+    <motion.div key="about" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+      <div className="max-w-2xl pb-10">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-stone-100 pb-4">
+          <div>
+            <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+              <User className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />
+              {t("Về Tôi")}
+            </h2>
+            <p className="text-xs text-stone-500 mt-1">{t("Cài đặt thông tin giới thiệu và câu chuyện nghệ sĩ của bạn")}</p>
+          </div>
+        </div>
+        <form onSubmit={handleSave} className="space-y-6">
+          <div>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Avatar Nghệ Sĩ")}</label>
+            <div 
+              className="flex items-center gap-4 p-4 rounded-3xl border-2 border-dashed border-stone-200 bg-stone-50/50 hover:border-stone-300 transition-colors"
+              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+              onDrop={async (e) => {
+                  e.preventDefault(); e.stopPropagation();
+                  const file = e.dataTransfer.files?.[0];
+                  if (file) {
+                      setAvatarPreviewObjectUrl(URL.createObjectURL(file));
+                      try {
+                          const result = await uploadWithProgress(file, setAvatarProgress);
+                          const url = typeof result === 'string' ? result : result.url;
+                          setAboutData({ ...aboutData, avatarUrl: url });
+                          if (onPreviewAvatar) onPreviewAvatar(url);
+                          if (avatarPreviewObjectUrl) URL.revokeObjectURL(avatarPreviewObjectUrl);
+                          setAvatarPreviewObjectUrl('');
+                      } catch (err) {
+                          alert(t("Lỗi upload"));
+                          setAvatarProgress(0);
+                          if (avatarPreviewObjectUrl) URL.revokeObjectURL(avatarPreviewObjectUrl);
+                          setAvatarPreviewObjectUrl('');
+                      }
+                  }
+              }}
+            >
+              <div className={`w-20 h-20 rounded-2xl overflow-hidden bg-stone-900 border shadow-md relative shrink-0 transition-all ${isAvatarDirty ? 'border-amber-400 ring-2 ring-amber-300/50 animate-[pulse_1.5s_ease-in-out_infinite]' : 'border-stone-400'}`}>
+                {(avatarProgress > 0 && avatarProgress < 100 && avatarPreviewObjectUrl) ? (
+                  <>
+                    <img src={avatarPreviewObjectUrl} className="w-full h-full object-cover opacity-60 blur-[1px]" />
+                    <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-1">
+                      <div className="w-6 h-6 rounded-full border-2 border-white/30 border-t-emerald-400 animate-spin" />
+                      <span className="text-xs font-black drop-shadow text-white">{avatarProgress}%</span>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40">
+                      <div className="h-full bg-gradient-to-r from-emerald-500 to-green-400 transition-all duration-300" style={{ width: `${avatarProgress}%` }} />
+                    </div>
+                  </>
+                ) : aboutData.avatarUrl ? (
+                  <img src={getPreviewUrl(getThumbUrl(aboutData.avatarUrl))} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-stone-500"><Image className="w-8 h-8" /></div>
+                )}
+                {isAvatarDirty && avatarProgress !== 100 && !(avatarProgress > 0 && avatarProgress < 100) && (
+                  <div className="absolute top-0.5 right-0.5 w-2.5 h-2.5 bg-amber-400 rounded-full animate-ping" />
+                )}
+              </div>
+              <div className="flex-1 min-w-[150px]">
+                <div className="flex items-center gap-2">
+                  <button type="button" className={`px-4 py-2 text-xs rounded-xl font-bold flex items-center gap-1.5 transition-colors border shadow-sm ${avatarProgress === 100 || aboutData.avatarUrl ? 'border-emerald-300 bg-emerald-50 text-emerald-600' : 'btn-white-glass-smoke border-transparent hover:scale-[1.02]'}`} onClick={() => document.getElementById('aboutAvatarUpload')?.click()}>
+                      <Upload className="w-4 h-4"/>
+                      <span className="max-w-[150px] truncate">{avatarProgress > 0 && avatarProgress < 100 ? `Đang tải ${avatarProgress}%` : (aboutData.avatarUrl ? t("Thay đổi") : t("Chọn ảnh"))}</span>
+                  </button>
+                  {avatarProgress > 0 && avatarProgress < 100 ? (
+                    <button type="button" onClick={() => { setAvatarProgress(0); if (avatarPreviewObjectUrl) { URL.revokeObjectURL(avatarPreviewObjectUrl); setAvatarPreviewObjectUrl(''); } }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0 animate-pulse" title={t("Hủy tải lên")}><X className="w-4 h-4"/></button>
+                  ) : (aboutData.avatarUrl ? (
+                    <>
+                      {isAvatarDirty && (
+                        <button type="button" onClick={handleQuickSaveAvatar} disabled={avatarSaving} className="w-8 h-8 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center hover:bg-emerald-200 transition-all shrink-0 hover:scale-110 shadow-sm" title={t("Lưu avatar ngay")}>
+                          {avatarSaving ? <div className="w-4 h-4 rounded-full border-2 border-emerald-300 border-t-emerald-700 animate-spin" /> : <Check className="w-4 h-4" />}
+                        </button>
+                      )}
+                      <button type="button" onClick={() => { setAboutData({ ...aboutData, avatarUrl: '' }); setAvatarProgress(0); (document.getElementById('aboutAvatarUpload') as HTMLInputElement).value = ''; if (onPreviewAvatar) onPreviewAvatar(''); }} className="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors shrink-0"><X className="w-4 h-4"/></button>
+                    </>
+                  ) : null)}
+                </div>
+                {isAvatarDirty && (
+                  <p className="text-[11px] text-amber-600 font-semibold mt-1 animate-pulse">
+                    ⚠ {t("Chưa lưu — nhấn ✓ hoặc Lưu bên dưới")}
+                  </p>
+                )}
+                <p className="text-[11px] text-stone-400 mt-1 truncate max-w-full">
+                  {t("Kéo thả ảnh trực tiếp vào ô này")}
+                </p>
+              </div>
+              <input type="file" id="aboutAvatarUpload" className="hidden" accept="image/*" onChange={async (e) => {
+                if (!e.target.files?.[0]) return;
+                const file = e.target.files[0];
+                const compressedFile = file.type?.startsWith('image/') ? await compressImageInBrowser(file, 800, 0.75) : file;
+                setAvatarPreviewObjectUrl(URL.createObjectURL(compressedFile));
+                try {
+                  const result = await uploadWithProgress(compressedFile, setAvatarProgress);
+                  const url = typeof result === 'string' ? result : result.url;
+                  setAboutData({ ...aboutData, avatarUrl: url });
+                  if (onPreviewAvatar) onPreviewAvatar(url);
+                  if (avatarPreviewObjectUrl) URL.revokeObjectURL(avatarPreviewObjectUrl);
+                  setAvatarPreviewObjectUrl('');
+                } catch (err) {
+                  alert(t("Lỗi upload"));
+                  setAvatarProgress(0);
+                  if (avatarPreviewObjectUrl) URL.revokeObjectURL(avatarPreviewObjectUrl);
+                  setAvatarPreviewObjectUrl('');
+                }
+              }} />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Danh Xưng")}</label>
+            <input value={aboutData.role || ''} onChange={handleChange('role')} placeholder={t("Ca nhạc sĩ, producer...")} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tự bạch")}</label>
+            <textarea value={aboutData.intro || ''} onChange={handleChange('intro')} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all min-h-[100px]" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Tên Thật")}</label>
+              <input value={aboutData.realName || ''} onChange={handleChange('realName')} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Ngày Sinh")}</label>
+              <input value={aboutData.dob || ''} onChange={handleChange('dob')} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Đến Từ")}</label>
+              <input value={aboutData.address || ''} onChange={handleChange('address')} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Sinh Sống")}</label>
+              <input value={aboutData.company || ''} onChange={handleChange('company')} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("Email")}</label>
+              <input value={aboutData.email || ''} onChange={handleChange('email')} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">{t("SĐT")}</label>
+              <input value={aboutData.phone || ''} onChange={handleChange('phone')} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
+            </div>
+          </div>
+
+          {/* Mạng Xã Hội */}
+          <div className="pt-6 border-t border-stone-100 mt-4">
+            <h3 className="text-lg font-bold text-stone-900 mb-2 flex items-center gap-2">
+              <Globe className="w-5 h-5 text-indigo-600 animate-[pulse_2s_infinite]" />
+              {t("Mạng xã hội")}
+            </h3>
+            <p className="text-xs text-stone-500 mb-4">{t("Liên kết các kênh mạng xã hội chính thức của bạn")}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Facebook</label>
+                <input 
+                  value={socials.socialFacebook} 
+                  onChange={(e) => setSocials({ ...socials, socialFacebook: e.target.value })} 
+                  className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" 
+                  placeholder="https://facebook.com/..." 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Instagram</label>
+                <input 
+                  value={socials.socialInstagram} 
+                  onChange={(e) => setSocials({ ...socials, socialInstagram: e.target.value })} 
+                  className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" 
+                  placeholder="https://instagram.com/..." 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">YouTube</label>
+                <input 
+                  value={socials.socialYoutube} 
+                  onChange={(e) => setSocials({ ...socials, socialYoutube: e.target.value })} 
+                  className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" 
+                  placeholder="https://youtube.com/..." 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">TikTok</label>
+                <input 
+                  value={socials.socialTiktok} 
+                  onChange={(e) => setSocials({ ...socials, socialTiktok: e.target.value })} 
+                  className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" 
+                  placeholder="https://tiktok.com/@..." 
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4 border-t border-stone-100 pt-6 mt-6">
+            <button type="submit" className="bg-stone-900 text-white shadow-sm hover:shadow-md hover:bg-stone-800 active:scale-[0.98] px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer">
+              {t("Lưu cài đặt")}
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </motion.div>
+  );
+}
+
+function MultiImageDropzone({ values = [], onChange, onRemove, onReorder, t }: any) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  
+  const handleDrag = (e: any) => { 
+    e.preventDefault(); e.stopPropagation(); 
+    if (e.type === 'dragenter' || e.type === 'dragover') setIsDragging(true); 
+    else setIsDragging(false); 
+  };
+  
+  const handleDrop = async (e: any) => { 
+    e.preventDefault(); e.stopPropagation(); setIsDragging(false); 
+    const files = Array.from(e.dataTransfer.files || []);
+    if (files.length > 0) {
+      setIsUploading(true);
+      for (const file of files) {
+        if (values.length >= 4) break;
+        await onChange(file);
+      }
+      setIsUploading(false);
+    }
+  };
+
+  const handleChange = async (e: any) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      setIsUploading(true);
+      for (const file of files) {
+        if (values.length >= 4) break;
+        await onChange(file);
+      }
+      setIsUploading(false);
+    }
+  };
+
+  // Drag and drop reordering handlers
+  const handleDragStart = (e: any, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: any, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+    setDragOverIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleItemDrop = (e: any, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    const newValues = [...values];
+    const [draggedItem] = newValues.splice(draggedIndex, 1);
+    newValues.splice(index, 0, draggedItem);
+
+    if (onReorder) {
+      onReorder(newValues);
+    }
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* List of uploaded images */}
+      {values.length > 0 && (
+        <div className="grid grid-cols-4 gap-3">
+          {values.map((url: string, index: number) => (
+            <div 
+              key={`l21421-idx-${index}`} 
+              draggable="true"
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDragEnd={handleDragEnd}
+              onDrop={(e) => handleItemDrop(e, index)}
+              className={`relative aspect-square bg-stone-100 rounded-xl overflow-hidden border transition-all duration-200 group cursor-grab active:cursor-grabbing ${
+                draggedIndex === index ? 'opacity-40 scale-95 border-indigo-400' : 
+                dragOverIndex === index ? 'border-indigo-500 scale-105 bg-indigo-50/10' : 'border-stone-200 hover:border-stone-300'
+              }`}
+            >
+              <img src={url} className="w-full h-full object-cover pointer-events-none" />
+              <button 
+                type="button" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemove(index);
+                }} 
+                className="absolute top-1 right-1 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-md cursor-pointer flex items-center justify-center z-10"
+                title={t("Xóa ảnh")}
+              >
+                <X className="w-4 h-4 pointer-events-none" />
+              </button>
+              <div className="absolute bottom-1 left-1 bg-black/60 text-white px-1.5 py-0.5 rounded text-[9px] font-bold select-none pointer-events-none z-10">
+                #{index + 1}
+              </div>
+              
+              {/* Overlay with subtle drag text on hover */}
+              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none z-0">
+                <span className="text-[9px] text-white font-semibold bg-black/50 px-1.5 py-0.5 rounded select-none">
+                  {t('Kéo để đổi vị trí') || 'Kéo để đổi vị trí'}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Upload trigger */}
+      {values.length < 4 && (
+        <div onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop} className={`flex items-center gap-4 p-3 rounded-2xl border-2 transition-all ${isDragging ? 'border-indigo-500 bg-indigo-50/50 border-dashed scale-[1.01]' : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'}`}>
+          <label className="flex-1 flex flex-col items-center justify-center cursor-pointer py-2">
+            {isUploading ? (
+              <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mb-2" />
+            ) : (
+              <Upload className="w-5 h-5 text-stone-400 mb-2" />
+            )}
+            <span className="text-xs text-stone-500 font-medium">{isUploading ? t('Đang tải...') || 'Đang tải...' : `${t("Kéo thả hoặc Click để tải ảnh")} (${values.length}/4)`}</span>
+            <input type="file" accept="image/*" multiple className="hidden" onChange={handleChange} disabled={isUploading} />
+          </label>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ImageDropzone({ value, onChange, onRemove, t }: any) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  
+  const handleDrag = (e: any) => { 
+    e.preventDefault(); e.stopPropagation(); 
+    if (e.type === 'dragenter' || e.type === 'dragover') setIsDragging(true); 
+    else setIsDragging(false); 
+  };
+  
+  const handleDrop = async (e: any) => { 
+    e.preventDefault(); e.stopPropagation(); setIsDragging(false); 
+    const file = e.dataTransfer.files?.[0]; 
+    if (file) {
+      setIsUploading(true);
+      await onChange(file);
+      setIsUploading(false);
+    }
+  };
+
+  const handleChange = async (e: any) => {
+    const file = e.target.files?.[0]; 
+    if (file) {
+      setIsUploading(true);
+      await onChange(file);
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <div onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop} className={`flex items-center gap-4 p-3 rounded-2xl border-2 transition-all ${isDragging ? 'border-indigo-500 bg-indigo-50/50 border-dashed scale-[1.01]' : 'border-dashed border-stone-200 hover:border-stone-400 bg-stone-50/30'}`}>
+      {value ? (
+        <>
+          <img src={value} className="w-16 h-16 rounded-xl object-cover shadow-sm shrink-0" />
+          <div className="flex-1 min-w-0 flex items-center justify-between">
+             <span className="text-sm text-stone-500 truncate max-w-[150px] sm:max-w-[200px]">Đã tải lên</span>
+             <button type="button" onClick={onRemove} className="text-red-500 text-sm font-bold px-3 py-2 bg-red-50 rounded-xl hover:bg-red-100 transition-colors w-auto">{t("Xóa ảnh")}</button>
+          </div>
+        </>
+      ) : (
+        <label className="flex-1 flex flex-col items-center justify-center cursor-pointer py-2">
+          {isUploading ? (
+            <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mb-2" />
+          ) : (
+            <Upload className="w-5 h-5 text-stone-400 mb-2" />
+          )}
+          <span className="text-xs text-stone-500 font-medium">{isUploading ? t('Đang tải...') || 'Đang tải...' : t("Kéo thả hoặc Click để tải ảnh (JPG/PNG)")}</span>
+          <input type="file" accept="image/*" className="hidden" onChange={handleChange} disabled={isUploading} />
+        </label>
+      )}
+    </div>
+  );
+}
+
+function AdminBioEdit({ data, t, onSave }: any) {
+  const [education, setEducation] = useState<any[]>(data.biography?.education || []);
+  const [experience, setExperience] = useState<any[]>(data.biography?.experience || []);
+
+  const handleSave = (e: any) => {
+    e.preventDefault();
+    onSave({ biography: { education, experience } });
+  };
+
+  const addEdu = () => {
+    if (education.length < 20) setEducation([...education, { time: '', title: '', description: '' }]);
+  };
+  const addExp = () => {
+    if (experience.length < 20) setExperience([...experience, { time: '', title: '', description: '' }]);
+  };
+
+  const updateEdu = (idx: number, field: string, val: any) => {
+    const newEdu = [...education];
+    newEdu[idx][field] = val;
+    setEducation(newEdu);
+  };
+  
+  const updateExp = (idx: number, field: string, val: any) => {
+    const newExp = [...experience];
+    newExp[idx][field] = val;
+    setExperience(newExp);
+  };
+
+  const removeEdu = (idx: number) => setEducation(education.filter((_, i) => i !== idx));
+  const removeExp = (idx: number) => setExperience(experience.filter((_, i) => i !== idx));
+
+  
+  
+  
+  return (
+    <motion.div key="bio" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }} className="flex flex-col flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar pr-1">
+      <div className="max-w-4xl pb-10">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-stone-100 pb-4">
+          <div>
+            <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+              <BookOpen className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />
+              {t("Tiểu Sử")}
+            </h2>
+            <p className="text-xs text-stone-500 mt-1">{t("Quản lý học vấn và kinh nghiệm hoạt động nghệ thuật của bạn")}</p>
+          </div>
+        </div>
+        <form onSubmit={handleSave} className="space-y-10">
+          
+          {/* Education section */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-stone-800">{t('Học Vấn')}</h3>
+              <button type="button" onClick={addEdu} className="flex items-center gap-1 text-sm bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-1.5 rounded-lg cursor-pointer">
+                <Plus className="w-4 h-4" /> {t("Thêm giai đoạn")}
+              </button>
+            </div>
+            <div className="space-y-4">
+              {education.map((edu, idx) => (
+                <div key={`l21589-idx-17-${idx}`} className="bg-white border border-stone-200 rounded-xl p-4 flex flex-col gap-4 relative">
+                  <div className="flex justify-end">
+                    <button type="button" onClick={() => removeEdu(idx)} className="text-stone-400 hover:text-red-500 p-2 cursor-pointer">
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="flex-1 space-y-3">
+                    <div className="flex gap-4">
+                      <div className="w-1/3">
+                        <label className="block text-xs font-bold text-stone-500 mb-1">{t("Thời gian")}</label>
+                        <input value={edu.time} onChange={(e) => updateEdu(idx, 'time', e.target.value)} maxLength={22} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all font-mono" placeholder="VD: 2009-2012" />
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-xs font-bold text-stone-500 mb-1">{t("Sự Kiện")}</label>
+                        <input value={edu.title} onChange={(e) => updateEdu(idx, 'title', e.target.value)} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" placeholder="VD: THPT Chuyên..." />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-500 mb-1">{t("Mô tả")}</label>
+                      <textarea value={edu.description} onChange={(e) => updateEdu(idx, 'description', e.target.value)} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all min-h-[60px]" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-500 mb-2">{t("Hình ảnh minh họa (Tối đa 4 ảnh)")}</label>
+                      <MultiImageDropzone 
+                        values={edu.imageUrls && Array.isArray(edu.imageUrls) ? edu.imageUrls : (edu.imageUrl ? [edu.imageUrl] : [])} 
+                        onChange={async (file: any) => {
+                          try {
+                            const jpg = await compressImageToJPG(file, 1000);
+                            const url = await uploadGlobal(jpg);
+                            const currentUrls = edu.imageUrls && Array.isArray(edu.imageUrls) ? [...edu.imageUrls] : (edu.imageUrl ? [edu.imageUrl] : []);
+                            if (currentUrls.length < 4) {
+                              const newUrls = [...currentUrls, url];
+                              updateEdu(idx, 'imageUrls', newUrls);
+                              updateEdu(idx, 'imageUrl', newUrls[0] || '');
+                            }
+                          } catch (e) { alert("Error uploading"); }
+                        }} 
+                        onRemove={(imgIdx: number) => {
+                          const currentUrls = edu.imageUrls && Array.isArray(edu.imageUrls) ? [...edu.imageUrls] : (edu.imageUrl ? [edu.imageUrl] : []);
+                          const newUrls = currentUrls.filter((_, i) => i !== imgIdx);
+                          updateEdu(idx, 'imageUrls', newUrls);
+                          updateEdu(idx, 'imageUrl', newUrls[0] || '');
+                        }} 
+                        onReorder={(newUrls: string[]) => {
+                          updateEdu(idx, 'imageUrls', newUrls);
+                          updateEdu(idx, 'imageUrl', newUrls[0] || '');
+                        }}
+                        t={t} 
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Experience section */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-stone-800">{t('Kinh nghiệm')}</h3>
+              <button type="button" onClick={addExp} className="flex items-center gap-1 text-sm bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-1.5 rounded-lg cursor-pointer">
+                <Plus className="w-4 h-4" /> {t("Thêm giai đoạn")}
+              </button>
+            </div>
+            <div className="space-y-4">
+              {experience.map((exp, idx) => (
+                <div key={`l21655-idx-18-${idx}`} className="bg-white border border-stone-200 rounded-xl p-4 flex flex-col gap-4 relative">
+                  <div className="flex justify-end">
+                    <button type="button" onClick={() => removeExp(idx)} className="text-stone-400 hover:text-red-500 p-2 cursor-pointer">
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="flex-1 space-y-3">
+                    <div className="flex gap-4">
+                      <div className="w-1/3">
+                        <label className="block text-xs font-bold text-stone-500 mb-1">{t("Thời gian")}</label>
+                        <input value={exp.time} onChange={(e) => updateExp(idx, 'time', e.target.value)} maxLength={22} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all font-mono" placeholder="VD: 2025" />
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-xs font-bold text-stone-500 mb-1">{t("Sự Kiện")}</label>
+                        <input value={exp.title} onChange={(e) => updateExp(idx, 'title', e.target.value)} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-500 mb-1">{t("Mô tả")}</label>
+                      <textarea value={exp.description} onChange={(e) => updateExp(idx, 'description', e.target.value)} className="w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900 transition-all min-h-[60px]" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-500 mb-2">{t("Hình ảnh minh họa (Tối đa 4 ảnh)")}</label>
+                      <MultiImageDropzone 
+                        values={exp.imageUrls && Array.isArray(exp.imageUrls) ? exp.imageUrls : (exp.imageUrl ? [exp.imageUrl] : [])} 
+                        onChange={async (file: any) => {
+                          try {
+                            const jpg = await compressImageToJPG(file, 1000);
+                            const url = await uploadGlobal(jpg);
+                            const currentUrls = exp.imageUrls && Array.isArray(exp.imageUrls) ? [...exp.imageUrls] : (exp.imageUrl ? [exp.imageUrl] : []);
+                            if (currentUrls.length < 4) {
+                              const newUrls = [...currentUrls, url];
+                              updateExp(idx, 'imageUrls', newUrls);
+                              updateExp(idx, 'imageUrl', newUrls[0] || '');
+                            }
+                          } catch (e) { alert("Error uploading"); }
+                        }} 
+                        onRemove={(imgIdx: number) => {
+                          const currentUrls = exp.imageUrls && Array.isArray(exp.imageUrls) ? [...exp.imageUrls] : (exp.imageUrl ? [exp.imageUrl] : []);
+                          const newUrls = currentUrls.filter((_, i) => i !== imgIdx);
+                          updateExp(idx, 'imageUrls', newUrls);
+                          updateExp(idx, 'imageUrl', newUrls[0] || '');
+                        }} 
+                        onReorder={(newUrls: string[]) => {
+                          updateExp(idx, 'imageUrls', newUrls);
+                          updateExp(idx, 'imageUrl', newUrls[0] || '');
+                        }}
+                        t={t} 
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 border-t border-stone-100 pt-6 mt-4">
+            <button type="submit" className="bg-stone-900 text-white shadow-sm hover:shadow-md hover:bg-stone-800 active:scale-[0.98] px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer">
+              {t("Lưu cài đặt")}
+            </button>
+          </div>
+        </form>
+      </div>
+    </motion.div>
+  );
+}
+
+function AdminMenuEdit({ data, t, onSave }: any) {
+  const { landingConfig } = useContext(LanguageContext);
+  const getMenuTitle = (m: any) => {
+    if (m.type === 'vault') return landingConfig?.menuVaultVi || "Kho Nhạc";
+    if (m.type === 'about') return landingConfig?.menuAboutVi || "Về Tôi";
+    if (m.type === 'bio') return landingConfig?.menuBioVi || "Tiểu Sử";
+    return m.title;
+  };
+
+  const [menus, setMenus] = useState<any[]>(data.menus || [
+    { id: 'm1', type: 'vault', title: 'Kho Nhạc', isVisible: true },
+    { id: 'm2', type: 'about', title: 'Về Tôi', isVisible: true },
+    { id: 'm3', type: 'bio', title: 'Tiểu Sử', isVisible: true }
+  ]);
+
+  const handleDragStart = (e: any, index: number) => {
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
+  const handleDrop = (e: any, dropIndex: number) => {
+    const dragIndex = parseInt(e.dataTransfer.getData('text/plain'));
+    if (dragIndex === dropIndex) return;
+    const newMenus = [...menus];
+    const draggedItem = newMenus[dragIndex];
+    newMenus.splice(dragIndex, 1);
+    newMenus.splice(dropIndex, 0, draggedItem);
+    setMenus(newMenus);
+  };
+
+  const handleSave = () => {
+    onSave({ menus });
+  };
+  
+  const addCustomMenu = () => {
+    const customCount = menus.filter((m: any) => m.type === 'custom').length;
+    if (customCount >= 3) {
+      alert("Tối đa 3 custom tab");
+      return;
+    }
+    setMenus([...menus, { id: 'c' + Date.now(), type: 'custom', title: 'Tab Mới', link: '', isVisible: true }]);
+  };
+
+  const updateMenu = (idx: number, field: string, val: any) => {
+    const newMenus = [...menus];
+    newMenus[idx][field] = val;
+    setMenus(newMenus);
+  };
+
+  const removeMenu = (idx: number) => {
+    setMenus(menus.filter((_, i) => i !== idx));
+  };
+
+  return (
+    <div className="py-1">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-stone-100 pb-4">
+        <div>
+          <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+            <List className="w-6 h-6 text-indigo-600 animate-[pulse_2.5s_infinite]" />
+            {t("Quản lý Menu")}
+          </h2>
+          <p className="text-xs text-stone-500 mt-1">{t("Kéo thả để sắp xếp thứ tự ưu tiên. Tab đầu tiên sẽ là trang hiển thị mặc định. Hỗ trợ tạo tối đa 3 custom tab.")}</p>
+        </div>
+      </div>
+      
+      <div className="space-y-3 mb-6">
+        {menus.map((m: any, i: number) => (
+          <div 
+            key={`l21788-${m.id || ''}-${i}`} 
+            draggable 
+            onDragStart={(e) => handleDragStart(e, i)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => handleDrop(e, i)}
+            className="flex items-center gap-4 bg-stone-50 border border-stone-200 rounded-xl p-3 cursor-grab active:cursor-grabbing"
+          >
+            <GripVertical className="text-stone-400 w-5 h-5 shrink-0" />
+            <div className="flex-1 flex gap-4 items-center">
+              {m.type === 'custom' ? (
+                <input 
+                  value={m.title} 
+                  onChange={(e) => updateMenu(i, 'title', e.target.value)} 
+                  className="font-bold bg-white border border-stone-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
+                  placeholder={t("Tiêu Đề Menu")}
+                />
+              ) : (
+                <div className="font-bold bg-stone-100 text-stone-600 border border-stone-200 rounded-lg px-3 py-1.5 text-sm cursor-not-allowed select-none">
+                  {t(getMenuTitle(m))}
+                </div>
+              )}
+              {m.type === 'custom' && (
+                <input 
+                  value={m.link || ''} 
+                  onChange={(e) => updateMenu(i, 'link', e.target.value)} 
+                  className="flex-1 bg-white border border-stone-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-stone-400"
+                  placeholder={t("Đường Dẫn (URL)")}
+                />
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+               <label className="flex items-center gap-2 text-sm text-stone-600 cursor-pointer">
+                 <input type="checkbox" checked={m.isVisible} onChange={(e) => updateMenu(i, 'isVisible', e.target.checked)} className="rounded text-stone-900 focus:ring-stone-900" />
+                 {t("Hiển thị")}
+               </label>
+               {m.type === 'custom' && (
+                 <button type="button" onClick={() => removeMenu(i)} className="text-stone-400 hover:text-red-500 p-1">
+                   <Trash2 className="w-4 h-4" />
+                 </button>
+               )}
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      <div className="flex items-center gap-4 border-t border-stone-100 pt-6 mt-6">
+        <button type="button" onClick={addCustomMenu} className="btn-white-glass-smoke px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1.5 shadow-sm hover:scale-[1.01] cursor-pointer">
+          <Plus className="w-4 h-4 text-stone-500" /> {t("Thêm Menu Mới")}
+        </button>
+        <button type="button" onClick={handleSave} className="bg-stone-900 text-white shadow-sm hover:shadow-md hover:bg-stone-800 active:scale-[0.98] px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer">
+          {t("Lưu Menu")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
+function AdminLayoutEdit({ data, t, onSave }: any) {
+  const defaultSections = ['title', 'random_song', 'about', 'bio', 'vault', 'mv', 'spotify'];
+  const rawSections = data.layoutSections && Array.isArray(data.layoutSections) ? data.layoutSections : defaultSections;
+  const initialSections = Array.from(new Set(rawSections));
+  if (!initialSections.includes('random_song')) {
+    const titleIdx = initialSections.indexOf('title');
+    if (titleIdx !== -1) {
+      initialSections.splice(titleIdx + 1, 0, 'random_song');
+    } else {
+      initialSections.splice(1, 0, 'random_song');
+    }
+  }
+
+  const [layoutSections, setLayoutSections] = useState<string[]>(initialSections);
+  const [hiddenSections, setHiddenSections] = useState<string[]>(data.hiddenSections || []);
+  const [includeDemoInRandomSong, setIncludeDemoInRandomSong] = useState<boolean>(data.includeDemoInRandomSong !== false);
+
+  const toggleVisibility = (sec: string) => {
+    if (sec === 'vault') return; // Kho Nhạc không được ẩn
+    setHiddenSections(prev => 
+      prev.includes(sec) ? prev.filter(s => s !== sec) : [...prev, sec]
+    );
+  };
+
+  const getSectionName = (sec: string) => {
+    if (sec === 'title') return t("Tiêu Đề (Tên & Giới thiệu ngắn)");
+    if (sec === 'random_song') return t("Bài Hát Ngẫu Nhiên");
+    if (sec === 'about') return t("Về Tôi");
+    if (sec === 'bio') return t("Tiểu Sử");
+    if (sec === 'spotify') return t("Spotify Playlist / Album");
+    if (sec === 'vault') return t("Kho Nhạc (Danh sách Đề mô / Ra Rồi)");
+    if (sec === 'mv') return t("MV Đã Phát Hành (YouTube Videos)");
+    return sec;
+  };
+
+  const handleDragStart = (e: any, index: number) => {
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
+
+  const handleDrop = (e: any, dropIndex: number) => {
+    const dragIndex = parseInt(e.dataTransfer.getData('text/plain'));
+    if (dragIndex === dropIndex) return;
+    const newList = [...layoutSections];
+    const draggedItem = newList[dragIndex];
+    newList.splice(dragIndex, 1);
+    newList.splice(dropIndex, 0, draggedItem);
+    setLayoutSections(newList);
+  };
+
+  const handleSave = () => {
+    onSave({ layoutSections, hiddenSections, includeDemoInRandomSong });
+  };
+
+  return (
+    <div className="py-1">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-stone-100 pb-4">
+        <div>
+          <h2 className="text-2xl font-black text-stone-900 flex items-center gap-2">
+            <LayoutTemplate className="w-6 h-6 text-teal-600 animate-[pulse_2.5s_infinite]" />
+            {t("Bố Cục Trang Chủ")}
+          </h2>
+          <p className="text-xs text-stone-500 mt-1">{t("Kéo thả các phần bên dưới để sắp xếp thứ tự hiển thị và tích chọn để bật/tắt hiển thị ở trang chủ nghệ sĩ.")}</p>
+        </div>
+      </div>
+
+      <div className="space-y-3 mb-6">
+        {layoutSections.map((sec, i) => {
+          const isHidden = hiddenSections.includes(sec);
+          const isVault = sec === 'vault';
+          return (
+            <div 
+              key={`l21892-${sec}-${i}`} 
+              className={`flex flex-col border rounded-xl p-4 transition-all hover:shadow-sm select-none ${
+                isHidden ? 'bg-stone-100/60 border-stone-200 opacity-60' : 'bg-stone-50 border-stone-200 hover:border-stone-300'
+              }`}
+            >
+              <div 
+                draggable 
+                onDragStart={(e) => handleDragStart(e, i)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => handleDrop(e, i)}
+                className="flex items-center gap-4 cursor-grab active:cursor-grabbing"
+              >
+                <GripVertical className="text-stone-400 w-5 h-5 shrink-0" />
+
+                {/* Visibility Checkbox Tick */}
+                <label 
+                  className={`flex items-center gap-2.5 shrink-0 cursor-pointer ${isVault ? 'cursor-not-allowed opacity-90' : ''}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <input 
+                    type="checkbox" 
+                    checked={isVault ? true : !isHidden}
+                    disabled={isVault}
+                    onChange={() => toggleVisibility(sec)}
+                    className="w-4 h-4 rounded text-teal-600 border-stone-300 focus:ring-teal-500 cursor-pointer disabled:cursor-not-allowed"
+                  />
+                </label>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className={`font-bold text-sm ${isHidden ? 'text-stone-500 line-through' : 'text-stone-800'}`}>
+                      {getSectionName(sec)}
+                    </span>
+                    {isVault && (
+                      <span className="text-[10px] font-extrabold bg-stone-200 text-stone-700 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        {t("Bắt buộc")}
+                      </span>
+                    )}
+                    {isHidden && !isVault && (
+                      <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+                        {t("Đã ẩn")}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-stone-400 mt-0.5">
+                    {sec === 'title' && t("Phần hiển thị tên nghệ sĩ, dấu tích xanh và lời giới thiệu ngắn.")}
+                    {sec === 'random_song' && t("Hiển thị thẻ bài hát ngẫu nhiên xoay tua linh hoạt.")}
+                    {sec === 'about' && t("Phần giới thiệu bản thân, hình ảnh nghệ sĩ và thông tin nổi bật.")}
+                    {sec === 'bio' && t("Phần tiểu sử âm nhạc, hành trình nghệ thuật và các cột mốc sự nghiệp.")}
+                    {sec === 'spotify' && t("Khung phát nhạc nhúng trực tiếp từ Spotify (nếu được cấu hình).")}
+                    {sec === 'vault' && t("Phần danh sách bài hát chính chia theo tab Đề mô / Ra Rồi (Bắt buộc hiển thị).")}
+                    {sec === 'mv' && t("Phần hiển thị các MV Youtube đã phát hành và trình phát video popup.")}
+                  </div>
+                </div>
+
+                <div className="w-6 h-6 rounded-full bg-stone-200/80 flex items-center justify-center text-xs font-bold text-stone-600 shrink-0">
+                  {i + 1}
+                </div>
+              </div>
+
+              {sec === 'random_song' && (
+                <div className="mt-3 pt-3 border-t border-stone-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pl-9 cursor-auto" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                      {t("Hiển thị demo trong bài hát ngẫu nhiên ?")}
+                    </span>
+                    <span className="text-[11px] text-stone-400 font-medium mt-0.5">
+                      {includeDemoInRandomSong ? t("Đang Bật - Bao gồm cả các bài Đề mô chưa phát hành") : t("Đang Tắt - Chỉ hiển thị các bài đã Ra Rồi (Phát hành chính thức)")}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={includeDemoInRandomSong}
+                    onClick={() => setIncludeDemoInRandomSong(prev => !prev)}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                      includeDemoInRandomSong ? 'bg-teal-600' : 'bg-stone-300'
+                    }`}
+                  >
+                    <span className="sr-only">{t("Hiển thị demo trong bài hát ngẫu nhiên ?")}</span>
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        includeDemoInRandomSong ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="flex items-center gap-4 border-t border-stone-100 pt-6 mt-6">
+        <button 
+          type="button" 
+          onClick={handleSave} 
+          className="bg-stone-900 text-white shadow-sm hover:shadow-md hover:bg-stone-800 active:scale-[0.98] px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer"
+        >
+          {t("Lưu Bố Cục")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
+function BeautifulSelect({ 
+  value, 
+  onChange, 
+  options, 
+  isGoldTheme,
+  isMusicianTheme,
+  isDreamyTheme
+}: { 
+  value: number, 
+  onChange: (val: number) => void, 
+  options: number[], 
+  isGoldTheme?: boolean,
+  isMusicianTheme?: boolean,
+  isDreamyTheme?: boolean
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative inline-block z-30" ref={containerRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`flex items-center justify-center gap-1.5 cursor-pointer backdrop-blur-md transition-all duration-300 focus:outline-none text-xs sm:text-sm shadow-md rounded-xl px-3 py-1.5 border min-w-[60px] font-bold relative overflow-hidden ${
+          isMusicianTheme
+            ? 'border-amber-600/80 text-amber-100 hover:border-amber-400'
+            : isDreamyTheme
+              ? 'bg-white/95 border-2 border-rose-200 text-stone-900 font-extrabold hover:bg-rose-50 hover:border-rose-400 shadow-xs'
+              : isGoldTheme 
+                ? 'bg-[#FAF5E6] border-[#D4AF37] text-[#1A1303] hover:bg-white hover:border-[#AA7C11] hover:shadow-lg' 
+                : 'bg-[#18181b]/95 border-white/20 text-white hover:bg-[#27272a]/95 hover:border-white/45'
+        }`}
+      >
+        {isMusicianTheme && (
+          <>
+            <div className="absolute inset-0 z-0 css-wood-grain-dark" />
+            <div className="absolute inset-0 z-[1] bg-gradient-to-b from-white/10 to-black/20" />
+          </>
+        )}
+        <span className="relative z-[2] tabular-nums text-center">{value}</span>
+        <svg 
+          className={`w-3 h-3 transition-transform duration-200 relative z-[2] ${isOpen ? 'rotate-180' : ''} ${isMusicianTheme ? 'text-amber-400' : isDreamyTheme ? 'text-rose-500' : isGoldTheme ? 'text-[#AA7C11]' : 'text-neutral-400'}`} 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="3.5" 
+          strokeLinecap="round" 
+          strokeLinejoin="round"
+        >
+          <path d="m6 9 6 6 6-6"/>
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div 
+          className={`absolute bottom-full left-0 mb-1.5 w-full min-w-[65px] rounded-xl shadow-2xl border backdrop-blur-lg overflow-hidden py-1 z-40 animate-in fade-in slide-in-from-bottom-2 duration-150 ${
+            isMusicianTheme
+              ? 'border-amber-700/80 shadow-[0_8px_30px_rgba(0,0,0,0.9)] css-wood-grain-dark'
+              : isDreamyTheme
+                ? 'bg-white/95 border-2 border-rose-200 shadow-xl'
+                : isGoldTheme 
+                  ? 'bg-[#FAF5E6]/95 border-[#D4AF37] shadow-[0_8px_30px_rgba(170,124,17,0.2)]' 
+                  : 'bg-[#18181b]/95 border-white/10 shadow-black/80'
+          }`}
+        >
+          {options.map((opt, optIdx) => (
+            <button
+              key={`l21991-${opt}-${optIdx}`}
+              type="button"
+              onClick={() => {
+                onChange(opt);
+                setIsOpen(false);
+              }}
+              className={`w-full text-center px-3 py-1.5 text-xs sm:text-sm font-semibold transition-colors cursor-pointer tabular-nums ${
+                opt === value
+                  ? isMusicianTheme
+                    ? 'bg-amber-600/40 text-amber-200 font-bold'
+                    : isDreamyTheme
+                      ? 'bg-rose-500 text-white font-black'
+                      : isGoldTheme
+                        ? 'bg-[#D4AF37]/20 text-[#1A1303] font-bold'
+                        : 'bg-white/15 text-white font-bold'
+                  : isMusicianTheme
+                    ? 'text-amber-100/70 hover:bg-amber-800/40 hover:text-amber-100'
+                    : isDreamyTheme
+                      ? 'text-stone-800 font-bold hover:bg-rose-50 hover:text-rose-600'
+                      : isGoldTheme
+                        ? 'text-stone-600 hover:bg-[#D4AF37]/10 hover:text-[#1A1303]'
+                        : 'text-neutral-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+function PublicNavbar({ menus, activeTab, setActiveTab, t, isGoldTheme, isMusicianTheme, isDreamyTheme }: any) {
+  const { landingConfig } = useContext(LanguageContext);
+  if (!menus || menus.length === 0) return null;
+  const visibleMenus = menus.filter((m: any) => m.isVisible);
+  if (visibleMenus.length <= 1) return null;
+
+  const getMenuTitle = (m: any) => {
+    if (m.type === 'vault') return landingConfig?.menuVaultVi || "Kho Nhạc";
+    if (m.type === 'about') return landingConfig?.menuAboutVi || "Về Tôi";
+    if (m.type === 'bio') return landingConfig?.menuBioVi || "Tiểu Sử";
+    return m.title;
+  };
+
+  return (
+    <div className={`w-full max-w-5xl mx-auto px-6 sm:px-12 mb-12 flex items-center justify-center gap-6 sm:gap-10 border-b pb-4 ${isMusicianTheme ? 'border-amber-800/60' : isDreamyTheme ? 'border-purple-200/80' : isGoldTheme ? 'border-stone-200/60' : 'border-white/10'}`}>
+      {visibleMenus.map((m: any, i: number) => (
+        <button
+          key={`l22034-${m.id || ''}-${i}`}
+          onClick={() => {
+            if (m.type === 'custom' && m.link) {
+              window.open(m.link, '_blank');
+            } else {
+              setActiveTab(m.id);
+              const typeToHash: Record<string, string> = { vault: '#music', about: '#about', bio: '#bio' };
+              const newHash = typeToHash[m.type] || '';
+              if (newHash) window.history.replaceState(null, '', newHash);
+            }
+          }}
+          className={`font-bold transition-all relative text-sm sm:text-base ${
+            activeTab === m.id 
+              ? (isMusicianTheme ? 'text-amber-100 font-black scale-105 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]' : isDreamyTheme ? 'text-stone-950 font-black scale-102' : isGoldTheme ? 'text-[#AA7C11] font-black scale-102' : 'text-white') 
+              : (isMusicianTheme ? 'text-amber-200/80 hover:text-amber-100 font-bold' : isDreamyTheme ? 'text-stone-700 hover:text-stone-950 font-bold' : isGoldTheme ? 'text-stone-500 hover:text-[#AA7C11]' : 'text-white/80 hover:text-white')
+          }`}
+        >
+          {t(getMenuTitle(m))}
+          {activeTab === m.id && (
+            <motion.div layoutId="nav-indicator" className={`absolute -bottom-[17px] left-0 right-0 h-[2.5px] ${isMusicianTheme ? 'bg-gradient-to-r from-amber-500 via-amber-300 to-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.8)]' : isDreamyTheme ? 'bg-rose-500' : isGoldTheme ? 'bg-[#AA7C11]' : 'bg-emerald-500'}`} />
+          )}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function PublicAboutView({ aboutMe, data, t, onGoToVault, isAdmin, artistExtension, isGoldTheme, isMusicianTheme, isDreamyTheme }: any) {
+  if (!aboutMe) return null;
+  
+  const avatar = aboutMe.avatarUrl || data?.homeCoverUrl;
+  const isLiquidGlassTheme = !isGoldTheme && !isMusicianTheme && !isDreamyTheme;
+  
+  return (
+    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto backdrop-blur-2xl border rounded-[2.5rem] p-6 sm:p-10 mt-4 sm:mt-8 mb-20 relative z-10 max-w-6xl flex flex-col lg:flex-row gap-10 lg:gap-16 items-center lg:items-start overflow-hidden ${
+      isMusicianTheme
+        ? 'bg-gradient-to-br from-[#2D160B]/95 via-[#210E06]/95 to-[#160803]/98 border-amber-700/60 shadow-[0_20px_50px_rgba(0,0,0,0.85)] text-amber-50' 
+        : isDreamyTheme 
+          ? 'bg-slate-950/40 border-rose-500/35 shadow-[0_20px_50px_rgba(0,0,0,0.4),0_0_40px_rgba(244,63,94,0.2)] text-white' 
+          : isGoldTheme 
+            ? 'bg-gradient-to-br from-stone-900/95 via-amber-950/40 to-stone-900/95 border-amber-500/30 shadow-[0_8px_32px_0_rgba(251,191,36,0.2)] text-white' 
+            : 'bg-slate-950/40 border-cyan-500/35 shadow-[0_20px_50px_rgba(0,0,0,0.4),0_0_40px_rgba(6,182,212,0.2)] text-white'
+    }`}>
+      {/* Background ambient lighting */}
+      {isDreamyTheme && (
+        <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 via-purple-500/10 to-transparent pointer-events-none rounded-[2.5rem]" />
+      )}
+      {isMusicianTheme && (
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(217,119,6,0.15),transparent_70%)] pointer-events-none rounded-[2.5rem]" />
+      )}
+      {isGoldTheme && (
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,158,11,0.15),transparent_70%)] pointer-events-none rounded-[2.5rem]" />
+      )}
+      {isLiquidGlassTheme && (
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-teal-500/5 to-transparent pointer-events-none rounded-[2.5rem]" />
+      )}
+
+      {isAdmin && (
+        <a href={getAdminLink('about')} className={`absolute top-6 right-6 p-3 ${isMusicianTheme ? 'bg-amber-900/60 text-amber-200 hover:bg-amber-800/80 hover:text-white' : 'bg-white/10 text-white/70 hover:text-white hover:bg-white/20'} rounded-full transition-colors z-20`} title={t("Chỉnh sửa")}>
+          <Edit3 className="w-5 h-5 sm:w-6 sm:h-6" />
+        </a>
+      )}
+
+      {/* Left Side: Avatar floating */}
+      {avatar && (
+        <motion.div 
+          initial={{ opacity: 0, filter: 'blur(10px)' }}
+          animate={{ opacity: 1, filter: 'blur(0px)' }}
+          transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
+          className="w-full max-w-[16rem] sm:max-w-xs lg:max-w-[22rem] shrink-0 relative group mx-auto lg:mx-0 mt-2 lg:mt-0"
+        >
+          <motion.div 
+            animate={{ rotate: [0, 5, -5, 0], scale: [1, 1.02, 1] }}
+            transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
+            className={`absolute inset-0 bg-gradient-to-tr ${isMusicianTheme ? 'from-amber-600 via-orange-500 to-amber-300' : isDreamyTheme ? 'from-rose-500 via-purple-500 to-pink-300' : isGoldTheme ? 'from-amber-600 via-yellow-500 to-amber-400' : 'from-cyan-500 via-teal-500 to-emerald-400'} rounded-[2.5rem] translate-x-4 translate-y-4 sm:translate-x-5 sm:translate-y-5 -z-10 opacity-70 blur-md group-hover:blur-lg transition-all duration-700`}
+          ></motion.div>
+          <motion.div 
+            animate={{ rotate: [0, -5, 5, 0], scale: [1, 1.02, 1] }}
+            transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
+            className={`absolute inset-0 bg-gradient-to-br ${isMusicianTheme ? 'from-orange-500 via-amber-400 to-yellow-300' : isDreamyTheme ? 'from-pink-500 via-rose-400 to-purple-300' : isGoldTheme ? 'from-yellow-600 via-amber-500 to-yellow-400' : 'from-teal-400 via-cyan-400 to-emerald-300'} rounded-[2.5rem] translate-x-3 translate-y-3 sm:translate-x-4 sm:translate-y-4 -z-10 opacity-60`}
+          ></motion.div>
+          <motion.div 
+            animate={{ y: [0, -10, 0] }}
+            transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+            className="aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-black/50 border border-white/20 shadow-2xl relative z-10"
+          >
+            <img src={avatar} alt="Profile" className="w-full h-full object-cover object-top hover:scale-110 transition-transform duration-1000" />
+          </motion.div>
+        </motion.div>
+      )}
+      
+      {/* Details */}
+      <div className={`w-full ${avatar ? "lg:flex-1" : "max-w-3xl mx-auto"} flex flex-col justify-center space-y-1 sm:space-y-2 z-10 relative mt-6 lg:mt-0`}>
+        <span className={`font-black text-xs sm:text-sm px-3.5 py-1 rounded-full tracking-widest uppercase inline-block text-center lg:text-left mb-2.5 border w-max mx-auto lg:mx-0 shadow-xs ${
+          isMusicianTheme
+            ? 'text-amber-300 bg-amber-950/80 border-amber-600/40'
+            : isDreamyTheme
+              ? 'text-rose-300 bg-rose-950/80 border-rose-500/40 shadow-[0_0_10px_rgba(244,63,94,0.25)]'
+              : isGoldTheme
+                ? 'text-amber-400 bg-amber-950/80 border-amber-500/40 shadow-[0_0_10px_rgba(245,158,11,0.25)]'
+                : 'text-cyan-300 bg-cyan-950/80 border-cyan-500/40 shadow-[0_0_10px_rgba(6,182,212,0.25)]'
+        }`}>
+          {aboutMe.role || 'Profile Card'}
+        </span>
+        <h2 className={`text-[clamp(1.75rem,4vw,2.75rem)] font-black drop-shadow-md mb-4 sm:mb-6 leading-tight text-center lg:text-left break-words ${
+          isMusicianTheme
+            ? 'text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-300 to-orange-200'
+            : isDreamyTheme
+              ? 'text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-pink-200 to-purple-200'
+              : isGoldTheme
+                ? 'text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-amber-300 to-yellow-400'
+                : 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 via-teal-200 to-emerald-200'
+        }`}>
+          {data?.artistName || t('Về Tôi') || 'Về Tôi'}
+        </h2>
+          
+          {aboutMe.intro && (
+            <div className={`mb-6 text-[clamp(0.925rem,3.5vw,1.2rem)] leading-relaxed whitespace-pre-line drop-shadow-sm font-medium ${
+              isMusicianTheme
+                ? 'text-amber-100/95'
+                : isDreamyTheme
+                  ? 'text-rose-100/95'
+                  : isGoldTheme
+                    ? 'text-stone-100'
+                    : 'text-slate-100'
+            }`}>
+              {aboutMe.intro}
+            </div>
+          )}
+          
+          <div className="space-y-3 mb-6 text-lg">
+            {aboutMe.realName && <InfoField label={t("Tên Thật") || "Tên Thật"} value={aboutMe.realName} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} isGoldTheme={isGoldTheme} />}
+            {aboutMe.dob && <InfoField label={t("Ngày Sinh") || "Ngày Sinh"} value={aboutMe.dob} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} isGoldTheme={isGoldTheme} />}
+            {aboutMe.address && <InfoField label={t("Đến Từ") || "Đến Từ"} value={aboutMe.address} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} isGoldTheme={isGoldTheme} />}
+            {aboutMe.company && <InfoField label={t("Sinh Sống") || "Sinh Sống"} value={aboutMe.company} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} isGoldTheme={isGoldTheme} />}
+            {aboutMe.email && <InfoField label={t("Email") || "Email"} value={aboutMe.email} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} isGoldTheme={isGoldTheme} />}
+            {aboutMe.phone && <InfoField label={t("SĐT") || "SĐT"} value={aboutMe.phone} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} isGoldTheme={isGoldTheme} />}
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-4 mb-6">
+            {data?.socialFacebook && (
+               <a href={formatSocialLink(data.socialFacebook, 'fb')} target="_blank" rel="noreferrer" className="w-10 h-10 bg-[#1877F2] text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform">
+                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+               </a>
+            )}
+            {data?.socialYoutube && (
+               <a href={formatSocialLink(data.socialYoutube, 'yt')} target="_blank" rel="noreferrer" className="w-10 h-10 bg-[#FF0000] text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform">
+                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+               </a>
+            )}
+            {data?.socialTiktok && (
+               <a href={formatSocialLink(data.socialTiktok, 'tk')} target="_blank" rel="noreferrer" className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform">
+                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.12-3.44-3.17-3.64-5.46-.22-2.39.81-4.78 2.62-6.19 1.83-1.47 4.31-1.84 6.54-1.16l-.1 4.18c-1.3-.23-2.67-.18-3.79.52-1.07.69-1.67 1.92-1.57 3.18.11 1.4 1.16 2.61 2.53 2.94 1.34.33 2.82.02 3.86-.88.94-.8 1.4-2.01 1.43-3.26.04-4.8.01-9.61.02-14.41z"/></svg>
+               </a>
+            )}
+            {data?.socialInstagram && (
+               <a href={formatSocialLink(data.socialInstagram, 'ig')} target="_blank" rel="noreferrer" className="w-10 h-10 text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform overflow-hidden" style={{ background: 'radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%)' }}>
+                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+               </a>
+            )}
+            {data?.socialSoundcloud && (
+               <a href={formatSocialLink(data.socialSoundcloud, 'sc')} target="_blank" rel="noreferrer" className="w-10 h-10 bg-[#ff5500] text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform">
+                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M11.758 15.864V8.895c.27-.058.536-.089.8-.089.704 0 1.258.219 1.663.655.405.436.608 1.054.608 1.854v4.549h-3.071zm9.896-1.503c0 1.139-.395 2.112-1.187 2.918-.792.807-1.748 1.21-2.868 1.21H15.11v-7.616c0-.987-.272-1.792-.816-2.414-.544-.622-1.267-.933-2.171-.933-.427 0-.822.062-1.186.187v-1.12c0-.521-.141-1.042-.423-1.564-.282-.522-.72-1.002-1.314-1.441-1.116-.838-2.39-1.258-3.82-1.258-1.517 0-2.809.537-3.879 1.611-1.07 1.074-1.605 2.366-1.605 3.875 0 .204.015.421.044.653-.787.218-1.439.638-1.956 1.26-.518.622-.777 1.348-.777 2.179 0 .91.319 1.685.956 2.325.637.639 1.411.959 2.322.959h10.963c.691 0 1.285-.245 1.78-.735.495-.49.743-1.082.743-1.776z"/></svg>
+               </a>
+            )}
+          </div>
+          
+          <div className="flex justify-end pt-8 mt-auto w-full">
+             <motion.button 
+                animate={{ backgroundPosition: ["0% 50%", "200% 50%"] }}
+                transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+                onClick={onGoToVault} 
+                className={`bg-[length:200%_100%] font-bold py-3 px-10 rounded-full transition-all hover:scale-105 active:scale-95 text-lg cursor-pointer border ${
+                  isMusicianTheme
+                    ? 'bg-[linear-gradient(110deg,#d97706,45%,#fef08a,55%,#d97706)] text-stone-950 border-amber-400/50 hover:shadow-[0_8px_20px_rgba(217,119,6,0.5)] font-black'
+                    : isDreamyTheme
+                      ? 'bg-[linear-gradient(110deg,#e11d48,45%,#fbcfe8,55%,#e11d48)] text-white border-rose-400/50 hover:shadow-[0_8px_20px_rgba(225,29,72,0.5)] font-black'
+                      : isGoldTheme 
+                        ? 'bg-[linear-gradient(110deg,#f59e0b,45%,#fef08a,55%,#f59e0b)] text-stone-950 border-yellow-400/50 hover:shadow-[0_8px_20px_rgba(245,158,11,0.5)] font-black' 
+                        : 'bg-[linear-gradient(110deg,#06b6d4,45%,#a5f3fc,55%,#06b6d4)] text-stone-950 border-cyan-400/50 hover:shadow-[0_8px_20px_rgba(6,182,212,0.5)] font-black'
+                }`}
+             >
+                {t("Kho Nhạc")}
+             </motion.button>
+          </div>
+        </div>
+    </motion.div>
+  );
+}
+
+function InfoField({ label, value, isMusicianTheme, isDreamyTheme, isGoldTheme }: { label: string, value: string, isMusicianTheme?: boolean, isDreamyTheme?: boolean, isGoldTheme?: boolean }) {
+  return (
+    <div className="flex items-center font-medium text-[clamp(0.85rem,3.5vw,1.125rem)] w-full py-0.5">
+      <span className={`font-bold w-[35%] max-w-[160px] shrink-0 whitespace-nowrap overflow-hidden text-ellipsis ${
+        isMusicianTheme
+          ? 'text-amber-300/90'
+          : isDreamyTheme
+            ? 'text-rose-200/90'
+            : isGoldTheme
+              ? 'text-amber-300/90'
+              : 'text-cyan-200/90'
+      }`}>{label}</span>
+      <span className={`mx-1 sm:mx-2 shrink-0 font-bold ${
+        isMusicianTheme ? 'text-amber-500' : isDreamyTheme ? 'text-rose-400' : isGoldTheme ? 'text-amber-400' : 'text-cyan-400'
+      }`}>:</span>
+      <span className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis font-extrabold text-white drop-shadow-xs">{value}</span>
+    </div>
+  );
+}
+
+function PublicBioView({ biography, t, isAdmin, artistExtension, isGoldTheme, isMusicianTheme, isDreamyTheme }: any) {
+  if (!biography) return null;
+  
+  const hasEdu = biography.education?.length > 0;
+  const hasExp = biography.experience?.length > 0;
+  
+  if (!hasEdu && !hasExp) return null;
+  const isLiquidGlassTheme = !isGoldTheme && !isMusicianTheme && !isDreamyTheme;
+  
+  return (
+    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`w-full mx-auto mt-4 sm:mt-8 mb-20 relative z-10 px-4 sm:px-8 lg:px-12 backdrop-blur-2xl border rounded-[2.5rem] py-12 max-w-7xl overflow-hidden ${
+      hasEdu && hasExp ? 'grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16' : 'flex flex-col'
+    } ${
+      isMusicianTheme
+        ? 'bg-gradient-to-br from-[#2D160B]/95 via-[#210E06]/95 to-[#160803]/98 border-amber-700/60 shadow-[0_20px_50px_rgba(0,0,0,0.85)] text-amber-50' 
+        : isDreamyTheme 
+          ? 'bg-slate-950/40 border-rose-500/35 shadow-[0_20px_50px_rgba(0,0,0,0.4),0_0_40px_rgba(244,63,94,0.2)] text-white' 
+          : isGoldTheme 
+            ? 'bg-gradient-to-br from-stone-900/95 via-amber-950/40 to-stone-900/95 border-amber-500/30 shadow-[0_8px_32px_0_rgba(251,191,36,0.2)] text-white' 
+            : 'bg-slate-950/40 border-cyan-500/35 shadow-[0_20px_50px_rgba(0,0,0,0.4),0_0_40px_rgba(6,182,212,0.2)] text-white'
+    }`}>
+      {/* Background ambient lighting */}
+      {isDreamyTheme && (
+        <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 via-purple-500/10 to-transparent pointer-events-none rounded-[2.5rem]" />
+      )}
+      {isMusicianTheme && (
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(217,119,6,0.15),transparent_70%)] pointer-events-none rounded-[2.5rem]" />
+      )}
+      {isGoldTheme && (
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,158,11,0.15),transparent_70%)] pointer-events-none rounded-[2.5rem]" />
+      )}
+      {isLiquidGlassTheme && (
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-teal-500/5 to-transparent pointer-events-none rounded-[2.5rem]" />
+      )}
+
+      {isAdmin && (
+        <a href={getAdminLink('bio')} className={`absolute top-6 right-6 p-3 ${isMusicianTheme ? 'bg-amber-900/60 text-amber-200 hover:bg-amber-800/80 hover:text-white' : 'bg-white/10 text-white/70 hover:text-white hover:bg-white/20'} rounded-full transition-colors z-20`} title={t("Chỉnh sửa")}>
+          <Edit3 className="w-5 h-5 sm:w-6 sm:h-6" />
+        </a>
+      )}
+      {hasEdu && (
+        <div className="w-full relative z-10">
+          <h2 className={`text-2xl sm:text-3xl font-black mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-4 sm:pl-6 lg:pl-8 ${
+            isMusicianTheme
+              ? 'text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-400'
+              : isDreamyTheme
+                ? 'text-transparent bg-clip-text bg-gradient-to-r from-rose-200 to-pink-300'
+                : isGoldTheme
+                  ? 'text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-300'
+                  : 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-teal-300'
+          }`}>
+            {t('Học Vấn') || 'Học Vấn'}
+          </h2>
+          <div className="space-y-8 relative">
+            <motion.div 
+              initial={{ height: 0 }} 
+              whileInView={{ height: '100%' }} 
+              viewport={{ once: true }} 
+              transition={{ duration: 1.5, ease: 'easeOut' }} 
+              className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${
+                isMusicianTheme ? 'bg-amber-500/50' : isDreamyTheme ? 'bg-rose-500/50' : isGoldTheme ? 'bg-amber-500/50' : 'bg-cyan-500/50'
+              } origin-top z-0`} 
+            />
+            {biography.education.map((item: any, idx: number) => (
+              <TimelineItem key={`l22207-idx-19-${idx}`} item={item} isSplit={true} color="emerald" index={idx} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} isGoldTheme={isGoldTheme} />
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {hasExp && (
+        <div className="w-full relative z-10">
+          <h2 className={`text-2xl sm:text-3xl font-black mb-8 sm:mb-10 tracking-tight flex items-center justify-start pl-4 sm:pl-6 lg:pl-8 ${
+            isMusicianTheme
+              ? 'text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-400'
+              : isDreamyTheme
+                ? 'text-transparent bg-clip-text bg-gradient-to-r from-rose-200 to-pink-300'
+                : isGoldTheme
+                  ? 'text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-300'
+                  : 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-teal-300'
+          }`}>
+            {t('Kinh nghiệm') || 'Kinh nghiệm'}
+          </h2>
+          <div className="space-y-8 relative">
+            <motion.div 
+              initial={{ height: 0 }} 
+              whileInView={{ height: '100%' }} 
+              viewport={{ once: true }} 
+              transition={{ duration: 1.5, ease: 'easeOut' }} 
+              className={`absolute top-0 bottom-0 left-0 -translate-x-px w-0.5 ${
+                isMusicianTheme ? 'bg-amber-500/50' : isDreamyTheme ? 'bg-rose-500/50' : isGoldTheme ? 'bg-amber-500/50' : 'bg-cyan-500/50'
+              } origin-top z-0`} 
+            />
+            {biography.experience.map((item: any, idx: number) => (
+              <TimelineItem key={`l22227-idx-20-${idx}`} item={item} isSplit={true} color="blue" index={idx} isMusicianTheme={isMusicianTheme} isDreamyTheme={isDreamyTheme} isGoldTheme={isGoldTheme} />
+            ))}
+          </div>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+function TimelineItem({ item, isSplit = false, color = "emerald", index = 0, isMusicianTheme = false, isDreamyTheme = false, isGoldTheme = false }: { item: any, isSplit?: boolean, color?: "emerald" | "blue", key?: number | string, index?: number, isMusicianTheme?: boolean, isDreamyTheme?: boolean, isGoldTheme?: boolean }) {
+  const isEmerald = color === "emerald";
+  const [isImgOpen, setIsImgOpen] = useState(false);
+  
+  // Resolve multiple images from data
+  const images = useMemo(() => {
+    if (item.imageUrls && Array.isArray(item.imageUrls) && item.imageUrls.length > 0) {
+      return item.imageUrls.filter(Boolean);
+    }
+    return item.imageUrl ? [item.imageUrl] : [];
+  }, [item.imageUrls, item.imageUrl]);
+
+  const [activeImgIdx, setActiveImgIdx] = useState(0);
+  const [activeModalIdx, setActiveModalIdx] = useState(0);
+
+  // Outer slideshow (auto transition 3s)
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const interval = setInterval(() => {
+      setActiveImgIdx((prev) => (prev + 1) % images.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [images.length]);
+
+  // Open modal handler
+  const handleOpenModal = () => {
+    setActiveModalIdx(activeImgIdx);
+    setIsImgOpen(true);
+  };
+
+  // Modal manual control with timer reset
+  const handlePrev = (e: any) => {
+    e.stopPropagation();
+    setActiveModalIdx((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const handleNext = (e: any) => {
+    e.stopPropagation();
+    setActiveModalIdx((prev) => (prev + 1) % images.length);
+  };
+
+  // Modal auto transition (auto transition 3s)
+  useEffect(() => {
+    if (!isImgOpen || images.length <= 1) return;
+    const interval = setInterval(() => {
+      setActiveModalIdx((prev) => (prev + 1) % images.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [isImgOpen, images.length, activeModalIdx]); // reset timer on activeModalIdx change
+
+  const hasImages = images.length > 0;
+
+  return (
+    <>
+      <div className={`relative flex items-start justify-between md:justify-normal ${!isSplit ? 'md:odd:flex-row-reverse' : ''} group is-active cursor-default`}>
+        {/* Timeline dot */}
+        <motion.div 
+          initial={{ scale: 0, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: index * 0.2 + 0.3, type: 'spring' }}
+          className={`flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-white/90 backdrop-blur-md ${
+            isMusicianTheme
+              ? 'bg-amber-600 shadow-[0_0_10px_rgba(217,119,6,0.6)]'
+              : isDreamyTheme
+                ? 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.6)]'
+                : isGoldTheme
+                  ? 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.6)]'
+                  : 'bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.6)]'
+          } text-white shadow-md shrink-0 relative z-10 ${!isSplit ? 'md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2' : '-ml-3 sm:-ml-[14px] mt-1 sm:mt-0.5'}`}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 sm:w-3.5 sm:h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            {isEmerald ? (
+              <><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></>
+            ) : (
+              <><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>
+            )}
+          </svg>
+        </motion.div>
+        
+        {/* Content box */}
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: index * 0.2 + 0.4, duration: 0.5, ease: 'easeOut' }}
+          className={`flex-1 pt-0 pb-8 transition-colors ${!isSplit ? 'md:flex-none md:w-[calc(50%-2.5rem)] text-left md:group-odd:text-right' : 'ml-2 sm:ml-3'} relative flex flex-row items-start justify-between gap-0 sm:gap-2 md:gap-0 p-4 -mt-4 rounded-xl hover:bg-white/5 hover:scale-[1.02] duration-300 group`}
+        >
+          {/* Text content - dynamically adjust width based on hasImages */}
+          <div className={`${hasImages ? 'w-[85%] md:w-[85%] lg:w-[82%] md:pr-6' : 'w-full'} relative z-0`}>
+            <div className={`flex flex-col mb-1 ${!isSplit && hasImages ? 'md:group-odd:items-end' : ''}`}>
+              <div className="mb-2">
+                <span className={`text-xs sm:text-sm font-extrabold inline-block px-3 py-1.5 rounded-lg border transition-all duration-300 shadow-sm ${
+                  isMusicianTheme 
+                    ? 'text-amber-300 border-amber-600/40 bg-amber-950/80' 
+                    : isDreamyTheme 
+                      ? 'text-rose-300 border-rose-500/40 bg-rose-950/80 shadow-[0_0_10px_rgba(244,63,94,0.2)]'
+                      : isGoldTheme
+                        ? 'text-amber-300 border-amber-500/40 bg-amber-950/80 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
+                        : 'text-cyan-300 border-cyan-500/40 bg-cyan-950/80 shadow-[0_0_10px_rgba(6,182,212,0.2)]'
+                }`}>{item.time}</span>
+              </div>
+              <h3 className="font-black text-white drop-shadow-sm text-base sm:text-lg leading-snug">{item.title}</h3>
+            </div>
+            {/* Auto-detect bullet points/lists and render with proper indentation */}
+            <div className="space-y-2 mt-2">
+              {item.description ? item.description.split('\n').map((line: string, idx: number) => {
+                const trimmed = line.trim();
+                const bulletMatch = trimmed.match(/^([-*+•–—]|\d+[.)])\s*(.*)/);
+                if (bulletMatch) {
+                  const bullet = bulletMatch[1];
+                  const content = bulletMatch[2];
+                  const isNumber = /^\d+/.test(bullet);
+                  return (
+                    <div key={`l22334-idx-21-${idx}`} className={`flex items-start gap-2.5 pl-3 text-sm leading-relaxed ${
+                      isMusicianTheme ? 'text-amber-100/90 font-medium' : isDreamyTheme ? 'text-rose-100/90 font-medium' : 'text-slate-200 font-medium'
+                    }`}>
+                      <span className={`shrink-0 select-none ${isNumber ? 'font-bold text-xs mt-0.5' : 'text-base -mt-0.5'} ${
+                        isMusicianTheme ? 'text-amber-400' : isDreamyTheme ? 'text-rose-400' : isGoldTheme ? 'text-amber-400' : 'text-cyan-400'
+                      }`}>
+                        {isNumber ? bullet : '•'}
+                      </span>
+                      <span className="flex-1">{content}</span>
+                    </div>
+                  );
+                }
+                return (
+                  <p key={`l22343-idx-22-${idx}`} className={`text-sm leading-relaxed min-h-[1rem] ${
+                    isMusicianTheme ? 'text-amber-100/90 font-medium' : isDreamyTheme ? 'text-rose-100/90 font-medium' : 'text-slate-200 font-medium'
+                  }`}>
+                    {line}
+                  </p>
+                );
+              }) : null}
+            </div>
+          </div>
+
+          {/* Image Container */}
+          {hasImages && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+              whileInView={{ opacity: 1, scale: 1, rotate: !isSplit ? [-2, 3, -1, 2, -2] : [2, -3, 1, -2, 2] }}
+              viewport={{ once: true }}
+              transition={{ 
+                opacity: { delay: index * 0.3 + 0.6, duration: 0.6 },
+                scale: { delay: index * 0.3 + 0.6, duration: 0.6 },
+                rotate: { repeat: Infinity, duration: 8, ease: "easeInOut" }
+              }}
+              style={{ transformOrigin: 'top center' }}
+              className={`shrink-0 absolute top-0 -right-2 sm:-right-4 md:-right-10 bg-[#fdfbf7] p-1 pb-3 sm:p-1.5 sm:pb-5 shadow-[2px_4px_15px_rgba(0,0,0,0.15)] border border-stone-200/80 rounded-sm cursor-pointer hover:z-20 hover:scale-105 transition-all z-10 ${!isSplit ? 'md:group-odd:left-auto md:group-odd:right-auto md:group-odd:-left-10 lg:group-odd:-left-12' : ''}`}
+              onClick={handleOpenModal}
+            >
+              {/* Tape effect */}
+              <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-6 sm:w-8 h-3 sm:h-4 bg-white/60 backdrop-blur-sm shadow-sm rotate-[4deg] z-10 border border-white/40"></div>
+              
+              {/* Image with preserved aspect ratio */}
+              <div className="w-14 sm:w-20 md:w-24 flex items-center justify-center overflow-hidden bg-stone-50 rounded-sm relative" style={{aspectRatio: "1/1"}}>
+                {images.map((imgUrl, idx) => {
+                  const isActive = idx === activeImgIdx;
+                  return (
+                    <img
+                      key={"timeline-img-" + idx}
+                      src={imgUrl}
+                      className={`absolute inset-0 w-full h-full object-contain rounded-sm border border-stone-100 transition-opacity duration-1000 ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                      alt={item.title}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* Indicator dots for multiple images on miniature Polaroid */}
+              {images.length > 1 && (
+                <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex items-center gap-0.5 pointer-events-none">
+                  {images.map((_, i) => (
+                    <div 
+                      key={`l22383-i-${i}`} 
+                      className={`w-1 h-1 rounded-full transition-all duration-300 ${i === activeImgIdx ? 'bg-amber-500 scale-125' : 'bg-stone-300'}`} 
+                    />
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+        </motion.div>
+      </div>
+
+      {/* Modal Zoom Portal */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {isImgOpen && (
+            <motion.div key="img-open"
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              className="fixed inset-0 z-[999999] flex items-center justify-center p-4 sm:p-8 bg-black/50 backdrop-blur-md" 
+              onClick={() => setIsImgOpen(false)}
+            >
+              <motion.div 
+                initial={{ scale: 0.95, opacity: 0, y: 20, rotate: -2 }} 
+                animate={{ scale: 1, opacity: 1, y: 0, rotate: 0 }} 
+                exit={{ scale: 0.95, opacity: 0, y: 20, rotate: 2 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="relative inline-flex flex-col bg-[#fdfbf7] p-3 sm:p-5 pb-5 sm:pb-7 shadow-[0_20px_50px_rgba(0,0,0,0.6)] border border-stone-200/90 rounded-sm cursor-auto max-w-[95vw] sm:max-w-[90vw]" 
+                onClick={e => e.stopPropagation()}
+              >
+                {/* Tape effect */}
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-14 sm:w-20 h-5 sm:h-7 bg-white/70 backdrop-blur-sm shadow-sm rotate-[3deg] z-10 border border-white/50"></div>
+                
+                {/* Close Button */}
+                <div className="absolute -top-4 -right-4 z-30">
+                  <button 
+                    type="button" 
+                    onClick={() => setIsImgOpen(false)} 
+                    className="text-stone-500 hover:text-stone-800 transition-colors p-2 bg-white hover:bg-stone-50 border border-stone-200 rounded-full shadow-md cursor-pointer"
+                  >
+                    <X className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </button>
+                </div>
+
+                {/* Slideshow Display Section */}
+                <div className="relative flex items-center justify-center overflow-hidden border border-stone-200/50 bg-stone-50/50 p-1 rounded-sm max-w-[85vw] max-h-[65vh] md:max-w-[65vw] md:max-h-[65vh]">
+                  {/* Left Arrow Button */}
+                  {images.length > 1 && (
+                    <button 
+                      type="button"
+                      onClick={handlePrev}
+                      className="absolute left-2 z-20 p-2 rounded-full bg-white/80 hover:bg-white text-stone-700 hover:text-stone-900 shadow-md backdrop-blur-xs transition-all duration-200 cursor-pointer active:scale-95"
+                      title="Quay lại"
+                    >
+                      <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </button>
+                  )}
+
+                  {/* Right Arrow Button */}
+                  {images.length > 1 && (
+                    <button 
+                      type="button"
+                      onClick={handleNext}
+                      className="absolute right-2 z-20 p-2 rounded-full bg-white/80 hover:bg-white text-stone-700 hover:text-stone-900 shadow-md backdrop-blur-xs transition-all duration-200 cursor-pointer active:scale-95"
+                      title="Tiếp theo"
+                    >
+                      <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </button>
+                  )}
+
+                  {/* Image with preserved aspect ratio */}
+                  <div className="relative inline-block leading-none">
+                    <img 
+                      src={images[activeModalIdx]} 
+                      className="max-w-[80vw] max-h-[60vh] md:max-w-[60vw] md:max-h-[60vh] min-w-[200px] min-h-[200px] object-contain shadow-xs cursor-pointer select-none" 
+                      alt={item.title} 
+                      onClick={() => setIsImgOpen(false)} 
+                    />
+                    
+                    {/* Vintage Date Overlay */}
+                    <div 
+                      className="absolute bottom-3 sm:bottom-5 left-4 sm:left-6 z-10 text-[#ffb800] text-[14px] sm:text-2xl font-bold tracking-widest opacity-90 pointer-events-none select-none" 
+                      style={{ 
+                        fontFamily: '"Courier New", Courier, monospace', 
+                        textShadow: '2px 2px 4px rgba(0,0,0,0.8), -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' 
+                      }}
+                    >
+                      {item.time}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dots indicator for multiple images in Modal */}
+                {images.length > 1 && (
+                  <div className="flex justify-center gap-1.5 mt-3 select-none">
+                    {images.map((_, i) => (
+                      <button
+                        key={`l22480-i-${i}`}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveModalIdx(i);
+                        }}
+                        className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${i === activeModalIdx ? 'bg-amber-500 scale-125' : 'bg-stone-300 hover:bg-stone-400'} cursor-pointer`}
+                      />
+                    ))}
+                  </div>
+                )}
+                
+                {/* Handwriting Caption */}
+                <div className="w-full px-2 mt-3 sm:mt-4 text-center flex items-center justify-center select-none">
+                  <h3 className="text-sm sm:text-xl text-stone-800 font-medium italic -rotate-1 line-clamp-2 leading-tight px-1 max-w-full">
+                    {item.title} {images.length > 1 && <span className="text-stone-400 font-sans font-light not-italic text-xs sm:text-sm ml-1">({activeModalIdx + 1}/{images.length})</span>}
+                  </h3>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+    </>
+  );
+}
+
+
+
 // [CODE-SPLIT] Admin components moved to src/AdminModule.tsx
