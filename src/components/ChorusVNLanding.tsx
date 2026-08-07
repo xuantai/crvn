@@ -730,7 +730,7 @@ interface ChorusVNLandingProps {
 
 export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps = {}) {
   const [artists, setArtists] = useState<LandingArtist[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [slideDirection, setSlideDirection] = useState<number>(1);
   const [isPreloading, setIsPreloading] = useState(false);
@@ -1229,23 +1229,9 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
     // Load public artists
     fetch('/api/public/artists')
       .then((res) => res.json())
-      .then(async (data) => {
+      .then((data) => {
         if (Array.isArray(data)) {
           setArtists(data);
-          
-          // Preload images
-          const urls: string[] = [];
-          data.forEach((artist: any) => {
-            if (artist.homeCoverUrl) urls.push(artist.homeCoverUrl);
-            if (artist.slideshowImages && Array.isArray(artist.slideshowImages)) {
-              artist.slideshowImages.forEach((img: string) => {
-                if (img) urls.push(img);
-              });
-            }
-          });
-          FALLBACK_SLIDESHOW.forEach((img) => urls.push(img));
-
-          await preloadImages(urls);
         }
         setLoading(false);
       })
