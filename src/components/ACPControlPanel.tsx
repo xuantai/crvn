@@ -2097,7 +2097,7 @@ export default function ACPControlPanel() {
                           <td className="p-4 text-sm">
                             <div className="flex flex-col gap-0.5">
                               <a 
-                                href={`/${artist.extension}`} 
+                                href={getArtistSubdomainUrl(artist.extension, artist)} 
                                 target="_blank" 
                                 rel="noreferrer"
                                 className="text-purple-400 hover:underline flex items-center gap-1 font-medium group text-xs"

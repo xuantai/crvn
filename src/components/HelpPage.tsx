@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronRight, Settings, LogIn, LogOut, FileText, Layout, Copy, Repeat, Lock, Link as LinkIcon, Save, Eye, Plus, ChevronLeft, Globe, Camera, X } from 'lucide-react';
 import { LanguageContext } from '../App';
-import { getPlatformDomain } from '../utils/platform';
+import { getPlatformDomain, getArtistSubdomainUrl } from '../utils/platform';
 
 
 
@@ -572,7 +572,7 @@ export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
   }
 
   const isActivated = artistData ? (artistData.activated !== false) : (localStorage.getItem('activeAdminActivated') !== 'false');
-  const backTarget = (ext && isActivated) ? `/${ext}` : '/';
+  const backTarget = (ext && isActivated) ? getArtistSubdomainUrl(ext, artistData || {}) : '/';
 
   const handleLogout = async () => {
     localStorage.removeItem('adminToken');
@@ -591,9 +591,15 @@ export default function HelpPage({ DemoPlayer }: { DemoPlayer?: any }) {
       {/* Sidebar */}
       <div className="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-neutral-200 p-6 shrink-0 md:h-screen md:sticky md:top-0 overflow-y-auto flex flex-col justify-between">
         <div>
-          <Link to={backTarget} className="flex items-center gap-2 text-neutral-500 hover:text-black transition-colors mb-8 text-sm font-bold w-fit">
-            <ChevronLeft className="w-4 h-4" /> Quay lại
-          </Link>
+          {backTarget.startsWith('http') ? (
+            <a href={backTarget} className="flex items-center gap-2 text-neutral-500 hover:text-black transition-colors mb-8 text-sm font-bold w-fit">
+              <ChevronLeft className="w-4 h-4" /> Quay lại
+            </a>
+          ) : (
+            <Link to={backTarget} className="flex items-center gap-2 text-neutral-500 hover:text-black transition-colors mb-8 text-sm font-bold w-fit">
+              <ChevronLeft className="w-4 h-4" /> Quay lại
+            </Link>
+          )}
           <h2 className="text-xl font-black tracking-tight text-neutral-900 mb-6">Trợ Giúp</h2>
           <div className="space-y-6">
             {token && (

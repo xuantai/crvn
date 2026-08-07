@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle2, RefreshCw, ArrowRight } from 'lucide-react';
+import { getArtistSubdomainUrl, ensureGoogleSdkLoaded } from '../utils/platform';
 
 const removeAccents = (str: string) => {
   return str
@@ -120,10 +121,11 @@ export default function RegisterModal({
     }
   };
 
-  const handleGoogleSyncForRegister = () => {
+  const handleGoogleSyncForRegister = async () => {
     const googleClientId = "578858946574-opa9vfj5t2tmb9sr5jregbur9qa4tdac.apps.googleusercontent.com";
     setRegError('');
-    if ((window as any).google?.accounts?.id) {
+    const loaded = await ensureGoogleSdkLoaded();
+    if (loaded && (window as any).google?.accounts?.id) {
       try {
         (window as any).google.accounts.id.initialize({
           client_id: googleClientId,
@@ -149,7 +151,7 @@ export default function RegisterModal({
                     localStorage.setItem('adminToken', data.adminToken);
                     localStorage.setItem('activeAdminExtension', data.artistExtension);
                     localStorage.setItem('activeAdminName', data.artistName || data.artistExtension);
-                    window.location.href = `/${data.artistExtension}`;
+                    window.location.href = getArtistSubdomainUrl(data.artistExtension);
                     return;
                   }
 
@@ -179,7 +181,7 @@ export default function RegisterModal({
         setRegError(e?.message || 'Lỗi kết nối Google');
       }
     } else {
-      setRegError('Đang nạp thư viện Google, vui lòng thử lại sau vài giây!');
+      setRegError('Không thể nạp thư viện Google Auth. Vui lòng kiểm tra lại kết nối mạng!');
     }
   };
 

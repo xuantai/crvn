@@ -7332,7 +7332,9 @@ ${JSON.stringify(geminiInput, null, 2)}`;
 
   // Serve runtime uploads folder
   const uploadsPath = path.join(process.cwd(), 'public', 'uploads');
+  const rootUploadsPath = path.join(process.cwd(), 'uploads');
   app.use('/uploads', express.static(uploadsPath));
+  app.use('/uploads', express.static(rootUploadsPath));
   
   // Fallback for missing uploads: redirect to Cloudflare R2 CDN
   app.use('/uploads', async (req, res, next) => {

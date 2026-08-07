@@ -10,6 +10,7 @@ import { IndirectBioCard } from './components/IndirectBioCard';
 import { LoadingScreen } from './components/LoadingScreen';
 import { getYoutubeId } from './components/SmartYouTubePlayer';
 import RegisterModal from './components/RegisterModal';
+import { getArtistSubdomainUrl, getPlatformDomain, ensureGoogleSdkLoaded } from './utils/platform';
 const woodBgAsset = '/wood-bg.jpg';
 
 
@@ -2002,22 +2003,8 @@ function renderArtistNameWithLinks(text: string | null | undefined, systemArtist
 
               if (matchedArtist) {
                 // Construct link
-                const isProduction = window.location.hostname.includes('chorus.vn');
-                let href = `/${matchedArtist.extension}`;
-                let isExternal = false;
-
-                if (matchedArtist.hasExternalWebsite && matchedArtist.externalWebsiteUrl) {
-                  const cleanUrl = matchedArtist.externalWebsiteUrl.trim().replace(/^https?:\/\//i, '');
-                  href = `https://${cleanUrl}`;
-                  isExternal = true;
-                } else if (matchedArtist.customDomain) {
-                  const cleanUrl = matchedArtist.customDomain.trim().replace(/^https?:\/\//i, '');
-                  href = `https://${cleanUrl}`;
-                  isExternal = true;
-                } else if (isProduction) {
-                  href = `https://${matchedArtist.extension}.chorus.vn`;
-                  isExternal = true;
-                }
+                const href = getArtistSubdomainUrl(matchedArtist.extension, matchedArtist);
+                const isExternal = true;
 
                 if (isExternal) {
                   return (
@@ -5878,39 +5865,45 @@ const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
 };
 
 // ---- GLOBAL MULTI-ARTIST INTERCEPTORS ----
+const isBasePlatformDomain = (host: string) => {
+  const cleanHost = host.replace(/^www\./, '').toLowerCase().trim();
+  if (cleanHost === 'chorus.vn' || cleanHost === 'bbb.bz') return true;
+  if (cleanHost.endsWith('.run.app') || cleanHost.endsWith('.aistudio.google') || cleanHost.endsWith('.gitpod.io')) {
+    if (!(window as any).__ACTIVE_ARTIST_EXTENSION__) return true;
+  }
+  return false;
+};
+
 const getArtistExtensionFromUrl = (customPath?: string) => {
   const currentPath = customPath !== undefined ? customPath : window.location.pathname;
   const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
   const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
   const parts = host.split('.');
-  const isDefaultPlatform = parts.length <= 2 || host.endsWith('.run.app') || host.endsWith('.aistudio.google') || host.endsWith('.gitpod.io');
+  const isBaseDomain = isBasePlatformDomain(host);
 
   if (parts.length >= 3 && !isLocal) {
-    const sub = parts.slice(0, parts.length - 2).join('.');
-    if (sub && sub !== 'www') return sub;
+    const baseDomain = parts.slice(-2).join('.');
+    if (baseDomain === 'chorus.vn' || baseDomain === 'bbb.bz') {
+      const sub = parts.slice(0, parts.length - 2).join('.');
+      if (sub && sub !== 'www') return sub;
+    }
   }
 
-  if ((window as any).__ACTIVE_ARTIST_EXTENSION__ && !isDefaultPlatform && !isLocal) {
+  if ((window as any).__ACTIVE_ARTIST_EXTENSION__ && !isLocal) {
     return (window as any).__ACTIVE_ARTIST_EXTENSION__; // Custom domain always uses injected extension
   }
 
-  if (isDefaultPlatform && !isLocal) {
+  if (isBaseDomain && !isLocal) {
     if (currentPath === '/') {
       return '';
     }
   }
 
-  if ((window as any).__ACTIVE_ARTIST_EXTENSION__ && customPath === undefined) {
-    return (window as any).__ACTIVE_ARTIST_EXTENSION__;
-  }
-  if (!isLocal && !isDefaultPlatform) {
-    return (window as any).__ACTIVE_ARTIST_EXTENSION__ || '';
-  }
   const segments = currentPath.split('/').filter(Boolean);
   if (segments.length > 0) {
     const firstSegment = segments[0].toLowerCase();
     
-    const reserved = ['admin', 'acp', 'master', 'mem', 'demo', 'song', 'playlist', 'verify-email', 'help', 'register', 'login'];
+    const reserved = ['admin', 'acp', 'master', 'mem', 'demo', 'song', 'playlist', 'verify-email', 'help', 'register', 'login', 'explore', 'kham-pha'];
     if (!reserved.includes(firstSegment)) {
       return segments[0];
     }
@@ -5934,8 +5927,8 @@ const isArtistContext = () => {
   }
   
   // Custom domain check
-  const isDefaultPlatform = parts.length <= 2 || host.endsWith('.run.app') || host.endsWith('.aistudio.google') || host.endsWith('.gitpod.io');
-  if (!isLocal && !isDefaultPlatform) {
+  const isBaseDomain = isBasePlatformDomain(host);
+  if (!isLocal && !isBaseDomain) {
     return true;
   }
   return false;
@@ -5953,15 +5946,15 @@ const getAdminLink = (subPath: string = '', _customPath?: string) => {
 const getArtistLink = (subPath: string = '', customPath?: string) => {
   const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
   const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
-  const parts = host.split('.');
-  const baseDomain = parts.length >= 2 ? parts.slice(-2).join('.') : host;
-  const ext = getArtistExtensionFromUrl(customPath) || (window as any).__ACTIVE_ARTIST_EXTENSION__ || '';
-  
+  const currentExt = getArtistExtensionFromUrl();
+  const targetExt = (customPath !== undefined ? getArtistExtensionFromUrl(customPath) : (customPath || currentExt)) || (window as any).__ACTIVE_ARTIST_EXTENSION__ || '';
+  const isArtistCtx = isArtistContext();
+
   let cleanPath = subPath ? (subPath.startsWith('/') ? subPath : `/${subPath}`) : '';
 
-  // 1. If cleanPath starts with /<ext>, strip /<ext> because extension is handled via subdomain or context
-  if (ext) {
-    const extPrefix = `/${ext}`;
+  // 1. If cleanPath starts with /<targetExt>, strip /<targetExt>
+  if (targetExt) {
+    const extPrefix = `/${targetExt}`;
     if (cleanPath === extPrefix || cleanPath === `${extPrefix}/`) {
       cleanPath = '';
     } else if (cleanPath.startsWith(`${extPrefix}/`)) {
@@ -5980,14 +5973,18 @@ const getArtistLink = (subPath: string = '', customPath?: string) => {
         'explore', 'kham-pha'
       ];
       if (!RESERVED_EXTS.includes(firstSegment)) {
-        const targetExt = firstSegment;
+        const explicitExt = firstSegment;
         const restOfPath = '/' + pParts.slice(1).join('/');
         const normalizedRest = (restOfPath === '/' || restOfPath === '') ? '' : restOfPath;
 
+        if (isArtistCtx && currentExt && explicitExt.toLowerCase() === currentExt.toLowerCase()) {
+          return normalizedRest || '/';
+        }
+        const platformDomain = getPlatformDomain();
         if (!isLocal) {
-          return `https://${targetExt}.${baseDomain}${normalizedRest}`;
-        } else if (isLocal) {
-          return `http://${targetExt}.localhost:${window.location.port}${normalizedRest}`;
+          return `https://${explicitExt}.${platformDomain}${normalizedRest}`;
+        } else {
+          return `http://${explicitExt}.localhost:${window.location.port}${normalizedRest}`;
         }
       }
     }
@@ -5995,9 +5992,21 @@ const getArtistLink = (subPath: string = '', customPath?: string) => {
 
   const normalizedPath = cleanPath ? (cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`) : '';
 
-  if (ext && !isLocal) {
-    return `https://${ext}.${baseDomain}${normalizedPath}`;
+  // If inside an artist context (subdomain or custom domain like tài.vn) and target is current artist, return relative path!
+  if (isArtistCtx) {
+    if (!targetExt || (currentExt && targetExt.toLowerCase() === currentExt.toLowerCase())) {
+      return normalizedPath || '/';
+    }
   }
+
+  // Cross-linking to another artist or navigating from landing page (chorus.vn)
+  const platformDomain = getPlatformDomain();
+  if (targetExt && !isLocal) {
+    return `https://${targetExt}.${platformDomain}${normalizedPath}`;
+  } else if (targetExt && isLocal) {
+    return `http://${targetExt}.localhost:${window.location.port}${normalizedPath}`;
+  }
+
   return normalizedPath || '/';
 };
 
@@ -6121,33 +6130,12 @@ const getActiveAdminSession = () => {
       activeAvatar: ''
     };
   }
-  const host = typeof window !== 'undefined' ? window.location.hostname.replace(/^www./, '').toLowerCase().trim() : '';
-  const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
-  const isStandardDomain = !isLocal;
-
-  // On standard domains, the Cookie is the strict Single Source of Truth!
-  let activeExt = isStandardDomain 
-    ? getGlobalCookie('activeAdminExtension') 
-    : (getGlobalCookie('activeAdminExtension') || localStorage.getItem('activeAdminExtension'));
-
+  let activeExt = getGlobalCookie('activeAdminExtension') || (typeof localStorage !== 'undefined' ? (localStorage.getItem('activeAdminExtension') || '') : '');
   let activeToken = activeExt 
-    ? (getGlobalCookie(`adminToken_${activeExt}`) || getGlobalCookie('adminToken') || (isStandardDomain ? null : (localStorage.getItem(`adminToken_${activeExt}`) || localStorage.getItem('adminToken')))) 
-    : null;
+    ? (getGlobalCookie(`adminToken_${activeExt}`) || getGlobalCookie('adminToken') || (typeof localStorage !== 'undefined' ? (localStorage.getItem(`adminToken_${activeExt}`) || localStorage.getItem('adminToken') || '') : '')) 
+    : (typeof localStorage !== 'undefined' ? (localStorage.getItem('adminToken') || '') : '');
 
-  // If no active extension or no active token exists on cookie level, session is LOGGED OUT!
   if (!activeExt || !activeToken) {
-    if (typeof window !== 'undefined') {
-      (window as any).__IS_LOGGED_OUT__ = true;
-    }
-    if (isChorusDomain && typeof localStorage !== 'undefined') {
-      const origRemove = (window as any).__originalRemoveItem__ || localStorage.removeItem;
-      const keys = Object.keys(localStorage);
-      keys.forEach(k => {
-        if (k && (k.includes('adminToken') || k.includes('activeAdmin') || k.includes('memberToken'))) {
-          origRemove.call(localStorage, k);
-        }
-      });
-    }
     return {
       activeExt: '',
       activeToken: '',
@@ -6157,10 +6145,10 @@ const getActiveAdminSession = () => {
     };
   }
 
-  let activeName = getGlobalCookie('activeAdminName') || localStorage.getItem('activeAdminName') || activeExt;
-  const storedActivated = getGlobalCookie('activeAdminActivated') || localStorage.getItem('activeAdminActivated');
+  let activeName = getGlobalCookie('activeAdminName') || (typeof localStorage !== 'undefined' ? localStorage.getItem('activeAdminName') : '') || activeExt;
+  const storedActivated = getGlobalCookie('activeAdminActivated') || (typeof localStorage !== 'undefined' ? localStorage.getItem('activeAdminActivated') : '');
   const activeActivated = storedActivated !== 'false';
-  const activeAvatar = getGlobalCookie('activeAdminAvatar') || localStorage.getItem('activeAdminAvatar') || '';
+  const activeAvatar = getGlobalCookie('activeAdminAvatar') || (typeof localStorage !== 'undefined' ? localStorage.getItem('activeAdminAvatar') : '') || '';
 
   return {
     activeExt,
@@ -6173,25 +6161,12 @@ const getActiveAdminSession = () => {
 
 const getAdminToken = (customPath?: string) => {
   if (typeof window !== 'undefined' && (window as any).__IS_LOGGED_OUT__) return '';
-  const host = typeof window !== 'undefined' ? window.location.hostname.replace(/^www\./, '').toLowerCase().trim() : '';
-  const isChorusDomain = host.endsWith('.chorus.vn') || host === 'chorus.vn';
   const key = getAdminTokenKey(customPath);
-
-  if (isChorusDomain) {
-    const cookieToken = getGlobalCookie(key) || getGlobalCookie('adminToken');
-    if (!cookieToken) return '';
-    return cookieToken;
+  let val = getGlobalCookie(key) || getGlobalCookie('adminToken');
+  if (!val && typeof localStorage !== 'undefined') {
+    val = localStorage.getItem(key) || localStorage.getItem('adminToken') || localStorage.getItem('masterToken') || '';
   }
-
-  let val = localStorage.getItem(key);
-  if (!val && typeof getGlobalCookie === 'function') {
-    val = getGlobalCookie(key);
-    if (val) localStorage.setItem(key, val);
-  }
-  if (!val) {
-    val = localStorage.getItem('masterToken') || localStorage.getItem('adminToken') || '';
-  }
-  return val;
+  return val || '';
 };
 const setAdminToken = (token: string, customPath?: string) => localStorage.setItem(getAdminTokenKey(customPath), token);
 const removeAdminToken = (customPath?: string) => {
@@ -6832,99 +6807,83 @@ function AdminLogin() {
     }
   };
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     const googleClientId = "578858946574-opa9vfj5t2tmb9sr5jregbur9qa4tdac.apps.googleusercontent.com";
     setErr('');
     setUnregisteredEmail('');
     setLoading(true);
 
-    const initGSI = () => {
-      if ((window as any).google?.accounts?.id) {
-        try {
-          (window as any).google.accounts.id.initialize({
-            client_id: googleClientId,
-            callback: async (response: any) => {
-              if (response?.credential) {
-                try {
-                  const res = await fetch('/api/auth/google', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ credential: response.credential })
-                  });
+    const loaded = await ensureGoogleSdkLoaded();
+    if (loaded && (window as any).google?.accounts?.id) {
+      try {
+        (window as any).google.accounts.id.initialize({
+          client_id: googleClientId,
+          callback: async (response: any) => {
+            if (response?.credential) {
+              try {
+                const res = await fetch('/api/auth/google', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ credential: response.credential })
+                });
 
-                  if (res.ok) {
-                    const data = await res.json();
-                    if (data.isArtist && (data.adminToken || data.token)) {
-                      const token = data.adminToken || data.token;
-                      const extension = data.artistExtension || data.username;
-                      const avatar = data.user?.picture || '';
-                      if ((window as any).syncLoginSession) {
-                        (window as any).syncLoginSession(
-                          token,
-                          extension,
-                          data.artistName || data.username || extension,
-                          avatar,
-                          true
-                        );
-                      } else {
-                        setAdminToken(token, `/${extension}`);
-                        localStorage.setItem('activeAdminExtension', extension);
-                        setGlobalCookie('activeAdminExtension', extension);
-                        localStorage.setItem('activeAdminName', data.artistName || data.username || extension);
-                        localStorage.setItem('activeAdminAvatar', avatar);
-                      }
-                      window.location.href = getAdminLink();
-                      return;
+                if (res.ok) {
+                  const data = await res.json();
+                  if (data.isArtist && (data.adminToken || data.token)) {
+                    const token = data.adminToken || data.token;
+                    const extension = data.artistExtension || data.username;
+                    const avatar = data.user?.picture || '';
+                    if ((window as any).syncLoginSession) {
+                      (window as any).syncLoginSession(
+                        token,
+                        extension,
+                        data.artistName || data.username || extension,
+                        avatar,
+                        true
+                      );
                     } else {
-                      const email = data.user?.email || '';
-                      if (email) {
-                        setUnregisteredEmail(email);
-                        setIsGoogleVerifiedState(true);
-                      }
-                      setErr(`Email ${email} chưa được đăng ký tài khoản nghệ sĩ.`);
+                      setAdminToken(token, `/${extension}`);
+                      localStorage.setItem('activeAdminExtension', extension);
+                      setGlobalCookie('activeAdminExtension', extension);
+                      localStorage.setItem('activeAdminName', data.artistName || data.username || extension);
+                      localStorage.setItem('activeAdminAvatar', avatar);
                     }
+                    window.location.href = getAdminLink();
+                    return;
                   } else {
-                    const data = await res.json();
-                    setErr(data.error || 'Lỗi xác thực Google');
+                    const email = data.user?.email || '';
+                    if (email) {
+                      setUnregisteredEmail(email);
+                      setIsGoogleVerifiedState(true);
+                    }
+                    setErr(`Email ${email} chưa được đăng ký tài khoản nghệ sĩ.`);
                   }
-                } catch (e: any) {
-                  setErr('Lỗi kết nối máy chủ!');
-                } finally {
-                  setLoading(false);
+                } else {
+                  const data = await res.json();
+                  setErr(data.error || 'Lỗi xác thực Google');
                 }
-              } else {
+              } catch (e: any) {
+                setErr('Lỗi kết nối máy chủ!');
+              } finally {
                 setLoading(false);
               }
-            }
-          });
-          (window as any).google.accounts.id.prompt((notification: any) => {
-            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            } else {
               setLoading(false);
             }
-          });
-        } catch (e: any) {
-          setErr(e?.message || 'Lỗi khởi tạo Google Auth');
-          setLoading(false);
-        }
-      } else {
-        setErr('Đang nạp thư viện Google, vui lòng thử lại sau vài giây!');
+          }
+        });
+        (window as any).google.accounts.id.prompt((notification: any) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            setLoading(false);
+          }
+        });
+      } catch (e: any) {
+        setErr(e?.message || 'Lỗi khởi tạo Google Auth');
         setLoading(false);
       }
-    };
-
-    // Lazy load GSI script on first use
-    if ((window as any).google?.accounts?.id) {
-      initGSI();
-    } else if (!document.querySelector('script[src*="accounts.google.com/gsi/client"]')) {
-      const script = document.createElement('script');
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.onload = () => setTimeout(initGSI, 100);
-      script.onerror = () => { setErr('Không thể tải Google Auth'); setLoading(false); };
-      document.head.appendChild(script);
     } else {
-      // Script tag exists but not loaded yet, retry
-      setTimeout(initGSI, 500);
+      setErr('Không thể nạp thư viện Google Auth. Vui lòng kiểm tra lại kết nối mạng!');
+      setLoading(false);
     }
   };
 
@@ -9181,8 +9140,7 @@ export default function App() {
         await fetch('/api/admin/logout', { method: 'POST' });
       } catch (e) {}
     }
-    const ext = getArtistExtensionFromUrl();
-    window.location.href = ext ? `/${ext}` : '/';
+    window.location.href = getLogoutRedirectUrl();
   };
 
   useEffect(() => {
@@ -10430,7 +10388,7 @@ function Home() {
         const currentExt = getArtistExtensionFromUrl(window.location.pathname);
         const activeExt = localStorage.getItem('activeAdminExtension');
         if (data && data.error === 'inactive' && currentExt && activeExt && activeExt === currentExt) {
-          window.location.href = `/${currentExt}/help`;
+          window.location.href = getArtistAdminRedirect(currentExt, 'help');
         } else {
           if (window.location.pathname !== '/') {
             window.location.href = window.location.origin + '/';
@@ -14452,7 +14410,7 @@ function PlaylistPlayer() {
         const currentExt = getArtistExtensionFromUrl(window.location.pathname);
         const activeExt = localStorage.getItem('activeAdminExtension');
         if (currentExt && activeExt && activeExt === currentExt) {
-          window.location.href = `/${currentExt}/help`;
+          window.location.href = getArtistAdminRedirect(currentExt, 'help');
         } else {
           window.location.href = '/';
         }
@@ -15044,7 +15002,7 @@ export function DemoPlayer({ songIdP, playlistId, playlistSongs, setNextSong, on
         const currentExt = getArtistExtensionFromUrl(window.location.pathname);
         const activeExt = localStorage.getItem('activeAdminExtension');
         if (currentExt && activeExt && activeExt === currentExt) {
-          window.location.href = `/${currentExt}/help`;
+          window.location.href = getArtistAdminRedirect(currentExt, 'help');
         } else {
           window.location.href = '/';
         }

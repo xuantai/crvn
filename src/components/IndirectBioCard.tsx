@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Disc, Music, Apple, Youtube, Play, Share2, X, ExternalLink, ArrowLeft, Check, Edit3, FileText, Download } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SmartYouTubePlayer, getYoutubeId } from './SmartYouTubePlayer';
+import { getArtistSubdomainUrl } from '../utils/platform';
 
 interface IndirectBioCardProps {
   key?: React.Key;
@@ -75,23 +76,33 @@ const ZingIcon = ({ className }: { className?: string }) => (
 );
 
 const getArtistExtensionFromUrl = () => {
-  const host = window.location.hostname.replace(/^www\./, '');
-  if (host.endsWith('.chorus.vn') && host !== 'chorus.vn') {
-    const sub = host.replace('.chorus.vn', '');
-    if (sub) return sub;
+  if (typeof window === 'undefined') return '';
+  const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
+  const parts = host.split('.');
+  const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
+
+  if (parts.length >= 3 && !isLocal) {
+    const sub = parts.slice(0, parts.length - 2).join('.');
+    if (sub && sub !== 'www') return sub;
+  }
+  if ((window as any).__ACTIVE_ARTIST_EXTENSION__) {
+    return (window as any).__ACTIVE_ARTIST_EXTENSION__;
   }
   const match = window.location.pathname.match(/^\/([^\/]+)/);
-  if (match && !['admin', 'api', 'upload', 'demo', 'song', 'playlist', 'assets'].includes(match[1])) {
+  if (match && !['admin', 'api', 'upload', 'demo', 'song', 'playlist', 'assets', 'explore', 'kham-pha'].includes(match[1].toLowerCase())) {
     return match[1];
   }
   return '';
 };
 
 const getArtistLink = (subPath: string = '') => {
-  const host = window.location.hostname.replace(/^www\./, '');
-  const isSubdomain = host.endsWith('.chorus.vn') && host !== 'chorus.vn';
+  if (typeof window === 'undefined') return subPath || '/';
+  const host = window.location.hostname.replace(/^www\./, '').toLowerCase().trim();
+  const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
+  const isBaseDomain = host === 'chorus.vn' || host === 'bbb.bz';
   const normalizedPath = subPath.startsWith('/') ? subPath : `/${subPath}`;
-  if (isSubdomain) {
+
+  if (!isBaseDomain && !isLocal) {
     return normalizedPath;
   }
   const ext = getArtistExtensionFromUrl();
@@ -540,11 +551,11 @@ export function IndirectBioCard({ demo, onClose, isStandalone = false, lang = 'v
               {index > 0 && <span className="text-white/60 mx-1">x</span>}
               {matched ? (
                 <a 
-                  href={`/${matched.extension}`}
+                  href={getArtistSubdomainUrl(matched.extension, matched)}
                   className="hover:underline hover:text-white transition duration-200 cursor-pointer text-rose-400 hover:text-rose-300 font-bold"
                   onClick={(e) => {
                     e.preventDefault();
-                    window.location.href = `/${matched.extension}`;
+                    window.location.href = getArtistSubdomainUrl(matched.extension, matched);
                   }}
                 >
                   {name}

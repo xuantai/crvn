@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Eye, EyeOff, Music, BadgeCheck, Lock, Globe, ArrowRight, Sparkles, Disc3, CheckCircle2, XCircle, ListMusic, X, AlertCircle, Mail, ChevronLeft, ChevronRight, UserPlus, RefreshCw, Search, LogOut, UserCircle, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChorusLogo } from './ChorusLogo';
+import { getArtistSubdomainUrl, ensureGoogleSdkLoaded } from '../utils/platform';
 
 interface LandingArtist {
   artistName: string;
@@ -363,22 +364,8 @@ function ArtistLandingCard({ artist, t }: { artist: any; t: any; key?: any }) {
   }, [bgImages]);
 
   // Route URL calculations
-  const isProduction = window.location.hostname.includes('chorus.vn');
-  let href = `/${artist.extension}`;
-  let isExternal = false;
-
-  if (artist.hasExternalWebsite && artist.externalWebsiteUrl) {
-    const cleanUrl = artist.externalWebsiteUrl.trim().replace(/^https?:\/\//i, '');
-    href = `https://${cleanUrl}`;
-    isExternal = true;
-  } else if (artist.customDomain) {
-    const cleanUrl = artist.customDomain.trim().replace(/^https?:\/\//i, '');
-    href = `https://${cleanUrl}`;
-    isExternal = true;
-  } else if (isProduction) {
-    href = `https://${artist.extension}.chorus.vn`;
-    isExternal = true;
-  }
+  const href = getArtistSubdomainUrl(artist.extension, artist);
+  const isExternal = true;
 
   return (
     <motion.div
@@ -638,22 +625,8 @@ function ArtistLandingCard({ artist, t }: { artist: any; t: any; key?: any }) {
 
 function ArtistLandingMobileItem({ artist }: { artist: any; key?: any }) {
   // Route URL calculations
-  const isProduction = window.location.hostname.includes('chorus.vn');
-  let href = `/${artist.extension}`;
-  let isExternal = false;
-
-  if (artist.hasExternalWebsite && artist.externalWebsiteUrl) {
-    const cleanUrl = artist.externalWebsiteUrl.trim().replace(/^https?:\/\//i, '');
-    href = `https://${cleanUrl}`;
-    isExternal = true;
-  } else if (artist.customDomain) {
-    const cleanUrl = artist.customDomain.trim().replace(/^https?:\/\//i, '');
-    href = `https://${cleanUrl}`;
-    isExternal = true;
-  } else if (isProduction) {
-    href = `https://${artist.extension}.chorus.vn`;
-    isExternal = true;
-  }
+  const href = getArtistSubdomainUrl(artist.extension, artist);
+  const isExternal = true;
 
   const linkProps = isExternal ? { href, target: "_blank", rel: "noopener noreferrer" } : { to: href };
   const LinkComponent = isExternal ? 'a' : Link;
@@ -953,13 +926,15 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
   const registerModalBodyRef = useRef<HTMLDivElement>(null);
   const captchaRequestIdRef = useRef<number>(0);
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     const googleClientId = "578858946574-opa9vfj5t2tmb9sr5jregbur9qa4tdac.apps.googleusercontent.com";
     setRegError('');
     setLoginError('');
     setGoogleLoading(true);
 
-    const processGoogleData = async (payload: { credential?: string; email?: string; name?: string; picture?: string; sub?: string }) => {
+    await ensureGoogleSdkLoaded();
+
+    const processGoogleData = async (payload: any) => {
       try {
         const res = await fetch('/api/auth/google', {
           method: 'POST',
@@ -969,32 +944,18 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
 
         if (res.ok) {
           const data = await res.json();
-          if (data.isArtist && (data.adminToken || data.token)) {
-            const token = data.adminToken || data.token;
-            const extension = data.artistExtension || data.username;
-            const avatar = data.user?.picture || '';
-            if ((window as any).syncLoginSession) {
-              (window as any).syncLoginSession(
-                token,
-                extension,
-                data.artistName || data.username || extension,
-                avatar,
-                true
-              );
-            } else {
-              localStorage.setItem('adminToken', token);
-              localStorage.setItem(`adminToken_${extension}`, token);
-              localStorage.setItem('activeAdminExtension', extension);
-              localStorage.setItem('activeAdminName', data.artistName || data.username || extension);
-              localStorage.setItem('activeAdminAvatar', avatar);
-            }
-            const nameToDisplay = data.artistName || data.username || extension;
-            setLoggedInArtist(data.artist);
-            setLoginSuccessToast(`Đăng nhập Google thành công! Chào mừng ${nameToDisplay}`);
-            setTimeout(() => setLoginSuccessToast(''), 4000);
-            window.dispatchEvent(new Event('admin-session-change'));
-            setShowRegisterModal(false);
-            setShowLoginModal(false);
+          if (data.token) {
+            localStorage.setItem('memberToken', data.token);
+          }
+          if (data.user) {
+            localStorage.setItem('googleUser', JSON.stringify(data.user));
+          }
+
+          if (data.isArtist && data.adminToken && data.artistExtension) {
+            localStorage.setItem('adminToken', data.adminToken);
+            localStorage.setItem('activeAdminExtension', data.artistExtension);
+            localStorage.setItem('activeAdminName', data.artistName || data.artistExtension);
+            window.location.href = getArtistSubdomainUrl(data.artistExtension);
             return;
           } else {
             const email = data.user?.email || payload.email || '';
@@ -1847,7 +1808,7 @@ export default function ChorusVNLanding({ initialAction }: ChorusVNLandingProps 
           className="flex flex-col items-center justify-center gap-4 mt-6"
         >
           {loggedInArtist ? (
-            <a href={(loggedInArtist as any).activated === false ? `/${loggedInArtist.extension}/help` : `/${loggedInArtist.extension}`} className="bg-black text-white font-black text-sm md:text-base py-5 px-10 rounded-full uppercase tracking-wider flex items-center gap-2.5 cursor-pointer relative overflow-hidden group shadow-lg border border-neutral-800 transition-all hover:scale-105 active:scale-95">
+            <a href={(loggedInArtist as any).activated === false ? (typeof window !== 'undefined' && window.location.hostname.includes('localhost') ? '/help' : `https://${window.location.hostname.split('.').slice(-2).join('.')}/help`) : getArtistSubdomainUrl(loggedInArtist.extension, loggedInArtist)} className="bg-black text-white font-black text-sm md:text-base py-5 px-10 rounded-full uppercase tracking-wider flex items-center gap-2.5 cursor-pointer relative overflow-hidden group shadow-lg border border-neutral-800 transition-all hover:scale-105 active:scale-95">
               <span className="relative z-10">
                 {(loggedInArtist as any).activated === false ? (lang === 'vi' ? 'Hướng Dẫn Sử Dụng' : 'User Guide') : (lang === 'vi' ? 'VÀO KHO NHẠC CỦA BẠN' : 'ENTER YOUR VAULT')}
               </span>
