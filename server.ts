@@ -3001,6 +3001,33 @@ function generateCaptchaSvg(text: string) {
       });
       ['common', 'system', 'explore'].forEach(k => knownIds.add(k));
 
+      // Also scan uploads/ subfolders and try to find artist names from data files for deleted accounts
+      try {
+        const uploadsEntries = await fs.readdir(UPLOADS_DIR, { withFileTypes: true });
+        for (const entry of uploadsEntries) {
+          if (entry.isDirectory() && !knownIds.has(entry.name) && entry.name !== '_trash') {
+            // Try to find a data file that references this folder ID
+            const dataFiles = fsSync.readdirSync(process.cwd()).filter((f: string) => f.startsWith('data_') && f.endsWith('.json'));
+            for (const df of dataFiles) {
+              try {
+                const content = fsSync.readFileSync(path.join(process.cwd(), df), 'utf-8');
+                if (content.includes(entry.name)) {
+                  const parsed = JSON.parse(content);
+                  if (parsed.artistName || parsed.username) {
+                    idToName[entry.name] = `${parsed.artistName || parsed.username} (đã xóa)`;
+                    break;
+                  }
+                }
+              } catch (_) {}
+            }
+            // If still not found, label as unknown deleted account
+            if (!idToName[entry.name]) {
+              idToName[entry.name] = `ID: ${entry.name} (đã xóa)`;
+            }
+          }
+        }
+      } catch (_) {}
+
       // 4. Categorize orphaned files
       const categories = {
         deleted_accounts: { id: 'deleted_accounts', label: 'Tài khoản đã xóa', files: [] as any[], totalSize: 0 },
@@ -3011,15 +3038,35 @@ function generateCaptchaSvg(text: string) {
       let totalSize = 0;
       let totalFiles = 0;
 
+      // Pre-load ALL data file contents for secondary raw-text verification
+      const allDataContents: string[] = [];
+      try {
+        const rootFiles = fsSync.readdirSync(process.cwd());
+        for (const f of rootFiles) {
+          if ((f.endsWith('.json') && (f.startsWith('data_') || f === 'artists.json' || f === 'landing_config.json')) || f.endsWith('.db')) {
+            try {
+              allDataContents.push(fsSync.readFileSync(path.join(process.cwd(), f), 'utf-8'));
+            } catch (_) {}
+          }
+        }
+      } catch (_) {}
+
       for (const file of allFiles) {
         if (referencedUrls.has(file.path)) {
           continue;
         }
 
+        // Secondary safety check: search the filename in ALL data files raw text
+        const fileName = path.basename(file.path);
+        const isReferencedRaw = allDataContents.some(content => content.includes(fileName));
+        if (isReferencedRaw) {
+          continue; // File IS referenced somewhere, skip it — not orphan
+        }
+
         const relToUploads = file.path.substring('uploads/'.length);
         const parts = relToUploads.split('/');
         const firstFolder = parts.length > 1 ? parts[0] : '';
-        const ownerName = firstFolder ? (idToName[firstFolder] || firstFolder) : 'root';
+        const ownerName = firstFolder ? (idToName[firstFolder] || firstFolder) : 'uploads/ (gốc)';
 
         totalFiles++;
         totalSize += file.size;
