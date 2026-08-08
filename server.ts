@@ -2882,6 +2882,303 @@ function generateCaptchaSvg(text: string) {
     }
   });
 
+  app.post('/api/master/cleanup/scan', async (req, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+      // 1. Collect all referenced URLs
+      const referencedUrls = new Set<string>();
+
+      const normalizeUrl = (url: string) => {
+        if (!url) return null;
+        try {
+          let cleanUrl = url;
+          if (cleanUrl.startsWith('http')) {
+            const urlObj = new URL(cleanUrl);
+            cleanUrl = urlObj.pathname;
+          }
+          if (cleanUrl.startsWith('/')) {
+            cleanUrl = cleanUrl.substring(1);
+          }
+          if (cleanUrl.startsWith('uploads/')) {
+            return cleanUrl;
+          }
+          return null;
+        } catch (e) {
+          return null;
+        }
+      };
+
+      const addUrl = (url: string | undefined | null) => {
+        if (!url) return;
+        const normalized = normalizeUrl(url);
+        if (normalized) {
+          referencedUrls.add(normalized);
+        }
+      };
+
+      for (const artist of artists) {
+        if (!artist.username) continue;
+        try {
+          const data = await loadData(artist.username);
+          if (!data) continue;
+
+          addUrl(data.avatarUrl);
+          addUrl(data.homeCoverUrl);
+          addUrl(data.ogImageUrl);
+          addUrl(data.faviconUrl);
+
+          if (Array.isArray(data.slideshowImages)) {
+            data.slideshowImages.forEach(addUrl);
+          }
+
+          if (data.aboutMe?.avatarUrl) {
+            addUrl(data.aboutMe.avatarUrl);
+          }
+
+          if (Array.isArray(data.demos)) {
+            data.demos.forEach((demo: any) => {
+              addUrl(demo.audioUrl);
+              addUrl(demo.backupAudioUrl);
+              addUrl(demo.coverUrl);
+              addUrl(demo.thumbUrl);
+              addUrl(demo.backgroundUrl);
+            });
+          }
+
+          if (Array.isArray(data.playlists)) {
+            data.playlists.forEach((playlist: any) => {
+              addUrl(playlist.coverUrl);
+            });
+          }
+        } catch (err) {
+          console.error(`Error loading data for artist ${artist.username}:`, err);
+        }
+      }
+
+      if (landingConfig && Array.isArray((landingConfig as any).exploreFeatures)) {
+        (landingConfig as any).exploreFeatures.forEach((item: any) => {
+          addUrl(item.image);
+        });
+      }
+
+      // 2. Scan UPLOADS_DIR
+      const allFiles: { path: string; fullPath: string; size: number; modifiedAt: number }[] = [];
+
+      async function walkDir(dir: string) {
+        if (!fsSync.existsSync(dir)) return;
+        const entries = await fs.readdir(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          const fullPath = path.join(dir, entry.name);
+          if (entry.isDirectory()) {
+            if (entry.name !== '_trash') {
+              await walkDir(fullPath);
+            }
+          } else {
+            const stats = await fs.stat(fullPath);
+            const relativeToUploads = path.relative(UPLOADS_DIR, fullPath);
+            const relPath = 'uploads/' + relativeToUploads.replace(/\\/g, '/');
+            allFiles.push({
+              path: relPath,
+              fullPath,
+              size: stats.size,
+              modifiedAt: stats.mtimeMs
+            });
+          }
+        }
+      }
+
+      await walkDir(UPLOADS_DIR);
+
+      // 3. Known artist IDs/usernames
+      const knownIds = new Set<string>();
+      artists.forEach(a => {
+        if (a.id) knownIds.add(String(a.id));
+        if (a.username) knownIds.add(String(a.username));
+      });
+      ['common', 'system', 'explore'].forEach(k => knownIds.add(k));
+
+      // 4. Categorize orphaned files
+      const categories = {
+        deleted_accounts: { id: 'deleted_accounts', label: 'Tài khoản đã xóa', files: [] as any[], totalSize: 0 },
+        orphan_wav: { id: 'orphan_wav', label: 'File WAV dư thừa', files: [] as any[], totalSize: 0 },
+        unused_files: { id: 'unused_files', label: 'Ảnh / nhạc không sử dụng', files: [] as any[], totalSize: 0 }
+      };
+
+      let totalSize = 0;
+      let totalFiles = 0;
+
+      for (const file of allFiles) {
+        if (referencedUrls.has(file.path)) {
+          continue;
+        }
+
+        const relToUploads = file.path.substring('uploads/'.length);
+        const parts = relToUploads.split('/');
+        const firstFolder = parts.length > 1 ? parts[0] : '';
+
+        totalFiles++;
+        totalSize += file.size;
+
+        const fileData = { path: file.path, size: file.size, modifiedAt: file.modifiedAt };
+
+        if (firstFolder && !knownIds.has(firstFolder)) {
+          categories.deleted_accounts.files.push(fileData);
+          categories.deleted_accounts.totalSize += file.size;
+        } else if (file.path.toLowerCase().endsWith('.wav')) {
+          categories.orphan_wav.files.push(fileData);
+          categories.orphan_wav.totalSize += file.size;
+        } else {
+          categories.unused_files.files.push(fileData);
+          categories.unused_files.totalSize += file.size;
+        }
+      }
+
+      res.json({
+        categories: [categories.deleted_accounts, categories.orphan_wav, categories.unused_files],
+        totalFiles,
+        totalSize
+      });
+    } catch (e: any) {
+      console.error('Error scanning cleanup:', e);
+      res.status(500).json({ error: e?.message || 'Scan failed' });
+    }
+  });
+
+  app.post('/api/master/cleanup/execute', async (req, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+      const { files } = req.body;
+      if (!Array.isArray(files)) {
+        return res.status(400).json({ error: 'Invalid files array' });
+      }
+
+      let moved = 0;
+      let totalSize = 0;
+      const errors: string[] = [];
+
+      for (const fileRelPath of files) {
+        try {
+          if (!fileRelPath.startsWith('uploads/') || fileRelPath.includes('..')) {
+            errors.push(`Invalid path: ${fileRelPath}`);
+            continue;
+          }
+
+          const srcPath = path.join(process.cwd(), 'public', fileRelPath);
+          if (!fsSync.existsSync(srcPath)) {
+            errors.push(`File not found: ${fileRelPath}`);
+            continue;
+          }
+
+          const stats = await fs.stat(srcPath);
+          
+          const withoutUploads = fileRelPath.substring('uploads/'.length);
+          const destPath = path.join(UPLOADS_DIR, '_trash', withoutUploads);
+
+          const destDir = path.dirname(destPath);
+          if (!fsSync.existsSync(destDir)) {
+            await fs.mkdir(destDir, { recursive: true });
+          }
+
+          await fs.rename(srcPath, destPath);
+          moved++;
+          totalSize += stats.size;
+        } catch (err: any) {
+          errors.push(`Error moving ${fileRelPath}: ${err.message}`);
+        }
+      }
+
+      res.json({ success: true, moved, totalSize, errors });
+    } catch (e: any) {
+      console.error('Error executing cleanup:', e);
+      res.status(500).json({ error: e?.message || 'Execution failed' });
+    }
+  });
+
+  app.post('/api/master/cleanup/empty-trash', async (req, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+      const trashDir = path.join(UPLOADS_DIR, '_trash');
+      if (!fsSync.existsSync(trashDir)) {
+        return res.json({ success: true, freedSize: 0 });
+      }
+
+      let freedSize = 0;
+
+      async function deleteDir(dir: string) {
+        const entries = await fs.readdir(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          const fullPath = path.join(dir, entry.name);
+          if (entry.isDirectory()) {
+            await deleteDir(fullPath);
+            await fs.rmdir(fullPath);
+          } else {
+            const stats = await fs.stat(fullPath);
+            freedSize += stats.size;
+            await fs.unlink(fullPath);
+          }
+        }
+      }
+
+      await deleteDir(trashDir);
+      
+      res.json({ success: true, freedSize });
+    } catch (e: any) {
+      console.error('Error emptying trash:', e);
+      res.status(500).json({ error: e?.message || 'Failed to empty trash' });
+    }
+  });
+
+  app.get('/api/master/cleanup/trash-info', async (req, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+      const trashDir = path.join(UPLOADS_DIR, '_trash');
+      const files: { path: string; size: number; modifiedAt: number }[] = [];
+      let totalSize = 0;
+      let totalFiles = 0;
+
+      async function walkTrash(dir: string) {
+        if (!fsSync.existsSync(dir)) return;
+        const entries = await fs.readdir(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          const fullPath = path.join(dir, entry.name);
+          if (entry.isDirectory()) {
+            await walkTrash(fullPath);
+          } else {
+            const stats = await fs.stat(fullPath);
+            const relativeToUploads = path.relative(UPLOADS_DIR, fullPath);
+            const relPath = 'uploads/' + relativeToUploads.replace(/\\/g, '/');
+            files.push({
+              path: relPath,
+              size: stats.size,
+              modifiedAt: stats.mtimeMs
+            });
+            totalSize += stats.size;
+            totalFiles++;
+          }
+        }
+      }
+
+      await walkTrash(trashDir);
+
+      res.json({ files, totalSize, totalFiles });
+    } catch (e: any) {
+      console.error('Error getting trash info:', e);
+      res.status(500).json({ error: e?.message || 'Failed to get trash info' });
+    }
+  });
+
   app.post('/api/acp/landing-config', async (req, res) => {
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });

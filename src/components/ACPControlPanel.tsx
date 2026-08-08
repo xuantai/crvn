@@ -49,6 +49,300 @@ const DEFAULT_TEMPLATE_NAMES: Record<string, string> = {
   '18': 'Pháo hoa (Năm mới)'
 };
 
+function CleanupTabContent({ token, showToast }: { token: string; showToast: (msg: string) => void }) {
+  // States
+  const [scanning, setScanning] = useState(false);
+  const [scanResult, setScanResult] = useState<any>(null);
+  const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
+  const [executing, setExecuting] = useState(false);
+  const [trashInfo, setTrashInfo] = useState<any>(null);
+  const [loadingTrash, setLoadingTrash] = useState(false);
+  const [emptyingTrash, setEmptyingTrash] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+
+  // Load trash info on mount
+  useEffect(() => { loadTrashInfo(); }, []);
+
+  const loadTrashInfo = async () => {
+    setLoadingTrash(true);
+    try {
+      const res = await fetch('/api/master/cleanup/trash-info', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setTrashInfo(data);
+    } catch (e) { console.error(e); }
+    setLoadingTrash(false);
+  };
+
+  const handleScan = async () => {
+    setScanning(true);
+    setScanResult(null);
+    setSelectedFiles(new Set());
+    try {
+      const res = await fetch('/api/master/cleanup/scan', { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } });
+      const data = await res.json();
+      setScanResult(data);
+    } catch (e: any) {
+      showToast('Lỗi quét: ' + (e.message || 'Unknown'));
+    }
+    setScanning(false);
+  };
+
+  const toggleCategory = (catId: string) => {
+    setExpandedCategories(prev => {
+      const next = new Set(prev);
+      next.has(catId) ? next.delete(catId) : next.add(catId);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = (catFiles: any[]) => {
+    const paths = catFiles.map(f => f.path);
+    const allSelected = paths.every(p => selectedFiles.has(p));
+    setSelectedFiles(prev => {
+      const next = new Set(prev);
+      paths.forEach(p => allSelected ? next.delete(p) : next.add(p));
+      return next;
+    });
+  };
+
+  const toggleFile = (filePath: string) => {
+    setSelectedFiles(prev => {
+      const next = new Set(prev);
+      next.has(filePath) ? next.delete(filePath) : next.add(filePath);
+      return next;
+    });
+  };
+
+  const handleExecute = async () => {
+    if (selectedFiles.size === 0) return;
+    setExecuting(true);
+    try {
+      const res = await fetch('/api/master/cleanup/execute', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: Array.from(selectedFiles) })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`Đã chuyển ${data.moved} file vào thùng rác (${formatSize(data.totalSize)})`);
+        setSelectedFiles(new Set());
+        handleScan(); // Re-scan
+        loadTrashInfo(); // Refresh trash
+      } else {
+        showToast('Lỗi: ' + (data.error || 'Unknown'));
+      }
+    } catch (e: any) {
+      showToast('Lỗi: ' + (e.message || 'Unknown'));
+    }
+    setExecuting(false);
+  };
+
+  const handleEmptyTrash = async () => {
+    if (!confirm('Xóa vĩnh viễn toàn bộ thùng rác? Hành động này KHÔNG thể hoàn tác!')) return;
+    setEmptyingTrash(true);
+    try {
+      const res = await fetch('/api/master/cleanup/empty-trash', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`Đã giải phóng ${formatSize(data.freedSize)}`);
+        loadTrashInfo();
+      }
+    } catch (e: any) {
+      showToast('Lỗi: ' + (e.message || 'Unknown'));
+    }
+    setEmptyingTrash(false);
+  };
+
+  const formatSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+  };
+
+  const categoryIcons: Record<string, string> = {
+    deleted_accounts: '🗑️',
+    orphan_wav: '🎵',
+    unused_files: '🖼️'
+  };
+
+  const categoryColors: Record<string, string> = {
+    deleted_accounts: 'from-red-600 to-rose-600',
+    orphan_wav: 'from-amber-600 to-orange-600', 
+    unused_files: 'from-blue-600 to-indigo-600'
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-black flex items-center gap-3">
+            <Trash2 className="w-7 h-7 text-rose-400" />
+            Dọn dẹp Dữ liệu
+          </h2>
+          <p className="text-neutral-400 text-sm mt-1">Quét và xóa file rác trên server để giải phóng dung lượng</p>
+        </div>
+        <button
+          onClick={handleScan}
+          disabled={scanning}
+          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-2xl font-black text-sm transition-all disabled:opacity-50 cursor-pointer shadow-lg shadow-purple-500/20"
+        >
+          {scanning ? (
+            <><RefreshCw className="w-4 h-4 animate-spin" /> Đang quét...</>
+          ) : (
+            <><Search className="w-4 h-4" /> Quét file rác</>
+          )}
+        </button>
+      </div>
+
+      {/* Scan Results */}
+      {scanResult && (
+        <div className="space-y-4">
+          {/* Summary bar */}
+          <div className="bg-neutral-900/50 border border-white/5 rounded-2xl p-5 flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <div>
+                <div className="text-xs text-neutral-500 font-bold uppercase">Tổng file rác</div>
+                <div className="text-2xl font-black text-rose-400">{scanResult.totalFiles}</div>
+              </div>
+              <div>
+                <div className="text-xs text-neutral-500 font-bold uppercase">Dung lượng</div>
+                <div className="text-2xl font-black text-amber-400">{formatSize(scanResult.totalSize)}</div>
+              </div>
+              <div>
+                <div className="text-xs text-neutral-500 font-bold uppercase">Đã chọn</div>
+                <div className="text-2xl font-black text-emerald-400">{selectedFiles.size}</div>
+              </div>
+            </div>
+            {selectedFiles.size > 0 && (
+              <button
+                onClick={handleExecute}
+                disabled={executing}
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 rounded-2xl font-black text-sm transition-all disabled:opacity-50 cursor-pointer shadow-lg shadow-rose-500/20"
+              >
+                {executing ? (
+                  <><RefreshCw className="w-4 h-4 animate-spin" /> Đang xử lý...</>
+                ) : (
+                  <><Trash2 className="w-4 h-4" /> Chuyển {selectedFiles.size} file vào Thùng rác</>
+                )}
+              </button>
+            )}
+          </div>
+
+          {/* Categories */}
+          {scanResult.categories?.map((cat: any) => (
+            <div key={cat.id} className="bg-neutral-900/50 border border-white/5 rounded-2xl overflow-hidden">
+              {/* Category header */}
+              <button
+                onClick={() => toggleCategory(cat.id)}
+                className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">{categoryIcons[cat.id] || '📁'}</span>
+                  <span className="font-black text-sm">{cat.label}</span>
+                  <span className={`text-xs px-2.5 py-0.5 rounded-full bg-gradient-to-r ${categoryColors[cat.id] || 'from-gray-600 to-gray-600'} font-bold`}>
+                    {cat.files.length} files — {formatSize(cat.totalSize)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); toggleSelectAll(cat.files); }}
+                    className="text-xs text-neutral-400 hover:text-white transition-colors px-3 py-1 rounded-lg hover:bg-white/10 cursor-pointer"
+                  >
+                    {cat.files.every((f: any) => selectedFiles.has(f.path)) ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
+                  </button>
+                  <ChevronDown className={`w-4 h-4 text-neutral-400 transition-transform ${expandedCategories.has(cat.id) ? 'rotate-180' : ''}`} />
+                </div>
+              </button>
+
+              {/* File list */}
+              {expandedCategories.has(cat.id) && (
+                <div className="border-t border-white/5 max-h-80 overflow-y-auto">
+                  {cat.files.map((file: any) => (
+                    <label
+                      key={file.path}
+                      className="flex items-center gap-3 px-5 py-2.5 hover:bg-white/5 transition-colors cursor-pointer border-b border-white/[0.02] last:border-b-0"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedFiles.has(file.path)}
+                        onChange={() => toggleFile(file.path)}
+                        className="w-4 h-4 rounded accent-rose-500"
+                      />
+                      {/* Preview for images */}
+                      {/\.(jpg|jpeg|png|webp|gif|svg)$/i.test(file.path) ? (
+                        <img src={`/${file.path}`} alt="" className="w-10 h-10 rounded-lg object-cover bg-neutral-800 shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-neutral-800 flex items-center justify-center shrink-0">
+                          {/\.(mp3|wav|ogg|m4a)$/i.test(file.path) ? <Volume2 className="w-4 h-4 text-neutral-500" /> : <FileText className="w-4 h-4 text-neutral-500" />}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-mono text-neutral-300 truncate">{file.path}</div>
+                        <div className="text-[10px] text-neutral-500">{formatSize(file.size)}</div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {scanResult.totalFiles === 0 && (
+            <div className="bg-neutral-900/50 border border-emerald-500/20 rounded-2xl p-8 text-center">
+              <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
+              <p className="font-black text-emerald-400">Sạch sẽ!</p>
+              <p className="text-neutral-400 text-sm mt-1">Không tìm thấy file rác nào trên server.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Trash Section */}
+      <div className="bg-neutral-900/50 border border-white/5 rounded-2xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-black text-sm flex items-center gap-2">
+            <Trash2 className="w-4 h-4 text-neutral-400" />
+            Thùng rác
+            {trashInfo?.totalFiles > 0 && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 font-bold">
+                {trashInfo.totalFiles} files — {formatSize(trashInfo.totalSize)}
+              </span>
+            )}
+          </h3>
+          {trashInfo?.totalFiles > 0 && (
+            <button
+              onClick={handleEmptyTrash}
+              disabled={emptyingTrash}
+              className="flex items-center gap-2 px-4 py-2 bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 rounded-xl font-black text-xs transition-all disabled:opacity-50 cursor-pointer"
+            >
+              {emptyingTrash ? (
+                <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Đang xóa...</>
+              ) : (
+                <><Trash2 className="w-3.5 h-3.5" /> Xóa vĩnh viễn</>
+              )}
+            </button>
+          )}
+        </div>
+        {loadingTrash ? (
+          <div className="text-neutral-500 text-sm">Đang tải...</div>
+        ) : trashInfo?.totalFiles > 0 ? (
+          <div className="text-neutral-400 text-sm">
+            <p>Có <strong className="text-white">{trashInfo.totalFiles}</strong> file trong thùng rác, tổng <strong className="text-amber-400">{formatSize(trashInfo.totalSize)}</strong>.</p>
+            <p className="text-neutral-500 text-xs mt-1">File trong thùng rác sẽ tự động xóa sau 30 ngày.</p>
+          </div>
+        ) : (
+          <p className="text-neutral-500 text-sm">Thùng rác trống.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function ACPControlPanel() {
   const showAlert = (window as any).showAlert || (async (msg: string) => window.alert(msg));
 
@@ -110,7 +404,7 @@ export default function ACPControlPanel() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const validTabs = ['artists', 'landing', 'tickets', 'templates', 'faq', 'keywords', 'content', 'roles', 'vouchers', 'pricing', 'admin_theme', 'edit_item', 'explore'];
+  const validTabs = ['artists', 'landing', 'tickets', 'templates', 'faq', 'keywords', 'content', 'roles', 'vouchers', 'pricing', 'admin_theme', 'edit_item', 'explore', 'cleanup'];
   const urlTab = location.pathname.split('/').filter(Boolean)[1];
   const initialTab = validTabs.includes(urlTab) ? urlTab : 'artists';
 
@@ -1881,6 +2175,17 @@ export default function ACPControlPanel() {
             >
               <Compass className="w-4.5 h-4.5" />
               <span>Khám Phá</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('cleanup')}
+              className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-black text-xs transition-all text-left cursor-pointer ${
+                activeTab === 'cleanup'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20'
+                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <Trash2 className="w-4.5 h-4.5" />
+              <span>Dọn dẹp Dữ liệu</span>
             </button>
         </div>
       </aside>
@@ -5040,6 +5345,8 @@ export default function ACPControlPanel() {
             exploreFileInputRefs={exploreFileInputRefs}
             showToast={(msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000); }}
           />
+        ) : activeTab === 'cleanup' ? (
+          <CleanupTabContent token={token!} showToast={(msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000); }} />
         ) : null}
       </main>
 

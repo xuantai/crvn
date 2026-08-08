@@ -100,25 +100,6 @@ async function main() {
     }
   }
 
-  // 3c. Sync public/uploads to VPS local disk for dual-backup
-  console.log('\n=== Step 3c: Syncing public/uploads to VPS local disk ===');
-  const syncUploadsDir = async (localDir, remoteDir) => {
-    if (!fs.existsSync(localDir)) return;
-    await execCmd(`mkdir -p "${remoteDir}"`);
-    const items = fs.readdirSync(localDir);
-    for (const item of items) {
-      const lPath = path.join(localDir, item);
-      const rPath = `${remoteDir}/${item}`;
-      if (fs.statSync(lPath).isDirectory()) {
-        await syncUploadsDir(lPath, rPath);
-      } else {
-        // Only upload if file doesn't exist remotely or is missing
-        await uploadFile(lPath, rPath).catch(() => {});
-      }
-    }
-  };
-  await syncUploadsDir(path.join(ROOT, 'public', 'uploads'), `${REMOTE_DIR}/public/uploads`);
-
   // 4. Upload Data Files & SQLite DB
   console.log('\n=== Step 4: Uploading Data JSONs & SQLite DB ===');
   const files = fs.readdirSync(ROOT);
