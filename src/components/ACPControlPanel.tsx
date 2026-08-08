@@ -61,6 +61,9 @@ function CleanupTabContent({ token, showToast }: { token: string; showToast: (ms
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [organizing, setOrganizing] = useState(false);
   const [organizeResult, setOrganizeResult] = useState<any>(null);
+  const [selectedTrashFiles, setSelectedTrashFiles] = useState<Set<string>>(new Set());
+  const [restoring, setRestoring] = useState(false);
+  const [expandTrash, setExpandTrash] = useState(false);
 
   // Load trash info on mount
   useEffect(() => { loadTrashInfo(); }, []);
@@ -175,6 +178,66 @@ function CleanupTabContent({ token, showToast }: { token: string; showToast: (ms
       showToast('Lỗi: ' + (e.message || 'Unknown'));
     }
     setEmptyingTrash(false);
+  };
+
+  const handleRestore = async () => {
+    if (selectedTrashFiles.size === 0) return;
+    if (!confirm(`Khôi phục ${selectedTrashFiles.size} file về vị trí gốc?`)) return;
+    setRestoring(true);
+    try {
+      const res = await fetch('/api/master/cleanup/restore', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: Array.from(selectedTrashFiles) })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`Đã khôi phục ${data.restored} file!`);
+        setSelectedTrashFiles(new Set());
+        loadTrashInfo();
+      }
+    } catch (e: any) {
+      showToast('Lỗi: ' + (e.message || 'Unknown'));
+    }
+    setRestoring(false);
+  };
+
+  const handleRestoreAll = async () => {
+    if (!trashInfo?.files?.length) return;
+    if (!confirm(`Khôi phục TẤT CẢ ${trashInfo.totalFiles} file về vị trí gốc?`)) return;
+    setRestoring(true);
+    try {
+      const allPaths = trashInfo.files.map((f: any) => f.path);
+      const res = await fetch('/api/master/cleanup/restore', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: allPaths })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`Đã khôi phục ${data.restored} file!`);
+        setSelectedTrashFiles(new Set());
+        loadTrashInfo();
+      }
+    } catch (e: any) {
+      showToast('Lỗi: ' + (e.message || 'Unknown'));
+    }
+    setRestoring(false);
+  };
+
+  const toggleTrashFile = (filePath: string) => {
+    setSelectedTrashFiles(prev => {
+      const next = new Set(prev);
+      next.has(filePath) ? next.delete(filePath) : next.add(filePath);
+      return next;
+    });
+  };
+
+  const toggleSelectAllTrash = () => {
+    if (!trashInfo?.files?.length) return;
+    const allPaths = trashInfo.files.map((f: any) => f.path);
+    const allSelected = allPaths.every((p: string) => selectedTrashFiles.has(p));
+    setSelectedTrashFiles(allSelected ? new Set() : new Set(allPaths));
   };
 
   const formatSize = (bytes: number) => {
@@ -375,25 +438,107 @@ function CleanupTabContent({ token, showToast }: { token: string; showToast: (ms
             )}
           </h3>
           {trashInfo?.totalFiles > 0 && (
-            <button
-              onClick={handleEmptyTrash}
-              disabled={emptyingTrash}
-              className="flex items-center gap-2 px-4 py-2 bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 rounded-xl font-black text-xs transition-all disabled:opacity-50 cursor-pointer"
-            >
-              {emptyingTrash ? (
-                <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Đang xóa...</>
-              ) : (
-                <><Trash2 className="w-3.5 h-3.5" /> Xóa vĩnh viễn</>
-              )}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleRestoreAll}
+                disabled={restoring}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 rounded-xl font-black text-xs transition-all disabled:opacity-50 cursor-pointer"
+              >
+                {restoring ? (
+                  <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Đang khôi phục...</>
+                ) : (
+                  <><ArrowUp className="w-3.5 h-3.5" /> Khôi phục tất cả</>
+                )}
+              </button>
+              <button
+                onClick={handleEmptyTrash}
+                disabled={emptyingTrash}
+                className="flex items-center gap-2 px-4 py-2 bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 rounded-xl font-black text-xs transition-all disabled:opacity-50 cursor-pointer"
+              >
+                {emptyingTrash ? (
+                  <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Đang xóa...</>
+                ) : (
+                  <><Trash2 className="w-3.5 h-3.5" /> Xóa vĩnh viễn</>
+                )}
+              </button>
+            </div>
           )}
         </div>
         {loadingTrash ? (
           <div className="text-neutral-500 text-sm">Đang tải...</div>
         ) : trashInfo?.totalFiles > 0 ? (
-          <div className="text-neutral-400 text-sm">
-            <p>Có <strong className="text-white">{trashInfo.totalFiles}</strong> file trong thùng rác, tổng <strong className="text-amber-400">{formatSize(trashInfo.totalSize)}</strong>.</p>
-            <p className="text-neutral-500 text-xs mt-1">File trong thùng rác sẽ tự động xóa sau 30 ngày.</p>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-neutral-400 text-sm">
+                Có <strong className="text-white">{trashInfo.totalFiles}</strong> file trong thùng rác, tổng <strong className="text-amber-400">{formatSize(trashInfo.totalSize)}</strong>.
+              </p>
+              <button
+                onClick={() => setExpandTrash(!expandTrash)}
+                className="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer flex items-center gap-1"
+              >
+                {expandTrash ? <><ChevronUp className="w-3.5 h-3.5" /> Ẩn</> : <><ChevronDown className="w-3.5 h-3.5" /> Xem chi tiết</>}
+              </button>
+            </div>
+            {expandTrash && (
+              <div className="space-y-2">
+                {/* Select all + Restore selected */}
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 text-xs text-neutral-400 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={trashInfo.files.length > 0 && trashInfo.files.every((f: any) => selectedTrashFiles.has(f.path))}
+                      onChange={toggleSelectAllTrash}
+                      className="rounded"
+                    />
+                    Chọn tất cả ({trashInfo.files.length})
+                  </label>
+                  {selectedTrashFiles.size > 0 && (
+                    <button
+                      onClick={handleRestore}
+                      disabled={restoring}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 rounded-lg font-black text-xs transition-all disabled:opacity-50 cursor-pointer"
+                    >
+                      <ArrowUp className="w-3 h-3" /> Khôi phục {selectedTrashFiles.size} file
+                    </button>
+                  )}
+                </div>
+                {/* File list */}
+                <div className="max-h-72 overflow-y-auto space-y-1">
+                  {trashInfo.files.map((file: any, i: number) => {
+                    const fileName = file.path.split('/').pop();
+                    const folderPath = file.path.replace('uploads/_trash/', '').replace('/' + fileName, '');
+                    const isImage = /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(fileName);
+                    return (
+                      <label
+                        key={i}
+                        className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+                          selectedTrashFiles.has(file.path) ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-neutral-800/30 hover:bg-neutral-800/50 border border-transparent'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedTrashFiles.has(file.path)}
+                          onChange={() => toggleTrashFile(file.path)}
+                          className="rounded flex-shrink-0"
+                        />
+                        {isImage && (
+                          <img
+                            src={'/' + file.path}
+                            alt=""
+                            className="w-8 h-8 rounded-md object-cover flex-shrink-0 bg-neutral-800"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-mono text-neutral-300 truncate">{fileName}</div>
+                          <div className="text-[10px] text-neutral-600 truncate">📁 {folderPath} · {formatSize(file.size)}</div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <p className="text-neutral-500 text-sm">Thùng rác trống.</p>

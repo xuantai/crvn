@@ -2888,81 +2888,86 @@ function generateCaptchaSvg(text: string) {
     }
 
     try {
-      // 1. Collect all referenced URLs
+      // 1. Collect ALL referenced URLs — recursive deep extraction from entire data objects
       const referencedUrls = new Set<string>();
 
-      const normalizeUrl = (url: string) => {
-        if (!url) return null;
+      const normalizeUrl = (url: string): string | null => {
+        if (!url || typeof url !== 'string') return null;
         try {
           let cleanUrl = url;
+          // Strip query params from non-http URLs
+          const qIdx = cleanUrl.indexOf('?');
+          if (qIdx > 0 && !cleanUrl.startsWith('http')) cleanUrl = cleanUrl.substring(0, qIdx);
           if (cleanUrl.startsWith('http')) {
             const urlObj = new URL(cleanUrl);
-            cleanUrl = urlObj.pathname;
+            cleanUrl = decodeURIComponent(urlObj.pathname);
           }
-          if (cleanUrl.startsWith('/')) {
-            cleanUrl = cleanUrl.substring(1);
-          }
-          if (cleanUrl.startsWith('uploads/')) {
-            return cleanUrl;
-          }
+          cleanUrl = decodeURIComponent(cleanUrl);
+          if (cleanUrl.startsWith('/')) cleanUrl = cleanUrl.substring(1);
+          if (cleanUrl.startsWith('uploads/')) return cleanUrl;
           return null;
-        } catch (e) {
-          return null;
-        }
+        } catch (e) { return null; }
       };
 
       const addUrl = (url: string | undefined | null) => {
-        if (!url) return;
+        if (!url || typeof url !== 'string') return;
         const normalized = normalizeUrl(url);
         if (normalized) {
           referencedUrls.add(normalized);
+          // Also protect the -thumb variant
+          const ext = path.extname(normalized);
+          const base = normalized.substring(0, normalized.length - ext.length);
+          referencedUrls.add(base + '-thumb' + ext);
         }
       };
 
+      // Recursively extract ALL string values from any object/array that look like upload paths
+      const extractUrlsFromObject = (obj: any, depth = 0) => {
+        if (depth > 15 || !obj) return;
+        if (typeof obj === 'string') {
+          if (obj.includes('uploads/') || obj.includes('/uploads/')) {
+            addUrl(obj);
+          }
+          return;
+        }
+        if (Array.isArray(obj)) {
+          for (const item of obj) extractUrlsFromObject(item, depth + 1);
+          return;
+        }
+        if (typeof obj === 'object') {
+          for (const key of Object.keys(obj)) {
+            extractUrlsFromObject(obj[key], depth + 1);
+          }
+        }
+      };
+
+      // Scan ALL artist data files recursively
       for (const artist of artists) {
         if (!artist.username) continue;
         try {
           const data = await loadData(artist.username);
           if (!data) continue;
-
-          addUrl(data.avatarUrl);
-          addUrl(data.homeCoverUrl);
-          addUrl(data.ogImageUrl);
-          addUrl(data.faviconUrl);
-
-          if (Array.isArray(data.slideshowImages)) {
-            data.slideshowImages.forEach(addUrl);
-          }
-
-          if (data.aboutMe?.avatarUrl) {
-            addUrl(data.aboutMe.avatarUrl);
-          }
-
-          if (Array.isArray(data.demos)) {
-            data.demos.forEach((demo: any) => {
-              addUrl(demo.audioUrl);
-              addUrl(demo.backupAudioUrl);
-              addUrl(demo.coverUrl);
-              addUrl(demo.thumbUrl);
-              addUrl(demo.backgroundUrl);
-            });
-          }
-
-          if (Array.isArray(data.playlists)) {
-            data.playlists.forEach((playlist: any) => {
-              addUrl(playlist.coverUrl);
-            });
-          }
+          extractUrlsFromObject(data);
         } catch (err) {
           console.error(`Error loading data for artist ${artist.username}:`, err);
         }
+        // Also check artist object itself (avatarUrl, coverUrl stored in artists.json)
+        extractUrlsFromObject(artist);
       }
 
-      if (landingConfig && Array.isArray((landingConfig as any).exploreFeatures)) {
-        (landingConfig as any).exploreFeatures.forEach((item: any) => {
-          addUrl(item.image);
-        });
+      // Scan landing config
+      if (landingConfig) {
+        extractUrlsFromObject(landingConfig);
       }
+
+      // Also scan artists.json raw text for any missed URLs
+      try {
+        const artistsRaw = fsSync.readFileSync(path.join(process.cwd(), 'artists.json'), 'utf-8');
+        const urlMatches = artistsRaw.match(/uploads\/[^\s"',\]}>]+/g);
+        if (urlMatches) urlMatches.forEach(m => addUrl(m));
+      } catch (_) {}
+
+      console.log(`[Cleanup Scan] Collected ${referencedUrls.size} referenced URLs`);
 
       // 2. Scan UPLOADS_DIR
       const allFiles: { path: string; fullPath: string; size: number; modifiedAt: number }[] = [];
@@ -3006,7 +3011,6 @@ function generateCaptchaSvg(text: string) {
         const uploadsEntries = await fs.readdir(UPLOADS_DIR, { withFileTypes: true });
         for (const entry of uploadsEntries) {
           if (entry.isDirectory() && !knownIds.has(entry.name) && entry.name !== '_trash') {
-            // Try to find a data file that references this folder ID
             const dataFiles = fsSync.readdirSync(process.cwd()).filter((f: string) => f.startsWith('data_') && f.endsWith('.json'));
             for (const df of dataFiles) {
               try {
@@ -3020,7 +3024,6 @@ function generateCaptchaSvg(text: string) {
                 }
               } catch (_) {}
             }
-            // If still not found, label as unknown deleted account
             if (!idToName[entry.name]) {
               idToName[entry.name] = `ID: ${entry.name} (đã xóa)`;
             }
@@ -3038,12 +3041,12 @@ function generateCaptchaSvg(text: string) {
       let totalSize = 0;
       let totalFiles = 0;
 
-      // Pre-load ALL data file contents for secondary raw-text verification
+      // Pre-load ALL JSON data file contents for secondary raw-text verification (exclude .db binary!)
       const allDataContents: string[] = [];
       try {
         const rootFiles = fsSync.readdirSync(process.cwd());
         for (const f of rootFiles) {
-          if ((f.endsWith('.json') && (f.startsWith('data_') || f === 'artists.json' || f === 'landing_config.json')) || f.endsWith('.db')) {
+          if (f.endsWith('.json') && (f.startsWith('data_') || f === 'artists.json' || f === 'landing_config.json')) {
             try {
               allDataContents.push(fsSync.readFileSync(path.join(process.cwd(), f), 'utf-8'));
             } catch (_) {}
@@ -3056,11 +3059,14 @@ function generateCaptchaSvg(text: string) {
           continue;
         }
 
-        // Secondary safety check: search the filename in ALL data files raw text
+        // Secondary safety check: search the filename (without -thumb suffix) in ALL data files raw text
         const fileName = path.basename(file.path);
-        const isReferencedRaw = allDataContents.some(content => content.includes(fileName));
+        // For thumb files, also check the base name without -thumb
+        const thumbMatch = fileName.match(/^(.+)-thumb(\.[^.]+)$/);
+        const baseFileName = thumbMatch ? thumbMatch[1] + thumbMatch[2] : fileName;
+        const isReferencedRaw = allDataContents.some(content => content.includes(baseFileName));
         if (isReferencedRaw) {
-          continue; // File IS referenced somewhere, skip it — not orphan
+          continue; // File or its base variant IS referenced — not orphan
         }
 
         const relToUploads = file.path.substring('uploads/'.length);
@@ -3324,6 +3330,64 @@ function generateCaptchaSvg(text: string) {
     } catch (e: any) {
       console.error('Error getting trash info:', e);
       res.status(500).json({ error: e?.message || 'Failed to get trash info' });
+    }
+  });
+
+  // Restore files from trash back to original location
+  app.post('/api/master/cleanup/restore', async (req, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+      const { files } = req.body;
+      if (!Array.isArray(files)) {
+        return res.status(400).json({ error: 'Invalid files array' });
+      }
+
+      let restored = 0;
+      let totalSize = 0;
+      const errors: string[] = [];
+
+      for (const fileRelPath of files) {
+        try {
+          // fileRelPath is like "uploads/_trash/sw69l6795go/file.jpg"
+          if (!fileRelPath.includes('_trash') || fileRelPath.includes('..')) {
+            errors.push(`Invalid path: ${fileRelPath}`);
+            continue;
+          }
+
+          const srcPath = path.join(process.cwd(), 'public', fileRelPath);
+          if (!fsSync.existsSync(srcPath)) {
+            errors.push(`File not found: ${fileRelPath}`);
+            continue;
+          }
+
+          const stats = await fs.stat(srcPath);
+
+          // Extract original path: "uploads/_trash/foo/bar.jpg" → "uploads/foo/bar.jpg"
+          const trashPrefix = 'uploads/_trash/';
+          const afterTrash = fileRelPath.substring(trashPrefix.length);
+          const destRelPath = 'uploads/' + afterTrash;
+          const destPath = path.join(process.cwd(), 'public', destRelPath);
+
+          const destDir = path.dirname(destPath);
+          if (!fsSync.existsSync(destDir)) {
+            await fs.mkdir(destDir, { recursive: true });
+          }
+
+          await fs.rename(srcPath, destPath);
+          restored++;
+          totalSize += stats.size;
+        } catch (err: any) {
+          errors.push(`Error restoring ${fileRelPath}: ${err.message}`);
+        }
+      }
+
+      res.json({ success: true, restored, totalSize, errors });
+    } catch (e: any) {
+      console.error('Error restoring files:', e);
+      res.status(500).json({ error: e?.message || 'Restore failed' });
     }
   });
 
