@@ -1736,6 +1736,17 @@ export default function ACPControlPanel() {
       });
 
       if (res.ok) {
+        const data = await res.json();
+        const sum = data.summary;
+        let msg = `Đã xóa thành công tài khoản ${sum.artistName} (@${sum.username}).\n\nChi tiết dọn dẹp:\n`;
+        msg += `- Xóa ${sum.songsDeleted} bài hát, ${sum.playlistsDeleted} playlist.\n`;
+        msg += `- Xóa ${sum.imagesDeleted} hình ảnh, ${sum.audiosDeleted} âm thanh.\n`;
+        msg += `- Xóa ${sum.localFilesDeleted} file trên server (Giải phóng ${formatSize(sum.localSizeFreed)}).\n`;
+        msg += `- Xóa ${sum.r2FilesDeleted} file trên Cloudflare R2.`;
+        if (sum.errors && sum.errors.length > 0) {
+          msg += `\n\nCảnh báo (${sum.errors.length} lỗi): ${sum.errors.join(', ')}`;
+        }
+        await showConfirm(msg, 'Thành công', 'info');
         fetchArtists();
       } else {
         const data = await res.json();

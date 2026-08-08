@@ -51,11 +51,12 @@ const mailTransporter = nodemailer.createTransport({
 
 if (ffmpeg && ffmpegInstaller && ffmpegInstaller.path) ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
-let S3Client: any, PutObjectCommand: any;
+let S3Client: any, PutObjectCommand: any, DeleteObjectCommand: any;
 try {
   const s3Module = require('@aws-sdk/client-s3');
   S3Client = s3Module.S3Client;
   PutObjectCommand = s3Module.PutObjectCommand;
+  DeleteObjectCommand = s3Module.DeleteObjectCommand;
 } catch (e) {}
 
 const r2AccountId = process.env.CF_R2_ACCOUNT_ID;
@@ -97,6 +98,22 @@ async function uploadToR2(key: string, body: Buffer, contentType: string): Promi
   } catch (err: any) {
     console.error("[Cloudflare R2] Upload skipped or failed:", err?.message || err);
     return null;
+  }
+}
+
+async function deleteFromR2(key: string): Promise<boolean> {
+  if (!r2Client || !DeleteObjectCommand) return false;
+  try {
+    const cleanKey = key.startsWith('/') ? key.substring(1) : key;
+    await r2Client.send(new DeleteObjectCommand({
+      Bucket: r2BucketName,
+      Key: cleanKey
+    }));
+    console.log(`[Cloudflare R2] Deleted: ${cleanKey}`);
+    return true;
+  } catch (err: any) {
+    console.error(`[Cloudflare R2] Delete failed for ${key}:`, err?.message || err);
+    return false;
   }
 }
 import { initializeApp } from 'firebase/app';
@@ -4472,17 +4489,152 @@ ${JSON.stringify(geminiInput, null, 2)}`;
       return res.status(400).json({ error: 'Không thể xóa tài khoản Admin mặc định!' });
     }
     
-    const updated = artists.filter(a => a.username !== username);
-    if (updated.length === artists.length) {
+    const artist = artists.find(a => a.username === username);
+    if (!artist) {
       return res.status(404).json({ error: 'Không tìm thấy nghệ sĩ!' });
     }
-    
-    await saveArtists(updated);
-    
+
+    const artistId = artist.id ? String(artist.id) : '';
+    const artistName = artist.artistName || username;
+    const summary = {
+      artistName,
+      username,
+      artistId,
+      songsDeleted: 0,
+      playlistsDeleted: 0,
+      imagesDeleted: 0,
+      audiosDeleted: 0,
+      localFilesDeleted: 0,
+      r2FilesDeleted: 0,
+      localSizeFreed: 0,
+      errors: [] as string[]
+    };
+
+    // 1. Load artist data to count assets
+    try {
+      const data = await loadData(username);
+      if (data) {
+        summary.songsDeleted = (data.demos || []).length + (data.releasedSongs || []).length + (data.drafts || []).length;
+        summary.playlistsDeleted = (data.playlists || []).length;
+
+        // Collect ALL upload URLs from data recursively
+        const uploadUrls = new Set<string>();
+        const extractUrls = (obj: any, depth = 0) => {
+          if (depth > 15 || !obj) return;
+          if (typeof obj === 'string') {
+            if (obj.includes('uploads/')) uploadUrls.add(obj);
+            return;
+          }
+          if (Array.isArray(obj)) {
+            for (const item of obj) extractUrls(item, depth + 1);
+            return;
+          }
+          if (typeof obj === 'object') {
+            for (const key of Object.keys(obj)) extractUrls(obj[key], depth + 1);
+          }
+        };
+        extractUrls(data);
+
+        // Count by type
+        for (const url of uploadUrls) {
+          if (/\.(mp3|wav|m4a|ogg|flac|aac)$/i.test(url)) summary.audiosDeleted++;
+          else summary.imagesDeleted++;
+        }
+
+        // 2. Delete from R2 (all collected URLs + thumb variants)
+        for (const url of uploadUrls) {
+          let r2Key = url;
+          if (r2Key.startsWith('/')) r2Key = r2Key.substring(1);
+          if (!r2Key.startsWith('uploads/')) continue;
+          const deleted = await deleteFromR2(r2Key);
+          if (deleted) summary.r2FilesDeleted++;
+          // Also delete thumb variant on R2
+          const ext = path.extname(r2Key);
+          const base = r2Key.substring(0, r2Key.length - ext.length);
+          const thumbKey = base + '-thumb' + ext;
+          const thumbDeleted = await deleteFromR2(thumbKey);
+          if (thumbDeleted) summary.r2FilesDeleted++;
+        }
+      }
+    } catch (err: any) {
+      summary.errors.push(`Lỗi đọc data: ${err.message}`);
+    }
+
+    // 3. Delete entire uploads folder for this artist (VPS)
+    const uploadsFolder = artistId ? path.join(UPLOADS_DIR, artistId) : null;
+    const uploadsFolderByUsername = path.join(UPLOADS_DIR, username);
+
+    const deleteFolder = async (folderPath: string) => {
+      if (!fsSync.existsSync(folderPath)) return;
+      const walkAndDelete = async (dir: string) => {
+        const entries = await fs.readdir(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          const fullPath = path.join(dir, entry.name);
+          if (entry.isDirectory()) {
+            await walkAndDelete(fullPath);
+            await fs.rmdir(fullPath).catch(() => {});
+          } else {
+            const stats = await fs.stat(fullPath).catch(() => null);
+            if (stats) summary.localSizeFreed += stats.size;
+            await fs.unlink(fullPath).catch(() => {});
+            summary.localFilesDeleted++;
+          }
+        }
+      };
+      await walkAndDelete(folderPath);
+      await fs.rmdir(folderPath).catch(() => {});
+    };
+
+    if (uploadsFolder) await deleteFolder(uploadsFolder);
+    if (uploadsFolderByUsername !== uploadsFolder) await deleteFolder(uploadsFolderByUsername);
+
+    // 4. Also delete any R2 files in the artist folder prefix
+    // (R2 ListObjects to find all files with prefix uploads/<artistId>/)
+    if (r2Client && artistId) {
+      try {
+        const { ListObjectsV2Command } = require('@aws-sdk/client-s3');
+        if (ListObjectsV2Command) {
+          let continuationToken: string | undefined;
+          do {
+            const listResult = await r2Client.send(new ListObjectsV2Command({
+              Bucket: r2BucketName,
+              Prefix: `uploads/${artistId}/`,
+              ContinuationToken: continuationToken
+            }));
+            if (listResult.Contents) {
+              for (const obj of listResult.Contents) {
+                if (obj.Key) {
+                  const deleted = await deleteFromR2(obj.Key);
+                  if (deleted) summary.r2FilesDeleted++;
+                }
+              }
+            }
+            continuationToken = listResult.IsTruncated ? listResult.NextContinuationToken : undefined;
+          } while (continuationToken);
+        }
+      } catch (err: any) {
+        summary.errors.push(`R2 list/delete: ${err.message}`);
+      }
+    }
+
+    // 5. Delete data file
     const artistDataFile = path.join(process.cwd(), `data_${username}.json`);
     await fs.unlink(artistDataFile).catch(() => {});
-    
-    res.json({ success: true });
+
+    // Also delete _bbb data file if exists
+    const bbbDataFile = path.join(process.cwd(), `data_${username}_bbb.json`);
+    await fs.unlink(bbbDataFile).catch(() => {});
+
+    // 6. Remove from artists array
+    const updated = artists.filter(a => a.username !== username);
+    await saveArtists(updated);
+
+    console.log(`[DELETE ARTIST] Hoàn tất xóa ${artistName} (@${username}):`, JSON.stringify(summary));
+
+    res.json({
+      success: true,
+      summary
+    });
   });
 
   app.post('/api/acp/artists/firebase-sync', async (req: any, res) => {
