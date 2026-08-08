@@ -2992,11 +2992,12 @@ function generateCaptchaSvg(text: string) {
 
       await walkDir(UPLOADS_DIR);
 
-      // 3. Known artist IDs/usernames
+      // 3. Known artist IDs/usernames + name lookup
       const knownIds = new Set<string>();
+      const idToName: Record<string, string> = {};
       artists.forEach(a => {
-        if (a.id) knownIds.add(String(a.id));
-        if (a.username) knownIds.add(String(a.username));
+        if (a.id) { knownIds.add(String(a.id)); idToName[String(a.id)] = a.artistName || a.username; }
+        if (a.username) { knownIds.add(String(a.username)); idToName[String(a.username)] = a.artistName || a.username; }
       });
       ['common', 'system', 'explore'].forEach(k => knownIds.add(k));
 
@@ -3018,11 +3019,12 @@ function generateCaptchaSvg(text: string) {
         const relToUploads = file.path.substring('uploads/'.length);
         const parts = relToUploads.split('/');
         const firstFolder = parts.length > 1 ? parts[0] : '';
+        const ownerName = firstFolder ? (idToName[firstFolder] || firstFolder) : 'root';
 
         totalFiles++;
         totalSize += file.size;
 
-        const fileData = { path: file.path, size: file.size, modifiedAt: file.modifiedAt };
+        const fileData = { path: file.path, size: file.size, modifiedAt: file.modifiedAt, owner: firstFolder || 'root', ownerName };
 
         if (firstFolder && !knownIds.has(firstFolder)) {
           categories.deleted_accounts.files.push(fileData);

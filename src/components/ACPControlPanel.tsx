@@ -283,7 +283,12 @@ function CleanupTabContent({ token, showToast }: { token: string; showToast: (ms
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="text-xs font-mono text-neutral-300 truncate">{file.path}</div>
-                        <div className="text-[10px] text-neutral-500">{formatSize(file.size)}</div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[10px] text-neutral-500">{formatSize(file.size)}</span>
+                          {file.ownerName && (
+                            <span className="text-[10px] px-1.5 py-0 rounded-full bg-white/5 text-neutral-400 border border-white/5">👤 {file.ownerName}</span>
+                          )}
+                        </div>
                       </div>
                     </label>
                   ))}
