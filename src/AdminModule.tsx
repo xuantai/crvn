@@ -20,10 +20,20 @@ export function AdminDashboard() {
   const [data, setData] = useState<AppData | null>(null);
   const [dataError, setDataError] = useState<string | null>(null);
   const getSongCoverUrl = (songUrlOrObj?: string | any, thumbUrl?: string) => {
+    const avatar = data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
+    const isValid = (url: any) => {
+      if (typeof url !== 'string') return false;
+      const u = url.trim().toLowerCase();
+      return u !== '' && u !== 'null' && u !== 'undefined' && u !== '/uploads' && u !== '/uploads/' && u !== 'placeholder';
+    };
+
     if (typeof songUrlOrObj === 'object' && songUrlOrObj !== null) {
-      return songUrlOrObj.thumbUrl || songUrlOrObj.coverUrl || songUrlOrObj.imageUrl || data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
+      const target = songUrlOrObj.thumbUrl || songUrlOrObj.coverUrl || songUrlOrObj.imageUrl;
+      return isValid(target) ? target : avatar;
     }
-    return thumbUrl || songUrlOrObj || data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '';
+    if (isValid(thumbUrl)) return thumbUrl;
+    if (isValid(songUrlOrObj)) return songUrlOrObj;
+    return avatar;
   };
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -2518,7 +2528,7 @@ export function AdminDashboard() {
         } ${
           showFullBleed 
             ? 'rounded-none border-0 shadow-none min-h-0 h-[calc(100vh-64px)] overflow-hidden p-4 md:p-6' 
-            : `rounded-none md:rounded-3xl border-0 md:border shadow-none md:shadow-sm p-4 md:p-8 min-h-[calc(100vh-64px)] ${
+            : `rounded-none md:rounded-3xl border-0 md:border shadow-none md:shadow-sm p-4 pb-32 md:p-8 min-h-[calc(100vh-64px)] ${
                 isGoldTheme ? 'md:border-amber-200/60' : 'md:border-stone-200'
               }`
         }`}>
@@ -2857,13 +2867,14 @@ export function AdminDashboard() {
                         >
                           <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
                             <span className="text-stone-500 font-mono font-bold text-xs sm:text-sm w-6 sm:w-7 tracking-tight hidden sm:flex items-center justify-center bg-stone-100/80 rounded-md h-6 sm:h-7 shrink-0">#{idx + 1}</span>
-                            {(demo.thumbUrl || demo.coverUrl || demo.imageUrl) ? (
-                              <img src={getPreviewUrl(demo.thumbUrl || demo.coverUrl || demo.imageUrl)} className="w-10 h-10 rounded-xl object-cover shrink-0 border border-stone-200 shadow-2xs" alt="" />
-                            ) : (
-                              <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center text-stone-400 shrink-0 border border-stone-200">
-                                <Music className="w-5 h-5" />
-                              </div>
-                            )}
+                            <img 
+                              src={getPreviewUrl(getSongCoverUrl(demo))} 
+                              className="w-10 h-10 rounded-xl object-cover shrink-0 border border-stone-200 shadow-2xs bg-stone-100" 
+                              alt="" 
+                              onError={(e) => {
+                                e.currentTarget.src = getPreviewUrl(data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '/fallback-cover.png');
+                              }}
+                            />
                             <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                               <MarqueeText
                                 text={demo.title || demo.name || t("Chưa đặt tên")}
@@ -2970,13 +2981,14 @@ export function AdminDashboard() {
                         >
                           <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
                             <span className="text-stone-500 font-mono font-bold text-xs sm:text-sm w-6 sm:w-7 tracking-tight hidden sm:flex items-center justify-center bg-stone-100/80 rounded-md h-6 sm:h-7 shrink-0">#{idx + 1}</span>
-                            {(demo.thumbUrl || demo.coverUrl || demo.imageUrl) ? (
-                              <img src={getPreviewUrl(demo.thumbUrl || demo.coverUrl || demo.imageUrl)} className="w-10 h-10 rounded-xl object-cover shrink-0 border border-stone-200 shadow-2xs" alt="" />
-                            ) : (
-                              <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center text-stone-400 shrink-0 border border-stone-200">
-                                <Music className="w-5 h-5" />
-                              </div>
-                            )}
+                            <img 
+                              src={getPreviewUrl(getSongCoverUrl(demo))} 
+                              className="w-10 h-10 rounded-xl object-cover shrink-0 border border-stone-200 shadow-2xs bg-stone-100" 
+                              alt="" 
+                              onError={(e) => {
+                                e.currentTarget.src = getPreviewUrl(data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '/fallback-cover.png');
+                              }}
+                            />
                             <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                               <MarqueeText
                                 text={demo.title || demo.name || t("Chưa đặt tên")}
@@ -3084,13 +3096,23 @@ export function AdminDashboard() {
                           <div className="flex items-center gap-4 min-w-0">
                             <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-stone-100 shrink-0 overflow-hidden relative shadow-sm border border-stone-200 group-hover:shadow-md transition-shadow">
                               {demo.brandLogoUrl ? (
-                                <img src={demo.brandLogoUrl} alt="" className="w-full h-full object-cover" />
-                              ) : getSongCoverUrl(demo.thumbUrl || demo.coverUrl) ? (
-                                <img src={getSongCoverUrl(demo.thumbUrl || demo.coverUrl)} alt="" className="w-full h-full object-cover" />
+                                <img 
+                                  src={demo.brandLogoUrl} 
+                                  alt="" 
+                                  className="w-full h-full object-cover" 
+                                  onError={(e) => {
+                                    e.currentTarget.src = getPreviewUrl(getSongCoverUrl(demo));
+                                  }}
+                                />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center text-stone-300">
-                                  <Music className="w-6 h-6" />
-                                </div>
+                                <img 
+                                  src={getPreviewUrl(getSongCoverUrl(demo))} 
+                                  alt="" 
+                                  className="w-full h-full object-cover" 
+                                  onError={(e) => {
+                                    e.currentTarget.src = getPreviewUrl(data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '/fallback-cover.png');
+                                  }}
+                                />
                               )}
                               {demo.isDraft && (
                                 <div className="absolute inset-0 bg-stone-900/60 flex items-center justify-center">
@@ -3185,13 +3207,14 @@ export function AdminDashboard() {
                         >
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <span className="text-stone-500 font-mono font-bold text-sm w-7 tracking-tight hidden sm:flex items-center justify-center bg-stone-100/80 rounded-md h-7 shrink-0">#{idx + 1}</span>
-                            {(demo.thumbUrl || demo.coverUrl || demo.imageUrl) ? (
-                              <img src={getPreviewUrl(demo.thumbUrl || demo.coverUrl || demo.imageUrl)} className="w-10 h-10 rounded-xl object-cover shrink-0 border border-stone-200 shadow-2xs" alt="" />
-                            ) : (
-                              <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center text-stone-400 shrink-0 border border-stone-200">
-                                <Music className="w-5 h-5" />
-                              </div>
-                            )}
+                            <img 
+                              src={getPreviewUrl(getSongCoverUrl(demo))} 
+                              className="w-10 h-10 rounded-xl object-cover shrink-0 border border-stone-200 shadow-2xs bg-stone-100" 
+                              alt="" 
+                              onError={(e) => {
+                                e.currentTarget.src = getPreviewUrl(data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '/fallback-cover.png');
+                              }}
+                            />
                             <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                               <MarqueeTitle
                                 text={demo.title || demo.name || t("(Chưa đặt tiêu đề)")}
@@ -4571,11 +4594,14 @@ export function AdminDashboard() {
                               <td className="px-6 py-4">
                                 <div className="flex items-center gap-3">
                                   <div className="w-10 h-10 rounded-lg overflow-hidden border border-stone-200 shrink-0 bg-stone-100 flex items-center justify-center">
-                                    {getSongCoverUrl(song.thumbUrl || song.coverUrl) ? (
-                                      <img src={getSongCoverUrl(song.thumbUrl || song.coverUrl)} className="w-full h-full object-cover" alt={song.title} />
-                                    ) : (
-                                      <Disc3 className="w-5 h-5 text-stone-400" />
-                                    )}
+                                    <img 
+                                      src={getSongCoverUrl(song)} 
+                                      className="w-full h-full object-cover" 
+                                      alt={song.title} 
+                                      onError={(e) => {
+                                        e.currentTarget.src = getPreviewUrl(data?.aboutMe?.avatarUrl || data?.homeCoverUrl || '/fallback-cover.png');
+                                      }}
+                                    />
                                   </div>
                                   <div>
                                     <div className="font-bold text-stone-900 flex items-center gap-1.5">
@@ -8515,10 +8541,20 @@ export function AdminPlaylistEdit() {
   const [toast, setToast] = useState('');
   
   const getSongCoverUrl = (songUrlOrObj?: string | any, thumbUrl?: string) => {
+    const avatar = appData?.aboutMe?.avatarUrl || appData?.homeCoverUrl || '';
+    const isValid = (url: any) => {
+      if (typeof url !== 'string') return false;
+      const u = url.trim().toLowerCase();
+      return u !== '' && u !== 'null' && u !== 'undefined' && u !== '/uploads' && u !== '/uploads/' && u !== 'placeholder';
+    };
+
     if (typeof songUrlOrObj === 'object' && songUrlOrObj !== null) {
-      return songUrlOrObj.thumbUrl || songUrlOrObj.coverUrl || songUrlOrObj.imageUrl || appData?.aboutMe?.avatarUrl || appData?.homeCoverUrl || '';
+      const target = songUrlOrObj.thumbUrl || songUrlOrObj.coverUrl || songUrlOrObj.imageUrl;
+      return isValid(target) ? target : avatar;
     }
-    return thumbUrl || songUrlOrObj || appData?.aboutMe?.avatarUrl || appData?.homeCoverUrl || '';
+    if (isValid(thumbUrl)) return thumbUrl;
+    if (isValid(songUrlOrObj)) return songUrlOrObj;
+    return avatar;
   };
   const [isLoading, setIsLoading] = useState(true);
   const [title, setTitle] = useState('');
@@ -8783,13 +8819,14 @@ export function AdminPlaylistEdit() {
                        className={`flex items-center gap-4 p-3 rounded-xl border transition-all ${draggingIdx === i ? 'bg-stone-100 border-stone-400 opacity-50 relative z-10' : 'bg-white border-stone-200 hover:bg-stone-50'} cursor-grab active:cursor-grabbing`}
                     >
                        <GripVertical className="w-5 h-5 text-stone-400 shrink-0" />
-                       {getSongCoverUrl(song.thumbUrl || song.coverUrl) ? (
-                         <img src={getPreviewUrl(getSongCoverUrl(song.thumbUrl || song.coverUrl))} className="w-12 h-12 rounded object-cover border border-stone-200 shrink-0" alt="" />
-                       ) : (
-                         <div className="w-12 h-12 bg-stone-100 rounded flex items-center justify-center shrink-0 border border-stone-200">
-                           <Disc3 className="w-6 h-6 text-stone-400" />
-                         </div>
-                       )}
+                       <img 
+                         src={getPreviewUrl(getSongCoverUrl(song))} 
+                         className="w-12 h-12 rounded object-cover border border-stone-200 shrink-0 bg-stone-100" 
+                         alt="" 
+                         onError={(e) => {
+                           e.currentTarget.src = getPreviewUrl(appData?.aboutMe?.avatarUrl || appData?.homeCoverUrl || '/fallback-cover.png');
+                         }}
+                       />
                        <div className="flex-1 min-w-0">
                           <h4 className="font-bold text-stone-800 truncate">{song.title}</h4>
                           <MarqueeText className="text-xs text-stone-500 w-full">{song.singer || song.author}</MarqueeText>
@@ -8866,13 +8903,14 @@ export function AdminPlaylistEdit() {
                         }}
                         className="w-5 h-5 rounded text-stone-900 border-stone-300 focus:ring-stone-900" 
                       />
-                      {getSongCoverUrl(song.thumbUrl || song.coverUrl) ? (
-                         <img src={getPreviewUrl(getSongCoverUrl(song.thumbUrl || song.coverUrl))} className="w-10 h-10 rounded object-cover border shrink-0" alt="" />
-                      ) : (
-                        <div className="w-10 h-10 bg-stone-100 rounded flex items-center justify-center shrink-0 border">
-                          <Disc3 className="w-5 h-5 text-stone-400" />
-                        </div>
-                      )}
+                      <img 
+                         src={getPreviewUrl(getSongCoverUrl(song))} 
+                         className="w-10 h-10 rounded object-cover border shrink-0 bg-stone-100" 
+                         alt="" 
+                         onError={(e) => {
+                           e.currentTarget.src = getPreviewUrl(appData?.aboutMe?.avatarUrl || appData?.homeCoverUrl || '/fallback-cover.png');
+                         }}
+                       />
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-stone-800 text-sm truncate">{song.title}</p>
                         <MarqueeText className="text-xs text-stone-500 w-full">{song.singer || song.author}</MarqueeText>
