@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChorusLogo } from './ChorusLogo';
-import { Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X, LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home, Upload, MessageSquare, Send, AlertTriangle, Disc3, Bell, ChevronLeft, Mail, Palette, LayoutTemplate, GripVertical, Type, Eye, EyeOff, DollarSign, ChevronUp, ChevronDown, Volume2, Image, FileText, Compass, Smartphone, Tablet, Monitor, ArrowUp, ArrowDown } from 'lucide-react';
+import { Users, Search, UserPlus, Shield, Database, Edit2, Trash2, Check, X, LogOut, Plus, Music, HelpCircle, Lock, RefreshCw, CheckCircle, ExternalLink, Globe, Layout, Save, CheckCircle2, Sparkles, Home, Upload, MessageSquare, Send, AlertTriangle, Disc3, Bell, ChevronLeft, Mail, Palette, LayoutTemplate, GripVertical, Type, Eye, EyeOff, DollarSign, ChevronUp, ChevronDown, Volume2, Image, FileText, Compass, Smartphone, Tablet, Monitor, ArrowUp, ArrowDown, FolderOpen } from 'lucide-react';
 import { getPlatformDomain, getPlatformBrandName, getArtistSubdomainUrl } from '../utils/platform';
 import { compressImageInBrowser } from '../utils/imageCompressor';
 
@@ -59,6 +59,8 @@ function CleanupTabContent({ token, showToast }: { token: string; showToast: (ms
   const [loadingTrash, setLoadingTrash] = useState(false);
   const [emptyingTrash, setEmptyingTrash] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [organizing, setOrganizing] = useState(false);
+  const [organizeResult, setOrganizeResult] = useState<any>(null);
 
   // Load trash info on mount
   useEffect(() => { loadTrashInfo(); }, []);
@@ -85,6 +87,25 @@ function CleanupTabContent({ token, showToast }: { token: string; showToast: (ms
       showToast('Lỗi quét: ' + (e.message || 'Unknown'));
     }
     setScanning(false);
+  };
+
+  const handleOrganize = async () => {
+    if (!confirm('Sắp xếp lại file gốc?\n\nHệ thống sẽ quét tất cả file nằm trực tiếp trong uploads/ (gốc), tìm xem nghệ sĩ nào đang sử dụng, và tự động di chuyển vào đúng thư mục nghệ sĩ + cập nhật link trong database.\n\nBấm OK để tiếp tục.')) return;
+    setOrganizing(true);
+    setOrganizeResult(null);
+    try {
+      const res = await fetch('/api/master/cleanup/organize', { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } });
+      const data = await res.json();
+      setOrganizeResult(data);
+      if (data.organized > 0) {
+        showToast(`Đã sắp xếp ${data.organized} file vào đúng thư mục nghệ sĩ!`);
+      } else {
+        showToast('Không có file nào cần sắp xếp lại.');
+      }
+    } catch (e: any) {
+      showToast('Lỗi: ' + (e.message || 'Unknown'));
+    }
+    setOrganizing(false);
   };
 
   const toggleCategory = (catId: string) => {
@@ -186,18 +207,52 @@ function CleanupTabContent({ token, showToast }: { token: string; showToast: (ms
           </h2>
           <p className="text-neutral-400 text-sm mt-1">Quét và xóa file rác trên server để giải phóng dung lượng</p>
         </div>
-        <button
-          onClick={handleScan}
-          disabled={scanning}
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-2xl font-black text-sm transition-all disabled:opacity-50 cursor-pointer shadow-lg shadow-purple-500/20"
-        >
-          {scanning ? (
-            <><RefreshCw className="w-4 h-4 animate-spin" /> Đang quét...</>
-          ) : (
-            <><Search className="w-4 h-4" /> Quét file rác</>
-          )}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleOrganize}
+            disabled={organizing || scanning}
+            className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 rounded-2xl font-black text-sm transition-all disabled:opacity-50 cursor-pointer shadow-lg shadow-amber-500/20"
+          >
+            {organizing ? (
+              <><RefreshCw className="w-4 h-4 animate-spin" /> Đang sắp xếp...</>
+            ) : (
+              <><FolderOpen className="w-4 h-4" /> Sắp xếp file gốc</>
+            )}
+          </button>
+          <button
+            onClick={handleScan}
+            disabled={scanning || organizing}
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-2xl font-black text-sm transition-all disabled:opacity-50 cursor-pointer shadow-lg shadow-purple-500/20"
+          >
+            {scanning ? (
+              <><RefreshCw className="w-4 h-4 animate-spin" /> Đang quét...</>
+            ) : (
+              <><Search className="w-4 h-4" /> Quét file rác</>
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* Organize Results */}
+      {organizeResult && (
+        <div className="bg-neutral-900/50 border border-amber-500/20 rounded-2xl p-5 space-y-3">
+          <h3 className="font-black text-amber-400 flex items-center gap-2"><FolderOpen className="w-5 h-5" /> Kết quả sắp xếp</h3>
+          <div className="flex items-center gap-6 text-sm">
+            <span className="text-emerald-400 font-bold">✅ Di chuyển: {organizeResult.organized}</span>
+            <span className="text-neutral-400">⏭️ Bỏ qua: {organizeResult.skipped}</span>
+            <span className="text-neutral-500">📁 Tổng: {organizeResult.total}</span>
+          </div>
+          {organizeResult.results && organizeResult.results.length > 0 && (
+            <div className="max-h-60 overflow-y-auto space-y-1 mt-2">
+              {organizeResult.results.map((r: any, i: number) => (
+                <div key={i} className={`text-xs font-mono px-3 py-1.5 rounded-lg ${r.action.startsWith('di chuyển') ? 'bg-emerald-500/10 text-emerald-300' : 'bg-neutral-800/50 text-neutral-500'}`}>
+                  {r.file} → {r.action}{r.artist ? ` (${r.artist})` : ''}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Scan Results */}
       {scanResult && (

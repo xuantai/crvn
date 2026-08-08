@@ -3096,6 +3096,105 @@ function generateCaptchaSvg(text: string) {
     }
   });
 
+  // Organize: find root-level files referenced by artists, move to correct subfolder + update refs
+  app.post('/api/master/cleanup/organize', async (req, res) => {
+    if (!isRequestMasterAdmin(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+      // 1. Find all root-level files in uploads/ (files directly in uploads/, not in a subfolder)
+      const rootFiles: { name: string; fullPath: string; size: number }[] = [];
+      if (fsSync.existsSync(UPLOADS_DIR)) {
+        const entries = await fs.readdir(UPLOADS_DIR, { withFileTypes: true });
+        for (const entry of entries) {
+          if (!entry.isDirectory()) {
+            const fullPath = path.join(UPLOADS_DIR, entry.name);
+            const stats = await fs.stat(fullPath);
+            rootFiles.push({ name: entry.name, fullPath, size: stats.size });
+          }
+        }
+      }
+
+      if (rootFiles.length === 0) {
+        return res.json({ success: true, organized: 0, message: 'Không có file root-level nào.' });
+      }
+
+      // 2. For each root file, search ALL artist data to find who references it
+      let organized = 0;
+      let skipped = 0;
+      const results: { file: string; action: string; artist?: string }[] = [];
+
+      for (const rf of rootFiles) {
+        let foundArtist: any = null;
+        let foundData: any = null;
+        let foundUsername: string = '';
+
+        for (const artist of artists) {
+          if (!artist.username) continue;
+          try {
+            const data = await loadData(artist.username);
+            if (!data) continue;
+
+            const dataStr = JSON.stringify(data);
+            if (dataStr.includes(rf.name)) {
+              foundArtist = artist;
+              foundData = data;
+              foundUsername = artist.username;
+              break;
+            }
+          } catch (_) {}
+        }
+
+        if (!foundArtist || !foundData) {
+          skipped++;
+          results.push({ file: rf.name, action: 'skipped — không tìm thấy owner' });
+          continue;
+        }
+
+        // 3. Determine target folder (use artist.id if the artist has uploads in id-based folder, else username)
+        const artistId = foundArtist.id || foundUsername;
+        const targetDir = path.join(UPLOADS_DIR, String(artistId));
+        if (!fsSync.existsSync(targetDir)) {
+          await fs.mkdir(targetDir, { recursive: true });
+        }
+
+        const targetPath = path.join(targetDir, rf.name);
+
+        // 4. Move file
+        try {
+          await fs.rename(rf.fullPath, targetPath);
+        } catch (e) {
+          // Cross-device? copy + delete
+          await fs.copyFile(rf.fullPath, targetPath);
+          await fs.unlink(rf.fullPath);
+        }
+
+        // 5. Update ALL URL references in the artist's data
+        const oldUrl1 = `/uploads/${rf.name}`;
+        const newUrl1 = `/uploads/${artistId}/${rf.name}`;
+        const oldUrl2 = `uploads/${rf.name}`;
+        const newUrl2 = `uploads/${artistId}/${rf.name}`;
+
+        let dataStr = JSON.stringify(foundData);
+        dataStr = dataStr.split(oldUrl1).join(newUrl1);
+        dataStr = dataStr.split(oldUrl2).join(newUrl2);
+        const updatedData = JSON.parse(dataStr);
+
+        await saveData(foundUsername, updatedData);
+
+        organized++;
+        results.push({ file: rf.name, action: `di chuyển → uploads/${artistId}/`, artist: foundArtist.artistName || foundUsername });
+        console.log(`[Organize] ${rf.name} → uploads/${artistId}/ (${foundArtist.artistName})`);
+      }
+
+      res.json({ success: true, organized, skipped, total: rootFiles.length, results });
+    } catch (e: any) {
+      console.error('Error organizing files:', e);
+      res.status(500).json({ error: e?.message || 'Organize failed' });
+    }
+  });
+
   app.post('/api/master/cleanup/execute', async (req, res) => {
     if (!isRequestMasterAdmin(req)) {
       return res.status(401).json({ error: 'Unauthorized' });
